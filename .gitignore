@@ -23,3 +23,5 @@ out/
 .classpath
 *.log
 
+*.class
+.DS_Store
