@@ -14,31 +14,18 @@ public enum WeekDay {
 
 	Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday;
 	
-	private static final String[] rahukala =
-    {
-         "04:30 PM - 06:00 PM", "07:30 AM - 09:00 AM", "03:00 PM - 4:30 PM",
-         "12:00 PM - 01:30 PM", "01:30 PM - 03:00 PM", "10:30 AM - 12:00 PM",
-         "09:00 AM - 10:30 AM"
-     
-    };
+	private static final double[] rahukalaOffsets = { 10.5, 1.5, 9.0, 6.0, 7.5, 4.5, 3.0 };
 	
-	private static final String[] yamakanda =
-    {
-        "12:00 PM - 1:30 PM", "10:30 AM - 12:00 AM", "09:00 AM - 10:30 AM",
-        "07:30 AM - 09:00 AM", "06:00 AM - 07:30 AM", "03:00 PM - 04:30 PM",
-        "01:30 PM - 03:00 PM"
+	private static final double[] yamakandaOffsets = { 6.0, 4.5, 3.0, 1.5, 0.0, 9.0, 7.5 };
     
-    };
-    
-	private static final String[][] auspiciousTime = 
-	{
-	    {"07.30 - 10.00 am", "02.00 - 04.30 pm", "09.00 pm - 12.00 am"},
-	    {"06.00 - 07.00 am ", "12.00 - 02.00 pm", "06.00 - 09.00 pm , 10.00 - 11.00 pm"},
-	    {"10.30 - 11.00 am", "12.00 - 01.00 pm , 04.30 - 06.00 pm ", "07.00 - 08.00 pm"},
-	    {"09.00 - 10.00 am", "01.30 - 03.00 pm , 04.00 - 05.00 pm", "07.00 - 10.00 pm , 11.00 pm - 12.00 am"},
-	    {"09.00 - 10.30 am", "01.00 - 01.30 pm , 04.30 - 06.00 pm", "06.00 - 07.00 pm , 08.00 - 09.00 pm"},        
-	    {"06.00 - 09.00  am", "01.00 - 01.30 pm , 05.00 - 06.00 pm", "08.00 - 9.00 pm , 10.30 - 11.00 pm"},
-	    {"07.00 - 07.30 am , 10.30 - 12.00 pm", "12.00 - 01.00 pm , 05.00 - 06.00 pm", "06.00 - 07.30 pm , 09.00 - 10.00 pm"}        
+	private static final double[][][] auspiciousTimeOffsets = {
+	    { {1.5, 4.0, 0}, {8.0, 10.5, 0}, {3.0, 6.0, 1} },
+	    { {0.0, 1.0, 0}, {6.0, 8.0, 0}, {0.0, 3.0, 1}, {4.0, 5.0, 1} },
+	    { {4.5, 5.0, 0}, {6.0, 7.0, 0}, {10.5, 12.0, 0}, {1.0, 2.0, 1} },
+	    { {3.0, 4.0, 0}, {7.5, 9.0, 0}, {10.0, 11.0, 0}, {1.0, 4.0, 1}, {5.0, 6.0, 1} },
+	    { {3.0, 4.5, 0}, {7.0, 7.5, 0}, {10.5, 12.0, 0}, {0.0, 1.0, 1}, {2.0, 3.0, 1} },
+	    { {0.0, 3.0, 0}, {7.0, 7.5, 0}, {11.0, 12.0, 0}, {2.0, 3.0, 1}, {4.5, 5.0, 1} },
+	    { {1.0, 1.5, 0}, {4.5, 6.0, 0}, {6.0, 7.0, 0}, {11.0, 12.0, 0}, {0.0, 1.5, 1}, {3.0, 4.0, 1} }
 	};
 	
 	private static WeekDay vals[] = values();
@@ -56,16 +43,43 @@ public enum WeekDay {
 		return WeekDay.ofIndex( cal.get( java.util.Calendar.DAY_OF_WEEK ) - 1 );
 	}
 	
-	public String rahuKala(){
-		return rahukala[ordinal()];
+	private String formatDynamicTime(double startOffset, double endOffset, boolean isNight, double sunrise, double sunset) {
+		double dayLen = sunset - sunrise;
+		if (dayLen < 0) dayLen += 24.0;
+		double nightLen = 24.0 - dayLen;
+		
+		double dynStart, dynEnd;
+		if (!isNight) {
+			dynStart = sunrise + (startOffset / 12.0) * dayLen;
+			dynEnd = sunrise + (endOffset / 12.0) * dayLen;
+		} else {
+			dynStart = sunset + (startOffset / 12.0) * nightLen;
+			dynEnd = sunset + (endOffset / 12.0) * nightLen;
+		}
+		
+		if (dynStart >= 24.0) dynStart -= 24.0;
+		if (dynEnd >= 24.0) dynEnd -= 24.0;
+		
+		return app.astrosoft.util.AstroUtil.timeFormat(dynStart) + " - " + app.astrosoft.util.AstroUtil.timeFormat(dynEnd);
 	}
 	
-	public String yamaKanda(){
-		return yamakanda[ordinal()];
+	public String rahuKala(double sunrise, double sunset){
+		double start = rahukalaOffsets[ordinal()];
+		return formatDynamicTime(start, start + 1.5, false, sunrise, sunset);
 	}
 	
-	public String[] auspiciousTime(){
-		return auspiciousTime[ordinal()];
+	public String yamaKanda(double sunrise, double sunset){
+		double start = yamakandaOffsets[ordinal()];
+		return formatDynamicTime(start, start + 1.5, false, sunrise, sunset);
+	}
+	
+	public String[] auspiciousTime(double sunrise, double sunset){
+		double[][] blocks = auspiciousTimeOffsets[ordinal()];
+		java.util.List<String> list = new java.util.ArrayList<String>();
+		for (double[] b : blocks) {
+			list.add(formatDynamicTime(b[0], b[1], b[2] == 1.0, sunrise, sunset));
+		}
+		return list.toArray(new String[0]);
 	}
 	
 	public String sym(){

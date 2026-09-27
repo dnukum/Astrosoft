@@ -60,7 +60,7 @@ import swisseph.*;
 public class Panchang {
 
     private static final AstrosoftPref preferences = AstroSoft.getPreferences();
-	private static final double PAN_APPROXIMATION = 0.01;
+	private static final double PAN_APPROXIMATION = 0.02;
     
 	private SwissHelper swissHelper;
 	private Place place;
@@ -213,7 +213,11 @@ public class Panchang {
         return time + timeZone + yogaCorrection(position, position + bal, time);
     }
     
-    private double yogaCorrection(double position, double expected, double caltime){
+    private double yogaCorrection(double position, double expected, double caltime) {
+		return yogaCorrection(position, expected, caltime, 0);
+	}
+
+	private double yogaCorrection(double position, double expected, double caltime, int depth){
     	
     	double correction = 0.0;
     	 
@@ -260,7 +264,11 @@ public class Panchang {
         return (timeZone + time + computeCorrection(getMoonSunDiff(sun, moon), diff + bal, time, AstroConsts.thithiLength));
     }
     
-	private double computeCorrection(double position, double expected, double caltime, double length ) {
+	private double computeCorrection(double position, double expected, double caltime, double length) {
+		return computeCorrection(position, expected, caltime, length, 0);
+	}
+
+	private double computeCorrection(double position, double expected, double caltime, double length, int depth)  {
 		
 	    double correction = 0.0;
 	    
@@ -294,7 +302,7 @@ public class Panchang {
 	
 	    if (Math.abs(newbal) > PAN_APPROXIMATION){
 	    	
-	    	correction = correction + computeCorrection(getMoonSunDiff(newsun, newmoon), expected , caltime + correction, length);
+	    	if (depth > 20) return correction; correction = correction + computeCorrection(getMoonSunDiff(newsun, newmoon), expected , caltime + correction, length, depth + 1);
 	    }
 	    return correction;
 	
@@ -312,15 +320,15 @@ public class Panchang {
 
 
     public String rahuKala(){
-		return weekday.rahuKala();
+		return weekday.rahuKala(sunrise, sunset);
 	}
 	
 	public String yamaKanda(){
-		return weekday.yamaKanda();
+		return weekday.yamaKanda(sunrise, sunset);
 	}
 	
 	public String[] auspiciousTime(){
-		return weekday.auspiciousTime();
+		return weekday.auspiciousTime(sunrise, sunset);
 	}
 
 	public Calendar getDate() {
@@ -352,10 +360,10 @@ public class Panchang {
 		rows.add(helper.createRow(DisplayStrings.KARANA_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", karana));
 		rows.add(helper.createRow(DisplayStrings.SUNRISE_STR, AstroUtil.timeFormat(sunrise)));
 		rows.add(helper.createRow(DisplayStrings.SUNSET_STR, AstroUtil.timeFormat(sunset)));
-		String auspiciousTime = Arrays.toString(auspiciousTime());
+		String auspiciousTime = Arrays.toString(weekday.auspiciousTime(sunrise, sunset));
 		rows.add(helper.createRow(DisplayStrings.AUS_TIME_STR, auspiciousTime.substring(1, auspiciousTime.length() - 1)));
-		rows.add(helper.createRow(DisplayStrings.RAHU_KALA_STR, rahuKala()));
-		rows.add(helper.createRow(DisplayStrings.YAMA_KANDA_STR, yamaKanda()));
+		rows.add(helper.createRow(DisplayStrings.RAHU_KALA_STR, weekday.rahuKala(sunrise, sunset)));
+		rows.add(helper.createRow(DisplayStrings.YAMA_KANDA_STR, weekday.yamaKanda(sunrise, sunset)));
 		
 		return TableDataFactory.getTableData(rows);
 	}
