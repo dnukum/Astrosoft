@@ -245,6 +245,20 @@ public class AstroSoft extends javax.swing.JFrame implements
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+			String[] components = {"TextField", "TextArea", "TextPane", "EditorPane", "PasswordField", "ComboBox", "FormattedTextField"};
+			for (String comp : components) {
+				javax.swing.InputMap im = (javax.swing.InputMap) UIManager.get(comp + ".focusInputMap");
+				if (im != null) {
+					im.put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.META_DOWN_MASK), javax.swing.text.DefaultEditorKit.copyAction);
+					im.put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.META_DOWN_MASK), javax.swing.text.DefaultEditorKit.pasteAction);
+					im.put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.META_DOWN_MASK), javax.swing.text.DefaultEditorKit.cutAction);
+					im.put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.META_DOWN_MASK), javax.swing.text.DefaultEditorKit.selectAllAction);
+				}
+			}
+		}
+		
 		//JFrame.setDefaultLookAndFeelDecorated(true);
 		Map defaults = UIConsts.getUIDefaults();
 

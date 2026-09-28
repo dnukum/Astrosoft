@@ -255,14 +255,14 @@ public class PlaceChooser extends JPanel {
 		
 		//t.print("AT 2.2.3.4");
 		
-		latitude_deg.setText(String.valueOf(latitude.deg()));
-		latitude_min.setText(String.valueOf(latitude.min()));
+		latitude_deg.setText(String.format("%02d", latitude.deg()));
+		latitude_min.setText(String.format("%02d", latitude.min()));
 		dir_ns.setSelectedItem(latitude.dir());
 		
 		//t.print("AT 2.2.3.5");
 		
-		longitude_deg.setText(String.valueOf(longitude.deg()));
-		longitude_min.setText(String.valueOf(longitude.min()));
+		longitude_deg.setText(String.format("%02d", longitude.deg()));
+		longitude_min.setText(String.format("%02d", longitude.min()));
 		dir_ew.setSelectedItem(longitude.dir());
 		
 		//t.print("AT 2.2.3.6");
