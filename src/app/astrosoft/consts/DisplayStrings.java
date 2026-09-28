@@ -24,6 +24,7 @@ public enum DisplayStrings {
 	DAY_STR,
 	TOB_STR,
 	PLACE_STR,
+	COORD_STR,
 	SID_TIME_STR,
 	SUNRISE_SET_STR,
 	AYANAMSA_STR,

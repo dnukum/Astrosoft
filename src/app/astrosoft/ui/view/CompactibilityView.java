@@ -130,7 +130,7 @@ public class CompactibilityView extends AstrosoftView {
         	
         };
         
-        boyTable.addCellPopupWindow(new Cell(4), beejaPopup);
+        boyTable.addCellPopupWindow(new Cell(boyModel.getRowCount() - 1), beejaPopup);
         
         TablePopupWindowModel kshetraPopup =  new TablePopupWindowModel(){
             
@@ -145,7 +145,7 @@ public class CompactibilityView extends AstrosoftView {
         	
         };
 		
-        girlTable.addCellPopupWindow(new Cell(4), kshetraPopup);
+        girlTable.addCellPopupWindow(new Cell(girlModel.getRowCount() - 1), kshetraPopup);
 	}
 	
 	private JPanel createDoshaPanel(){

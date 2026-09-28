@@ -180,16 +180,14 @@ public class Place {
 	}
 	
 	public String toString(){
-		
 		StringBuilder sb = new StringBuilder(city);
-		if (state != null){
-			sb.append(" , ");
-			sb.append(state);
+		if (state != null && !state.trim().isEmpty()){
+			sb.append(", ");
+			sb.append(state.trim());
 		}
-		
-		if (country != null){
-			sb.append(" , ");
-			sb.append(country);
+		if (country != null && !country.trim().isEmpty()){
+			sb.append(", ");
+			sb.append(country.trim());
 		}
 		return sb.toString() ;
 	}
@@ -200,6 +198,16 @@ public class Place {
 
 	public double latitude() {
 		return latitude;
+	}
+
+	public String coordinates() {
+		Location latLoc = latitudeLocation();
+		Location lonLoc = longitudeLocation();
+		String sign = timeZone < 0 ? "-" : "+";
+		String offsetStr = "GMT " + sign + app.astrosoft.util.AstroUtil.todegmin(Math.abs(timeZone), ":", true);
+		return latLoc.format() + latLoc.dir().charVal() + ", " + 
+		       lonLoc.format() + lonLoc.dir().charVal() + ", " + 
+		       (timeZoneId != null && !timeZoneId.isEmpty() ? timeZoneId : offsetStr);
 	}
 	
 	public double timeZone() {

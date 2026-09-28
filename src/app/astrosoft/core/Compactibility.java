@@ -1422,6 +1422,7 @@ public class Compactibility implements Exportable {
 				if (boyBirthData.isDstActive()) tobStr += " (DST)";
 				rows.add(helper.createRow(DisplayStrings.TOB_STR, tobStr));
 				rows.add(helper.createRow(DisplayStrings.PLACE_STR, boyBirthData.place()));
+				rows.add(helper.createRow(DisplayStrings.COORD_STR, boyBirthData.getBirthPlace().coordinates()));
 			}
 			rows.add(helper.createRow(DisplayStrings.NAK_STR, boyNak()));
 			rows.add(helper.createRow(DisplayStrings.RASI_STR, boyRasi()));
@@ -1459,6 +1460,7 @@ public class Compactibility implements Exportable {
 				if (girlBirthData.isDstActive()) tobStr += " (DST)";
 				rows.add(helper.createRow(DisplayStrings.TOB_STR, tobStr));
 				rows.add(helper.createRow(DisplayStrings.PLACE_STR, girlBirthData.place()));
+				rows.add(helper.createRow(DisplayStrings.COORD_STR, girlBirthData.getBirthPlace().coordinates()));
 			}
 			rows.add(helper.createRow(DisplayStrings.NAK_STR, girlNak()));
 			rows.add(helper.createRow(DisplayStrings.RASI_STR, girlRasi()));
