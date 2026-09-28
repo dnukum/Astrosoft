@@ -94,11 +94,11 @@ public class PlaceChooser extends JPanel {
 	}
 
 	private void addComponents() {
-		JPanel placeComp = new JPanel(new java.awt.BorderLayout(5, 0));
+		JPanel placeComp = new JPanel(new SpringLayout());
 
 		searchButton.setPreferredSize(UIConsts.BUTTON_ICON_SIZE);
-		placeComp.add(placeCombo, java.awt.BorderLayout.CENTER);
-		placeComp.add(searchButton, java.awt.BorderLayout.EAST);
+		placeComp.add(placeCombo);
+		placeComp.add(searchButton);
 
 		JPanel latitudeComp = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 0));
 
