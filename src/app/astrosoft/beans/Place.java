@@ -211,7 +211,7 @@ public class Place {
 		String hm = app.astrosoft.util.AstroUtil.todegmin(Math.abs(timeZone), ":", true);
 		if (hm.endsWith(":00")) { hm = hm.substring(0, hm.length() - 3); }
 		String offsetStr = "(GMT" + sign + hm + ")";
-		return latLoc.compactFormat() + "     " + lonLoc.compactFormat() + "  " + offsetStr;
+		return latLoc.compactFormat() + "  " + lonLoc.compactFormat() + "  " + offsetStr;
 	}
 	
 	public double timeZone() {
