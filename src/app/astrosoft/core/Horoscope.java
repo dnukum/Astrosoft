@@ -566,6 +566,7 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 			sb.append(" born on ");
 			sb.append(birthData.birthDayString());
 			sb.append(" " + AstroUtil.timeFormat(birthData.birthTime()));
+			if (birthData.isDstActive()) sb.append(" (DST)");
 			sb.append(" at ");
 			sb.append(birthData.place());
 			title = sb.toString();
