@@ -242,6 +242,12 @@ public class Place {
 		Location latitudeLoc = latitudeLocation();
 		
 		XMLHelper.addElement(doc, placeElement, XmlConsts.City, this.city);
+		if (this.state != null && !this.state.isEmpty()) {
+			XMLHelper.addElement(doc, placeElement, XmlConsts.State, this.state);
+		}
+		if (this.country != null && !this.country.isEmpty()) {
+			XMLHelper.addElement(doc, placeElement, XmlConsts.Country, this.country);
+		}
 		
 		Element longitudeElement = XMLHelper.addElement(doc, placeElement, XmlConsts.Longitude, longitudeLoc.format());
 		XMLHelper.addAttribute(longitudeElement, XmlConsts.dir, longitudeLoc.dir().charVal());
