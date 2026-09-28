@@ -31,7 +31,7 @@ public class InfoView extends AstrosoftView {
      */
     public InfoView(Table horoscopeInfo, Point loc) {
 
-    	super(new Dimension(680,120), loc);
+    	super(new Dimension(800,120), loc);
     	
     	ListTableData<MapTableRow> allData = (ListTableData<MapTableRow>) horoscopeInfo.getTableData();
     	ColumnMetaData infoColMetaData = horoscopeInfo.getColumnMetaData();
