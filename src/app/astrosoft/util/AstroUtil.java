@@ -372,23 +372,32 @@ public class AstroUtil {
     }
     
     public static int[] int_dms(double value){
-    
-    	int deg = ( int ) value;
-        double mindob = ( value - deg ) * 60;
-        int min = ( int ) ( mindob );
-        int sec = ( int ) ( ( mindob - min ) * 60 );
-        //System.out.println("mindob " + mindob);
-        //System.out.println(deg + " : " + min + " : " + sec);
-        
-        return new int[]{deg,min,sec};
+        long totalSecs = Math.round(value * 3600.0);
+        int sign = totalSecs < 0 ? -1 : 1;
+        totalSecs = Math.abs(totalSecs);
+        int deg = (int)(totalSecs / 3600);
+        int min = (int)((totalSecs % 3600) / 60);
+        int sec = (int)(totalSecs % 60);
+        return new int[]{deg * sign, min * sign, sec * sign};
     }
     
     public static String formatDate(Date date){
     	return dateFormat.format(date);
     }
     
+    public static String formatDate(int year, int month, int date){
+        String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        return months[month - 1] + " " + date + " " + year;
+    }
+    
     public static String formatDateTime(Date date){
     	return dateTimeFormat.format(date);
+    }
+    
+    public static String formatDateTime(int year, int month, int date, int hr, int min, int sec) {
+        String dateStr = formatDate(year, month, date);
+        String timeStr = timeFormat(decimal(hr, min, sec), true);
+        return dateStr + ", " + timeStr;
     }
     
     public static Date parseDateTime(String dateStr){

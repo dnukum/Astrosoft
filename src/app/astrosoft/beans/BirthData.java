@@ -89,7 +89,7 @@ public class BirthData {
         birthSeconds = secs;
         birthPlace = place;
         
-        birthTime = AstroUtil.decimal(hr, min, 0);
+        birthTime = AstroUtil.decimal(hr, min, secs);
         
         TimeZone tz = birthPlace.astrosoftTimeZone().getTimeZone();
         Calendar cal = new GregorianCalendar(tz);
@@ -97,7 +97,7 @@ public class BirthData {
         cal.set(year, month - 1, date, hr, min, secs);
         double offsetHours = tz.getOffset(cal.getTimeInMillis()) / (double) AstroConsts.MILLIS_IN_HR;
         
-        birthGMT = AstroUtil.decimal(hr, min, 0) - offsetHours;
+        birthGMT = AstroUtil.decimal(hr, min, secs) - offsetHours;
         birthSD = new SweDate(year, month, date, birthGMT);
  		birthDay = cal;
  		birthWeekDay = WeekDay.ofDay(year, month, date);
@@ -184,7 +184,7 @@ public class BirthData {
 		return birthPlace;
 	}
 	public String birthDayString(){
-		return AstroUtil.formatDate(birthDay.getTime());
+		return AstroUtil.formatDate(birthYear, birthMonth, birthDate);
 	}
 	
 	public Sex sex(){
@@ -201,12 +201,11 @@ public class BirthData {
 			XMLHelper.addElement(doc, bdElement, XmlConsts.Sex, this.sex.name());
 		}
 		
-		XMLHelper.addElement(doc, bdElement, XmlConsts.DateTime, AstroUtil.formatDateTime(this.birthDay.getTime()));
+		XMLHelper.addElement(doc, bdElement, XmlConsts.DateTime, AstroUtil.formatDateTime(birthYear, birthMonth, birthDate, birthHour, birthMinutes, birthSeconds));
 		
 		bdElement.appendChild(birthPlace.toXMLElement(doc));
 		
 		return bdElement;
-		
 	}
 	
 	public Element toXMLElement(Document doc){
