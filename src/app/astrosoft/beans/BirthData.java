@@ -43,6 +43,14 @@ public class BirthData {
 	private double birthGMT;
 	private Calendar birthDay;
 	private WeekDay birthWeekDay;
+	
+	public boolean isDstActive() {
+		TimeZone tz = birthPlace.astrosoftTimeZone().getTimeZone();
+		Calendar cal = new GregorianCalendar(tz);
+		cal.clear();
+		cal.set(birthYear, birthMonth - 1, birthDate, birthHour, birthMinutes, birthSeconds);
+		return tz.inDaylightTime(cal.getTime());
+	}
 
     /** Creates a new instance of BirthData */
     public BirthData( 

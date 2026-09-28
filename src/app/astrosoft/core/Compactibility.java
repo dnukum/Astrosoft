@@ -1418,7 +1418,9 @@ public class Compactibility implements Exportable {
 
 			if (hasHoroscope) {
 				rows.add(helper.createRow(DisplayStrings.DOB_STR, boyBirthData.birthDayString()));
-				rows.add(helper.createRow(DisplayStrings.TOB_STR, AstroUtil.timeFormat(boyBirthData.birthTime(),true)));
+				String tobStr = AstroUtil.timeFormat(boyBirthData.birthTime(),true);
+				if (boyBirthData.isDstActive()) tobStr += " (DST)";
+				rows.add(helper.createRow(DisplayStrings.TOB_STR, tobStr));
 				rows.add(helper.createRow(DisplayStrings.PLACE_STR, boyBirthData.place()));
 			}
 			rows.add(helper.createRow(DisplayStrings.NAK_STR, boyNak()));
@@ -1453,7 +1455,9 @@ public class Compactibility implements Exportable {
 			rows.add(helper.createRow(DisplayStrings.GIRL_STR, girlName));
 			if (hasHoroscope) {
 				rows.add(helper.createRow(DisplayStrings.DOB_STR, girlBirthData.birthDayString()));
-				rows.add(helper.createRow(DisplayStrings.TOB_STR, AstroUtil.timeFormat(girlBirthData.birthTime(),true)));
+				String tobStr = AstroUtil.timeFormat(girlBirthData.birthTime(),true);
+				if (girlBirthData.isDstActive()) tobStr += " (DST)";
+				rows.add(helper.createRow(DisplayStrings.TOB_STR, tobStr));
 				rows.add(helper.createRow(DisplayStrings.PLACE_STR, girlBirthData.place()));
 			}
 			rows.add(helper.createRow(DisplayStrings.NAK_STR, girlNak()));
