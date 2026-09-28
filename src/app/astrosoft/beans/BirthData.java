@@ -152,7 +152,7 @@ public class BirthData {
 	}
     
     public String place() {
-		return birthPlace.city();
+		return birthPlace.toString();
 	}
     
     public double timeZone() {
