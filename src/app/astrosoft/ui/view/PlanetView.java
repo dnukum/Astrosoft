@@ -31,12 +31,16 @@ public class PlanetView extends AstrosoftView {
      */
     public PlanetView(String title, PlanetaryInfo planetaryInfo) {
 
-    	super(title, new Dimension(600, 295));
+    	super(title, new Dimension(720, 295));
     	this.planetaryInfo = planetaryInfo;
 
     	ColumnMetaData colMetaData = planetaryInfo.getPlanateryInfoColumnMetaData();
     	AstrosoftTable planetTable = new AstrosoftTable(new AstrosoftTableModel(
 				planetaryInfo.getPlanateryInfoTableData(), colMetaData), TableStyle.STANDARD);
+		planetTable.setColumnWidth(170, AstrosoftTableColumn.Longitude);
+		planetTable.setColumnWidth(160, AstrosoftTableColumn.NakshathraPada);
+
+
 
     	
     	planetTable.setCellRenderer(new PlanetCellRenderer(planetTable.getCellRenderer(AstrosoftTableColumn.Planet), DisplayFormat.FULL_NAME, true, true, planetaryInfo.getPlanetDirection()),AstrosoftTableColumn.Planet );

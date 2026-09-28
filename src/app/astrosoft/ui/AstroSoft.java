@@ -10,6 +10,7 @@ package app.astrosoft.ui;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Arrays;
@@ -261,6 +262,15 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 
 		JPanel infoView = new InfoView(h.getHoroscopeInfo(), new Point(20,20));
+		
+		javax.swing.JPanel leftPanel = new javax.swing.JPanel();
+		leftPanel.setLayout(new javax.swing.BoxLayout(leftPanel, javax.swing.BoxLayout.Y_AXIS));
+		leftPanel.add(infoView);
+		leftPanel.add(javax.swing.Box.createVerticalStrut(20));
+		leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
+		leftPanel.add(javax.swing.Box.createVerticalStrut(20));
+		leftPanel.add(new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo()));
+
 
 		//FIXME:
 		/*EnumMap<Planet, Integer> pos = new EnumMap<Planet, Integer>(Planet.class);
@@ -282,8 +292,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		Chart navamsa = new Chart(new PlanetChartData(Varga.Navamsa, h.getPlanetaryInfo()), new Dimension(360,320));
 
-		JPanel view = new JPanel();
-		view.add(infoView);
+		JPanel view = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 5));
+		view.add(leftPanel);
 		view.add(rasi);
 		view.add(navamsa);
 		view.setBounds(bounds);

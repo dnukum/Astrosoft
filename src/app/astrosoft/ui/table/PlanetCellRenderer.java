@@ -73,6 +73,11 @@ public class PlanetCellRenderer implements TableCellRenderer {
 					
 					if(expandRetrogrades){
 						l.setText(p.toString(planetFormat) + " (" + DisplayStrings.RETRO_SYM + ")");
+					} else {
+						String text = p.toString(planetFormat);
+						if (text.length() > 0) {
+							l.setText("<html><u><b>" + text + "</b></u></html>");
+						}
 					}
 				}
 			}

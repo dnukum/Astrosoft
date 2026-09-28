@@ -292,7 +292,7 @@ public class PlanetaryInfo implements Exportable{
 				public Class getColumnClass(AstrosoftTableColumn col) {
 
 					switch(col){
-						case Longitude: return Degree.class;
+						case Longitude: return String.class;
 					}
 					return super.getColumnClass(col);
 				}
@@ -338,7 +338,11 @@ public class PlanetaryInfo implements Exportable{
 				case Planet :
 					return row;
 				case Longitude :
-					return planetPosition.get(row);
+					double absolute = planetPosition.get(row);
+						double offset = absolute % 30.0;
+						String absStr = app.astrosoft.util.AstroUtil.dms(absolute).replace(" : ", ":");
+						String offStr = app.astrosoft.util.AstroUtil.dms(offset).replace(" : ", ":");
+						return absStr + "  (" + offStr + ")";
 				case Rasi :
 					return planetRasi.get(row);
 				case NakshathraPada :

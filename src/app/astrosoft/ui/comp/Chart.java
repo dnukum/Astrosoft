@@ -116,7 +116,9 @@ public class Chart extends JPanel{
 	
 				if (isPlanetChart){
 					decoratePlanetChart(table, houseTable);
-					toolTip = house.toString(Language.ENGLISH) + ": " + house.bhava(ascendant);
+					int startDeg = house.ordinal() * 30;
+				int endDeg = startDeg + 30;
+				toolTip = "<html><b>" + house.toString(Language.ENGLISH) + "</b> (" + startDeg + "&deg; - " + endDeg + "&deg;) <br>House: " + house.bhava(ascendant) + "</html>";
 					houseTable.setToolTipText(toolTip);
 					toolTipManager.registerComponent(houseTable);
 				}
@@ -129,7 +131,9 @@ public class Chart extends JPanel{
 			add(panel, getConstrains(houseNo));
 			
 			if (isPlanetChart){
-				toolTip = house.toString(Language.ENGLISH) + ": " + house.bhava(ascendant);
+				int startDeg = house.ordinal() * 30;
+				int endDeg = startDeg + 30;
+				toolTip = "<html><b>" + house.toString(Language.ENGLISH) + "</b> (" + startDeg + "&deg; - " + endDeg + "&deg;) <br>House: " + house.bhava(ascendant) + "</html>";
 				panel.setToolTipText(toolTip);
 				toolTipManager.registerComponent(panel);
 			}
