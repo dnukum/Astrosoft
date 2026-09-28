@@ -113,6 +113,10 @@ public class Place {
 			
 			return AstroUtil.twoDigit(deg) + "." + AstroUtil.twoDigit(min);
 		}
+
+		public String compactFormat(){
+			return AstroUtil.twoDigit(deg) + dir.charVal() + AstroUtil.twoDigit(min);
+		}
 	}
 	
 	private String city;
@@ -204,10 +208,10 @@ public class Place {
 		Location latLoc = latitudeLocation();
 		Location lonLoc = longitudeLocation();
 		String sign = timeZone < 0 ? "-" : "+";
-		String offsetStr = "GMT " + sign + app.astrosoft.util.AstroUtil.todegmin(Math.abs(timeZone), ":", true);
-		return latLoc.format() + latLoc.dir().charVal() + ", " + 
-		       lonLoc.format() + lonLoc.dir().charVal() + ", " + 
-		       (timeZoneId != null && !timeZoneId.isEmpty() ? timeZoneId : offsetStr);
+		String hm = app.astrosoft.util.AstroUtil.todegmin(Math.abs(timeZone), ":", true);
+		if (hm.endsWith(":00")) { hm = hm.substring(0, hm.length() - 3); }
+		String offsetStr = "(GMT" + sign + hm + ")";
+		return latLoc.compactFormat() + "     " + lonLoc.compactFormat() + "  " + offsetStr;
 	}
 	
 	public double timeZone() {
