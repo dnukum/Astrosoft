@@ -77,6 +77,7 @@ public class RelativePlanetView extends JPanel {
 			if (lastColon != -1) {
 				dms = dms.substring(0, lastColon);
 			}
+			dms += " (" + planetRasi.get(p).toString() + ")";
 			row.addColumn(AstrosoftTableColumn.Longitude, dms);
 			rows.add(row);
 		}
