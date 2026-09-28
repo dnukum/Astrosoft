@@ -78,21 +78,23 @@ public class PlaceChooser extends JPanel {
 
 		//SpringUtilities.makeCompactGrid(placeComp,1,2, 20,20,10,10);
 
-		JPanel latitudeComp = new JPanel(new SpringLayout());
+		JPanel latitudeComp = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 0));
 
 		latitudeComp.add(latitude_deg);
+		latitudeComp.add(new JLabel("°"));
 		latitudeComp.add(latitude_min);
+		latitudeComp.add(new JLabel("'"));
 		latitudeComp.add(dir_ns);
 
-		JPanel longitudeComp = new JPanel(new SpringLayout());
+		JPanel longitudeComp = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 0));
 
 		longitudeComp.add(longitude_deg);
+		longitudeComp.add(new JLabel("°"));
 		longitudeComp.add(longitude_min);
+		longitudeComp.add(new JLabel("'"));
 		longitudeComp.add(dir_ew);
 
 		SpringUtilities.makeCompactGrid(placeComp, 1, 2, 5,5,5,5);
-		SpringUtilities.makeCompactGrid(latitudeComp, 1, 3, 5,5,10,10);
-		SpringUtilities.makeCompactGrid(longitudeComp, 1, 3, 5,5,10,10);
 
 		add(l_place);
 		add(placeComp);
