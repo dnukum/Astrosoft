@@ -10,6 +10,8 @@ package app.astrosoft.beans;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
+import app.astrosoft.consts.AstroConsts;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -58,9 +60,16 @@ public class BirthData {
         birthPlace = place;
         
         birthTime = AstroUtil.decimal(hr, min, 0);
-        birthGMT = AstroUtil.decimal(hr, min, 0) - birthPlace.timeZone();
+        
+        TimeZone tz = birthPlace.astrosoftTimeZone().getTimeZone();
+        Calendar cal = new GregorianCalendar(tz);
+        cal.clear();
+        cal.set(year, month - 1, date, hr, min, secs);
+        double offsetHours = tz.getOffset(cal.getTimeInMillis()) / (double) AstroConsts.MILLIS_IN_HR;
+        
+        birthGMT = AstroUtil.decimal(hr, min, 0) - offsetHours;
         birthSD = new SweDate(year, month, date, birthGMT);
- 		birthDay = new GregorianCalendar(year, month - 1, date, birthHour, birthMinutes, birthSeconds);
+ 		birthDay = cal;
  		birthWeekDay = WeekDay.ofDay(year, month, date);
 
     }
