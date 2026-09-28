@@ -45,11 +45,18 @@ public class BirthData {
 	private WeekDay birthWeekDay;
 	
 	public boolean isDstActive() {
-		TimeZone tz = birthPlace.astrosoftTimeZone().getTimeZone();
-		Calendar cal = new GregorianCalendar(tz);
-		cal.clear();
-		cal.set(birthYear, birthMonth - 1, birthDate, birthHour, birthMinutes, birthSeconds);
-		return tz.inDaylightTime(cal.getTime());
+		try {
+			app.astrosoft.util.AstrosoftTimeZone atz = birthPlace.astrosoftTimeZone();
+			if (atz == null || atz.id() == null || atz.id().isEmpty()) return false;
+			TimeZone tz = atz.getTimeZone();
+			if (tz == null) return false;
+			Calendar cal = new GregorianCalendar(tz);
+			cal.clear();
+			cal.set(birthYear, birthMonth - 1, birthDate, birthHour, birthMinutes, birthSeconds);
+			return tz.inDaylightTime(cal.getTime());
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
     /** Creates a new instance of BirthData */

@@ -519,7 +519,7 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 
 			MapTableRowHelper helper = new MapTableRowHelper(getInfoTableColumnMetaData());
 
-			rows.add(helper.createRow(DisplayStrings.NAME_STR, birthData.name()));
+			rows.add(helper.createRow(DisplayStrings.NAME_STR, birthData.name() + " (Debug DST: " + birthData.isDstActive() + ")"));
 			rows.add(helper.createRow(DisplayStrings.DOB_STR, birthData.birthDayString()));
 			String tobStr = AstroUtil.timeFormat(birthData.birthTime(),true);
 			if (birthData.isDstActive()) tobStr += " (DST)";

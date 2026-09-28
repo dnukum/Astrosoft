@@ -18,6 +18,9 @@ public class AstrosoftTimeZone {
 	String tzId;
 	
 	public AstrosoftTimeZone(String timeZoneId) {
+		if (timeZoneId != null && timeZoneId.contains(" (GMT")) {
+			timeZoneId = timeZoneId.substring(0, timeZoneId.indexOf(" (GMT"));
+		}
 		tzId = timeZoneId;
 	}
 	
