@@ -138,7 +138,14 @@ public class PlaceChooser extends JPanel {
 
 	private void initComponents() {
 
-		placeCombo = new JComboBox();
+		placeCombo = new JComboBox() {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension d = super.getPreferredSize();
+				d.width = Math.min(d.width, 220);
+				return d;
+			}
+		};
 		//placeCombo.setSize(new Dimension(60,10));
 		//placeCombo.setPreferredSize(new Dimension(100,10));
 		placeCombo.setEditable(true);
