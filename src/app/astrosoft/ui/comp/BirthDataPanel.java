@@ -144,6 +144,16 @@ public class BirthDataPanel extends JPanel {
 		
 		add(placeChooser);
 		
+		new javax.swing.Timer(500, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (placeChooser != null) {
+					try {
+						placeChooser.setDateForTimezone(getBirthTime());
+					} catch (Exception ex) {}
+				}
+			}
+		}).start();
+		
 		SpringUtilities.makeCompactGrid(this, 2, 1, 5,5,0,0);
 		
 		setBorder(UIConsts.getTitleBorder(title));

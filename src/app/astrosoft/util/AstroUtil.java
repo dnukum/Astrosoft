@@ -94,7 +94,7 @@ public class AstroUtil {
         
         int deg_min_sec[] = int_dms(val);
 
-        result = result + twoDigit( deg_min_sec[0] ) + dlm + twoDigit( deg_min_sec[1] );// + dlm + twoDigit( deg_min_sec[2] );
+        result = result + twoDigit( Math.abs(deg_min_sec[0]) ) + dlm + twoDigit( Math.abs(deg_min_sec[1]) );// + dlm + twoDigit( deg_min_sec[2] );
 
         return result;
     }
@@ -113,7 +113,7 @@ public class AstroUtil {
         
         int deg_min_sec[] = int_dms(val);
 
-        result = result + twoDigit( deg_min_sec[0] ) + dlm + twoDigit( deg_min_sec[1] ) + dlm + twoDigit( deg_min_sec[2] );
+        result = result + twoDigit( Math.abs(deg_min_sec[0]) ) + dlm + twoDigit( Math.abs(deg_min_sec[1]) ) + dlm + twoDigit( Math.abs(deg_min_sec[2]) );
 
         return result;
     }

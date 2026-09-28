@@ -58,10 +58,35 @@ public class PlaceChooser extends JPanel {
 	private Dimension size;
 	Timer t;
 
+	private java.util.Calendar currentDateForOffset;
+
+	public void setDateForTimezone(java.util.Calendar date) {
+		this.currentDateForOffset = date;
+		if (timeZoneCombo != null) timeZoneCombo.repaint();
+	}
+
 	public PlaceChooser(Dimension size, boolean showTitle) {
 
 		this.showTitle = showTitle;
 		timeZoneCombo = new JComboBox(AstrosoftTimeZone.availableTimeZones());
+		timeZoneCombo.setRenderer(new javax.swing.DefaultListCellRenderer() {
+			@Override
+			public java.awt.Component getListCellRendererComponent(javax.swing.JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value instanceof AstrosoftTimeZone) {
+					AstrosoftTimeZone tz = (AstrosoftTimeZone) value;
+					if (currentDateForOffset != null) {
+						java.util.TimeZone jtz = java.util.TimeZone.getTimeZone(tz.id());
+						double offset = jtz.getOffset(currentDateForOffset.getTimeInMillis()) / (double) app.astrosoft.consts.AstroConsts.MILLIS_IN_HR;
+						String sign = offset < 0 ? "-" : "+";
+						setText(tz.id() + " (GMT " + sign + app.astrosoft.util.AstroUtil.todegmin(offset, ":", true) + ")");
+					} else {
+						setText(tz.toString());
+					}
+				}
+				return this;
+			}
+		});
 		initComponents();
 		addComponents();
 		this.size = size;
