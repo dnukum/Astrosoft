@@ -221,8 +221,8 @@ public class PlaceChooser extends JPanel {
 		
 		String[] placeText = placeCombo.getSelectedItem().toString().split(",");
 		
-		String st = null;
-		String coun = null;
+		String st = "";
+		String coun = "";
 		if (placeText.length > 1){
 			st = placeText[1];
 			if (placeText.length > 2){

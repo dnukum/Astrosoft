@@ -50,10 +50,25 @@ public class BirthData {
 			if (atz == null || atz.id() == null || atz.id().isEmpty()) return false;
 			TimeZone tz = atz.getTimeZone();
 			if (tz == null) return false;
-			Calendar cal = new GregorianCalendar(tz);
-			cal.clear();
-			cal.set(birthYear, birthMonth - 1, birthDate, birthHour, birthMinutes, birthSeconds);
-			return tz.inDaylightTime(cal.getTime());
+			
+			Calendar cal = Calendar.getInstance(tz);
+			cal.set(Calendar.YEAR, birthYear);
+			cal.set(Calendar.MONTH, birthMonth - 1);
+			cal.set(Calendar.DAY_OF_MONTH, birthDate);
+			cal.set(Calendar.HOUR_OF_DAY, birthHour);
+			cal.set(Calendar.MINUTE, birthMinutes);
+			cal.set(Calendar.SECOND, birthSeconds);
+			
+			boolean inDaylight = tz.inDaylightTime(cal.getTime());
+			
+			if (!inDaylight && tz.getDSTSavings() > 0) {
+				int offsetAtDate = tz.getOffset(cal.getTimeInMillis());
+				int rawOffset = tz.getRawOffset();
+				if (offsetAtDate != rawOffset) {
+					return true;
+				}
+			}
+			return inDaylight;
 		} catch (Exception e) {
 			return false;
 		}
