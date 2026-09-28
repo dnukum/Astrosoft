@@ -94,11 +94,13 @@ public class PlaceChooser extends JPanel {
 	}
 
 	private void addComponents() {
-		JPanel placeComp = new JPanel(new SpringLayout());
-
+		JPanel placeCompInner = new JPanel(new java.awt.BorderLayout(5, 0));
 		searchButton.setPreferredSize(UIConsts.BUTTON_ICON_SIZE);
-		placeComp.add(placeCombo);
-		placeComp.add(searchButton);
+		placeCompInner.add(placeCombo, java.awt.BorderLayout.CENTER);
+		placeCompInner.add(searchButton, java.awt.BorderLayout.EAST);
+
+		JPanel placeComp = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+		placeComp.add(placeCompInner);
 
 		JPanel latitudeComp = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 0));
 
@@ -115,8 +117,6 @@ public class PlaceChooser extends JPanel {
 		longitudeComp.add(longitude_min);
 		longitudeComp.add(new JLabel("'"));
 		longitudeComp.add(dir_ew);
-
-		SpringUtilities.makeCompactGrid(placeComp, 1, 2, 5,5,5,5);
 
 		add(l_place);
 		add(placeComp);
@@ -138,14 +138,8 @@ public class PlaceChooser extends JPanel {
 
 	private void initComponents() {
 
-		placeCombo = new JComboBox() {
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension d = super.getPreferredSize();
-				d.width = Math.min(d.width, 220);
-				return d;
-			}
-		};
+		placeCombo = new JComboBox();
+		placeCombo.setPreferredSize(new Dimension(220, 24));
 		//placeCombo.setSize(new Dimension(60,10));
 		//placeCombo.setPreferredSize(new Dimension(100,10));
 		placeCombo.setEditable(true);
