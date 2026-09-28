@@ -94,14 +94,11 @@ public class PlaceChooser extends JPanel {
 	}
 
 	private void addComponents() {
-		JPanel placeComp = new JPanel(new SpringLayout());
+		JPanel placeComp = new JPanel(new java.awt.BorderLayout(5, 0));
 
 		searchButton.setPreferredSize(UIConsts.BUTTON_ICON_SIZE);
-		placeComp.add(placeCombo);
-		placeComp.add(searchButton);
-		
-
-		//SpringUtilities.makeCompactGrid(placeComp,1,2, 20,20,10,10);
+		placeComp.add(placeCombo, java.awt.BorderLayout.CENTER);
+		placeComp.add(searchButton, java.awt.BorderLayout.EAST);
 
 		JPanel latitudeComp = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 0));
 
