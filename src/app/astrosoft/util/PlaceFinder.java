@@ -103,8 +103,11 @@ public class PlaceFinder {
 
 	public static List<Place> findPlace(String place){
 
+		List<Place> placeList = searchOpenMeteo(place);
 		
-		List<Place> placeList = new ArrayList<Place>();
+		if (!placeList.isEmpty()) {
+			return placeList;
+		}
 		
 		String expression = "//world/country/state/city[name='" + place + "']";
 		InputSource inputSource = new InputSource(PlaceFinder.class.getResourceAsStream(XML_SOURCE));
@@ -148,14 +151,6 @@ public class PlaceFinder {
 			timeZoneId = countryNode.getChildNodes().item(3).getTextContent();
 			Place p = new Place(city, state, country, latitude, latDir, longitude, longDir, timeZoneId);
 			placeList.add(p);
-			//placeList.add(Place.getDefault());
-			//placeList.add(p);
-			//placeList.add(p);
-		}
-		
-		
-		if (placeList.isEmpty()) {
-		    placeList = searchOpenMeteo(place);
 		}
 		
 		return placeList;
