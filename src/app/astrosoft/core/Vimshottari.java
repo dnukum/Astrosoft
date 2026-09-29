@@ -60,8 +60,7 @@ public class Vimshottari implements Exportable {
 		
 		balance = computeBalance(moonLongitude);
 		
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTime(bday.getTime());
+		GregorianCalendar cal = (GregorianCalendar) bday.clone();
 		double birth = AstroUtil.dateToDecimalYear(cal);
 		
 		double start = ( birth + balance ) - startLord.dasaPeriod();

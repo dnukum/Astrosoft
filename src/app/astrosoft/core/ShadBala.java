@@ -187,8 +187,7 @@ public class ShadBala implements Exportable {
 		this.pak = paksha;
 		
 
-		birthDay = new GregorianCalendar();
-		birthDay.setTime(birthData.birthDay().getTime());
+		birthDay = (Calendar) birthData.birthDay().clone();
 
 		if (birthData.birthTime() < sunrise) {
 			birthDay.add(Calendar.DATE, -1);
