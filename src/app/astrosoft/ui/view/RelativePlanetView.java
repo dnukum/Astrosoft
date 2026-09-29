@@ -72,11 +72,8 @@ public class RelativePlanetView extends JPanel {
 			row.addColumn(AstrosoftTableColumn.Planet, name);
 			
 			double offset = planetPos.get(p) % 30.0;
-			String dms = AstroUtil.dms(offset).replace(" : ", ":");
-			int lastColon = dms.lastIndexOf(":");
-			if (lastColon != -1) {
-				dms = dms.substring(0, lastColon);
-			}
+			int[] deg_min_sec = AstroUtil.int_dms(offset);
+			String dms = AstroUtil.twoDigit(deg_min_sec[0]) + ":" + AstroUtil.twoDigit(deg_min_sec[1]);
 			dms += " (" + planetRasi.get(p).toString() + ")";
 			row.addColumn(AstrosoftTableColumn.Longitude, dms);
 			rows.add(row);
