@@ -269,16 +269,16 @@ public class AstroUtil {
         String result = new String(  );
         String ampm = new String(  );
 
-        if (val == 0){
-        	val = 12.00;
-        	ampm = "AM";
-        }else if ( val < 12.00 ) {
+        if (val < 1.0) {
+            val += 12.0;
             ampm = "AM";
-        } else if ( val > 12.00 ) {
-
+        } else if (val < 12.0) {
+            ampm = "AM";
+        } else if (val < 13.0) {
             ampm = "PM";
-            val = val - 12.00;
-
+        } else {
+            ampm = "PM";
+            val = val - 12.0;
         }
 
         if (showSecs) {
