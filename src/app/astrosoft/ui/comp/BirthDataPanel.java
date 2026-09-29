@@ -196,7 +196,10 @@ public class BirthDataPanel extends JPanel {
 	
 	public void setBirthTime(Calendar cal){
 		
-		timeChooser.setSelectedDate(cal.getTime());
+		Calendar jvmCal = Calendar.getInstance();
+		jvmCal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+		
+		timeChooser.setSelectedDate(jvmCal.getTime());
 		jCalendarCombo.setSelectedDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DATE));
 	}
 	
