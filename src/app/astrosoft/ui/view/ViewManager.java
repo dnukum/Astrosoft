@@ -28,6 +28,7 @@ public class ViewManager {
 		ASHTAVARGA_VIEW(DisplayStrings.ASHTAVARGA_STR.toString(Language.ENGLISH)),
 		SHADBALA_VIEW(DisplayStrings.SHADBALA_STR.toString(Language.ENGLISH)),
 		PANCHANG_VIEW("Panchang"),
+		MY_MUHURTA_VIEW("My Muhurta"),
 		EPHEMERIS_VIEW("Ephemeris"),
 		COMPACTIBILITY_VIEW("Marriage Compactibility"),
 		MUHURTHA_VIEW("Muhurtha"),

@@ -99,6 +99,13 @@ public class Panchang {
     	calcPanchang();
 	}
 
+    public Panchang(Date date, Place place) {
+    	this.place = place;
+    	cal = java.util.Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+    	cal.setTime(date);
+    	calcPanchang();
+	}
+
     /*public void setAyanamsa( Ayanamsa ayanamsa ) {
 
     	sw.swe_set_sid_mode( ayanamsa.ayaValue(), 0.0, 0.0 );      
@@ -115,7 +122,9 @@ public class Panchang {
 
     private void calcPlanetaryInfo(  ) {
 
-    	place = preferences.getPlace();
+    	if (this.place == null) {
+    	    place = preferences.getPlace();
+    	}
     	
     	timeZone = ((double)cal.getTimeZone().getRawOffset() / AstroConsts.MILLIS_IN_HR) + (cal.get(Calendar.DST_OFFSET) / AstroConsts.MILLIS_IN_HR) ;
     	place.setTimeZone(timeZone);
@@ -374,6 +383,10 @@ public class Panchang {
 		
 	}
 	
+	public app.astrosoft.consts.Rasi getRasi() { return app.astrosoft.consts.Rasi.values()[rasi.get(app.astrosoft.consts.Planet.Moon) - 1]; } 
+	public app.astrosoft.consts.Nakshathra getNakshathra() { return app.astrosoft.consts.Nakshathra.ofDeg(moon); }
+	public java.util.EnumMap<app.astrosoft.consts.Planet, Integer> getPlanetPositions() { return rasi; }
+	public java.util.EnumMap<app.astrosoft.consts.Planet, Boolean> getPlanetDirection() { return dir; }
 	public ChartData getPlanetChartData(){
 		
 		return new PlanetChartData(Varga.Rasi, rasi, dir);

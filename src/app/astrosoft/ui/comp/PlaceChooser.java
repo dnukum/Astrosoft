@@ -36,11 +36,30 @@ import app.astrosoft.util.PlaceFinder;
 import app.astrosoft.util.Timer;
 
 public class PlaceChooser extends JPanel {
+    private java.util.List<PlaceListener> placeListeners = new java.util.ArrayList<PlaceListener>();
+    public void addPlaceListener(PlaceListener l) { placeListeners.add(l); }
+    private void notifyPlaceListeners() {
+        Place p = getSelectedPlace();
+        for (PlaceListener l : placeListeners) {
+            if (l != null) l.placeChanged(p);
+        }
+    }
 
 	private JLabel l_timezone = new JLabel("Time Zone");
 	private JLabel l_place = new JLabel("Place");
 	private JLabel l_latitude = new JLabel("Latitude");
 	private JLabel l_longitude = new JLabel("Longitude");
+    
+    private void styleLabels() {
+        java.awt.Font f = app.astrosoft.ui.util.UIUtil.getFont();
+        java.awt.Color c = app.astrosoft.ui.util.UIConsts.TABLE_HEADER_FOREGROUND;
+        for (JLabel l : new JLabel[]{l_place, l_latitude, l_longitude, l_timezone}) {
+            l.setFont(f);
+            l.setForeground(c);
+            l.setPreferredSize(new java.awt.Dimension(125, 20)); // 5 initialX + 125 + 10 xPad = 140px perfectly aligned with KeyColWidth
+        }
+        setBackground(app.astrosoft.ui.util.UIConsts.TABLE_HEADER_BACKGROUND);
+    }
 	private JButton searchButton = new JButton();
 
 	private JTextField latitude_deg = new JTextField(4);
@@ -137,6 +156,7 @@ public class PlaceChooser extends JPanel {
 	}
 
 	private void initComponents() {
+        styleLabels();
 
 		placeCombo = new JComboBox();
 		placeCombo.setPreferredSize(new Dimension(220, 24));
@@ -165,7 +185,7 @@ public class PlaceChooser extends JPanel {
 		
 		//t.print("AT 3");
 		
-		searchButton.setEnabled(false);
+		searchButton.setEnabled(true);
 		
 		ActionListener searchListener = new ActionListener(){
 
@@ -197,7 +217,7 @@ public class PlaceChooser extends JPanel {
 				if (text.length() > 0){
 					searchButton.setEnabled(true);
 				}else{
-					searchButton.setEnabled(false);
+					searchButton.setEnabled(true);
 				}
 			}
 			
@@ -216,7 +236,7 @@ public class PlaceChooser extends JPanel {
 	public Place getSelectedPlace(){
 		Location latitude = new Location(latitude_deg.getText(), latitude_min.getText(), (Direction)dir_ns.getSelectedItem());
 		Location longitude = new Location(longitude_deg.getText(), longitude_min.getText(), (Direction)dir_ew.getSelectedItem());
-		String timeZoneId = ((AstrosoftTimeZone)timeZoneCombo.getSelectedItem()).id();
+		String timeZoneId = timeZoneCombo.getSelectedItem() != null ? ((app.astrosoft.util.AstrosoftTimeZone)timeZoneCombo.getSelectedItem()).id() : "GMT";
 		Place p;
 		
 		String[] placeText = placeCombo.getSelectedItem().toString().split(",");
@@ -270,6 +290,12 @@ public class PlaceChooser extends JPanel {
 			public void run() {
 				timeZoneCombo.setSelectedItem(p.astrosoftTimeZone());
 				System.out.println("done");
+				
+				javax.swing.SwingUtilities.invokeLater(new Runnable() {
+				    public void run() {
+				        notifyPlaceListeners();
+				    }
+				});
 			}
 			
 		}).start();

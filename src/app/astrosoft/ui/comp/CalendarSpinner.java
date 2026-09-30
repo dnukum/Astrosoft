@@ -38,7 +38,7 @@ public class CalendarSpinner extends CalendarChooser {
 	
 	public static final String FMT_TIME =  "hh : mm : ss a";
 	
-	private static final Dimension spinnerSize = new Dimension(80, 20);
+	private static final Dimension spinnerSize = new Dimension(140, 24);
 	
 	private JSpinner spinner;
 
@@ -84,6 +84,10 @@ public class CalendarSpinner extends CalendarChooser {
 		spinner.setPreferredSize(spinnerSize);
 		
 		editor = new JSpinner.DateEditor(spinner, dateFormat);
+		editor.getTextField().setBorder(BorderFactory.createCompoundBorder(
+		        editor.getTextField().getBorder(),
+		        BorderFactory.createEmptyBorder(0, 5, 0, 0)
+		));
 		spinner.setEditor(editor);
 		
 		spinner.addChangeListener(new ChangeListener(){
@@ -117,7 +121,10 @@ public class CalendarSpinner extends CalendarChooser {
 		
 		dateFormat = format;
 		editor = new JSpinner.DateEditor(spinner, dateFormat);
-		
+		editor.getTextField().setBorder(BorderFactory.createCompoundBorder(
+		        editor.getTextField().getBorder(),
+		        BorderFactory.createEmptyBorder(0, 5, 0, 0)
+		));
 		editor.getTextField().setForeground(fgClr);
 		editor.getTextField().setBackground(bgClr);
 		

@@ -39,6 +39,7 @@ public enum Command {
 	YOGA_COMBINATIONS_VIEW (View.YOGA_COMBINATIONS_VIEW.displayVal(),KeyEvent.VK_Y),
 	EPHEMERIS_VIEW (View.EPHEMERIS_VIEW.displayVal(),KeyEvent.VK_E),
 	PANCHANG_VIEW (View.PANCHANG_VIEW.displayVal(),KeyEvent.VK_G),
+		MY_MUHURTA_VIEW (View.MY_MUHURTA_VIEW.displayVal(),KeyEvent.VK_M),
 	COMPACTIBILITY_VIEW (View.COMPACTIBILITY_VIEW.displayVal(),KeyEvent.VK_M),
 	MUHURTHA_VIEW (View.MUHURTHA_VIEW.displayVal()),
 	//
@@ -121,7 +122,7 @@ public enum Command {
 	}
 
 	public static EnumSet<Command> viewMenuItems(){
-		return EnumSet.range(CHART_VIEW, PANCHANG_VIEW);
+		return EnumSet.range(CHART_VIEW, MY_MUHURTA_VIEW);
 	}
 
 	public static EnumSet<Command> computeMenuItems(){
