@@ -75,3 +75,33 @@ To ensure the `Panchang(Date, Place)` engine correctly isolates mathematical coo
   * *Location Edges:* Standard times (New York, London, Chennai), Fractional Indian offsets (Asia/Kolkata +05:30), DST anomalies (Phoenix ignoring DST, Sydney inverting DST seasons), and Extreme Latitudes (Anchorage, Punta Arenas).
   * *Date Edges:* Standard calendar spread, Exact DST boundary days (US Spring Forward, US Fall Back), Leap Years, and Solstices (Longest/Shortest days).
 * **Java JUnit Validation:** `PanchangGoldenTest.java` loads this verified JSON data, programmatically constructs local `Calendar` objects offset to those extreme timezones, executes Astrosoft's `Panchang` engine, and asserts that the Java outputs perfectly match the Python Swiss Ephemeris golden data.
+
+## Appendix: The 1/15th Division Muhurtas (Background Material)
+
+To support future implementations of classical electional windows (like Abhijit and Brahma Muhurta), the following table details the 15 Daytime Muhurtas. In Vedic astrology, a full 24-hour cycle (*Ahoratra*) is divided into 30 Muhurtas (15 during the day, 15 during the night). Each Muhurta lasts exactly 2 *Ghatis* (roughly 48 minutes, scaling proportionally with the seasons).
+
+### The 15 Daytime Muhurtas (From Sunrise to Sunset)
+
+| # | Muhurta Name | Nature | Primary Purpose & Usage |
+| :--- | :--- | :--- | :--- |
+| **1** | **Rudra / Shiva** | 🔴 Inauspicious | Starts at Sunrise. Good for aggressive actions or confronting enemies; strictly avoided for positive beginnings. |
+| **2** | **Ahi / Sarpa** | 🔴 Inauspicious | Ruled by serpents. Generally avoided for all auspicious work. |
+| **3** | **Mitra** | 🟢 Auspicious | Excellent for forming alliances, signing contracts, negotiations, and making friends. |
+| **4** | **Pitri / Aryaman** | 🔴 Inauspicious | Ruled by ancestors. Excellent for rituals for the deceased (*Shraddha*), but strictly avoided for new beginnings. |
+| **5** | **Vasu** | 🟢 Auspicious | Highly favorable for financial transactions, buying property, and expanding businesses. |
+| **6** | **Varaha / Jala** | 🟢 Auspicious | Good for travel, agriculture, planting seeds, and tasks related to liquids or sea voyages. |
+| **7** | **Viswedeva** | 🟢 Auspicious | A universally safe and positive period for almost all standard auspicious actions. |
+| **8** | **Abhijit / Vidhi** | 🌟 **Highly Auspicious** | Occurs at **Solar Noon**. Capable of destroying countless astrological flaws. Used for highly important events. *(Avoided on Wednesdays)*. |
+| **9** | **Brahma / Virinchi** | 🟢 Auspicious | Excellent for studying, learning, starting education, and intellectual pursuits. |
+| **10** | **Indra** | 🟢 Auspicious | Excellent for taking charge, political actions, assuming leadership, or seeking favors from authorities. |
+| **11** | **Indragni / Puruhuta** | 🟡 Mixed / Neutral | Good for tasks requiring intense energy, heat, or engineering; avoided for peaceful events. |
+| **12** | **Nairrutya / Rakshasa**| 🔴 Inauspicious | Ruled by demons. A highly negative period; strictly avoided for any auspicious work. |
+| **13** | **Varuna** | 🟢 Auspicious | Good for justice, legal matters, resolving disputes, and ocean-related activities. |
+| **14** | **Vivaswan / Aryaman** | 🟡 Neutral | A transition period; generally treated as neutral or slightly inauspicious for major events. |
+| **15** | **Bhaga** | 🟢 Auspicious | Ends at Sunset. Excellent for romance, weddings, pleasure, and artistic pursuits. |
+
+### The Notable Nighttime Muhurta
+
+| # | Muhurta Name | Nature | Primary Purpose & Usage |
+| :--- | :--- | :--- | :--- |
+| **14** | **Brahma Muhurta** | 🌟 **Highly Auspicious** | Occurs roughly **1.5 hours before Sunrise**. Dominated by pure *Sattva* (stillness). Exclusively reserved for waking up, meditation, and spiritual practices. |
