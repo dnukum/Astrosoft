@@ -54,7 +54,6 @@ public class MyMuhurtaView extends AstrosoftView {
     private java.util.Date selectedDate = new java.util.Date();
     private java.util.Date selectedTime = new java.util.Date();
     private app.astrosoft.beans.Place selectedPlace = app.astrosoft.ui.AstroSoft.getPreferences().getPlace();
-    private javax.swing.JTextArea currentConfigLabel;
     private Horoscope userHoroscope;
     
     private AstrosoftTableModel tableModel;
@@ -153,7 +152,30 @@ public class MyMuhurtaView extends AstrosoftView {
         if (userHoroscope != null && userHoroscope.getPersonName() != null && !userHoroscope.getPersonName().isEmpty()) {
             rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.NAME_STR, userHoroscope.getPersonName()));
         }
-        for (int i=0; i<pan.getPanchangTableData().getRowCount(); i++) rows.add(pan.getPanchangTableData().getRow(i));
+        
+        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MMMM d, yyyy");
+        java.text.SimpleDateFormat tf = new java.text.SimpleDateFormat("hh:mm:ss a");
+        String dateStr = df.format(selectedDate);
+        String timeStr = tf.format(selectedTime);
+        
+        String placeStr = "Default Place";
+        String tzStr = "";
+        if (selectedPlace != null) {
+            placeStr = selectedPlace.city().trim();
+            if (selectedPlace.state() != null && !selectedPlace.state().trim().isEmpty()) placeStr += ", " + selectedPlace.state().trim();
+            if (selectedPlace.country() != null && !selectedPlace.country().trim().isEmpty()) placeStr += ", " + selectedPlace.country().trim();
+            tzStr = selectedPlace.astrosoftTimeZone().toString();
+        }
+        
+        rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.DATE_STR, dateStr));
+        rows.add(helper.createRow("Time", timeStr + ", " + tzStr));
+        rows.add(helper.createRow("Location", placeStr));
+        
+        for (int i=0; i<pan.getPanchangTableData().getRowCount(); i++) {
+            app.astrosoft.ui.table.MapTableRow row = pan.getPanchangTableData().getRow(i);
+            if (row.getColumnData(app.astrosoft.consts.AstrosoftTableColumn.Key).equals(app.astrosoft.consts.DisplayStrings.DATE_STR.toString())) continue;
+            rows.add(row);
+        }
         
         if (userHoroscope != null) {
             app.astrosoft.consts.Nakshathra birthNak = userHoroscope.getNakshathra().getNak();
@@ -229,27 +251,44 @@ public class MyMuhurtaView extends AstrosoftView {
         table.setRowHeight(RowHeight);
         
         JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.add(createTableHeader(), BorderLayout.PAGE_START);
+        tablePanel.add(createBottomPanel(), BorderLayout.SOUTH);
         tablePanel.add(table, BorderLayout.CENTER);
         return tablePanel;
     }
     
-    private JPanel createTableHeader() {
-        JPanel headerPanel = new JPanel(new BorderLayout());
+    private JPanel createBottomPanel() {
+        JPanel bottomPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 10));
+        bottomPanel.setOpaque(false);
         
-        currentConfigLabel = new javax.swing.JTextArea();
-        currentConfigLabel.setFont(UIUtil.getFont());
-        currentConfigLabel.setEditable(false);
-        currentConfigLabel.setOpaque(false);
-        currentConfigLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        updateConfigLabel();
+        javax.swing.JButton editBtn = new javax.swing.JButton("Change Parameters") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                if (getModel().isArmed()) {
+                    g2.setColor(java.awt.Color.LIGHT_GRAY);
+                } else {
+                    g2.setColor(getBackground());
+                }
+                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+            @Override
+            protected void paintBorder(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(java.awt.Color.GRAY);
+                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
+                g2.dispose();
+            }
+        };
+        editBtn.setContentAreaFilled(false);
+        editBtn.setFocusPainted(false);
+        editBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        editBtn.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 12));
+        editBtn.setPreferredSize(new java.awt.Dimension(150, 30));
         
-        javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(currentConfigLabel);
-        scrollPane.setBorder(null);
-        scrollPane.setOpaque(false);
-        scrollPane.getViewport().setOpaque(false);
-        
-        javax.swing.JButton editBtn = new javax.swing.JButton("Change");
         editBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 app.astrosoft.ui.dlg.MuhurtaConfigDialog dlg = new app.astrosoft.ui.dlg.MuhurtaConfigDialog(
@@ -262,7 +301,6 @@ public class MyMuhurtaView extends AstrosoftView {
                             selectedDate = date;
                             selectedTime = time;
                             selectedPlace = place;
-                            updateConfigLabel();
                             updateView();
                         }
                     }
@@ -271,34 +309,7 @@ public class MyMuhurtaView extends AstrosoftView {
             }
         });
         
-        headerPanel.add(scrollPane, BorderLayout.CENTER);
-        headerPanel.add(editBtn, BorderLayout.EAST);
-        
-        headerPanel.setBorder(BorderFactory.createEtchedBorder());
-        headerPanel.setPreferredSize(new Dimension(KeyColWidth + ValueColWidth, 60));
-        
-        headerPanel.setBackground(UIConsts.TABLE_HEADER_BACKGROUND);
-        currentConfigLabel.setForeground(UIConsts.TABLE_HEADER_FOREGROUND);
-        
-        return headerPanel;
-    }
-    
-    private void updateConfigLabel() {
-        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MMMM d, yyyy");
-        java.text.SimpleDateFormat tf = new java.text.SimpleDateFormat("hh:mm:ss a");
-        String dateStr = df.format(selectedDate);
-        String timeStr = tf.format(selectedTime);
-        
-        String placeStr = "Default Place";
-        String tzStr = "";
-        if (selectedPlace != null) {
-            placeStr = selectedPlace.city().trim();
-            if (selectedPlace.state() != null && !selectedPlace.state().trim().isEmpty()) placeStr += ", " + selectedPlace.state().trim();
-            if (selectedPlace.country() != null && !selectedPlace.country().trim().isEmpty()) placeStr += ", " + selectedPlace.country().trim();
-            
-            app.astrosoft.util.AstrosoftTimeZone tz = selectedPlace.astrosoftTimeZone();
-            tzStr = tz.toString();
-        }
-        currentConfigLabel.setText("Date: " + dateStr + "\nTime: " + timeStr + ", " + tzStr + "\nLocation: " + placeStr);
+        bottomPanel.add(editBtn);
+        return bottomPanel;
     }
 }
