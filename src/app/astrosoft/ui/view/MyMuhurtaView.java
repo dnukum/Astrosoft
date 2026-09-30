@@ -260,7 +260,7 @@ public class MyMuhurtaView extends AstrosoftView {
         JPanel bottomPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 10));
         bottomPanel.setOpaque(false);
         
-        javax.swing.JButton editBtn = new javax.swing.JButton("Change Parameters") {
+        javax.swing.JButton editBtn = new javax.swing.JButton("Edit") {
             @Override
             protected void paintComponent(java.awt.Graphics g) {
                 java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
@@ -287,7 +287,7 @@ public class MyMuhurtaView extends AstrosoftView {
         editBtn.setFocusPainted(false);
         editBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         editBtn.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 12));
-        editBtn.setPreferredSize(new java.awt.Dimension(150, 30));
+        editBtn.setPreferredSize(new java.awt.Dimension(80, 30));
         
         editBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
