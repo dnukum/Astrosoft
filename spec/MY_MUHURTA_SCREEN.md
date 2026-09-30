@@ -48,6 +48,7 @@ The right side of the screen replaces the standard single-chart view with a comp
 3. **Menu Integration:** A new menu item `myMuhurta` will be added under the `View` menu, triggering the instantiation of `MyMuhurtaView`.
 
 ## Future Considerations
+* **1/15th Division Muhurtas:** Implement the mathematical logic to divide the Dinamaana (daytime) and Ratrimaana (nighttime) into 15 equal parts to calculate and display highly auspicious classical windows, specifically **Abhijit Muhurta** (the 8th Muhurta at Solar Noon) and **Brahma Muhurta** (the 14th Muhurta of the night, Pre-Dawn).
 * Highlighting or color-coding the Tara/Chandra Balam rows (Green for Auspicious, Red for Inauspicious).
 
 ### 5. Technical Constraints & Rendering Nuances
