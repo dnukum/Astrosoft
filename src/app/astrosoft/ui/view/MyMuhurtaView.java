@@ -107,7 +107,7 @@ public class MyMuhurtaView extends AstrosoftView {
         this.removeAll();
         this.setLayout(new java.awt.BorderLayout());
         
-        javax.swing.JPanel centerWrapper = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 20));
+        javax.swing.JPanel centerWrapper = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 20));
         centerWrapper.add(mainPanel);
         
         this.add(centerWrapper, java.awt.BorderLayout.CENTER);
