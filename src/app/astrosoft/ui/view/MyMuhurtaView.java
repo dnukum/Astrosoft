@@ -168,12 +168,12 @@ public class MyMuhurtaView extends AstrosoftView {
         }
         
         rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.DATE_STR, dateStr));
-        rows.add(helper.createRow("Time", timeStr + ", " + tzStr));
+        rows.add(helper.createRow("Time", timeStr + "," + tzStr));
         rows.add(helper.createRow("Location", placeStr));
         
         for (int i=0; i<pan.getPanchangTableData().getRowCount(); i++) {
             app.astrosoft.ui.table.MapTableRow row = pan.getPanchangTableData().getRow(i);
-            if (row.getColumnData(app.astrosoft.consts.AstrosoftTableColumn.Key).equals(app.astrosoft.consts.DisplayStrings.DATE_STR.toString())) continue;
+            if (row.getColumnData(app.astrosoft.consts.AstrosoftTableColumn.Key).toString().equals(app.astrosoft.consts.DisplayStrings.DATE_STR.toString())) continue;
             rows.add(row);
         }
         
@@ -200,6 +200,8 @@ public class MyMuhurtaView extends AstrosoftView {
             Object val = tableModel.getValueAt(i, 0);
             if (val != null && val.toString().contains(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString())) {
                 table.setRowHeight(i, 100); // 100 allows 4-5 lines of text to breathe
+            } else if (val != null && val.toString().equals("Time")) {
+                table.setRowHeight(i, RowHeight * 2);
             } else {
                 table.setRowHeight(i, RowHeight);
             }
@@ -239,8 +241,10 @@ public class MyMuhurtaView extends AstrosoftView {
             TableCellRenderer multiLineRenderer = new MultiLineCellRenderer(",");
             public TableCellRenderer getCellRenderer(int row, int col) {
                 Object keyVal = getValueAt(row, 0);
-                if (keyVal != null && keyVal.toString().contains(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString()) && col == 1) {
-                    return multiLineRenderer;
+                if (keyVal != null && col == 1) {
+                    if (keyVal.toString().contains(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString()) || keyVal.toString().equals("Time")) {
+                        return multiLineRenderer;
+                    }
                 }
                 return super.getCellRenderer(row, col);
             }
