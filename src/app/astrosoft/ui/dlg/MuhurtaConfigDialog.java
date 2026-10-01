@@ -38,11 +38,11 @@ public class MuhurtaConfigDialog extends AstrosoftDialog {
         setModal(true); // Ensure it blocks interactions
         
         dateChooser = CalendarChooser.getDateChooser();
-        dateChooser.getChooser(); // init
+        JPanel dateChooserPanel = dateChooser.getChooser();
         dateChooser.setSelectedDate(initDate);
         
         timeChooser = CalendarChooser.getTimeChooser();
-        timeChooser.getChooser(); // init
+        JPanel timeChooserPanel = timeChooser.getChooser();
         timeChooser.setSelectedDate(initTime);
         
         placeChooser = new PlaceChooser(new Dimension(400, 140), false);
@@ -57,11 +57,11 @@ public class MuhurtaConfigDialog extends AstrosoftDialog {
         
         JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         datePanel.add(new javax.swing.JLabel("Date: "));
-        datePanel.add(dateChooser.getChooser());
+        datePanel.add(dateChooserPanel);
         
         JPanel timePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         timePanel.add(new javax.swing.JLabel("Time: "));
-        timePanel.add(timeChooser.getChooser());
+        timePanel.add(timeChooserPanel);
         
         inputPanel.add(datePanel);
         inputPanel.add(timePanel);
