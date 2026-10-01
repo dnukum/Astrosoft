@@ -248,6 +248,15 @@ public class MyMuhurtaView extends AstrosoftView {
                 }
                 return super.getCellRenderer(row, col);
             }
+            
+            @Override
+            public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                java.awt.Component c = super.prepareRenderer(renderer, row, column);
+                if (c instanceof javax.swing.JComponent) {
+                    ((javax.swing.JComponent) c).setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 0));
+                }
+                return c;
+            }
         };
         
         table.setColumnWidth(ValueColWidth, AstrosoftTableColumn.Value);
