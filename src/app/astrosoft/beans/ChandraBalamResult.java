@@ -17,6 +17,6 @@ public class ChandraBalamResult {
 
     @Override
     public String toString() {
-        return house.getHouseNumber() + " (" + finalRank.name() + ")";
+        return String.valueOf(house.getHouseNumber());
     }
 }

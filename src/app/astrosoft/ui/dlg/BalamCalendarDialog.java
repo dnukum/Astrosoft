@@ -72,9 +72,8 @@ public class BalamCalendarDialog extends JDialog {
                 TableDataFactory.emptyTableData(), 
                 new DefaultColumnMetaData(
                     app.astrosoft.consts.AstrosoftTableColumn.Date,
-                    app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam,
                     app.astrosoft.consts.AstrosoftTableColumn.TaraBalam,
-                    app.astrosoft.consts.AstrosoftTableColumn.Nakshathra
+                    app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam
                 )
         ));
         

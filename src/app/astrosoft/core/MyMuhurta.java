@@ -243,9 +243,8 @@ public class MyMuhurta {
         
         java.util.List<app.astrosoft.consts.AstrosoftTableColumn> cols = new java.util.ArrayList<>();
         cols.add(app.astrosoft.consts.AstrosoftTableColumn.Date);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam);
         cols.add(app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.Nakshathra);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam);
         
         app.astrosoft.ui.table.DefaultColumnMetaData meta = new app.astrosoft.ui.table.DefaultColumnMetaData(cols);
         app.astrosoft.ui.table.MapTableRowHelper helper = new app.astrosoft.ui.table.MapTableRowHelper(meta);
@@ -280,9 +279,8 @@ public class MyMuhurta {
             String dateStr = sdf.format(row.getStartTime());
             app.astrosoft.ui.table.MapTableRow tRow = helper.createRow(
                 dateStr,
-                chandraObj,
                 taraObj,
-                row.getTransitNakshathra().name()
+                chandraObj
             );
             
             tableRows.add(tRow);

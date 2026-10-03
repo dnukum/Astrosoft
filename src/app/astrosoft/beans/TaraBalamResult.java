@@ -20,6 +20,6 @@ public class TaraBalamResult {
 
     @Override
     public String toString() {
-        return tara.getNumber() + " - " + tara.getName() + " (" + finalRank.name() + ")";
+        return String.valueOf(tara.getNumber());
     }
 }
