@@ -1,0 +1,637 @@
+{
+  "_comment": [
+    "GOLDEN DATASET FOR BALAM CALENDAR ENGINE",
+    "Generated using Swiss Ephemeris (swisseph) via Astrosoft TransitHelper.",
+    "Purpose: Serves as the mathematical baseline for testing the BalamCalendarEngine.",
+    "Contains exact Local Time timestamps when the Moon crosses 13.33 degree (Nakshatra) and 30 degree (Rasi) boundaries.",
+    "Test Cases Covered:",
+    "1. Asia/Kolkata_2026_10: Standard baseline full month spanning 31 days without DST.",
+    "2. Australia/Sydney_2026_10: Tests Daylight Saving Time (DST) forward jump anomaly on Oct 4, 2026.",
+    "3. America/Anchorage_2028_2: Tests Leap Year boundary (Feb 29) on extreme western timezone."
+  ],
+  "Asia/Kolkata_2026_10": [
+    {
+      "time": "2026-10-01 00:00:00",
+      "event": "MONTH_START"
+    },
+    {
+      "time": "2026-10-01 06:02:37",
+      "event": "NAKSHATRA",
+      "boundary": 40.0
+    },
+    {
+      "time": "2026-10-02 04:27:07",
+      "event": "NAKSHATRA",
+      "boundary": 53.333333333333336
+    },
+    {
+      "time": "2026-10-02 15:40:21",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 60.0
+    },
+    {
+      "time": "2026-10-03 02:54:55",
+      "event": "NAKSHATRA",
+      "boundary": 66.66666666666667
+    },
+    {
+      "time": "2026-10-04 01:29:36",
+      "event": "NAKSHATRA",
+      "boundary": 80.0
+    },
+    {
+      "time": "2026-10-04 18:31:42",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 90.0
+    },
+    {
+      "time": "2026-10-05 00:13:44",
+      "event": "NAKSHATRA",
+      "boundary": 93.33333333333334
+    },
+    {
+      "time": "2026-10-05 23:09:09",
+      "event": "NAKSHATRA",
+      "boundary": 106.66666666666667
+    },
+    {
+      "time": "2026-10-06 22:17:26",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 120.0
+    },
+    {
+      "time": "2026-10-07 21:40:19",
+      "event": "NAKSHATRA",
+      "boundary": 133.33333333333334
+    },
+    {
+      "time": "2026-10-08 21:20:04",
+      "event": "NAKSHATRA",
+      "boundary": 146.66666666666669
+    },
+    {
+      "time": "2026-10-09 03:17:59",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 150.0
+    },
+    {
+      "time": "2026-10-09 21:19:40",
+      "event": "NAKSHATRA",
+      "boundary": 160.0
+    },
+    {
+      "time": "2026-10-10 21:42:36",
+      "event": "NAKSHATRA",
+      "boundary": 173.33333333333334
+    },
+    {
+      "time": "2026-10-11 10:03:57",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 180.0
+    },
+    {
+      "time": "2026-10-11 22:32:27",
+      "event": "NAKSHATRA",
+      "boundary": 186.66666666666669
+    },
+    {
+      "time": "2026-10-12 23:52:07",
+      "event": "NAKSHATRA",
+      "boundary": 200.0
+    },
+    {
+      "time": "2026-10-13 19:12:17",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 210.0
+    },
+    {
+      "time": "2026-10-14 01:42:50",
+      "event": "NAKSHATRA",
+      "boundary": 213.33333333333334
+    },
+    {
+      "time": "2026-10-15 04:03:02",
+      "event": "NAKSHATRA",
+      "boundary": 226.66666666666669
+    },
+    {
+      "time": "2026-10-16 06:47:29",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 240.0
+    },
+    {
+      "time": "2026-10-17 09:46:58",
+      "event": "NAKSHATRA",
+      "boundary": 253.33333333333334
+    },
+    {
+      "time": "2026-10-18 12:48:49",
+      "event": "NAKSHATRA",
+      "boundary": 266.6666666666667
+    },
+    {
+      "time": "2026-10-18 19:32:57",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 270.0
+    },
+    {
+      "time": "2026-10-19 15:38:32",
+      "event": "NAKSHATRA",
+      "boundary": 280.0
+    },
+    {
+      "time": "2026-10-20 18:02:02",
+      "event": "NAKSHATRA",
+      "boundary": 293.33333333333337
+    },
+    {
+      "time": "2026-10-21 07:00:13",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 300.0
+    },
+    {
+      "time": "2026-10-21 19:47:53",
+      "event": "NAKSHATRA",
+      "boundary": 306.6666666666667
+    },
+    {
+      "time": "2026-10-22 20:48:56",
+      "event": "NAKSHATRA",
+      "boundary": 320.0
+    },
+    {
+      "time": "2026-10-23 15:03:46",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 330.0
+    },
+    {
+      "time": "2026-10-23 21:02:53",
+      "event": "NAKSHATRA",
+      "boundary": 333.33333333333337
+    },
+    {
+      "time": "2026-10-24 20:31:58",
+      "event": "NAKSHATRA",
+      "boundary": 346.6666666666667
+    },
+    {
+      "time": "2026-10-25 19:21:58",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 0.0
+    },
+    {
+      "time": "2026-10-26 17:41:08",
+      "event": "NAKSHATRA",
+      "boundary": 13.333333333333334
+    },
+    {
+      "time": "2026-10-27 15:39:05",
+      "event": "NAKSHATRA",
+      "boundary": 26.666666666666668
+    },
+    {
+      "time": "2026-10-27 21:06:27",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 30.0
+    },
+    {
+      "time": "2026-10-28 13:25:56",
+      "event": "NAKSHATRA",
+      "boundary": 40.0
+    },
+    {
+      "time": "2026-10-29 11:11:25",
+      "event": "NAKSHATRA",
+      "boundary": 53.333333333333336
+    },
+    {
+      "time": "2026-10-29 22:06:27",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 60.0
+    },
+    {
+      "time": "2026-10-30 09:04:19",
+      "event": "NAKSHATRA",
+      "boundary": 66.66666666666667
+    },
+    {
+      "time": "2026-10-31 07:11:55",
+      "event": "NAKSHATRA",
+      "boundary": 80.0
+    },
+    {
+      "time": "2026-10-31 23:59:59",
+      "event": "MONTH_END"
+    }
+  ],
+  "Australia/Sydney_2026_10": [
+    {
+      "time": "2026-10-01 00:00:00",
+      "event": "MONTH_START"
+    },
+    {
+      "time": "2026-10-01 10:32:37",
+      "event": "NAKSHATRA",
+      "boundary": 40.0
+    },
+    {
+      "time": "2026-10-02 08:57:07",
+      "event": "NAKSHATRA",
+      "boundary": 53.333333333333336
+    },
+    {
+      "time": "2026-10-02 20:10:21",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 60.0
+    },
+    {
+      "time": "2026-10-03 07:24:55",
+      "event": "NAKSHATRA",
+      "boundary": 66.66666666666667
+    },
+    {
+      "time": "2026-10-04 06:59:36",
+      "event": "NAKSHATRA",
+      "boundary": 80.0
+    },
+    {
+      "time": "2026-10-05 00:01:42",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 90.0
+    },
+    {
+      "time": "2026-10-05 05:43:44",
+      "event": "NAKSHATRA",
+      "boundary": 93.33333333333334
+    },
+    {
+      "time": "2026-10-06 04:39:09",
+      "event": "NAKSHATRA",
+      "boundary": 106.66666666666667
+    },
+    {
+      "time": "2026-10-07 03:47:26",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 120.0
+    },
+    {
+      "time": "2026-10-08 03:10:19",
+      "event": "NAKSHATRA",
+      "boundary": 133.33333333333334
+    },
+    {
+      "time": "2026-10-09 02:50:04",
+      "event": "NAKSHATRA",
+      "boundary": 146.66666666666669
+    },
+    {
+      "time": "2026-10-09 08:47:59",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 150.0
+    },
+    {
+      "time": "2026-10-10 02:49:40",
+      "event": "NAKSHATRA",
+      "boundary": 160.0
+    },
+    {
+      "time": "2026-10-11 03:12:36",
+      "event": "NAKSHATRA",
+      "boundary": 173.33333333333334
+    },
+    {
+      "time": "2026-10-11 15:33:57",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 180.0
+    },
+    {
+      "time": "2026-10-12 04:02:27",
+      "event": "NAKSHATRA",
+      "boundary": 186.66666666666669
+    },
+    {
+      "time": "2026-10-13 05:22:07",
+      "event": "NAKSHATRA",
+      "boundary": 200.0
+    },
+    {
+      "time": "2026-10-14 00:42:17",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 210.0
+    },
+    {
+      "time": "2026-10-14 07:12:50",
+      "event": "NAKSHATRA",
+      "boundary": 213.33333333333334
+    },
+    {
+      "time": "2026-10-15 09:33:02",
+      "event": "NAKSHATRA",
+      "boundary": 226.66666666666669
+    },
+    {
+      "time": "2026-10-16 12:17:29",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 240.0
+    },
+    {
+      "time": "2026-10-17 15:16:58",
+      "event": "NAKSHATRA",
+      "boundary": 253.33333333333334
+    },
+    {
+      "time": "2026-10-18 18:18:49",
+      "event": "NAKSHATRA",
+      "boundary": 266.6666666666667
+    },
+    {
+      "time": "2026-10-19 01:02:57",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 270.0
+    },
+    {
+      "time": "2026-10-19 21:08:32",
+      "event": "NAKSHATRA",
+      "boundary": 280.0
+    },
+    {
+      "time": "2026-10-20 23:32:02",
+      "event": "NAKSHATRA",
+      "boundary": 293.33333333333337
+    },
+    {
+      "time": "2026-10-21 12:30:13",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 300.0
+    },
+    {
+      "time": "2026-10-22 01:17:53",
+      "event": "NAKSHATRA",
+      "boundary": 306.6666666666667
+    },
+    {
+      "time": "2026-10-23 02:18:56",
+      "event": "NAKSHATRA",
+      "boundary": 320.0
+    },
+    {
+      "time": "2026-10-23 20:33:46",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 330.0
+    },
+    {
+      "time": "2026-10-24 02:32:53",
+      "event": "NAKSHATRA",
+      "boundary": 333.33333333333337
+    },
+    {
+      "time": "2026-10-25 02:01:58",
+      "event": "NAKSHATRA",
+      "boundary": 346.6666666666667
+    },
+    {
+      "time": "2026-10-26 00:51:58",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 0.0
+    },
+    {
+      "time": "2026-10-26 23:11:08",
+      "event": "NAKSHATRA",
+      "boundary": 13.333333333333334
+    },
+    {
+      "time": "2026-10-27 21:09:05",
+      "event": "NAKSHATRA",
+      "boundary": 26.666666666666668
+    },
+    {
+      "time": "2026-10-28 02:36:27",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 30.0
+    },
+    {
+      "time": "2026-10-28 18:55:56",
+      "event": "NAKSHATRA",
+      "boundary": 40.0
+    },
+    {
+      "time": "2026-10-29 16:41:25",
+      "event": "NAKSHATRA",
+      "boundary": 53.333333333333336
+    },
+    {
+      "time": "2026-10-30 03:36:27",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 60.0
+    },
+    {
+      "time": "2026-10-30 14:34:19",
+      "event": "NAKSHATRA",
+      "boundary": 66.66666666666667
+    },
+    {
+      "time": "2026-10-31 12:41:55",
+      "event": "NAKSHATRA",
+      "boundary": 80.0
+    },
+    {
+      "time": "2026-10-31 23:59:58",
+      "event": "MONTH_END"
+    }
+  ],
+  "America/Anchorage_2028_2": [
+    {
+      "time": "2028-02-01 00:00:00",
+      "event": "MONTH_START"
+    },
+    {
+      "time": "2028-02-01 19:27:58",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 0.0
+    },
+    {
+      "time": "2028-02-02 21:09:19",
+      "event": "NAKSHATRA",
+      "boundary": 13.333333333333334
+    },
+    {
+      "time": "2028-02-03 22:09:36",
+      "event": "NAKSHATRA",
+      "boundary": 26.666666666666668
+    },
+    {
+      "time": "2028-02-04 04:17:42",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 30.0
+    },
+    {
+      "time": "2028-02-04 22:24:45",
+      "event": "NAKSHATRA",
+      "boundary": 40.0
+    },
+    {
+      "time": "2028-02-05 21:53:51",
+      "event": "NAKSHATRA",
+      "boundary": 53.333333333333336
+    },
+    {
+      "time": "2028-02-06 09:21:42",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 60.0
+    },
+    {
+      "time": "2028-02-06 20:39:06",
+      "event": "NAKSHATRA",
+      "boundary": 66.66666666666667
+    },
+    {
+      "time": "2028-02-07 18:45:33",
+      "event": "NAKSHATRA",
+      "boundary": 80.0
+    },
+    {
+      "time": "2028-02-08 10:59:15",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 90.0
+    },
+    {
+      "time": "2028-02-08 16:20:31",
+      "event": "NAKSHATRA",
+      "boundary": 93.33333333333334
+    },
+    {
+      "time": "2028-02-09 13:32:57",
+      "event": "NAKSHATRA",
+      "boundary": 106.66666666666667
+    },
+    {
+      "time": "2028-02-10 10:32:57",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 120.0
+    },
+    {
+      "time": "2028-02-11 07:31:15",
+      "event": "NAKSHATRA",
+      "boundary": 133.33333333333334
+    },
+    {
+      "time": "2028-02-12 04:38:43",
+      "event": "NAKSHATRA",
+      "boundary": 146.66666666666669
+    },
+    {
+      "time": "2028-02-12 09:58:16",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 150.0
+    },
+    {
+      "time": "2028-02-13 02:05:58",
+      "event": "NAKSHATRA",
+      "boundary": 160.0
+    },
+    {
+      "time": "2028-02-14 00:02:49",
+      "event": "NAKSHATRA",
+      "boundary": 173.33333333333334
+    },
+    {
+      "time": "2028-02-14 11:15:01",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 180.0
+    },
+    {
+      "time": "2028-02-14 22:37:35",
+      "event": "NAKSHATRA",
+      "boundary": 186.66666666666669
+    },
+    {
+      "time": "2028-02-15 21:56:24",
+      "event": "NAKSHATRA",
+      "boundary": 200.0
+    },
+    {
+      "time": "2028-02-16 15:56:26",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 210.0
+    },
+    {
+      "time": "2028-02-16 22:02:25",
+      "event": "NAKSHATRA",
+      "boundary": 213.33333333333334
+    },
+    {
+      "time": "2028-02-17 22:55:20",
+      "event": "NAKSHATRA",
+      "boundary": 226.66666666666669
+    },
+    {
+      "time": "2028-02-19 00:31:21",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 240.0
+    },
+    {
+      "time": "2028-02-20 02:43:37",
+      "event": "NAKSHATRA",
+      "boundary": 253.33333333333334
+    },
+    {
+      "time": "2028-02-21 05:23:19",
+      "event": "NAKSHATRA",
+      "boundary": 266.6666666666667
+    },
+    {
+      "time": "2028-02-21 12:06:25",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 270.0
+    },
+    {
+      "time": "2028-02-22 08:20:59",
+      "event": "NAKSHATRA",
+      "boundary": 280.0
+    },
+    {
+      "time": "2028-02-23 11:27:38",
+      "event": "NAKSHATRA",
+      "boundary": 293.33333333333337
+    },
+    {
+      "time": "2028-02-24 01:01:53",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 300.0
+    },
+    {
+      "time": "2028-02-24 14:35:36",
+      "event": "NAKSHATRA",
+      "boundary": 306.6666666666667
+    },
+    {
+      "time": "2028-02-25 17:38:33",
+      "event": "NAKSHATRA",
+      "boundary": 320.0
+    },
+    {
+      "time": "2028-02-26 13:49:22",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 330.0
+    },
+    {
+      "time": "2028-02-26 20:31:21",
+      "event": "NAKSHATRA",
+      "boundary": 333.33333333333337
+    },
+    {
+      "time": "2028-02-27 23:09:23",
+      "event": "NAKSHATRA",
+      "boundary": 346.6666666666667
+    },
+    {
+      "time": "2028-02-29 01:28:10",
+      "event": "SIMULTANEOUS_RASI_NAKSHATRA",
+      "boundary": 0.0
+    },
+    {
+      "time": "2028-02-29 23:59:59",
+      "event": "MONTH_END"
+    }
+  ]
+}
