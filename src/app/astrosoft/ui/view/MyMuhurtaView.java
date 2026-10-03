@@ -117,85 +117,9 @@ public class MyMuhurtaView extends AstrosoftView {
     }
     
     private void updateView() {
-        java.util.TimeZone tz = java.util.TimeZone.getDefault();
-        if (selectedPlace != null) {
-            tz = selectedPlace.astrosoftTimeZone().getTimeZone();
-            
-        }
+        app.astrosoft.core.MyMuhurta muhurta = new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, userHoroscope);
         
-        Calendar cal = Calendar.getInstance(tz);
-        Calendar systemCal = Calendar.getInstance();
-        systemCal.setTime(selectedDate);
-        cal.set(Calendar.YEAR, systemCal.get(Calendar.YEAR));
-        cal.set(Calendar.MONTH, systemCal.get(Calendar.MONTH));
-        cal.set(Calendar.DAY_OF_MONTH, systemCal.get(Calendar.DAY_OF_MONTH));
-        
-        Calendar tCal = Calendar.getInstance();
-        tCal.setTime(selectedTime);
-        cal.set(Calendar.HOUR_OF_DAY, tCal.get(Calendar.HOUR_OF_DAY));
-        cal.set(Calendar.MINUTE, tCal.get(Calendar.MINUTE));
-        cal.set(Calendar.SECOND, 0);
-        
-        Panchang pan;
-        if (selectedPlace != null) {
-            pan = new Panchang(cal.getTime(), selectedPlace);
-        } else {
-            pan = new Panchang(cal.getTime());
-        }
-        
-        // Construct the combined table
-        List<MapTableRow> rows = new ArrayList<MapTableRow>();
-        DefaultColumnMetaData meta = new DefaultColumnMetaData(AstrosoftTableColumn.keyvalCols());
-        meta.localizeColumns();
-        MapTableRowHelper helper = new MapTableRowHelper(meta);
-        
-        if (userHoroscope != null && userHoroscope.getPersonName() != null && !userHoroscope.getPersonName().isEmpty()) {
-            rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.NAME_STR, userHoroscope.getPersonName()));
-        }
-        
-        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MMMM d, yyyy");
-        java.text.SimpleDateFormat tf = new java.text.SimpleDateFormat("hh:mm:ss a");
-        String dateStr = df.format(selectedDate);
-        String timeStr = tf.format(selectedTime);
-        
-        String placeStr = "Default Place";
-        String tzStr = "";
-        if (selectedPlace != null) {
-            placeStr = selectedPlace.city().trim();
-            if (selectedPlace.state() != null && !selectedPlace.state().trim().isEmpty()) placeStr += ", " + selectedPlace.state().trim();
-            if (selectedPlace.country() != null && !selectedPlace.country().trim().isEmpty()) placeStr += ", " + selectedPlace.country().trim();
-            tzStr = selectedPlace.astrosoftTimeZone().toString();
-        }
-        
-        rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.DATE_STR, dateStr));
-        rows.add(helper.createRow("Time", timeStr + "," + tzStr));
-        rows.add(helper.createRow("Location", placeStr));
-        
-        for (int i=0; i<pan.getPanchangTableData().getRowCount(); i++) {
-            app.astrosoft.ui.table.MapTableRow row = pan.getPanchangTableData().getRow(i);
-            if (row.getColumnData(app.astrosoft.consts.AstrosoftTableColumn.Key).toString().equals(app.astrosoft.consts.DisplayStrings.DATE_STR.toString())) continue;
-            rows.add(row);
-        }
-        
-        if (userHoroscope != null) {
-            app.astrosoft.consts.Nakshathra birthNak = userHoroscope.getNakshathra().getNak();
-            app.astrosoft.consts.Nakshathra transitNak = pan.getNakshathra();
-            
-            app.astrosoft.core.BalamRank taraBalam = MyMuhurta.evalTaraBalam(birthNak, transitNak);
-            int taraIndex = MyMuhurta.calcTaraIndex(birthNak, transitNak);
-            
-            rows.add(helper.createRow("Tara Balam", taraIndex + " (" + taraBalam.name() + ")"));
-            
-            app.astrosoft.consts.Rasi birthRasi = userHoroscope.getRasi();
-            app.astrosoft.consts.Rasi transitRasi = pan.getRasi();
-            
-            app.astrosoft.core.BalamRank chandraBalam = MyMuhurta.evalChandraBalam(birthRasi, transitRasi);
-            int house = MyMuhurta.calcChandraHouse(birthRasi, transitRasi);
-            
-            rows.add(helper.createRow("Chandra Balam", house + " (" + chandraBalam.name() + ")"));
-        }
-        
-        tableModel.updateData(TableDataFactory.getTableData(rows));
+        tableModel.updateData(muhurta.getTableData());
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             Object val = tableModel.getValueAt(i, 0);
             if (val != null && val.toString().contains(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString())) {
@@ -209,7 +133,7 @@ public class MyMuhurtaView extends AstrosoftView {
         
         // Charts
         chartsPanel.removeAll();
-        app.astrosoft.beans.ChartData muhurtaData = new app.astrosoft.beans.PlanetChartData(app.astrosoft.consts.Varga.Rasi, pan.getPlanetPositions(), pan.getPlanetDirection()) {
+        app.astrosoft.beans.ChartData muhurtaData = new app.astrosoft.beans.PlanetChartData(app.astrosoft.consts.Varga.Rasi, muhurta.getPanchang().getPlanetPositions(), muhurta.getPanchang().getPlanetDirection()) {
             public String getChartName() { return "<html><center>Muhurta<br>Rasi</center></html>"; }
         };
         chartsPanel.add(new Chart(muhurtaData, chartSize));
