@@ -231,7 +231,7 @@ public class MyMuhurta {
         return new app.astrosoft.beans.ChandraBalamResult(app.astrosoft.consts.ChandraHouse.of(house), rank);
     }
 
-    public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month) {
+    public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month, Horoscope partner) {
         java.util.TimeZone tz = java.util.TimeZone.getDefault();
         if (selectedPlace != null) {
             tz = selectedPlace.astrosoftTimeZone().getTimeZone();
@@ -245,6 +245,11 @@ public class MyMuhurta {
         cols.add(app.astrosoft.consts.AstrosoftTableColumn.Date);
         cols.add(app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
         cols.add(app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam);
+        if (partner != null) {
+            cols.add(app.astrosoft.consts.AstrosoftTableColumn.SpouseTaraBalam);
+            cols.add(app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam);
+            cols.add(app.astrosoft.consts.AstrosoftTableColumn.CombinedScore);
+        }
         
         app.astrosoft.ui.table.DefaultColumnMetaData meta = new app.astrosoft.ui.table.DefaultColumnMetaData(cols);
         app.astrosoft.ui.table.MapTableRowHelper helper = new app.astrosoft.ui.table.MapTableRowHelper(meta);
@@ -254,35 +259,70 @@ public class MyMuhurta {
         
         app.astrosoft.consts.Nakshathra birthNak = null;
         app.astrosoft.consts.Rasi birthRasi = null;
+        app.astrosoft.consts.Nakshathra partnerNak = null;
+        app.astrosoft.consts.Rasi partnerRasi = null;
         
         if (userHoroscope != null) {
             birthNak = userHoroscope.getNakshathra().getNak();
             birthRasi = userHoroscope.getRasi();
         }
+        if (partner != null) {
+            partnerNak = partner.getNakshathra().getNak();
+            partnerRasi = partner.getRasi();
+        }
 
         for (BalamRowBean row : engineRows) {
             Object taraObj = "-";
             Object chandraObj = "-";
+            Object pTaraObj = "-";
+            Object pChandraObj = "-";
             String overallName = "-";
+            
+            BalamRank selfOverall = BalamRank.ACCEPTABLE;
+            BalamRank partnerOverall = BalamRank.ACCEPTABLE;
             
             if (birthNak != null && birthRasi != null) {
                 app.astrosoft.beans.TaraBalamResult taraResult = getTaraBalamResult(birthNak, row.getTransitNakshathra());
                 app.astrosoft.beans.ChandraBalamResult chandraResult = getChandraBalamResult(birthRasi, row.getTransitRasi());
-                BalamRank overall = evalOverallBalam(taraResult.getFinalRank(), chandraResult.getFinalRank());
+                selfOverall = evalOverallBalam(taraResult.getFinalRank(), chandraResult.getFinalRank());
                 
-                // Now we store the ACTUAL OBJECTS directly in the MapTableRow, not just Strings!
                 taraObj = taraResult;
                 chandraObj = chandraResult;
-                overallName = overall.name();
             }
             
-            String dateStr = sdf.format(row.getStartTime());
-            app.astrosoft.ui.table.MapTableRow tRow = helper.createRow(
-                dateStr,
-                taraObj,
-                chandraObj
-            );
+            if (partnerNak != null && partnerRasi != null) {
+                app.astrosoft.beans.TaraBalamResult pTaraResult = getTaraBalamResult(partnerNak, row.getTransitNakshathra());
+                app.astrosoft.beans.ChandraBalamResult pChandraResult = getChandraBalamResult(partnerRasi, row.getTransitRasi());
+                partnerOverall = evalOverallBalam(pTaraResult.getFinalRank(), pChandraResult.getFinalRank());
+                
+                pTaraObj = pTaraResult;
+                pChandraObj = pChandraResult;
+            }
             
+            if (partner != null) {
+                BalamRank combined = evalOverallBalam(selfOverall, partnerOverall);
+                overallName = combined.name();
+            }
+
+            String dateStr = sdf.format(row.getStartTime());
+            app.astrosoft.ui.table.MapTableRow tRow;
+            
+            if (partner == null) {
+                tRow = helper.createRow(
+                    dateStr,
+                    taraObj,
+                    chandraObj
+                );
+            } else {
+                tRow = helper.createRow(
+                    dateStr,
+                    taraObj,
+                    chandraObj,
+                    pTaraObj,
+                    pChandraObj,
+                    overallName
+                );
+            }
             tableRows.add(tRow);
         }
         
