@@ -125,6 +125,21 @@ public enum AstrosoftTableColumn {
 	C1,
 	C2,
 	C3,
+	StartDate {
+		public String toString() { return "Start Date/Time"; }
+	},
+	EndDate {
+		public String toString() { return "End Date/Time"; }
+	},
+	TaraBalam {
+		public String toString() { return "Tara Balam"; }
+	},
+	ChandraBalam {
+		public String toString() { return "Chandra Balam"; }
+	},
+	OverallScore {
+		public String toString() { return "Overall Score"; }
+	},
 	Date {
 		public String toString() {
 			return DisplayStrings.DATE_STR.toString();

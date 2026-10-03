@@ -194,10 +194,10 @@ public class MyMuhurtaView extends AstrosoftView {
     }
     
     private JPanel createBottomPanel() {
-        JPanel bottomPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 10));
+        JPanel bottomPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 10));
         bottomPanel.setOpaque(false);
         
-        javax.swing.JButton editBtn = new javax.swing.JButton("Edit") {
+        javax.swing.JButton balamBtn = new javax.swing.JButton("Show Balam Calendar") {
             @Override
             protected void paintComponent(java.awt.Graphics g) {
                 java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
@@ -207,16 +207,40 @@ public class MyMuhurtaView extends AstrosoftView {
                 } else {
                     g2.setColor(getBackground());
                 }
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
+                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
                 super.paintComponent(g2);
                 g2.dispose();
             }
+        };
+        balamBtn.setContentAreaFilled(false);
+        balamBtn.setFocusPainted(false);
+        balamBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        balamBtn.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 12));
+        balamBtn.setPreferredSize(new java.awt.Dimension(160, 30));
+        
+        balamBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                app.astrosoft.core.MyMuhurta muhurta = new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, userHoroscope);
+                app.astrosoft.ui.dlg.BalamCalendarDialog dlg = new app.astrosoft.ui.dlg.BalamCalendarDialog(
+                    javax.swing.SwingUtilities.getWindowAncestor(MyMuhurtaView.this),
+                    muhurta
+                );
+                dlg.setVisible(true);
+            }
+        });
+        
+        javax.swing.JButton editBtn = new javax.swing.JButton("Edit Date/Time") {
             @Override
-            protected void paintBorder(java.awt.Graphics g) {
+            protected void paintComponent(java.awt.Graphics g) {
                 java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
                 g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(java.awt.Color.GRAY);
-                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
+                if (getModel().isArmed()) {
+                    g2.setColor(java.awt.Color.LIGHT_GRAY);
+                } else {
+                    g2.setColor(getBackground());
+                }
+                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
+                super.paintComponent(g2);
                 g2.dispose();
             }
         };
@@ -224,7 +248,7 @@ public class MyMuhurtaView extends AstrosoftView {
         editBtn.setFocusPainted(false);
         editBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         editBtn.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 12));
-        editBtn.setPreferredSize(new java.awt.Dimension(80, 30));
+        editBtn.setPreferredSize(new java.awt.Dimension(120, 30));
         
         editBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -246,6 +270,7 @@ public class MyMuhurtaView extends AstrosoftView {
             }
         });
         
+        bottomPanel.add(balamBtn);
         bottomPanel.add(editBtn);
         return bottomPanel;
     }

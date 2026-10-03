@@ -1,5 +1,7 @@
 package app.astrosoft.core;
 
+import java.util.EnumSet;
+import app.astrosoft.beans.BalamRowBean;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Rasi;
 import java.util.Date;
@@ -203,5 +205,94 @@ public class MyMuhurta {
                 // 2, 4, 5, 9 are generally neutral/contextual depending on other rules
                 return BalamRank.MIXED; 
         }
+    }
+
+    public static BalamRank evalOverallBalam(BalamRank tara, BalamRank chandra) {
+        if (tara == BalamRank.STRICTLY_REJECTED || chandra == BalamRank.STRICTLY_REJECTED) return BalamRank.STRICTLY_REJECTED;
+        if (tara == BalamRank.AVOID || chandra == BalamRank.AVOID) return BalamRank.AVOID;
+        if (tara == BalamRank.CONDITIONAL || chandra == BalamRank.CONDITIONAL) return BalamRank.CONDITIONAL;
+        if (tara == BalamRank.MIXED || chandra == BalamRank.MIXED) return BalamRank.MIXED;
+        if (tara == BalamRank.BEST && chandra == BalamRank.BEST) return BalamRank.BEST;
+        if (tara == BalamRank.BEST || chandra == BalamRank.BEST) return BalamRank.SECOND_BEST;
+        return BalamRank.ACCEPTABLE;
+    }
+
+        
+    public static app.astrosoft.beans.TaraBalamResult getTaraBalamResult(Nakshathra birth, Nakshathra transit) {
+        int index = calcTaraIndex(birth, transit);
+        int paryaya = calcParyaya(birth, transit);
+        BalamRank rank = evalTaraBalam(birth, transit);
+        return new app.astrosoft.beans.TaraBalamResult(app.astrosoft.consts.Tara.of(index), paryaya, rank);
+    }
+
+    public static app.astrosoft.beans.ChandraBalamResult getChandraBalamResult(Rasi birth, Rasi transit) {
+        int house = calcChandraHouse(birth, transit);
+        BalamRank rank = evalChandraBalam(birth, transit);
+        return new app.astrosoft.beans.ChandraBalamResult(app.astrosoft.consts.ChandraHouse.of(house), rank);
+    }
+
+    public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month) {
+        java.util.TimeZone tz = java.util.TimeZone.getDefault();
+        if (selectedPlace != null) {
+            tz = selectedPlace.astrosoftTimeZone().getTimeZone();
+        }
+        
+        java.util.List<BalamRowBean> engineRows = BalamCalendarEngine.generateCalendar(year, month, tz);
+        
+        java.util.List<app.astrosoft.ui.table.MapTableRow> tableRows = new java.util.ArrayList<>();
+        
+        java.util.List<app.astrosoft.consts.AstrosoftTableColumn> cols = new java.util.ArrayList<>();
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.StartDate);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.EndDate);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.Nakshathra);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.Rasi);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.OverallScore);
+        
+        app.astrosoft.ui.table.DefaultColumnMetaData meta = new app.astrosoft.ui.table.DefaultColumnMetaData(cols);
+        app.astrosoft.ui.table.MapTableRowHelper helper = new app.astrosoft.ui.table.MapTableRowHelper(meta);
+        
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, hh:mm a");
+        sdf.setTimeZone(tz);
+        
+        app.astrosoft.consts.Nakshathra birthNak = null;
+        app.astrosoft.consts.Rasi birthRasi = null;
+        
+        if (userHoroscope != null) {
+            birthNak = userHoroscope.getNakshathra().getNak();
+            birthRasi = userHoroscope.getRasi();
+        }
+
+        for (BalamRowBean row : engineRows) {
+            Object taraObj = "-";
+            Object chandraObj = "-";
+            String overallName = "-";
+            
+            if (birthNak != null && birthRasi != null) {
+                app.astrosoft.beans.TaraBalamResult taraResult = getTaraBalamResult(birthNak, row.getTransitNakshathra());
+                app.astrosoft.beans.ChandraBalamResult chandraResult = getChandraBalamResult(birthRasi, row.getTransitRasi());
+                BalamRank overall = evalOverallBalam(taraResult.getFinalRank(), chandraResult.getFinalRank());
+                
+                // Now we store the ACTUAL OBJECTS directly in the MapTableRow, not just Strings!
+                taraObj = taraResult;
+                chandraObj = chandraResult;
+                overallName = overall.name();
+            }
+            
+            app.astrosoft.ui.table.MapTableRow tRow = helper.createRow(
+                sdf.format(row.getStartTime()),
+                sdf.format(row.getEndTime()),
+                row.getTransitNakshathra().name(),
+                row.getTransitRasi().name(),
+                taraObj,
+                chandraObj,
+                overallName
+            );
+            
+            tableRows.add(tRow);
+        }
+        
+        return app.astrosoft.ui.table.TableDataFactory.getTableData(tableRows);
     }
 }
