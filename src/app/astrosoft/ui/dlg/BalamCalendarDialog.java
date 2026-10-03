@@ -11,6 +11,7 @@ import app.astrosoft.ui.table.TableData;
 import app.astrosoft.ui.table.MapTableRow;
 import app.astrosoft.beans.TaraBalamResult;
 import app.astrosoft.beans.ChandraBalamResult;
+import app.astrosoft.beans.BalamDateCell;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.util.FileOps;
 import app.astrosoft.util.AstrosoftFileFilter;
@@ -28,6 +29,8 @@ public class BalamCalendarDialog extends JDialog {
     private Horoscope partnerHoroscope;
     private JButton partnerBtn;
     private JScrollPane scrollPane;
+    private JEditorPane detailsPane;
+    private JSplitPane splitPane;
 
     public BalamCalendarDialog(Window owner, MyMuhurta muhurta) {
         super(owner, "Balam Calendar", ModalityType.APPLICATION_MODAL);
@@ -41,7 +44,7 @@ public class BalamCalendarDialog extends JDialog {
         initComponents();
         updateTable();
         
-        setSize(800, 500);
+        setSize(800, 720);
         setLocationRelativeTo(owner);
     }
     
@@ -94,7 +97,15 @@ public class BalamCalendarDialog extends JDialog {
         add(topPanel, BorderLayout.NORTH);
         
         scrollPane = new JScrollPane();
-        add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        detailsPane = new JEditorPane("text/html", EMPTY_DETAILS);
+        detailsPane.setEditable(false);
+        
+        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPane, new JScrollPane(detailsPane));
+        splitPane.setResizeWeight(0.5);
+        splitPane.setDividerLocation(330);
+        splitPane.setOneTouchExpandable(true);
+        add(splitPane, BorderLayout.CENTER);
     }
     
     private void updateTable() {
@@ -116,8 +127,7 @@ public class BalamCalendarDialog extends JDialog {
                 app.astrosoft.consts.AstrosoftTableColumn.TaraBalam,
                 app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam,
                 app.astrosoft.consts.AstrosoftTableColumn.SpouseTaraBalam,
-                app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam,
-                app.astrosoft.consts.AstrosoftTableColumn.CombinedScore
+                app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam
             );
         }
         
@@ -134,17 +144,136 @@ public class BalamCalendarDialog extends JDialog {
                     if (val instanceof TaraBalamResult) {
                         TaraBalamResult tr = (TaraBalamResult) val;
                         return "<html><b>" + tr.getTara().getName() + " (" + tr.getTara().getNumber() + ")</b><br>" 
-                               + "<i>" + tr.getTara().getEffect() + "</i><br><b>Rank:</b> " + tr.getFinalRank().name() + "</html>";
+                               + "<i>" + tr.getTara().getEffect() + "</i></html>";
                     } else if (val instanceof ChandraBalamResult) {
                         ChandraBalamResult cr = (ChandraBalamResult) val;
                         return "<html><b>" + cr.getHouse().getName() + "</b><br>" 
-                               + "<i>" + cr.getHouse().getEffect() + "</i><br><b>Rank:</b> " + cr.getFinalRank().name() + "</html>";
+                               + "<i>" + cr.getHouse().getEffect() + "</i></html>";
                     }
                 }
                 return super.getToolTipText(e);
             }
         };
         
+        // GRID style disables selection rendering; re-enable it so the clicked row is highlighted.
+        table.setRowSelectionAllowed(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionBackground(new Color(198, 222, 255));
+        table.setSelectionForeground(Color.BLACK);
+        
+        BalamStarRenderer starRenderer = new BalamStarRenderer();
+        table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
+        table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam);
+        if (partnerHoroscope != null) {
+            table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.SpouseTaraBalam);
+            table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam);
+        }
+        
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow >= 0) {
+                    detailsPane.setText(buildDetailsHtml(selectedRow));
+                    detailsPane.setCaretPosition(0);
+                }
+            }
+        });
+        
+        detailsPane.setText(EMPTY_DETAILS);
         scrollPane.setViewportView(table);
+    }
+    
+    private static final String EMPTY_DETAILS =
+        "<html><body style='font-family:sans-serif; padding:10px;'>Select a row to see details...</body></html>";
+    
+    /** Renders everything known about the selected transit window for the bottom panel. */
+    private String buildDetailsHtml(int row) {
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; padding:8px;'>");
+        
+        Object dateVal = table.getValueAt(row, 0);
+        if (dateVal instanceof BalamDateCell) {
+            BalamDateCell dc = (BalamDateCell) dateVal;
+            sb.append("<h3 style='margin:0 0 6px 0;'>").append(dc.formatStart())
+              .append(" &rarr; ").append(dc.formatEnd()).append("</h3>");
+            app.astrosoft.consts.Nakshathra nak = dc.getRow().getTransitNakshathra();
+            sb.append("<b>Transit Moon:</b> ").append(nak.name())
+              .append(" in ").append(dc.getRow().getTransitRasi().name()).append("<br>")
+              .append("<b>Lord:</b> ").append(nak.getLord().name()).append("<br><br>");
+        } else {
+            sb.append("<h3>").append(dateVal).append("</h3>");
+        }
+        
+        sb.append("<table cellpadding='4' cellspacing='0' border='1'>");
+        sb.append("<tr><th></th><th align='left'>Tara Balam</th><th align='left'>Chandra Balam</th></tr>");
+        appendPersonRow(sb, "Self", table.getValueAt(row, 1), table.getValueAt(row, 2));
+        if (partnerHoroscope != null && table.getColumnCount() >= 5) {
+            appendPersonRow(sb, "Partner", table.getValueAt(row, 3), table.getValueAt(row, 4));
+        }
+        sb.append("</table></body></html>");
+        return sb.toString();
+    }
+    
+    private void appendPersonRow(StringBuilder sb, String label, Object taraVal, Object chandraVal) {
+        sb.append("<tr><td valign='top'><b>").append(label).append("</b></td><td valign='top'>");
+        if (taraVal instanceof TaraBalamResult) {
+            TaraBalamResult tr = (TaraBalamResult) taraVal;
+            sb.append("<b>").append(tr.getTara().getName()).append(" (").append(tr.getTara().getNumber()).append(")</b><br>")
+              .append("<i>").append(tr.getTara().getEffect()).append("</i>");
+        } else {
+            sb.append(taraVal);
+        }
+        sb.append("</td><td valign='top'>");
+        if (chandraVal instanceof ChandraBalamResult) {
+            ChandraBalamResult cr = (ChandraBalamResult) chandraVal;
+            sb.append("<b>").append(cr.getHouse().getName()).append("</b><br>")
+              .append("<i>").append(cr.getHouse().getEffect()).append("</i>");
+        } else {
+            sb.append(chandraVal);
+        }
+        sb.append("</td></tr>");
+    }
+
+    /**
+     * Renders Tara and Chandra cells as "N (stars)" using Muthu's thumb rules.
+     * Tara:    2/6/9 = 2 green, 7 = 1 red, others = 1 yellow.
+     * Chandra: 3/6/10/11 = 3 green, 1/7 = 2 green, 8 = 1 red, others = 1 green.
+     */
+    private static class BalamStarRenderer extends javax.swing.table.DefaultTableCellRenderer {
+        private static final String STAR = "\u2605";
+        private static final String GREEN = "#1E9E3A";
+        private static final String RED = "#D32F2F";
+        private static final String YELLOW = "#E0A800";
+
+        @Override
+        public Component getTableCellRendererComponent(JTable t, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, column);
+            if (value instanceof TaraBalamResult) {
+                app.astrosoft.consts.Tara tara = ((TaraBalamResult) value).getTara();
+                switch (tara.getThumbRuleGrade()) {
+                    case BEST:  setStars(tara.getNumber(), 2, GREEN);  break;
+                    case AVOID: setStars(tara.getNumber(), 1, RED);    break;
+                    default:    setStars(tara.getNumber(), 1, YELLOW); break;
+                }
+            } else if (value instanceof ChandraBalamResult) {
+                app.astrosoft.consts.ChandraHouse house = ((ChandraBalamResult) value).getHouse();
+                switch (house.getThumbRuleGrade()) {
+                    case BEST:  setStars(house.getHouseNumber(), 3, GREEN); break;
+                    case GOOD:  setStars(house.getHouseNumber(), 2, GREEN); break;
+                    case AVOID: setStars(house.getHouseNumber(), 1, RED);   break;
+                    default:    setStars(house.getHouseNumber(), 1, GREEN); break;
+                }
+            }
+            return this;
+        }
+
+        private void setStars(int number, int count, String color) {
+            StringBuilder stars = new StringBuilder();
+            for (int i = 0; i < count; i++) {
+                if (i > 0) stars.append(' ');
+                stars.append(STAR);
+            }
+            setText("<html>" + number + " (<font color='" + color + "'>" + stars + "</font>)</html>");
+        }
     }
 }

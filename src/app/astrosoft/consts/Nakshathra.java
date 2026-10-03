@@ -79,6 +79,10 @@ public enum Nakshathra {
 		return naks;
 	}
 
+	public Planet getLord() {
+		return Planet.ofDasaNo(ordinal() + 7);
+	}
+
 	public String toString() {
 
 		return Internalization.getString(this.name());

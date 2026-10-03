@@ -38,4 +38,28 @@ public enum ChandraHouse {
         }
         return HOUSE_1; // fallback
     }
+
+    /**
+     * Simplified grading per Muthu's "Chandra Balam" slide:
+     * 3, 6, 10, 11 from Natal Moon are best; 1 and 7 are good;
+     * 8th (Ashtama Chandra) should be avoided; all others are neutral.
+     */
+    public enum ThumbRuleGrade { BEST, GOOD, NEUTRAL, AVOID }
+
+    public ThumbRuleGrade getThumbRuleGrade() {
+        switch (this) {
+            case HOUSE_3:
+            case HOUSE_6:
+            case HOUSE_10:
+            case HOUSE_11:
+                return ThumbRuleGrade.BEST;
+            case HOUSE_1:
+            case HOUSE_7:
+                return ThumbRuleGrade.GOOD;
+            case HOUSE_8:
+                return ThumbRuleGrade.AVOID;
+            default:
+                return ThumbRuleGrade.NEUTRAL;
+        }
+    }
 }

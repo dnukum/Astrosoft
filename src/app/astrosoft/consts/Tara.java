@@ -35,4 +35,24 @@ public enum Tara {
         }
         return JANMA; // default fallback
     }
+
+    /**
+     * Simplified grading per Muthu's "General Thumb rule for Thara Balam" slide:
+     * 2nd, 6th, 9th give best results; 7th should be avoided in all cases;
+     * all others are neutral / conditional.
+     */
+    public enum ThumbRuleGrade { BEST, NEUTRAL, AVOID }
+
+    public ThumbRuleGrade getThumbRuleGrade() {
+        switch (this) {
+            case SAMPAT:
+            case SADHANA:
+            case PARAMA_MITRA:
+                return ThumbRuleGrade.BEST;
+            case NAIDHANA:
+                return ThumbRuleGrade.AVOID;
+            default:
+                return ThumbRuleGrade.NEUTRAL;
+        }
+    }
 }

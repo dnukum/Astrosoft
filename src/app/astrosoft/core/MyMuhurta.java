@@ -248,7 +248,7 @@ public class MyMuhurta {
         if (partner != null) {
             cols.add(app.astrosoft.consts.AstrosoftTableColumn.SpouseTaraBalam);
             cols.add(app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam);
-            cols.add(app.astrosoft.consts.AstrosoftTableColumn.CombinedScore);
+            
         }
         
         app.astrosoft.ui.table.DefaultColumnMetaData meta = new app.astrosoft.ui.table.DefaultColumnMetaData(cols);
@@ -276,51 +276,35 @@ public class MyMuhurta {
             Object chandraObj = "-";
             Object pTaraObj = "-";
             Object pChandraObj = "-";
-            String overallName = "-";
-            
-            BalamRank selfOverall = BalamRank.ACCEPTABLE;
-            BalamRank partnerOverall = BalamRank.ACCEPTABLE;
             
             if (birthNak != null && birthRasi != null) {
-                app.astrosoft.beans.TaraBalamResult taraResult = getTaraBalamResult(birthNak, row.getTransitNakshathra());
-                app.astrosoft.beans.ChandraBalamResult chandraResult = getChandraBalamResult(birthRasi, row.getTransitRasi());
-                selfOverall = evalOverallBalam(taraResult.getFinalRank(), chandraResult.getFinalRank());
-                
-                taraObj = taraResult;
-                chandraObj = chandraResult;
+                taraObj = getTaraBalamResult(birthNak, row.getTransitNakshathra());
+                chandraObj = getChandraBalamResult(birthRasi, row.getTransitRasi());
             }
             
             if (partnerNak != null && partnerRasi != null) {
-                app.astrosoft.beans.TaraBalamResult pTaraResult = getTaraBalamResult(partnerNak, row.getTransitNakshathra());
-                app.astrosoft.beans.ChandraBalamResult pChandraResult = getChandraBalamResult(partnerRasi, row.getTransitRasi());
-                partnerOverall = evalOverallBalam(pTaraResult.getFinalRank(), pChandraResult.getFinalRank());
-                
-                pTaraObj = pTaraResult;
-                pChandraObj = pChandraResult;
-            }
-            
-            if (partner != null) {
-                BalamRank combined = evalOverallBalam(selfOverall, partnerOverall);
-                overallName = combined.name();
+                pTaraObj = getTaraBalamResult(partnerNak, row.getTransitNakshathra());
+                pChandraObj = getChandraBalamResult(partnerRasi, row.getTransitRasi());
             }
 
-            String dateStr = sdf.format(row.getStartTime());
+            // Date cell carries the full transit bean so the UI detail panel can read
+            // transit Nakshatra/Rasi and start/end times; toString() renders the date.
+            app.astrosoft.beans.BalamDateCell dateCell = new app.astrosoft.beans.BalamDateCell(row, sdf);
             app.astrosoft.ui.table.MapTableRow tRow;
             
             if (partner == null) {
                 tRow = helper.createRow(
-                    dateStr,
+                    dateCell,
                     taraObj,
                     chandraObj
                 );
             } else {
                 tRow = helper.createRow(
-                    dateStr,
+                    dateCell,
                     taraObj,
                     chandraObj,
                     pTaraObj,
-                    pChandraObj,
-                    overallName
+                    pChandraObj
                 );
             }
             tableRows.add(tRow);
