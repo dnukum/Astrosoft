@@ -6,10 +6,11 @@ While the existing `Panchang` screen displays generalized daily planetary inform
 
 ## UI Layout & Components
 
-### 1. Input Controls (Top Left)
-The screen will feature a dedicated input area above the table to allow the user to tweak the exact parameters of the proposed event:
-* **Date & Time Selectors:** A date picker and a **24-hour Time Picker (HH:MM)**. The time is critical because the Muhurta chart acts as the "birth chart" for the event, and the exact time is required to calculate the Lagna (Ascendant) and house placements. Upon initially opening the screen, the Time Picker will automatically **default to the local Sunrise time** for that day.
-* **Place Chooser:** Immediately below the Date/Time row, there will be a dedicated row for the **Location**. This reuses Astrosoft's existing `PlaceChooser` component (the same one used in the Natal Chart screen). It allows users to search for cities, input latitude/longitude, and select timezones. By default, it initializes to the user's global `AstroSoft.getPreferences().getPlace()`. Changing this location updates the event parameters without overwriting the global application preferences.
+### 1. Configuration Dialog (Edit Button)
+Instead of cluttering the top of the table with input controls, the screen features an **Edit** button located at the bottom right of the table. Clicking this opens a dedicated `MuhurtaConfigDialog` to tweak event parameters:
+* **Date & Time Selectors:** A date picker and a **24-hour Time Picker (HH:MM)**. The exact time is critical because the Muhurta chart acts as the "birth chart" for the event.
+* **Place Chooser:** Reuses Astrosoft's existing `PlaceChooser` component allowing users to search for cities, input latitude/longitude, and select timezones. By default, it initializes to the user's global `AstroSoft.getPreferences().getPlace()`.
+Changing these parameters immediately refreshes the view without overwriting the global application preferences.
 
 ### 2. Daily Panchang Data (Bottom Left)
 Below the input controls, the screen will display the standard Panchang table:
@@ -43,9 +44,16 @@ The right side of the screen replaces the standard single-chart view with a comp
 * **User's D9 Navamsa Chart:** The natal Navamsa chart of the currently loaded user profile.
 
 ## Data Flow & Architecture
-1. **User Profile Dependency:** The screen requires an active `AstrosoftProfile` to be loaded. If no user is loaded, the `myMuhurta` menu item under the `View` menu will be strictly **greyed out (disabled)** so the screen cannot be accessed.
-2. **Parameter Change Trigger:** Changing the Date, Time, or Place triggers an immediate `updateView()`. This recalculates the Panchang Table, the Muhurta Rasi Chart, the Tara Balam, and the Chandra Balam dynamically. The User's D1 and D9 charts remain static.
-3. **Menu Integration:** A new menu item `myMuhurta` will be added under the `View` menu, triggering the instantiation of `MyMuhurtaView`.
+To comply with the MVC patterns specified in `ARCHITECTURE.md`, the MyMuhurta feature strictly isolates its logic:
+
+1. **Core Domain Object (`app.astrosoft.core.MyMuhurta`):**
+   * Acts as the stateful orchestrator. It accepts the `Date`, `Time`, `Place`, and the active `Horoscope`.
+   * Encapsulates the `Panchang` Ephemeris engine, processes Timezone conversions to UT Julian Days, and evaluates Tara & Chandra Balam matrix logic.
+   * Exposes `getTableData()` to output pure, pre-formatted `TableData<MapTableRow>` beans.
+2. **Presentation Layer (`app.astrosoft.ui.view.MyMuhurtaView`):**
+   * A "dumb" Swing component. When `updateView()` is triggered (either on load or via the Edit dialog), it instantiates the `MyMuhurta` core object and simply hands the output beans to the `JTable` and `Chart` UI components for rendering.
+3. **User Profile Dependency:** The screen requires an active `Horoscope` to be loaded. If no user is loaded, the `myMuhurta` menu item is disabled.
+4. **Menu Integration:** Added under the `View` menu, triggering the instantiation of `MyMuhurtaView`.
 
 ## Future Considerations
 * **1/15th Division Muhurtas:** Implement the mathematical logic to divide the Dinamaana (daytime) and Ratrimaana (nighttime) into 15 equal parts to calculate and display highly auspicious classical windows, specifically **Abhijit Muhurta** (the 8th Muhurta at Solar Noon) and **Brahma Muhurta** (the 14th Muhurta of the night, Pre-Dawn).
