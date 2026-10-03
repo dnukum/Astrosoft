@@ -1,7 +1,6 @@
 package app.astrosoft.core;
 
 import java.util.EnumSet;
-import app.astrosoft.beans.BalamRowBean;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Rasi;
 import java.util.Date;
@@ -236,80 +235,6 @@ public class MyMuhurta {
         if (selectedPlace != null) {
             tz = selectedPlace.astrosoftTimeZone().getTimeZone();
         }
-        
-        java.util.List<BalamRowBean> engineRows = BalamCalendarEngine.generateCalendar(year, month, tz);
-        
-        java.util.List<app.astrosoft.ui.table.MapTableRow> tableRows = new java.util.ArrayList<>();
-        
-        java.util.List<app.astrosoft.consts.AstrosoftTableColumn> cols = new java.util.ArrayList<>();
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.Date);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam);
-        if (partner != null) {
-            cols.add(app.astrosoft.consts.AstrosoftTableColumn.SpouseTaraBalam);
-            cols.add(app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam);
-            
-        }
-        
-        app.astrosoft.ui.table.DefaultColumnMetaData meta = new app.astrosoft.ui.table.DefaultColumnMetaData(cols);
-        app.astrosoft.ui.table.MapTableRowHelper helper = new app.astrosoft.ui.table.MapTableRowHelper(meta);
-        
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, hh:mm a");
-        sdf.setTimeZone(tz);
-        
-        app.astrosoft.consts.Nakshathra birthNak = null;
-        app.astrosoft.consts.Rasi birthRasi = null;
-        app.astrosoft.consts.Nakshathra partnerNak = null;
-        app.astrosoft.consts.Rasi partnerRasi = null;
-        
-        if (userHoroscope != null) {
-            birthNak = userHoroscope.getNakshathra().getNak();
-            birthRasi = userHoroscope.getRasi();
-        }
-        if (partner != null) {
-            partnerNak = partner.getNakshathra().getNak();
-            partnerRasi = partner.getRasi();
-        }
-
-        for (BalamRowBean row : engineRows) {
-            Object taraObj = "-";
-            Object chandraObj = "-";
-            Object pTaraObj = "-";
-            Object pChandraObj = "-";
-            
-            if (birthNak != null && birthRasi != null) {
-                taraObj = getTaraBalamResult(birthNak, row.getTransitNakshathra());
-                chandraObj = getChandraBalamResult(birthRasi, row.getTransitRasi());
-            }
-            
-            if (partnerNak != null && partnerRasi != null) {
-                pTaraObj = getTaraBalamResult(partnerNak, row.getTransitNakshathra());
-                pChandraObj = getChandraBalamResult(partnerRasi, row.getTransitRasi());
-            }
-
-            // Date cell carries the full transit bean so the UI detail panel can read
-            // transit Nakshatra/Rasi and start/end times; toString() renders the date.
-            app.astrosoft.beans.BalamDateCell dateCell = new app.astrosoft.beans.BalamDateCell(row, sdf);
-            app.astrosoft.ui.table.MapTableRow tRow;
-            
-            if (partner == null) {
-                tRow = helper.createRow(
-                    dateCell,
-                    taraObj,
-                    chandraObj
-                );
-            } else {
-                tRow = helper.createRow(
-                    dateCell,
-                    taraObj,
-                    chandraObj,
-                    pTaraObj,
-                    pChandraObj
-                );
-            }
-            tableRows.add(tRow);
-        }
-        
-        return app.astrosoft.ui.table.TableDataFactory.getTableData(tableRows);
+        return new BalamCalendarModel(tz, userHoroscope).buildTable(year, month, partner);
     }
 }

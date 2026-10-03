@@ -25,3 +25,20 @@ out/
 
 *.class
 .DS_Store
+
+# Build outputs
+deploy/
+
+# Local scratch and patch helpers
+fix_*.py
+patch.py
+patch_*.py
+update_*.sh
+update_*.py
+revert_*.py
+check_*.py
+debug_*.py
+add_*.py
+run_failed_tests.java
+temp*.json
+pure2.json
