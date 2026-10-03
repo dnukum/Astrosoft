@@ -132,10 +132,10 @@ public enum AstrosoftTableColumn {
 		public String toString() { return "End Date/Time"; }
 	},
 	TaraBalam {
-		public String toString() { return "Tara Balam"; }
+		public String toString() { return "Tara Bala Score"; }
 	},
 	ChandraBalam {
-		public String toString() { return "Chandra Balam"; }
+		public String toString() { return "Chandra Bala Score"; }
 	},
 	OverallScore {
 		public String toString() { return "Overall Score"; }

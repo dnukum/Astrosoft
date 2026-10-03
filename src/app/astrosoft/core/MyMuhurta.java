@@ -242,13 +242,10 @@ public class MyMuhurta {
         java.util.List<app.astrosoft.ui.table.MapTableRow> tableRows = new java.util.ArrayList<>();
         
         java.util.List<app.astrosoft.consts.AstrosoftTableColumn> cols = new java.util.ArrayList<>();
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.StartDate);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.EndDate);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.Nakshathra);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.Rasi);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.Date);
         cols.add(app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam);
-        cols.add(app.astrosoft.consts.AstrosoftTableColumn.OverallScore);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
+        cols.add(app.astrosoft.consts.AstrosoftTableColumn.Nakshathra);
         
         app.astrosoft.ui.table.DefaultColumnMetaData meta = new app.astrosoft.ui.table.DefaultColumnMetaData(cols);
         app.astrosoft.ui.table.MapTableRowHelper helper = new app.astrosoft.ui.table.MapTableRowHelper(meta);
@@ -280,14 +277,12 @@ public class MyMuhurta {
                 overallName = overall.name();
             }
             
+            String dateStr = sdf.format(row.getStartTime());
             app.astrosoft.ui.table.MapTableRow tRow = helper.createRow(
-                sdf.format(row.getStartTime()),
-                sdf.format(row.getEndTime()),
-                row.getTransitNakshathra().name(),
-                row.getTransitRasi().name(),
-                taraObj,
+                dateStr,
                 chandraObj,
-                overallName
+                taraObj,
+                row.getTransitNakshathra().name()
             );
             
             tableRows.add(tRow);
