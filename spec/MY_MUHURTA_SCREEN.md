@@ -113,3 +113,14 @@ To support future implementations of classical electional windows (like Abhijit 
 | # | Muhurta Name | Nature | Primary Purpose & Usage |
 | :--- | :--- | :--- | :--- |
 | **14** | **Brahma Muhurta** | 🌟 **Highly Auspicious** | Occurs roughly **1.5 hours before Sunrise**. Dominated by pure *Sattva* (stillness). Exclusively reserved for waking up, meditation, and spiritual practices. |
+
+
+## Inline Balam calendar lifecycle
+
+Product/design decision: the Balam calendar is embedded below the MyMuhurta overview, not opened as a modal dialog. The Show/Hide button toggles visibility; the calendar close button follows the same hide path. Opening twice must not add duplicate panels; closing twice is harmless.
+
+Product/design decision: editing the main date, time, or place refreshes an already-open calendar in place and resets its displayed month to the updated context month. The selected partner is preserved during this refresh. A closed calendar stays closed; reopening creates a fresh calendar with the latest context and no retained partner selection.
+
+Implementation detail: `MyMuhurtaView.updateView()` supplies the current `MyMuhurta` to `BalamCalendarPanel.setContext()`. Refresh rebuilds calendar rows and clears stale row details through the existing table-update path. Null context is rejected. No astrology computation or textual domain rule is changed.
+
+Regression coverage: toggle open/closed, repeated show/hide, close callback, synchronized button label, reopening with latest context, context month/year change, and partner preservation. The headless Swing harness executes extracted production lifecycle methods with a lightweight model; it does not replace a full interactive UI check.

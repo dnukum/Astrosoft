@@ -59,7 +59,39 @@ public class MyMuhurtaView extends AstrosoftView {
     private AstrosoftTableModel tableModel;
     private AstrosoftTable table;
     private JPanel chartsPanel;
+    private JPanel flyoutHost;
+    private app.astrosoft.ui.comp.BalamCalendarPanel balamFlyout;
+    private javax.swing.JButton balamBtn;
     
+    private void toggleBalamFlyout() {
+        if (balamFlyout == null) {
+            showBalamFlyout();
+        } else {
+            hideBalamFlyout();
+        }
+    }
+
+    private void showBalamFlyout() {
+        if (balamFlyout != null) {
+            return;
+        }
+        balamFlyout = new app.astrosoft.ui.comp.BalamCalendarPanel(createMuhurta(), () -> hideBalamFlyout());
+        flyoutHost.add(balamFlyout, BorderLayout.CENTER);
+        balamBtn.setText("Hide Balam Calendar");
+        flyoutHost.revalidate();
+        flyoutHost.repaint();
+    }
+
+    private void hideBalamFlyout() {
+        if (balamFlyout != null) {
+            flyoutHost.remove(balamFlyout);
+            balamFlyout = null;
+            balamBtn.setText("Show Balam Calendar");
+            flyoutHost.revalidate();
+            flyoutHost.repaint();
+        }
+    }
+
     public MyMuhurtaView(Point loc, Horoscope userHoroscope) {
         super(viewSize, loc);
         this.userHoroscope = userHoroscope;
@@ -106,11 +138,11 @@ public class MyMuhurtaView extends AstrosoftView {
         // but the mainPanel as a whole gets perfectly centered!
         this.removeAll();
         this.setLayout(new java.awt.BorderLayout());
-        
-        javax.swing.JPanel centerWrapper = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 20));
-        centerWrapper.add(mainPanel);
-        
-        this.add(centerWrapper, java.awt.BorderLayout.CENTER);
+
+        flyoutHost = new JPanel(new java.awt.BorderLayout(0, 10));
+        flyoutHost.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        flyoutHost.add(mainPanel, java.awt.BorderLayout.NORTH);
+        this.add(flyoutHost, java.awt.BorderLayout.CENTER);
         
         // Initial setup
         updateView();
@@ -127,6 +159,9 @@ public class MyMuhurtaView extends AstrosoftView {
         applyRowHeights();
 
         refreshCharts(muhurta);
+        if (balamFlyout != null) {
+            balamFlyout.setContext(muhurta);
+        }
     }
 
     private void applyRowHeights() {
@@ -215,14 +250,10 @@ public class MyMuhurtaView extends AstrosoftView {
         JPanel bottomPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 10));
         bottomPanel.setOpaque(false);
 
-        javax.swing.JButton balamBtn = createRoundedButton("Show Balam Calendar", java.awt.Font.BOLD, new java.awt.Dimension(160, 30));
+        balamBtn = createRoundedButton("Show Balam Calendar", java.awt.Font.BOLD, new java.awt.Dimension(160, 30));
         balamBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                app.astrosoft.ui.dlg.BalamCalendarDialog dlg = new app.astrosoft.ui.dlg.BalamCalendarDialog(
-                    javax.swing.SwingUtilities.getWindowAncestor(MyMuhurtaView.this),
-                    createMuhurta()
-                );
-                dlg.setVisible(true);
+                toggleBalamFlyout();
             }
         });
 
