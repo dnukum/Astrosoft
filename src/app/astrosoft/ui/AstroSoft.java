@@ -9,6 +9,7 @@ package app.astrosoft.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.GridLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Point;
@@ -132,7 +133,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 				
 				if (home.getComponentCount() > 0) {
 				    java.awt.Component view = home.getComponent(0);
-				    if (view.getClass().getName().contains("MyMuhurtaView")) {
+				    if (view.getClass().getName().contains("MyMuhurtaView")
+				            || isChartView(view)) {
 					    view.setBounds(newBounds);
 				    }
 				    // Do absolutely nothing for other views! Let them keep their original internal bounds & offsets.
@@ -324,10 +326,28 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		Chart navamsa = new Chart(new PlanetChartData(Varga.Navamsa, h.getPlanetaryInfo()), new Dimension(360,320));
 
+		JPanel chartPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+		chartPanel.setOpaque(false);
+		chartPanel.add(rasi);
+		chartPanel.add(navamsa);
+		chartPanel.setPreferredSize(new Dimension(740, 320));
+
+		javax.swing.JScrollPane chartScrollPane = new javax.swing.JScrollPane(chartPanel,
+				javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+				javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		chartScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+		chartScrollPane.getViewport().setOpaque(false);
+		chartScrollPane.setOpaque(false);
+		chartScrollPane.setPreferredSize(new Dimension(760, 340));
+
+		JPanel contentPanel = new JPanel(new BorderLayout(40, 0));
+		contentPanel.setOpaque(false);
+		contentPanel.add(leftPanel, BorderLayout.CENTER);
+		contentPanel.add(chartScrollPane, BorderLayout.EAST);
+
 		JPanel view = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 20));
-		view.add(leftPanel);
-		view.add(rasi);
-		view.add(navamsa);
+		view.setName("ChartView");
+		view.add(contentPanel);
 		view.setBounds(bounds);
 
 		return view;
@@ -652,12 +672,16 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 
+	private boolean isChartView(java.awt.Component view) {
+		return view != null && "ChartView".equals(view.getName());
+	}
+
 	private class AstrosoftViewContainer implements ViewContainer{
 		public void addView(JPanel view){
 			home.removeAll();
 			home.add(view);
 			
-			if (view.getClass().getName().contains("MyMuhurtaView")) {
+			if (view.getClass().getName().contains("MyMuhurtaView") || isChartView(view)) {
 			    java.awt.Dimension size = getContentPane().getSize();
 			    if (size.width == 0) size = bounds.getSize(); // fallback if not yet laid out
 			    view.setBounds(0, 0, size.width, size.height);
