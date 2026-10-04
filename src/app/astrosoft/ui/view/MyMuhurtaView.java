@@ -116,10 +116,20 @@ public class MyMuhurtaView extends AstrosoftView {
         updateView();
     }
     
+    private app.astrosoft.core.MyMuhurta createMuhurta() {
+        return new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, userHoroscope);
+    }
+
     private void updateView() {
-        app.astrosoft.core.MyMuhurta muhurta = new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, userHoroscope);
+        app.astrosoft.core.MyMuhurta muhurta = createMuhurta();
         
         tableModel.updateData(muhurta.getTableData());
+        applyRowHeights();
+
+        refreshCharts(muhurta);
+    }
+
+    private void applyRowHeights() {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             Object val = tableModel.getValueAt(i, 0);
             if (val != null && val.toString().contains(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString())) {
@@ -130,27 +140,35 @@ public class MyMuhurtaView extends AstrosoftView {
                 table.setRowHeight(i, RowHeight);
             }
         }
-        
-        // Charts
+    }
+
+    private void refreshCharts(app.astrosoft.core.MyMuhurta muhurta) {
         chartsPanel.removeAll();
-        app.astrosoft.beans.ChartData muhurtaData = new app.astrosoft.beans.PlanetChartData(app.astrosoft.consts.Varga.Rasi, muhurta.getPanchang().getPlanetPositions(), muhurta.getPanchang().getPlanetDirection()) {
+
+        Chart muhurtaRasiChart = new Chart(new app.astrosoft.beans.PlanetChartData(
+            app.astrosoft.consts.Varga.Rasi,
+            muhurta.getPanchang().getPlanetPositions(),
+            muhurta.getPanchang().getPlanetDirection()) {
             public String getChartName() { return "<html><center>Muhurta<br>Rasi</center></html>"; }
-        };
-        chartsPanel.add(new Chart(muhurtaData, chartSize));
-        
+        }, chartSize);
+        chartsPanel.add(muhurtaRasiChart);
+
         if (userHoroscope != null) {
-            app.astrosoft.beans.ChartData d1Data = new app.astrosoft.beans.PlanetChartData(app.astrosoft.consts.Varga.Rasi, userHoroscope.getPlanetaryInfo()) {
+            Chart natalRasiChart = new Chart(new app.astrosoft.beans.PlanetChartData(
+                app.astrosoft.consts.Varga.Rasi,
+                userHoroscope.getPlanetaryInfo()) {
                 public String getChartName() { return "<html><center>Natal<br>Rasi</center></html>"; }
-            };
-            chartsPanel.add(new Chart(d1Data, chartSize));
-            
-            
-            app.astrosoft.beans.ChartData d9Data = new app.astrosoft.beans.PlanetChartData(app.astrosoft.consts.Varga.Navamsa, userHoroscope.getPlanetaryInfo()) {
+            }, chartSize);
+            chartsPanel.add(natalRasiChart);
+
+            Chart natalNavamsaChart = new Chart(new app.astrosoft.beans.PlanetChartData(
+                app.astrosoft.consts.Varga.Navamsa,
+                userHoroscope.getPlanetaryInfo()) {
                 public String getChartName() { return "<html><center>Natal<br>Navamsa</center></html>"; }
-            };
-            chartsPanel.add(new Chart(d9Data, chartSize));
+            }, chartSize);
+            chartsPanel.add(natalNavamsaChart);
         }
-        
+
         chartsPanel.revalidate();
         chartsPanel.repaint();
     }
@@ -196,67 +214,26 @@ public class MyMuhurtaView extends AstrosoftView {
     private JPanel createBottomPanel() {
         JPanel bottomPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 10, 10));
         bottomPanel.setOpaque(false);
-        
-        javax.swing.JButton balamBtn = new javax.swing.JButton("Show Balam Calendar") {
-            @Override
-            protected void paintComponent(java.awt.Graphics g) {
-                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                if (getModel().isArmed()) {
-                    g2.setColor(java.awt.Color.LIGHT_GRAY);
-                } else {
-                    g2.setColor(getBackground());
-                }
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
-                super.paintComponent(g2);
-                g2.dispose();
-            }
-        };
-        balamBtn.setContentAreaFilled(false);
-        balamBtn.setFocusPainted(false);
-        balamBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        balamBtn.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 12));
-        balamBtn.setPreferredSize(new java.awt.Dimension(160, 30));
-        
+
+        javax.swing.JButton balamBtn = createRoundedButton("Show Balam Calendar", java.awt.Font.BOLD, new java.awt.Dimension(160, 30));
         balamBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                app.astrosoft.core.MyMuhurta muhurta = new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, userHoroscope);
                 app.astrosoft.ui.dlg.BalamCalendarDialog dlg = new app.astrosoft.ui.dlg.BalamCalendarDialog(
                     javax.swing.SwingUtilities.getWindowAncestor(MyMuhurtaView.this),
-                    muhurta
+                    createMuhurta()
                 );
                 dlg.setVisible(true);
             }
         });
-        
-        javax.swing.JButton editBtn = new javax.swing.JButton("Edit Date/Time") {
-            @Override
-            protected void paintComponent(java.awt.Graphics g) {
-                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                if (getModel().isArmed()) {
-                    g2.setColor(java.awt.Color.LIGHT_GRAY);
-                } else {
-                    g2.setColor(getBackground());
-                }
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
-                super.paintComponent(g2);
-                g2.dispose();
-            }
-        };
-        editBtn.setContentAreaFilled(false);
-        editBtn.setFocusPainted(false);
-        editBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        editBtn.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 12));
-        editBtn.setPreferredSize(new java.awt.Dimension(120, 30));
-        
+
+        javax.swing.JButton editBtn = createRoundedButton("Edit Date/Time", java.awt.Font.PLAIN, new java.awt.Dimension(120, 30));
         editBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 app.astrosoft.ui.dlg.MuhurtaConfigDialog dlg = new app.astrosoft.ui.dlg.MuhurtaConfigDialog(
-                    null, 
-                    selectedDate, 
-                    selectedTime, 
-                    selectedPlace, 
+                    null,
+                    selectedDate,
+                    selectedTime,
+                    selectedPlace,
                     new app.astrosoft.ui.dlg.MuhurtaConfigDialog.ConfigListener() {
                         public void configChanged(java.util.Date date, java.util.Date time, app.astrosoft.beans.Place place) {
                             selectedDate = date;
@@ -269,9 +246,33 @@ public class MyMuhurtaView extends AstrosoftView {
                 dlg.showDialog();
             }
         });
-        
+
         bottomPanel.add(balamBtn);
         bottomPanel.add(editBtn);
         return bottomPanel;
+    }
+
+    private javax.swing.JButton createRoundedButton(String text, int fontStyle, java.awt.Dimension preferredSize) {
+        javax.swing.JButton button = new javax.swing.JButton(text) {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                if (getModel().isArmed()) {
+                    g2.setColor(java.awt.Color.LIGHT_GRAY);
+                } else {
+                    g2.setColor(getBackground());
+                }
+                g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        button.setFont(new java.awt.Font("SansSerif", fontStyle, 12));
+        button.setPreferredSize(preferredSize);
+        return button;
     }
 }
