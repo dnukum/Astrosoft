@@ -22,6 +22,7 @@ public class MyMuhurta {
     private Place selectedPlace;
     private Horoscope userHoroscope;
     private Panchang pan;
+    private final Date eventInstant;
 
     public MyMuhurta(Date date, Date time, Place place, Horoscope horoscope) {
         this.selectedDate = date;
@@ -48,11 +49,29 @@ public class MyMuhurta {
         cal.set(Calendar.SECOND, tCal.get(Calendar.SECOND));
         cal.set(Calendar.MILLISECOND, 0);
         
+        eventInstant = new Date(cal.getTimeInMillis());
         if (selectedPlace != null) {
             pan = new Panchang(cal.getTime(), selectedPlace);
         } else {
             pan = new Panchang(cal.getTime());
         }
+    }
+
+    public Date getEventInstant() { return new Date(eventInstant.getTime()); }
+
+    /** Domain orchestration; call outside the Swing event-dispatch thread. */
+    public app.astrosoft.beans.BalamWindowDetails getBalamWindowDetails(Date start, Date end) {
+        if (start == null || end == null) throw new IllegalArgumentException("Window required");
+        Date windowStart = new Date(start.getTime());
+        Date windowEnd = new Date(end.getTime());
+        java.util.TimeZone tz = selectedPlace == null ? java.util.TimeZone.getDefault()
+            : selectedPlace.astrosoftTimeZone().getTimeZone();
+        List<app.astrosoft.beans.BalamWindowDetails.Entry> entries = new ArrayList<>();
+        for (BalamWindowEngine.Segment segment : BalamWindowEngine.generate(windowStart, windowEnd, tz)) {
+            entries.add(new app.astrosoft.beans.BalamWindowDetails.Entry(segment.start, segment.end,
+                segment.paksha, segment.thithi, segment.weekday, segment.isWarning()));
+        }
+        return new app.astrosoft.beans.BalamWindowDetails(windowStart, windowEnd, tz, entries);
     }
 
     public TableData<MapTableRow> getTableData() {
@@ -71,8 +90,8 @@ public class MyMuhurta {
             : selectedPlace.astrosoftTimeZone().getTimeZone();
         df.setTimeZone(tz);
         tf.setTimeZone(tz);
-        String dateStr = df.format(pan.getDate().getTime());
-        String timeStr = tf.format(pan.getDate().getTime());
+        String dateStr = df.format(eventInstant);
+        String timeStr = tf.format(eventInstant);
         
         String placeStr = "Default Place";
         String tzStr = "";
@@ -116,6 +135,27 @@ public class MyMuhurta {
 
     public Panchang getPanchang() {
         return pan;
+    }
+
+    /** Inverse candidates using the fixed three-column Navatara table, not date searching. */
+    public static app.astrosoft.beans.TaraChandraMatchResult find_tara_chandra_match(
+            Nakshathra birthNak, Rasi birthRasi, int targetTara, int targetChandra) {
+        if (birthNak == null || birthRasi == null || targetTara < 1 || targetTara > 9
+                || targetChandra < 1 || targetChandra > 12) {
+            throw new IllegalArgumentException("Birth star/sign required; Tara 1-9 and Chandra 1-12");
+        }
+        // Step 1: inclusive Chandra count, then sign-overlapping stars.
+        Rasi targetRasi = Rasi.ofIndex((birthRasi.ordinal() + targetChandra - 1) % 12);
+        EnumSet<Nakshathra> chandraSet = Nakshathra.ofRasi(targetRasi);
+        // Step 2: inclusive Tara count, then the fixed table row across its three cycles.
+        int primary = (birthNak.ordinal() + targetTara - 1) % 27;
+        int row = primary % 9;
+        EnumSet<Nakshathra> taraSet = EnumSet.of(Nakshathra.ofIndex(row),
+            Nakshathra.ofIndex(row + 9), Nakshathra.ofIndex(row + 18));
+        // Step 3: all matching logic belongs in Core; the bean only carries results.
+        EnumSet<Nakshathra> matches = taraSet.clone();
+        matches.retainAll(chandraSet);
+        return new app.astrosoft.beans.TaraChandraMatchResult(taraSet, chandraSet, matches);
     }
 
     /**

@@ -41,6 +41,8 @@ public class BalamCalendarModel {
             cols.add(AstrosoftTableColumn.SpouseChandraBalam);
         }
 
+        cols.add(AstrosoftTableColumn.Match);
+
         DefaultColumnMetaData meta = new DefaultColumnMetaData(cols);
         MapTableRowHelper helper = new MapTableRowHelper(meta);
 
@@ -77,13 +79,28 @@ public class BalamCalendarModel {
                 pChandraObj = MyMuhurta.getChandraBalamResult(partnerRasi, row.getTransitRasi());
             }
 
+            java.util.EnumSet<Nakshathra> matches = null;
+            if (taraObj instanceof TaraBalamResult && chandraObj instanceof ChandraBalamResult) {
+                matches = MyMuhurta.find_tara_chandra_match(birthNak, birthRasi,
+                    ((TaraBalamResult) taraObj).getTara().getNumber(),
+                    ((ChandraBalamResult) chandraObj).getHouse().getHouseNumber()).getMatches();
+            }
+            if (pTaraObj instanceof TaraBalamResult && pChandraObj instanceof ChandraBalamResult) {
+                java.util.EnumSet<Nakshathra> partnerMatches = MyMuhurta.find_tara_chandra_match(
+                    partnerNak, partnerRasi, ((TaraBalamResult) pTaraObj).getTara().getNumber(),
+                    ((ChandraBalamResult) pChandraObj).getHouse().getHouseNumber()).getMatches();
+                if (matches == null) matches = partnerMatches;
+                else matches.retainAll(partnerMatches);
+            }
+            Object matchCell = matches == null ? "-" : new app.astrosoft.beans.BalamMatchCell(matches);
+
             BalamDateCell dateCell = new BalamDateCell(row, sdf);
             MapTableRow tRow;
 
             if (partnerHoroscope == null) {
-                tRow = helper.createRow(dateCell, taraObj, chandraObj);
+                tRow = helper.createRow(dateCell, taraObj, chandraObj, matchCell);
             } else {
-                tRow = helper.createRow(dateCell, taraObj, chandraObj, pTaraObj, pChandraObj);
+                tRow = helper.createRow(dateCell, taraObj, chandraObj, pTaraObj, pChandraObj, matchCell);
             }
             tableRows.add(tRow);
         }

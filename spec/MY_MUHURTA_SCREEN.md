@@ -160,3 +160,39 @@ Implementation: size is a panel client property; host layout clamps actual bound
 ## Planet Nakshatra hover
 
 Presentation: occupied planet hover shows only Nakshatra name, no planet name or Pada. Shared Chart queries PlanetChartData precomputed results without astronomical calculations. Natal results come from PlanetaryInfo; Panchang records Nakshatra using existing Nakshathra.ofDeg on the same longitude map used for chart positions, with no new formula. Missing results suppress planet tooltip; other cells retain house tooltips. Ascendant is shown only if its longitude is supplied by domain, never inferred from Rasi. Muhurta refresh creates fresh data. Tests cover lookup, null/missing values, defensive copies; visual hover verification remains required.
+
+
+## Tara Chandra inverse candidates
+
+User-supplied rule overrides unspecified traditions: fixed Navatara rows have indices q, q+9, q+18; count inclusively from birth sign for Chandra and birth star for Tara. Core MyMuhurta.find_tara_chandra_match takes birth Nakshathra/Rasi, Tara 1-9, Chandra 1-12, returns TaraChandraMatchResult with defensive EnumSet copies of Tara Set, Chandra Set, Match. Chandra is calculated first using (r+C-1)%12 and existing Nakshathra.ofRasi; Tara primary is (n+T-1)%27 and row is primary%9. Intersection uses retainAll in Core; TaraChandraMatchResult only defensively copies and exposes the three computed sets. Null birth inputs/out-of-range targets throw IllegalArgumentException; no match is empty, not guessed. Overlapping stars count in both signs; these are candidates, not complete transit windows.
+
+Selection details retain existing information and append separate three-column Tara Set / Chandra Set / Match tables for each loaded person. UI only invokes core and formats names; an empty match displays exactly Null: Astronomically impossible combination. Person-2-only uses Person 2 as primary. No natal data suppresses candidates. Normal row changes recalculate from row numbers, Update behavior remains unchanged.
+
+JUnit tests cover examples, wraparound, all three cycles, boundary-spanning Krittika, invalid arguments, defensive copies of constructor inputs and getters, and all 34,992 birth-star/sign/target combinations against forward Tara counting plus independent integer interval-overlap oracle (4 units/star, 9/sign). UI integration regression checks both person paths and headings.
+
+
+## Calendar Match column
+
+Presentation decision: append Match after all person score columns. Core calendar model invokes existing inverse matcher with each loaded person's birth inputs and the row's Tara/Chandra numbers. With both people intersect their matches; one person uses their result. No birth context displays -, empty candidates use the existing exact Null message. BalamMatchCell carries defensive copies and formats names only. Existing score column indexes and selected-row details stay unchanged. Tests check no-context Match value and match-cell copy/empty behavior, alongside existing exhaustive matcher coverage.
+
+
+## Tara star display override
+
+User-approved presentation rule: Tara 4 (Kshema) and 8 (Mitra) use one green star (#1E9E3A). Tara 2/6/9 retain two green stars; 7 one red (#D32F2F); 1/3/5 one yellow (#E0A800). This overrides the prior simplified display mapping, not the detailed Tara evaluation or candidate formulas. Tara.getThumbRuleGrade adds GOOD for 4/8; shared calendar renderer formats one green star. Actual Swing-renderer unit test checks all nine numbers, counts and colors with selection both on and off. No changes to Chandra display.
+
+
+## Selected-window Panchang details
+
+Product rule: the panel below the Balam Calendar displays explicit Start and End labels and replaces the personalized Balam/candidate tables with two plain lines: Thithi (including Paksham), then Varam. Ordered changes use arrows; consecutive duplicates are suppressed. Start/End times appear only in the existing header, not repeated per segment. Prathamai, Ashtami, Navami and Amavasya are red in either Paksham; this is a user-specified warning, not a universal classical rejection rule.
+
+Implementation: inputs are the selected absolute start/end instants and event-place timezone. Normalize Moon minus Sun longitude into [0,360); the zero-based tithi index is floor(elongation / 12). Indices 0–14 are Shukla, 15–29 Krishna; index 29 is Amavasya. Find transitions by hourly bracketing and millisecond bisection using the existing Swiss ephemeris helper. Return positive-duration half-open segments covering exactly the selected window, split additionally at local civil midnight. Varam follows the existing Panchang civil weekday convention, not a newly introduced sunrise rule. All dates use the selected event timezone.
+
+Edge cases and tests: one/multiple tithis, both Paksha transitions, transition at start/end, all warning indices, empty/reversed windows, DST midnight, and real-ephemeris interval coverage with no gaps. Expected output is ordered, contiguous, clipped segments with Paksham, Thithi, Varam and warning status.
+
+
+### Window-detail layering
+Core MyMuhurta orchestrates the selected absolute start/end window and event-place timezone, invoking BalamWindowEngine. BalamWindowDetails is an immutable bean snapshot (defensive Date/TimeZone copies and unmodifiable entry list); it performs no domain calculations. The Swing controller snapshots selection inputs and calls Core through SwingWorker. Selection/context refresh and panel removal invalidate/cancel prior requests; stale completions cannot replace the current result. The renderer accepts only completed results, formats the Core-provided weekday, deduplicates consecutive display values, and adds HTML/colors. Core retains all existing phase formulas, clipping and midnight conventions. Tests cover bean immutability, actual rendered HTML, Core window orchestration, source-level background/stale-result safeguards, and existing boundary/ephemeris cases. No new astrology rule is introduced.
+
+
+### Event time versus daily Panchang time
+Core preserves the composed event instant before constructing Panchang. The main table Date/Time use that event instant in the selected event-place timezone, not Panchang's mutable daily-reference Calendar. Inputs: selected event date, selected event clock time and place timezone. Composition copies local Y/M/D from date and H/M/S from time with milliseconds zeroed. Expected: editing event time changes the table; Calendar Update shows the exact selected window start (to seconds). Tests cover two different clock times on one date, next-date window-start update and defensive result copies. Daily Panchang calculations remain unchanged.

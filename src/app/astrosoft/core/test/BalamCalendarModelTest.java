@@ -12,6 +12,12 @@ import app.astrosoft.ui.table.TableData;
 import app.astrosoft.core.BalamCalendarModel;
 
 public class BalamCalendarModelTest extends TestCase {
+    public void testMatchIsFinalColumnWithoutBirthContext() {
+        BalamCalendarModel model = new BalamCalendarModel(java.util.TimeZone.getTimeZone("UTC"), null);
+        app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> data = model.buildTable(2026, 5, null);
+        assertEquals("-", data.getRow(0).getColumnData(app.astrosoft.consts.AstrosoftTableColumn.Match));
+    }
+
 
     public void testBuildTableWithoutPartnerHasThreeColumns() {
         BalamCalendarModel model = new BalamCalendarModel(TimeZone.getTimeZone("Asia/Kolkata"), null);

@@ -29,11 +29,27 @@ public class BalamCalendarPanel extends JPanel {
     private AstrosoftTableModel tableModel;
     private JLabel monthLabel;
     private Horoscope partnerHoroscope;
+    private Horoscope primaryHoroscope;
     private String primaryLabel = "Person";
     private String partnerLabel = "Person";
     private JScrollPane scrollPane;
     private JEditorPane detailsPane;
     private JSplitPane splitPane;
+    private SwingWorker<app.astrosoft.beans.BalamWindowDetails, Void> detailsWorker;
+    private long detailsRequest;
+
+    private void cancelDetailsRequest() {
+        detailsRequest++;
+        if (detailsWorker != null) detailsWorker.cancel(true);
+        detailsWorker = null;
+    }
+
+    @Override
+    public void removeNotify() {
+        cancelDetailsRequest();
+        super.removeNotify();
+    }
+
 
     public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.Consumer<java.util.Date> updateAction) {
         this(muhurta, updateAction, null, null);
@@ -65,6 +81,7 @@ public class BalamCalendarPanel extends JPanel {
     /** Shared selectors are owned by the main MyMuhurta screen. */
     public void setPeople(Horoscope person1, Horoscope person2) {
         Horoscope primary = person1 != null ? person1 : person2;
+        primaryHoroscope = primary;
         partnerHoroscope = person1 != null ? person2 : null;
         primaryLabel = person1 != null ? "Person 1" : "Person 2";
         partnerLabel = "Person 2";
@@ -130,6 +147,7 @@ public class BalamCalendarPanel extends JPanel {
     }
     
     private void updateTable() {
+        cancelDetailsRequest();
         String[] months = {"", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
         monthLabel.setText(months[currentMonth] + " " + currentYear);
         
@@ -140,7 +158,8 @@ public class BalamCalendarPanel extends JPanel {
             meta = new DefaultColumnMetaData(
                 app.astrosoft.consts.AstrosoftTableColumn.Date,
                 app.astrosoft.consts.AstrosoftTableColumn.TaraBalam,
-                app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam
+                app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam,
+                app.astrosoft.consts.AstrosoftTableColumn.Match
             );
         } else {
             meta = new DefaultColumnMetaData(
@@ -148,7 +167,8 @@ public class BalamCalendarPanel extends JPanel {
                 app.astrosoft.consts.AstrosoftTableColumn.TaraBalam,
                 app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam,
                 app.astrosoft.consts.AstrosoftTableColumn.SpouseTaraBalam,
-                app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam
+                app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam,
+                app.astrosoft.consts.AstrosoftTableColumn.Match
             );
         }
         
@@ -203,10 +223,7 @@ public class BalamCalendarPanel extends JPanel {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = table.getSelectedRow();
                 updateButton.setEnabled(selectedRow >= 0 && table.getValueAt(selectedRow, 0) instanceof BalamDateCell);
-                if (selectedRow >= 0) {
-                    detailsPane.setText(buildDetailsHtml(selectedRow));
-                    detailsPane.setCaretPosition(0);
-                }
+                requestDetails(selectedRow);
             }
         });
         
@@ -218,33 +235,109 @@ public class BalamCalendarPanel extends JPanel {
     private static final String EMPTY_DETAILS =
         "<html><body style='font-family:sans-serif; padding:10px;'>Select a row to see details...</body></html>";
     
-    /** Renders everything known about the selected transit window for the bottom panel. */
-    private String buildDetailsHtml(int row) {
+    /** UI lifecycle only: snapshot selection, schedule Core, ignore stale completions. */
+    private void requestDetails(int row) {
+        cancelDetailsRequest();
+        if (row < 0 || !(table.getValueAt(row, 0) instanceof BalamDateCell)) {
+            detailsPane.setText(EMPTY_DETAILS);
+            return;
+        }
+        final BalamDateCell cell = (BalamDateCell) table.getValueAt(row, 0);
+        final java.util.Date start = new java.util.Date(cell.getRow().getStartTime().getTime());
+        final java.util.Date end = new java.util.Date(cell.getRow().getEndTime().getTime());
+        final app.astrosoft.consts.Nakshathra nak = cell.getRow().getTransitNakshathra();
+        final app.astrosoft.consts.Rasi rasi = cell.getRow().getTransitRasi();
+        final MyMuhurta context = muhurta;
+        final long request = detailsRequest;
+        detailsPane.setText("<html><body>Loading window details...</body></html>");
+        detailsWorker = new SwingWorker<app.astrosoft.beans.BalamWindowDetails, Void>() {
+            @Override
+            protected app.astrosoft.beans.BalamWindowDetails doInBackground() {
+                return context.getBalamWindowDetails(start, end);
+            }
+            @Override
+            protected void done() {
+                if (isCancelled() || request != detailsRequest) return;
+                try {
+                    detailsPane.setText(buildDetailsHtml(get(), nak, rasi));
+                    detailsPane.setCaretPosition(0);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (java.util.concurrent.CancellationException ex) {
+                    // A newer selection owns the panel.
+                } catch (java.util.concurrent.ExecutionException ex) {
+                    detailsPane.setText("<html><body>Unable to load window details: "
+                        + htmlEscape(String.valueOf(ex.getCause().getMessage())) + "</body></html>");
+                }
+            }
+        };
+        detailsWorker.execute();
+    }
+
+    /** Presentation only: formats a completed immutable Core result. */
+    private static String buildDetailsHtml(app.astrosoft.beans.BalamWindowDetails details,
+            app.astrosoft.consts.Nakshathra nak, app.astrosoft.consts.Rasi rasi) {
         StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; padding:8px;'>");
-        
-        Object dateVal = table.getValueAt(row, 0);
-        if (dateVal instanceof BalamDateCell) {
-            BalamDateCell dc = (BalamDateCell) dateVal;
-            sb.append("<h3 style='margin:0 0 6px 0;'>").append(dc.formatStart())
-              .append(" &rarr; ").append(dc.formatEnd()).append("</h3>");
-            app.astrosoft.consts.Nakshathra nak = dc.getRow().getTransitNakshathra();
-            sb.append("<b>Transit Moon:</b> ").append(nak.name())
-              .append(" in ").append(dc.getRow().getTransitRasi().name()).append("<br>")
-              .append("<b>Lord:</b> ").append(nak.getLord().name()).append("<br><br>");
-        } else {
-            sb.append("<h3>").append(dateVal).append("</h3>");
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy HH:mm z");
+        dateFormat.setTimeZone(details.getTimeZone());
+        sb.append("<div style='margin:0 0 6px 0;'><b>Start:</b> ")
+          .append(htmlEscape(dateFormat.format(details.getStart())))
+          .append("<br><b>End:</b> ").append(htmlEscape(dateFormat.format(details.getEnd()))).append("</div>");
+        sb.append("<b>Transit Moon:</b> ").append(nak.name()).append(" in ").append(rasi.name())
+          .append("<br><b>Lord:</b> ").append(nak.getLord().name()).append("<br><br>");
+        StringBuilder thithis = new StringBuilder();
+        StringBuilder varams = new StringBuilder();
+        String previousThithi = null;
+        int previousVaram = -1;
+        String[] weekdays = new java.text.DateFormatSymbols().getWeekdays();
+        for (app.astrosoft.beans.BalamWindowDetails.Entry entry : details.getEntries()) {
+            String thithi = htmlEscape(entry.getPaksha().toString()) + " " + htmlEscape(entry.getThithi().toString());
+            if (!thithi.equals(previousThithi)) {
+                if (thithis.length() > 0) thithis.append(" &rarr; ");
+                if (entry.isWarning()) thithis.append("<font color='red'>");
+                thithis.append(thithi);
+                if (entry.isWarning()) thithis.append("</font>");
+                previousThithi = thithi;
+            }
+            if (entry.getWeekday() != previousVaram) {
+                if (varams.length() > 0) varams.append(" &rarr; ");
+                varams.append(htmlEscape(weekdays[entry.getWeekday()]));
+                previousVaram = entry.getWeekday();
+            }
         }
-        
-        sb.append("<table cellpadding='4' cellspacing='0' border='1'>");
-        sb.append("<tr><th></th><th align='left'>Tara Balam</th><th align='left'>Chandra Balam</th></tr>");
-        appendPersonRow(sb, htmlEscape(primaryLabel), table.getValueAt(row, 1), table.getValueAt(row, 2));
-        if (partnerHoroscope != null && table.getColumnCount() >= 5) {
-            appendPersonRow(sb, htmlEscape(partnerLabel), table.getValueAt(row, 3), table.getValueAt(row, 4));
-        }
-        sb.append("</table></body></html>");
+        sb.append("<b>Thithi:</b> ").append(thithis).append("<br>")
+          .append("<b>Varam:</b> ").append(varams).append("<br></body></html>");
         return sb.toString();
     }
-    
+
+    /** Presentation only: domain resolves candidates; UI formats returned sets. */
+    private void appendCandidateSets(StringBuilder sb, String label, Horoscope person,
+            Object taraVal, Object chandraVal) {
+        if (person == null || !(taraVal instanceof TaraBalamResult)
+                || !(chandraVal instanceof ChandraBalamResult)) return;
+        app.astrosoft.beans.TaraChandraMatchResult result = MyMuhurta.find_tara_chandra_match(
+            person.getNakshathra().getNak(), person.getRasi(),
+            ((TaraBalamResult) taraVal).getTara().getNumber(),
+            ((ChandraBalamResult) chandraVal).getHouse().getHouseNumber());
+        sb.append("<h4>").append(htmlEscape(label)).append(" — Candidates</h4>");
+        sb.append("<table cellpadding='4' cellspacing='0' border='1' width='100%'>")
+          .append("<tr><th>Tara Set</th><th>Chandra Set</th><th>Match</th></tr><tr>");
+        sb.append("<td valign='top'>").append(formatNakshathras(result.getTaraSet())).append("</td>");
+        sb.append("<td valign='top'>").append(formatNakshathras(result.getChandraSet())).append("</td>");
+        sb.append("<td valign='top'>").append(result.getMatches().isEmpty()
+            ? "Null: Astronomically impossible combination." : formatNakshathras(result.getMatches()));
+        sb.append("</td></tr></table>");
+    }
+
+    private static String formatNakshathras(java.util.Set<app.astrosoft.consts.Nakshathra> stars) {
+        StringBuilder text = new StringBuilder();
+        for (app.astrosoft.consts.Nakshathra star : stars) {
+            if (text.length() > 0) text.append("<br>");
+            text.append(htmlEscape(star.toString()));
+        }
+        return text.toString();
+    }
+
     private void appendPersonRow(StringBuilder sb, String label, Object taraVal, Object chandraVal) {
         sb.append("<tr><td valign='top'><b>").append(label).append("</b></td><td valign='top'>");
         if (taraVal instanceof TaraBalamResult) {
@@ -267,7 +360,7 @@ public class BalamCalendarPanel extends JPanel {
 
     /**
      * Renders Tara and Chandra cells as "N (stars)" using Muthu's thumb rules.
-     * Tara:    2/6/9 = 2 green, 7 = 1 red, others = 1 yellow.
+     * Tara:    2/6/9 = 2 green, 4/8 = 1 green, 7 = 1 red, others = 1 yellow.
      * Chandra: 3/6/10/11 = 3 green, 1/7 = 2 green, 8 = 1 red, others = 1 green.
      */
     private static class BalamStarRenderer extends javax.swing.table.DefaultTableCellRenderer {
@@ -284,6 +377,7 @@ public class BalamCalendarPanel extends JPanel {
                 app.astrosoft.consts.Tara tara = ((TaraBalamResult) value).getTara();
                 switch (tara.getThumbRuleGrade()) {
                     case BEST:  setStars(tara.getNumber(), 2, GREEN);  break;
+                    case GOOD:  setStars(tara.getNumber(), 1, GREEN);  break;
                     case AVOID: setStars(tara.getNumber(), 1, RED);    break;
                     default:    setStars(tara.getNumber(), 1, YELLOW); break;
                 }

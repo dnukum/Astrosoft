@@ -131,6 +131,10 @@ public enum AstrosoftTableColumn {
 	EndDate {
 		public String toString() { return "End Date/Time"; }
 	},
+    Match {
+        @Override
+        public String toString() { return "Match"; }
+    },
 	TaraBalam {
 		public String toString() { return "Self: Tara"; }
 	},
