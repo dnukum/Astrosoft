@@ -37,13 +37,15 @@ public class MuhurtaConfigDialog extends AstrosoftDialog {
         super(parent, "New Muhurta", dlgSize);
         setModal(true); // Ensure it blocks interactions
         
+        final java.util.TimeZone zone = initPlace == null ? java.util.TimeZone.getDefault()
+            : initPlace.astrosoftTimeZone().getTimeZone();
         dateChooser = CalendarChooser.getDateChooser();
         JPanel dateChooserPanel = dateChooser.getChooser();
-        dateChooser.setSelectedDate(initDate);
+        dateChooser.setSelectedDate(app.astrosoft.util.MuhurtaDateTime.toChooserDate(initDate, zone));
         
         timeChooser = CalendarChooser.getTimeChooser();
         JPanel timeChooserPanel = timeChooser.getChooser();
-        timeChooser.setSelectedDate(initTime);
+        timeChooser.setSelectedDate(app.astrosoft.util.MuhurtaDateTime.toChooserDate(initTime, zone));
         
         placeChooser = new PlaceChooser(new Dimension(400, 140), false);
         placeChooser.addPlaces(java.util.Collections.singletonList(initPlace));
@@ -79,7 +81,18 @@ public class MuhurtaConfigDialog extends AstrosoftDialog {
         
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                listener.configChanged(dateChooser.getSelectedDate(), timeChooser.getSelectedDate(), placeChooser.getSelectedPlace());
+                Place place = placeChooser.getSelectedPlace();
+                java.util.TimeZone selectedZone = place == null ? zone : place.astrosoftTimeZone().getTimeZone();
+                try {
+                    Date instant = app.astrosoft.util.MuhurtaDateTime.fromChooserValues(
+                        dateChooser.getSelectedDate(), timeChooser.getSelectedDate(), selectedZone);
+                    listener.configChanged(instant, instant, place);
+                } catch (IllegalArgumentException invalidTime) {
+                    javax.swing.JOptionPane.showMessageDialog(MuhurtaConfigDialog.this,
+                        "This local date/time does not exist in the selected timezone. Choose another time.",
+                        "Invalid local time", javax.swing.JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
                 closeDialog();
             }
         });

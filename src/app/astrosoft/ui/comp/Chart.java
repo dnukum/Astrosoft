@@ -106,7 +106,23 @@ public class Chart extends JPanel{
 			if(dataHouses.contains(house)){
 
 				Table table = chartData.getChartHouseTable(house);
-				AstrosoftTable houseTable = new AstrosoftTable(new AstrosoftTableModel(table), TableStyle.NONE);
+				AstrosoftTable houseTable = new AstrosoftTable(new AstrosoftTableModel(table), TableStyle.NONE) {
+                    @Override
+                    public String getToolTipText(java.awt.event.MouseEvent event) {
+                        int row = rowAtPoint(event.getPoint());
+                        int col = columnAtPoint(event.getPoint());
+                        if (row >= 0 && col >= 0 && chartData instanceof PlanetChartData) {
+                            Object value = getValueAt(row, col);
+                            if (value instanceof Planet) {
+                                app.astrosoft.consts.Nakshathra nak =
+                                    ((PlanetChartData) chartData).getPlanetNakshathra((Planet) value);
+                                return nak == null ? null : nak.toString();
+                            }
+                        }
+                        // Keep the existing house tooltip outside occupied planet cells.
+                        return super.getToolTipText(event);
+                    }
+                };
 				panel.add(houseTable, getConstrains(houseNo));
 
 				//houseTable.setDefaultRenderer(Planet.class, new PlanetCellRenderer());

@@ -589,7 +589,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 				Command.CHART_VIEW, Command.PLANET_POS_VIEW,
 				Command.BHAVA_POS_VIEW, Command.DIV_CHART_VIEW,
 				Command.ASHTAVARGA_VIEW, Command.SHADBALA_VIEW,
-				Command.YOGA_COMBINATIONS_VIEW, Command.DASAS_VIEW, Command.MY_MUHURTA_VIEW);
+				Command.YOGA_COMBINATIONS_VIEW, Command.DASAS_VIEW);
 
 		actionMgr.enableActions(actions, enable);
 	}

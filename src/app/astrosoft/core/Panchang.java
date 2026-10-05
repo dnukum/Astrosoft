@@ -120,6 +120,13 @@ public class Panchang {
     	calcPanchang();
 	}*/
 
+    private final EnumMap<Planet, app.astrosoft.consts.Nakshathra> planetNakshathra =
+        new EnumMap<Planet, app.astrosoft.consts.Nakshathra>(Planet.class);
+
+    public EnumMap<Planet, app.astrosoft.consts.Nakshathra> getPlanetNakshathra() {
+        return new EnumMap<Planet, app.astrosoft.consts.Nakshathra>(planetNakshathra);
+    }
+
     private void calcPlanetaryInfo(  ) {
 
     	if (this.place == null) {
@@ -135,6 +142,12 @@ public class Panchang {
     	swissHelper = new SwissHelper(new SweDate( cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH), panTime ));
     	
     	EnumMap<Planet, Double> planetPosition = swissHelper.getPlanetaryPosition();
+        planetNakshathra.clear();
+        for (java.util.Map.Entry<Planet, Double> entry : planetPosition.entrySet()) {
+            if (entry.getValue() != null) {
+                planetNakshathra.put(entry.getKey(), app.astrosoft.consts.Nakshathra.ofDeg(entry.getValue()));
+            }
+        }
     	sun = planetPosition.get(Planet.Sun);
     	moon = planetPosition.get(Planet.Moon);
     	rasi = PlanetaryInfo.positionToRasiNum(planetPosition);

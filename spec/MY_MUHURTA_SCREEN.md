@@ -117,10 +117,46 @@ To support future implementations of classical electional windows (like Abhijit 
 
 ## Inline Balam calendar lifecycle
 
-Product/design decision: the Balam calendar is embedded below the MyMuhurta overview, not opened as a modal dialog. The Show/Hide button toggles visibility; the calendar close button follows the same hide path. Opening twice must not add duplicate panels; closing twice is harmless.
+Product/design decision: the calendar is inline. The main Show/Hide toggle and calendar close action dismiss the same panel. Reopening uses current shared person selections. Editing date/time/place refreshes an open calendar and resets its month. With neither person selected, the calendar is disabled and any open panel closes.
 
-Product/design decision: editing the main date, time, or place refreshes an already-open calendar in place and resets its displayed month to the updated context month. The selected partner is preserved during this refresh. A closed calendar stays closed; reopening creates a fresh calendar with the latest context and no retained partner selection.
+## Shared person selection
 
-Implementation detail: `MyMuhurtaView.updateView()` supplies the current `MyMuhurta` to `BalamCalendarPanel.setContext()`. Refresh rebuilds calendar rows and clears stale row details through the existing table-update path. Null context is rejected. No astrology computation or textual domain rule is changed.
+Product/design decision: Person 1 and Person 2 selectors above the charts load or replace horoscope files. Adjacent clear buttons remove selections; canceling or an unsuccessful load leaves existing selections unchanged. Entry starts with Person 1 and Person 2 unselected regardless of the main-screen horoscope; no role-selection prompt. MyMuhurta remains accessible with no main-screen horoscope.
 
-Regression coverage: toggle open/closed, repeated show/hide, close callback, synchronized button label, reopening with latest context, context month/year change, and partner preservation. The headless Swing harness executes extracted production lifecycle methods with a lightweight model; it does not replace a full interactive UI check.
+Product/design decision: the information table excludes Name, Tara Balam and Chandra Balam. The chart sequence is Muhurta Rasi, optional Person 1 Rasi, optional Person 2 Rasi, with role/name titles; no Navamsa. The calendar uses these same selections, with role/name headers and detail labels; it has no independent partner picker.
+
+Implementation detail: when both persons are selected, Person 1 supplies the existing primary model slot and Person 2 the partner slot; either alone supplies the primary slot. Selection changes refresh an open panel. No astrology formulas or domain rules change.
+
+Regression expectations: zero selections gives one chart and disabled calendar; either single selection gives two charts and three calendar columns; both give three charts and five columns. Clear last selection closes calendar. Existing toggle/close/month-reset behavior remains covered by the headless lifecycle harness. Source-contract tests cover shared selectors and menu gating; visual/file-dialog behavior requires interactive verification.
+
+
+## Default timezone initialization
+
+Entry uses the current instant and global default place/timezone from application preferences. Display and calculations use the selected-place zone, not the host clock; selected person birth zones do not affect Muhurta. Editing date/time interprets local fields in the chosen place timezone. Tests verify next-day rollover in India and summer DST roundtrip. The legacy host-zone chooser Date encoding can normalize host-zone DST-gap clock fields; resolving that limitation requires a timezone-aware chooser.
+
+
+## Table column sizing
+
+The Panchanga table and its action buttons are anchored together at the top of the left column. The column may fill the available height, but its content uses preferred height, keeping Show/Hide Balam Calendar and Edit Date/Time immediately below the table. Headless geometry checks cover 700, 1200 and 1600 pixel column heights.
+
+
+## Screen spacing
+
+Product/design decision: content starts 15 pixels from top/left and ends 20 pixels from right/bottom. The Personal horoscopes titled selector panel remains at preferred width instead of drawing a full-width border. Calendar Update sits beside month navigation in a centered group. Chart viewport sizing uses the padded right-column width on resize and selection changes. Geometry checks cover widths 1000, 1500 and 1900 pixels.
+
+
+## Calendar height bound
+
+Combined calendar controls, table and details are capped at 360 pixels high, shrinking to available height in shorter windows. Unused vertical space remains outside the panel. Table and details retain scrollbars and draggable divider. Production layout checks cover host heights 600, 900 and 1400 pixels.
+
+
+## Manual calendar resizing
+
+Product decision: initial calendar fills available column width and is 360 pixels high. Right, bottom and corner grips support horizontal, vertical and combined dragging. Requested size persists during month/context updates while the panel remains open, constrained to available host area, preserving existing 20 pixel outer margins. Minimum requested size is 400 by 200, overridden by a smaller available area. Reopening restores initial sizing.
+
+Implementation: size is a panel client property; host layout clamps actual bounds. JTable AUTO_RESIZE_ALL_COLUMNS adjusts columns with the viewport. Tests cover initial/manual sizes, available-space clamping, grip installation and column-width totals at two viewport widths. GUI dragging requires interactive verification.
+
+
+## Planet Nakshatra hover
+
+Presentation: occupied planet hover shows only Nakshatra name, no planet name or Pada. Shared Chart queries PlanetChartData precomputed results without astronomical calculations. Natal results come from PlanetaryInfo; Panchang records Nakshatra using existing Nakshathra.ofDeg on the same longitude map used for chart positions, with no new formula. Missing results suppress planet tooltip; other cells retain house tooltips. Ascendant is shown only if its longitude is supplied by domain, never inferred from Rasi. Muhurta refresh creates fresh data. Tests cover lookup, null/missing values, defensive copies; visual hover verification remains required.

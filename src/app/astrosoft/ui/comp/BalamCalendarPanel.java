@@ -19,7 +19,8 @@ import app.astrosoft.ui.table.TableDataFactory;
 import app.astrosoft.ui.table.DefaultColumnMetaData;
 
 public class BalamCalendarPanel extends JPanel {
-    private final Runnable closeAction;
+    private final java.util.function.Consumer<java.util.Date> updateAction;
+    private JButton updateButton;
     private MyMuhurta muhurta;
     private int currentYear;
     private int currentMonth;
@@ -28,18 +29,24 @@ public class BalamCalendarPanel extends JPanel {
     private AstrosoftTableModel tableModel;
     private JLabel monthLabel;
     private Horoscope partnerHoroscope;
-    private JButton partnerBtn;
+    private String primaryLabel = "Person";
+    private String partnerLabel = "Person";
     private JScrollPane scrollPane;
     private JEditorPane detailsPane;
     private JSplitPane splitPane;
 
-    public BalamCalendarPanel(MyMuhurta muhurta, Runnable closeAction) {
+    public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.Consumer<java.util.Date> updateAction) {
+        this(muhurta, updateAction, null, null);
+    }
+
+    public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.Consumer<java.util.Date> updateAction, Horoscope person1, Horoscope person2) {
         super();
-        this.closeAction = closeAction;
+        this.updateAction = updateAction;
         initComponents();
+        setPeople(person1, person2);
         setContext(muhurta);
 
-        setPreferredSize(new Dimension(800, 480));
+        setPreferredSize(new Dimension(800, 360));
         setMinimumSize(new Dimension(400, 200));
     }
     
@@ -49,41 +56,34 @@ public class BalamCalendarPanel extends JPanel {
             throw new IllegalArgumentException("Muhurta context must not be null");
         }
         this.muhurta = muhurta;
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(muhurta.getPanchang().getDate().getTime());
+        Calendar cal = (Calendar) muhurta.getPanchang().getDate().clone();
         currentYear = cal.get(Calendar.YEAR);
         currentMonth = cal.get(Calendar.MONTH) + 1;
         updateTable();
     }
 
+    /** Shared selectors are owned by the main MyMuhurta screen. */
+    public void setPeople(Horoscope person1, Horoscope person2) {
+        Horoscope primary = person1 != null ? person1 : person2;
+        partnerHoroscope = person1 != null ? person2 : null;
+        primaryLabel = person1 != null ? "Person 1" : "Person 2";
+        partnerLabel = "Person 2";
+    }
+
+    private static String htmlEscape(String text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
     private void initComponents() {
         setLayout(new BorderLayout());
         
-        JPanel topPanel = new JPanel(new FlowLayout());
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 6));
         JButton prevBtn = new JButton("< Prev Month");
         JButton nextBtn = new JButton("Next Month >");
         monthLabel = new JLabel("");
         monthLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         monthLabel.setPreferredSize(new Dimension(150, 30));
         monthLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
-        partnerBtn = new JButton("Select Partner...");
-        partnerBtn.addActionListener(e -> {
-            if (partnerHoroscope == null) {
-                String selectedFile = FileOps.openFileDialog(SwingUtilities.getWindowAncestor(BalamCalendarPanel.this), FileOps.FileDialogMode.OPEN, AstrosoftFileFilter.HOROSCOPE_EXTN);
-                if (selectedFile != null) {
-                    partnerHoroscope = Horoscope.createFromFile(selectedFile);
-                    if (partnerHoroscope != null) {
-                        partnerBtn.setText("Partner: " + partnerHoroscope.getBirthData().name());
-                        updateTable();
-                    }
-                }
-            } else {
-                partnerHoroscope = null;
-                partnerBtn.setText("Select Partner...");
-                updateTable();
-            }
-        });
         
         prevBtn.addActionListener(e -> {
             currentMonth--;
@@ -97,17 +97,24 @@ public class BalamCalendarPanel extends JPanel {
             updateTable();
         });
         
-        topPanel.add(partnerBtn);
-        topPanel.add(Box.createHorizontalStrut(20));
+
         topPanel.add(prevBtn);
         topPanel.add(monthLabel);
         topPanel.add(nextBtn);
-        JButton closeButton = new JButton("Close Balam Calendar");
-        closeButton.addActionListener(e -> closeAction.run());
-        JPanel header = new JPanel(new BorderLayout());
-        header.add(topPanel, BorderLayout.CENTER);
-        header.add(closeButton, BorderLayout.EAST);
-        add(header, BorderLayout.NORTH);
+        updateButton = new JButton("Update");
+        updateButton.setEnabled(false);
+        updateButton.setToolTipText("Apply the selected window start date/time to Muhurta");
+        updateButton.addActionListener(e -> {
+            int row = table == null ? -1 : table.getSelectedRow();
+            if (row < 0) return;
+            Object cell = table.getValueAt(row, 0);
+            if (cell instanceof BalamDateCell) {
+                updateAction.accept(new java.util.Date(((BalamDateCell) cell).getRow().getStartTime().getTime()));
+            }
+        });
+        topPanel.add(updateButton);
+        // Keep Update beside month navigation, centered as one responsive group.
+        add(topPanel, BorderLayout.NORTH);
         
         scrollPane = new JScrollPane();
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -116,9 +123,10 @@ public class BalamCalendarPanel extends JPanel {
         
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPane, new JScrollPane(detailsPane));
         splitPane.setResizeWeight(0.5);
-        splitPane.setDividerLocation(330);
+        splitPane.setDividerLocation(170);
         splitPane.setOneTouchExpandable(true);
         add(splitPane, BorderLayout.CENTER);
+        CalendarResizeHandles.install(this);
     }
     
     private void updateTable() {
@@ -168,6 +176,8 @@ public class BalamCalendarPanel extends JPanel {
             }
         };
         
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
         // GRID style disables selection rendering; re-enable it so the clicked row is highlighted.
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -182,9 +192,17 @@ public class BalamCalendarPanel extends JPanel {
             table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam);
         }
         
+        table.getColumnModel().getColumn(1).setHeaderValue(primaryLabel + " — Tara");
+        table.getColumnModel().getColumn(2).setHeaderValue(primaryLabel + " — Chandra");
+        if (partnerHoroscope != null) {
+            table.getColumnModel().getColumn(3).setHeaderValue(partnerLabel + " — Tara");
+            table.getColumnModel().getColumn(4).setHeaderValue(partnerLabel + " — Chandra");
+        }
+        table.getTableHeader().repaint();
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = table.getSelectedRow();
+                updateButton.setEnabled(selectedRow >= 0 && table.getValueAt(selectedRow, 0) instanceof BalamDateCell);
                 if (selectedRow >= 0) {
                     detailsPane.setText(buildDetailsHtml(selectedRow));
                     detailsPane.setCaretPosition(0);
@@ -193,6 +211,7 @@ public class BalamCalendarPanel extends JPanel {
         });
         
         detailsPane.setText(EMPTY_DETAILS);
+        updateButton.setEnabled(false);
         scrollPane.setViewportView(table);
     }
     
@@ -218,9 +237,9 @@ public class BalamCalendarPanel extends JPanel {
         
         sb.append("<table cellpadding='4' cellspacing='0' border='1'>");
         sb.append("<tr><th></th><th align='left'>Tara Balam</th><th align='left'>Chandra Balam</th></tr>");
-        appendPersonRow(sb, "Self", table.getValueAt(row, 1), table.getValueAt(row, 2));
+        appendPersonRow(sb, htmlEscape(primaryLabel), table.getValueAt(row, 1), table.getValueAt(row, 2));
         if (partnerHoroscope != null && table.getColumnCount() >= 5) {
-            appendPersonRow(sb, "Partner", table.getValueAt(row, 3), table.getValueAt(row, 4));
+            appendPersonRow(sb, htmlEscape(partnerLabel), table.getValueAt(row, 3), table.getValueAt(row, 4));
         }
         sb.append("</table></body></html>");
         return sb.toString();

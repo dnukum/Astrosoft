@@ -9,7 +9,7 @@ class MyMuhurtaFlyoutTest(unittest.TestCase):
         self.assertTrue(path.exists(), "Calendar panel must exist")
         source = path.read_text()
         self.assertIn("extends JPanel", source)
-        self.assertIn("closeAction.run()", source)
+        self.assertIn("updateAction.accept", source)
         self.assertNotIn("APPLICATION_MODAL", source)
         self.assertNotIn("setLocationRelativeTo", source)
 
@@ -20,7 +20,7 @@ class MyMuhurtaFlyoutTest(unittest.TestCase):
         self.assertIn("getBalamCalendarTable", source)
         self.assertIn("addListSelectionListener", source)
         self.assertIn("Next Month", source)
-        self.assertIn("Select Partner", source)
+        self.assertNotIn("Select Partner", source)
 
     def test_view_opens_and_dismisses_inline_panel(self):
         source = (ROOT / "src/app/astrosoft/ui/view/MyMuhurtaView.java").read_text()
@@ -41,7 +41,7 @@ class FlyoutLifecycleRegressionTest(unittest.TestCase):
 
     def test_context_refresh_updates_existing_panel_only_when_open(self):
         source = (ROOT / "src/app/astrosoft/ui/view/MyMuhurtaView.java").read_text()
-        self.assertIn("if (balamFlyout != null) {\n            balamFlyout.setContext(muhurta);", source)
+        self.assertIn("balamFlyout.setContext(muhurta);", source)
         panel = (ROOT / "src/app/astrosoft/ui/comp/BalamCalendarPanel.java").read_text()
         self.assertIn("public void setContext(MyMuhurta muhurta)", panel)
         self.assertIn("setContext(muhurta);", panel)
@@ -72,8 +72,10 @@ public class FlyoutLifecycleHarness extends JPanel {
     JPanel flyoutHost = new JPanel(new BorderLayout());
     BalamCalendarPanel balamFlyout;
     JButton balamBtn = new JButton("Show Balam Calendar");
+    Object person1Horoscope, person2Horoscope;
     MyMuhurta context = new MyMuhurta(2026, 10);
     MyMuhurta createMuhurta() { return context; }
+    void applyCalendarDate(java.util.Date date) {}
     static class MyMuhurta {
         Calendar date = Calendar.getInstance();
         MyMuhurta(int year, int month) { date.set(year, month - 1, 15); }
@@ -84,8 +86,9 @@ public class FlyoutLifecycleHarness extends JPanel {
         MyMuhurta muhurta;
         int currentYear, currentMonth, updates;
         Object partnerHoroscope = new Object();
-        Runnable closeAction;
-        BalamCalendarPanel(MyMuhurta m, Runnable close) { closeAction = close; setContext(m); }
+        java.util.function.Consumer<java.util.Date> updateAction;
+        BalamCalendarPanel(MyMuhurta m, java.util.function.Consumer<java.util.Date> update, Object person1, Object person2) { updateAction = update; setContext(m); }
+        void setPeople(Object person1, Object person2) {}
         void updateTable() { updates++; }
         CONTEXT_METHOD
     }
@@ -110,7 +113,7 @@ public class FlyoutLifecycleHarness extends JPanel {
             check(h.balamFlyout == null && h.flyoutHost.getComponentCount() == 0);
             check(h.balamBtn.getText().equals("Show Balam Calendar"));
             h.toggleBalamFlyout();
-            h.balamFlyout.closeAction.run();
+            h.hideBalamFlyout();
             check(h.balamFlyout == null && h.flyoutHost.getComponentCount() == 0);
             h.hideBalamFlyout();
             h.context = new MyMuhurta(2028, 12);

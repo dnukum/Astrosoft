@@ -54,7 +54,10 @@ public class MyMuhurtaView extends AstrosoftView {
     private java.util.Date selectedDate = new java.util.Date();
     private java.util.Date selectedTime = new java.util.Date();
     private app.astrosoft.beans.Place selectedPlace = app.astrosoft.ui.AstroSoft.getPreferences().getPlace();
-    private Horoscope userHoroscope;
+    private Horoscope person1Horoscope;
+    private Horoscope person2Horoscope;
+    private javax.swing.JButton person1Btn, person2Btn;
+    private javax.swing.JScrollPane chartScrollPane;
     
     private AstrosoftTableModel tableModel;
     private AstrosoftTable table;
@@ -75,7 +78,8 @@ public class MyMuhurtaView extends AstrosoftView {
         if (balamFlyout != null) {
             return;
         }
-        balamFlyout = new app.astrosoft.ui.comp.BalamCalendarPanel(createMuhurta(), () -> hideBalamFlyout());
+        balamFlyout = new app.astrosoft.ui.comp.BalamCalendarPanel(createMuhurta(), instant -> applyCalendarDate(instant), person1Horoscope, person2Horoscope);
+        balamFlyout.setPeople(person1Horoscope, person2Horoscope);
         flyoutHost.add(balamFlyout, BorderLayout.CENTER);
         balamBtn.setText("Hide Balam Calendar");
         flyoutHost.revalidate();
@@ -94,44 +98,50 @@ public class MyMuhurtaView extends AstrosoftView {
 
     public MyMuhurtaView(Point loc, Horoscope userHoroscope) {
         super(viewSize, loc);
-        this.userHoroscope = userHoroscope;
-        
-        
-        final JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        // Person selection is always explicit, independent of the main-screen chart.
+
+        final JPanel mainPanel = new JPanel(new BorderLayout(15, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 20, 20));
         
         chartsPanel = new JPanel(new java.awt.GridLayout(1, 0, 10, 10));
         
         mainPanel.add(createTablePanel(), BorderLayout.WEST);
         chartsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        final javax.swing.JScrollPane chartScrollPane = new javax.swing.JScrollPane(chartsPanel);
+        chartScrollPane = new javax.swing.JScrollPane(chartsPanel);
         chartScrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.LIGHT_GRAY, 1));
         
         final JPanel scrollWrapper = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         scrollWrapper.add(chartScrollPane);
-        mainPanel.add(scrollWrapper, BorderLayout.CENTER);
+        JPanel chartArea = new JPanel(new BorderLayout(0, 8));
+        JPanel toolbarHost = new JPanel(new BorderLayout());
+        toolbarHost.add(createPeopleToolbar(), BorderLayout.WEST);
+        chartArea.add(toolbarHost, BorderLayout.NORTH);
+        chartArea.add(scrollWrapper, BorderLayout.CENTER);
+        flyoutHost = new JPanel(new BorderLayout(0, 10) {
+            @Override
+            public void layoutContainer(java.awt.Container parent) {
+                super.layoutContainer(parent);
+                java.awt.Component calendar = getLayoutComponent(BorderLayout.CENTER);
+                if (calendar != null) {
+                    Dimension size = app.astrosoft.ui.comp.CalendarResizeHandles.fit(
+                        (JPanel) calendar, calendar.getWidth(), calendar.getHeight());
+                    calendar.setSize(size);
+                }
+            }
+        });
+        flyoutHost.add(chartArea, BorderLayout.NORTH);
+        mainPanel.add(flyoutHost, BorderLayout.CENTER);
         
         MyMuhurtaView.this.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
-                int chartW = chartSize.width + 10;
-                // Measure the total screen width dynamically since FlowLayout doesn't shrink
-                int totalAvailable = MyMuhurtaView.this.getWidth() - 400 - 40; // 400 for table, 40 for margins
-                if (totalAvailable <= 0) return;
-                
-                int fit = totalAvailable / chartW;
-                if (fit < 1) fit = 1;
-                
-                int chartCount = chartsPanel.getComponentCount();
-                if (fit > chartCount) fit = chartCount;
-                
-                int scrollBarHeight = chartScrollPane.getHorizontalScrollBar().getPreferredSize().height;
-                chartScrollPane.setPreferredSize(new Dimension(fit * chartW + 20, chartSize.height + scrollBarHeight + 25));
+                resizeChartViewport();
                 scrollWrapper.revalidate();
             }
         });
         
         selectedDate = new java.util.Date();
-        selectedTime = new java.util.Date();
+        selectedTime = selectedDate;
         selectedPlace = AstroSoft.getPreferences().getPlace();
         
                 // Ensure the content inside mainPanel stays left-aligned relative to itself,
@@ -139,27 +149,40 @@ public class MyMuhurtaView extends AstrosoftView {
         this.removeAll();
         this.setLayout(new java.awt.BorderLayout());
 
-        flyoutHost = new JPanel(new java.awt.BorderLayout(0, 10));
-        flyoutHost.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        flyoutHost.add(mainPanel, java.awt.BorderLayout.NORTH);
-        this.add(flyoutHost, java.awt.BorderLayout.CENTER);
+        this.add(mainPanel, BorderLayout.CENTER);
         
         // Initial setup
         updateView();
     }
     
     private app.astrosoft.core.MyMuhurta createMuhurta() {
-        return new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, userHoroscope);
+        return new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, person1Horoscope != null ? person1Horoscope : person2Horoscope);
+    }
+
+    private void applyCalendarDate(java.util.Date instant) {
+        selectedDate = new java.util.Date(instant.getTime());
+        selectedTime = selectedDate;
+        updateView(false);
     }
 
     private void updateView() {
+        updateView(true);
+    }
+
+    private void updateView(boolean refreshCalendar) {
         app.astrosoft.core.MyMuhurta muhurta = createMuhurta();
         
-        tableModel.updateData(muhurta.getTableData());
+        tableModel.updateData(new MyMuhurta(selectedDate, selectedTime, selectedPlace, null).getTableData());
+        boolean hasPeople = person1Horoscope != null || person2Horoscope != null;
+        balamBtn.setEnabled(hasPeople);
+        balamBtn.setToolTipText(hasPeople ? "Show personal Balam calendar" : "Select Person 1 or Person 2 to view personal Balam");
+        if (!hasPeople) hideBalamFlyout();
+        updatePeopleButtons();
         applyRowHeights();
 
         refreshCharts(muhurta);
-        if (balamFlyout != null) {
+        if (balamFlyout != null && refreshCalendar) {
+            balamFlyout.setPeople(person1Horoscope, person2Horoscope);
             balamFlyout.setContext(muhurta);
         }
     }
@@ -183,31 +206,81 @@ public class MyMuhurtaView extends AstrosoftView {
         Chart muhurtaRasiChart = new Chart(new app.astrosoft.beans.PlanetChartData(
             app.astrosoft.consts.Varga.Rasi,
             muhurta.getPanchang().getPlanetPositions(),
-            muhurta.getPanchang().getPlanetDirection()) {
+            muhurta.getPanchang().getPlanetDirection(),
+            muhurta.getPanchang().getPlanetNakshathra()) {
             public String getChartName() { return "<html><center>Muhurta<br>Rasi</center></html>"; }
         }, chartSize);
         chartsPanel.add(muhurtaRasiChart);
 
-        if (userHoroscope != null) {
-            Chart natalRasiChart = new Chart(new app.astrosoft.beans.PlanetChartData(
-                app.astrosoft.consts.Varga.Rasi,
-                userHoroscope.getPlanetaryInfo()) {
-                public String getChartName() { return "<html><center>Natal<br>Rasi</center></html>"; }
-            }, chartSize);
-            chartsPanel.add(natalRasiChart);
-
-            Chart natalNavamsaChart = new Chart(new app.astrosoft.beans.PlanetChartData(
-                app.astrosoft.consts.Varga.Navamsa,
-                userHoroscope.getPlanetaryInfo()) {
-                public String getChartName() { return "<html><center>Natal<br>Navamsa</center></html>"; }
-            }, chartSize);
-            chartsPanel.add(natalNavamsaChart);
-        }
-
+        addPersonChart("Person 1", person1Horoscope);
+        addPersonChart("Person 2", person2Horoscope);
+        resizeChartViewport();
         chartsPanel.revalidate();
         chartsPanel.repaint();
     }
     
+    /** Fit the chart strip to the actual padded right column, including its border. */
+    private void resizeChartViewport() {
+        if (chartScrollPane == null || flyoutHost == null) return;
+        int available = flyoutHost.getWidth();
+        if (available <= 0) available = Math.max(100, getWidth() - KeyColWidth - ValueColWidth - 50);
+        int count = Math.max(1, chartsPanel.getComponentCount());
+        int chartW = chartSize.width + 10;
+        int fit = Math.max(1, Math.min(count, (available - 25) / chartW));
+        int width = Math.min(available, fit * chartW + 25);
+        int scrollHeight = count > fit || width < chartW + 25
+            ? chartScrollPane.getHorizontalScrollBar().getPreferredSize().height : 0;
+        chartScrollPane.setPreferredSize(new Dimension(width, chartSize.height + 35 + scrollHeight));
+        chartScrollPane.revalidate();
+    }
+
+    private static String htmlEscape(String text) {
+        return text == null ? "" : text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private void addPersonChart(final String role, final Horoscope person) {
+        if (person == null) return;
+        chartsPanel.add(new Chart(new PlanetChartData(Varga.Rasi, person.getPlanetaryInfo()) {
+            public String getChartName() {
+                return "<html><center>" + role + "<br>Rasi</center></html>";
+            }
+        }, chartSize));
+    }
+
+    private JPanel createPeopleToolbar() {
+        JPanel bar = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 8, 4));
+        bar.setBorder(BorderFactory.createTitledBorder("Personal horoscopes"));
+        person1Btn = createRoundedButton("Person 1: Select...", java.awt.Font.PLAIN, new Dimension(190, 30));
+        person2Btn = createRoundedButton("Person 2: Select...", java.awt.Font.PLAIN, new Dimension(190, 30));
+        person1Btn.addActionListener(e -> selectPerson(true));
+        person2Btn.addActionListener(e -> selectPerson(false));
+        bar.add(person1Btn);
+        bar.add(person2Btn);
+        return bar;
+    }
+
+    private void selectPerson(boolean person1) {
+        String file = app.astrosoft.util.FileOps.openFileDialog(
+            javax.swing.SwingUtilities.getWindowAncestor(this), app.astrosoft.util.FileOps.FileDialogMode.OPEN,
+            app.astrosoft.util.AstrosoftFileFilter.HOROSCOPE_EXTN);
+        if (file == null) return;
+        Horoscope person = Horoscope.createFromFile(file);
+        if (person == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Unable to load horoscope file.",
+                "Load horoscope", javax.swing.JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (person1) person1Horoscope = person; else person2Horoscope = person;
+        updateView();
+    }
+
+    private void updatePeopleButtons() {
+        person1Btn.setText(person1Horoscope == null ? "Person 1: Select..." : "Person 1: " + person1Horoscope.getPersonName());
+        person2Btn.setText(person2Horoscope == null ? "Person 2: Select..." : "Person 2: " + person2Horoscope.getPersonName());
+        person1Btn.setToolTipText(person1Btn.getText() + " — click to load or replace");
+        person2Btn.setToolTipText(person2Btn.getText() + " — click to load or replace");
+    }
+
     private JPanel createTablePanel() {
         tableModel = new AstrosoftTableModel(new app.astrosoft.ui.table.DefaultTable(
             TableDataFactory.getTableData(new ArrayList<MapTableRow>()),
@@ -243,7 +316,10 @@ public class MyMuhurtaView extends AstrosoftView {
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.add(createBottomPanel(), BorderLayout.SOUTH);
         tablePanel.add(table, BorderLayout.CENTER);
-        return tablePanel;
+        // WEST stretches vertically: anchor the content, not its buttons, at the top.
+        JPanel tableColumn = new JPanel(new BorderLayout());
+        tableColumn.add(tablePanel, BorderLayout.NORTH);
+        return tableColumn;
     }
     
     private JPanel createBottomPanel() {

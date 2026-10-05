@@ -35,17 +35,18 @@ public class MyMuhurta {
         }
         
         Calendar cal = Calendar.getInstance(tz);
-        Calendar systemCal = Calendar.getInstance();
+        Calendar systemCal = Calendar.getInstance(tz);
         systemCal.setTime(selectedDate);
         cal.set(Calendar.YEAR, systemCal.get(Calendar.YEAR));
         cal.set(Calendar.MONTH, systemCal.get(Calendar.MONTH));
         cal.set(Calendar.DAY_OF_MONTH, systemCal.get(Calendar.DAY_OF_MONTH));
         
-        Calendar tCal = Calendar.getInstance();
+        Calendar tCal = Calendar.getInstance(tz);
         tCal.setTime(selectedTime);
         cal.set(Calendar.HOUR_OF_DAY, tCal.get(Calendar.HOUR_OF_DAY));
         cal.set(Calendar.MINUTE, tCal.get(Calendar.MINUTE));
-        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.SECOND, tCal.get(Calendar.SECOND));
+        cal.set(Calendar.MILLISECOND, 0);
         
         if (selectedPlace != null) {
             pan = new Panchang(cal.getTime(), selectedPlace);
@@ -66,8 +67,12 @@ public class MyMuhurta {
         
         java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MMMM d, yyyy");
         java.text.SimpleDateFormat tf = new java.text.SimpleDateFormat("hh:mm:ss a");
-        String dateStr = df.format(selectedDate);
-        String timeStr = tf.format(selectedTime);
+        java.util.TimeZone tz = selectedPlace == null ? java.util.TimeZone.getDefault()
+            : selectedPlace.astrosoftTimeZone().getTimeZone();
+        df.setTimeZone(tz);
+        tf.setTimeZone(tz);
+        String dateStr = df.format(pan.getDate().getTime());
+        String timeStr = tf.format(pan.getDate().getTime());
         
         String placeStr = "Default Place";
         String tzStr = "";
