@@ -115,8 +115,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		initComponents();
 
-		System.out.println(getScreenSize());
-		setPreferredSize(getScreenSize());
+        // WindowPlacement controls outer startup bounds, not the display dimensions.
 		//this.setPreferredSize(new Dimension(800, 600));
 
 		// show();
@@ -148,9 +147,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 		// home.setBounds(0,0,screenSize.width , screenSize.height);
 		home.setBounds(bounds);
 
-		enableActions(false);
-		setVisible(true);
-		pack();
+        enableActions(false);
+        pack();
+        WindowPlacement.install(this);
+        setVisible(true);
 		viewManager = new ViewManager(new AstrosoftViewContainer());
 
 	}
@@ -202,7 +202,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	/** Exit the Application */
 	private void exitForm(java.awt.event.WindowEvent evt) { // GEN-FIRST:event_exitForm
-		System.exit(0);
+        WindowPlacement.saveNow(this);
+        System.exit(0);
 
 	} // GEN-LAST:event_exitForm
 

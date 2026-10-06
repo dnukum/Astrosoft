@@ -1,0 +1,9 @@
+# Main window placement
+
+Product decision: first launch or changed display configuration opens near the upper-left of the startup monitor usable area, not centered or automatically maximized. Restore last normal outer bounds and explicitly selected maximized state only when the display signature is unchanged and saved bounds fit a current monitor. Existing view layouts and astrology calculations remain untouched.
+
+Inputs: monitor usable rectangle W/H/origin excluding desktop insets, monitor identifiers and primary identity, scaling transforms, saved normal bounds and maximized state. Formula in logical pixels: width=min(round(0.9W),1400), height=min(round(0.9H),900), constrained to usable dimensions; x=left+min(20,W-width), y=top+min(20,H-height). Expected result is a fully visible left/top-aligned normal window. A user-restored position need not remain left-aligned.
+
+Persistence: use the existing Java Preferences backend in a MainWindow child node. Save normal bounds and maximized state after a 500 ms move/resize debounce and explicitly before application exit. Never store iconified bounds as normal bounds. Changes to monitor topology, usable bounds, primary identity or scaling invalidate saved placement. Missing/invalid/offscreen data falls back safely; preference failures log warnings without preventing startup.
+
+Tests: large external screen with nonzero origin (1940,45,1400,900), laptop usable 1440x835 (20,45,1296,752), exact saved restoration, changed display signature, disconnected/offscreen bounds, invalid sizes, missing preferences, tiny/negative-origin display and defensive copy. Integration checks verify pack/install/show ordering and explicit save before exit. Visual verification remains necessary for native maximize/restore behavior and real display changes.
