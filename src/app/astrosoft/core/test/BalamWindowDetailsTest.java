@@ -25,12 +25,14 @@ public class BalamWindowDetailsTest {
         Method render=Class.forName("app.astrosoft.ui.comp.BalamCalendarPanel").getDeclaredMethod("buildDetailsHtml",BalamWindowDetails.class,Nakshathra.class,Rasi.class);
         render.setAccessible(true);
         List<BalamWindowDetails.Entry> yogaEntries = Arrays.asList(
-            new BalamWindowDetails.Entry(new Date(0),new Date(1000),Paksha.Shukla,Thithi.Prathamai,Calendar.WEDNESDAY,false,AmirthathiYoga.Marana),
-            new BalamWindowDetails.Entry(new Date(1000),new Date(2000),Paksha.Shukla,Thithi.Prathamai,Calendar.WEDNESDAY,false,AmirthathiYoga.Marana),
-            new BalamWindowDetails.Entry(new Date(2000),new Date(3000),Paksha.Shukla,Thithi.Prathamai,Calendar.THURSDAY,false,AmirthathiYoga.Amirtha));
+            new BalamWindowDetails.Entry(new Date(0),new Date(1000),Paksha.Shukla,Thithi.Prathamai,Calendar.WEDNESDAY,false,AmirthathiYoga.Marana,Yoga.Vishakambha,Karana.Kimstughna),
+            new BalamWindowDetails.Entry(new Date(1000),new Date(2000),Paksha.Shukla,Thithi.Prathamai,Calendar.WEDNESDAY,false,AmirthathiYoga.Marana,Yoga.Vishakambha,Karana.Kimstughna),
+            new BalamWindowDetails.Entry(new Date(2000),new Date(3000),Paksha.Shukla,Thithi.Prathamai,Calendar.THURSDAY,false,AmirthathiYoga.Amirtha,Yoga.Priti,Karana.Bava));
         BalamWindowDetails yogaDetails = new BalamWindowDetails(new Date(0),new Date(3000),TimeZone.getTimeZone("UTC"),yogaEntries);
         String yogaHtml = (String)render.invoke(null,yogaDetails,Nakshathra.Ashwini,Rasi.values()[0]);
-        check(yogaHtml.contains("<b>Amirthathi Yoga:</b> Marana &rarr; Amirtha"), "Core Yoga rendered and adjacent repeats suppressed");
+        check(yogaHtml.contains("<b>Amirthathi Yoga:</b> Marana &rarr; (01 Jan, 00:00 UTC) Amirtha"), "Core Yoga rendered and adjacent repeats suppressed");
+        check(yogaHtml.contains("<b>Yoga (Nitya Yoga):</b> Vishakambha &rarr; (01 Jan, 00:00 UTC) Priti"), "Timed Nitya Yoga");
+        check(yogaHtml.contains("<b>Karana:</b> "), "Karana rendered");
         check(yogaEntries.get(0).getAmirthathiYoga() == AmirthathiYoga.Marana, "Bean carries Core classification");
 
         String html=(String)render.invoke(null,d,Nakshathra.values()[0],Rasi.values()[0]);

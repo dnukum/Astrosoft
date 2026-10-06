@@ -50,6 +50,11 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
     private final EnumMap<Planet, app.astrosoft.consts.Nakshathra> planetNakshathra =
         new EnumMap<Planet, app.astrosoft.consts.Nakshathra>(Planet.class);
 
+    private final EnumMap<Planet, Double> planetLongitudes = new EnumMap<Planet, Double>(Planet.class);
+    public Double getPlanetLongitude(Planet planet) {
+        return planet == null ? null : planetLongitudes.get(planet);
+    }
+
     /** Lookup only: the domain has already computed these results. */
     public app.astrosoft.consts.Nakshathra getPlanetNakshathra(Planet planet) {
         return planet == null ? null : planetNakshathra.get(planet);
@@ -62,6 +67,7 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
 	public PlanetChartData(Varga varga, PlanetaryInfo planetaryInfo) {
 		
 		this(varga, planetaryInfo.getDivChart(varga), planetaryInfo.getPlanetDirection());
+        if (planetaryInfo.getPlanetPosition() != null) planetLongitudes.putAll(planetaryInfo.getPlanetPosition());
         if (planetaryInfo.getPlanetNakshathra() != null) {
             for (Map.Entry<Planet, NakshathraPada> entry : planetaryInfo.getPlanetNakshathra().entrySet()) {
                 if (entry.getValue() != null) planetNakshathra.put(entry.getKey(), entry.getValue().getNak());
@@ -82,6 +88,13 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
             EnumMap<Planet, app.astrosoft.consts.Nakshathra> nakshathras) {
         this(varga, positions, directions);
         if (nakshathras != null) planetNakshathra.putAll(nakshathras);
+    }
+
+    public PlanetChartData(Varga varga, EnumMap<Planet, Integer> positions,
+            EnumMap<Planet, Boolean> directions, EnumMap<Planet, app.astrosoft.consts.Nakshathra> stars,
+            EnumMap<Planet, Double> longitudes) {
+        this(varga, positions, directions, stars);
+        if (longitudes != null) planetLongitudes.putAll(longitudes);
     }
 
 	public static EnumMap<Rasi, List<Planet>> calcPlanetsInRasi(EnumMap<Planet, Integer> planetPosition){

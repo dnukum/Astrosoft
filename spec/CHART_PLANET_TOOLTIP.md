@@ -1,0 +1,4 @@
+# Planet hover longitude
+
+Product choice: show DDD:MM, star using original absolute sidereal longitude (0..360), never sign-relative or divisional remapping. This is display formatting, not a domain rule. Input: precomputed domain planet longitude and Nakshathra. Normalize L=((L%360)+360)%360; totalMinutes=floor(60*L); degrees=totalMinutes/60 integer, minutes=totalMinutes%60. Output e.g. 123:45, Magam. Seconds truncated, not rounded. Includes natal/Varga and Muhurta chart paths; missing longitude preserves star-only tooltip, missing star displays longitude only, neither => no tooltip. Existing house tooltip unchanged. Maps copied into bean and transit accessor returns defensive copy. No fabricated ascendant longitude for legacy transit data.
+Tests: actual JTable planet hover, 123.75=>123:45, 360=>000:00, -0.001=>359:59, 12.999=>012:59, NaN=>null, legacy star-only and snapshot immutability.

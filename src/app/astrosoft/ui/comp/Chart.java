@@ -88,6 +88,14 @@ public class Chart extends JPanel{
 		setVisible(true);
 	}
 	
+    /** Display absolute sidereal degrees and whole arcminutes; omit seconds without rounding. */
+    public static String formatAbsoluteLongitude(Double longitude) {
+        if (longitude == null || !Double.isFinite(longitude)) return null;
+        double normalized = (longitude % 360 + 360) % 360;
+        int totalMinutes = (int) Math.floor(normalized * 60);
+        return String.format(java.util.Locale.ROOT, "%03d:%02d", totalMinutes / 60, totalMinutes % 60);
+    }
+
 	private void addHouseTables() {
 		
 		Set<Rasi> dataHouses = chartData.getHouses();
@@ -116,7 +124,10 @@ public class Chart extends JPanel{
                             if (value instanceof Planet) {
                                 app.astrosoft.consts.Nakshathra nak =
                                     ((PlanetChartData) chartData).getPlanetNakshathra((Planet) value);
-                                return nak == null ? null : nak.toString();
+                                String longitude = formatAbsoluteLongitude(
+                                    ((PlanetChartData) chartData).getPlanetLongitude((Planet) value));
+                                return longitude == null ? (nak == null ? null : nak.toString())
+                                    : longitude + (nak == null ? "" : ", " + nak.toString());
                             }
                         }
                         // Keep the existing house tooltip outside occupied planet cells.

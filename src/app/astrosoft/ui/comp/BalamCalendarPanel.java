@@ -346,6 +346,11 @@ public class BalamCalendarPanel extends JPanel {
         StringBuilder thithis = new StringBuilder();
         StringBuilder varams = new StringBuilder();
         StringBuilder amirthathiYogas = new StringBuilder();
+        StringBuilder yogas = new StringBuilder(), karanas = new StringBuilder();
+        app.astrosoft.consts.Yoga previousYoga = null;
+        app.astrosoft.consts.Karana previousKarana = null;
+        java.text.SimpleDateFormat transitionFormat = new java.text.SimpleDateFormat("dd MMM, HH:mm z");
+        transitionFormat.setTimeZone(details.getTimeZone());
         app.astrosoft.consts.AmirthathiYoga previousAmirthathiYoga = null;
         String previousThithi = null;
         int previousVaram = -1;
@@ -353,9 +358,17 @@ public class BalamCalendarPanel extends JPanel {
         for (app.astrosoft.beans.BalamWindowDetails.Entry entry : details.getEntries()) {
             app.astrosoft.consts.AmirthathiYoga amirthathiYoga = entry.getAmirthathiYoga();
             if (amirthathiYoga != null && amirthathiYoga != previousAmirthathiYoga) {
-                if (amirthathiYogas.length() > 0) amirthathiYogas.append(" &rarr; ");
+                if (amirthathiYogas.length() > 0) amirthathiYogas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
                 amirthathiYogas.append(htmlEscape(amirthathiYoga.name()));
                 previousAmirthathiYoga = amirthathiYoga;
+            }
+            if (entry.getYoga() != null && entry.getYoga() != previousYoga) {
+                if (yogas.length() > 0) yogas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
+                yogas.append(htmlEscape(entry.getYoga().toString())); previousYoga = entry.getYoga();
+            }
+            if (entry.getKarana() != null && entry.getKarana() != previousKarana) {
+                if (karanas.length() > 0) karanas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
+                karanas.append(htmlEscape(entry.getKarana().toString())); previousKarana = entry.getKarana();
             }
             String thithi = htmlEscape(entry.getPaksha().toString()) + " " + htmlEscape(entry.getThithi().toString());
             if (!thithi.equals(previousThithi)) {
@@ -375,6 +388,8 @@ public class BalamCalendarPanel extends JPanel {
           .append("<b>Varam:</b> ").append(varams).append("<br>");
         if (amirthathiYogas.length() > 0)
             sb.append("<b>Amirthathi Yoga:</b> ").append(amirthathiYogas).append("<br>");
+        if (yogas.length() > 0) sb.append("<b>Yoga (Nitya Yoga):</b> ").append(yogas).append("<br>");
+        if (karanas.length() > 0) sb.append("<b>Karana:</b> ").append(karanas).append("<br>");
         sb.append("</body></html>");
         return sb.toString();
     }

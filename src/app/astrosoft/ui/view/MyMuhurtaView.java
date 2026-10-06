@@ -221,7 +221,8 @@ public class MyMuhurtaView extends AstrosoftView {
             app.astrosoft.consts.Varga.Rasi,
             muhurta.getPanchang().getPlanetPositions(),
             muhurta.getPanchang().getPlanetDirection(),
-            muhurta.getPanchang().getPlanetNakshathra()) {
+            muhurta.getPanchang().getPlanetNakshathra(),
+            muhurta.getPanchang().getPlanetLongitudes()) {
             public String getChartName() { return "<html><center>Muhurta<br>Rasi</center></html>"; }
         }, chartSize);
         chartsPanel.add(muhurtaRasiChart);

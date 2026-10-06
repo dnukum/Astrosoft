@@ -12,11 +12,18 @@ public final class BalamWindowDetails {
         private final int weekday;
         private final boolean warning;
         private final AmirthathiYoga amirthathiYoga;
+        private final Yoga yoga;
+        private final Karana karana;
         public Entry(Date start, Date end, Paksha paksha, Thithi thithi, int weekday, boolean warning) {
             this(start, end, paksha, thithi, weekday, warning, null);
         }
         public Entry(Date start, Date end, Paksha paksha, Thithi thithi, int weekday, boolean warning,
                 AmirthathiYoga amirthathiYoga) {
+            this(start,end,paksha,thithi,weekday,warning,amirthathiYoga,null,null);
+        }
+        public Entry(Date start, Date end, Paksha paksha, Thithi thithi, int weekday, boolean warning,
+                AmirthathiYoga amirthathiYoga, Yoga yoga, Karana karana) {
+            this.yoga = yoga; this.karana = karana;
             this.amirthathiYoga = amirthathiYoga;
             this.start = start.getTime(); this.end = end.getTime();
             this.paksha = paksha; this.thithi = thithi;
@@ -29,6 +36,8 @@ public final class BalamWindowDetails {
         public int getWeekday() { return weekday; }
         public boolean isWarning() { return warning; }
         public AmirthathiYoga getAmirthathiYoga() { return amirthathiYoga; }
+        public Yoga getYoga() { return yoga; }
+        public Karana getKarana() { return karana; }
     }
     public static final class Suitability {
         private final Nakshathra star;
