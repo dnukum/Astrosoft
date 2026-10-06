@@ -41,13 +41,22 @@ public class AstrosoftTimeZone {
 		return ((double)tz.getOffset(new GregorianCalendar(tz).getTimeInMillis())) / (AstroConsts.MILLIS_IN_HR);
 	}
 	
+    /** Event-date label; leaves the no-argument current-date contract unchanged. */
+    public String toString(java.util.Date instant) {
+        if (instant == null) throw new IllegalArgumentException("Event instant required");
+        int minutes = getTimeZone().getOffset(instant.getTime()) / 60000;
+        int absolute = Math.abs(minutes);
+        return String.format(java.util.Locale.ROOT, "%s (GMT %s%02d:%02d)",
+            tzId, minutes < 0 ? "-" : "+", absolute / 60, absolute % 60);
+    }
+
 	@Override
 	public String toString() {
 		double offset = offset();
 		String sign = offset < 0 ? "-" : "+";
 		return tzId + " (GMT " + sign +  AstroUtil.todegmin(offset(), ":", true) + ")";
 	}
-	
+
 	public static AstrosoftTimeZone[] availableTimeZones(){
 		String ids[] = TimeZone.getAvailableIDs();
 		AstrosoftTimeZone tzs[] = new AstrosoftTimeZone[ids.length];

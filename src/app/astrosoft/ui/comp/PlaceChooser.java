@@ -78,6 +78,14 @@ public class PlaceChooser extends JPanel {
 	Timer t;
 
 	private java.util.Calendar currentDateForOffset;
+    private java.util.Date timezoneLocalDate, timezoneLocalTime;
+    /** Chooser wall-clock values, interpreted independently in every dropdown zone. */
+    public void setLocalDateForTimezone(java.util.Date date, java.util.Date time) {
+        timezoneLocalDate = new java.util.Date(date.getTime());
+        timezoneLocalTime = new java.util.Date(time.getTime());
+        timeZoneCombo.repaint();
+    }
+
 
 	public void setDateForTimezone(java.util.Calendar date) {
 		this.currentDateForOffset = date;
@@ -94,7 +102,14 @@ public class PlaceChooser extends JPanel {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (value instanceof AstrosoftTimeZone) {
 					AstrosoftTimeZone tz = (AstrosoftTimeZone) value;
-					if (currentDateForOffset != null) {
+                    if (timezoneLocalDate != null && timezoneLocalTime != null) {
+                        try {
+                            setText(tz.toString(app.astrosoft.util.MuhurtaDateTime.fromChooserValues(
+                                timezoneLocalDate, timezoneLocalTime, tz.getTimeZone())));
+                        } catch (IllegalArgumentException invalidTime) {
+                            setText(tz.id() + " (invalid local time)");
+                        }
+                    } else if (currentDateForOffset != null) {
 						java.util.TimeZone jtz = java.util.TimeZone.getTimeZone(tz.id());
 						double offset = jtz.getOffset(currentDateForOffset.getTimeInMillis()) / (double) app.astrosoft.consts.AstroConsts.MILLIS_IN_HR;
 						String sign = offset < 0 ? "-" : "+";

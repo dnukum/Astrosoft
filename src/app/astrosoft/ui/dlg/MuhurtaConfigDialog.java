@@ -50,6 +50,12 @@ public class MuhurtaConfigDialog extends AstrosoftDialog {
         placeChooser = new PlaceChooser(new Dimension(400, 140), false);
         placeChooser.addPlaces(java.util.Collections.singletonList(initPlace));
         placeChooser.setSelectedPlace(initPlace);
+        final Runnable refreshTimezoneLabels = () -> placeChooser.setLocalDateForTimezone(
+            dateChooser.getSelectedDate(), timeChooser.getSelectedDate());
+        dateChooser.addDateListener(date -> refreshTimezoneLabels.run());
+        timeChooser.addDateListener(time -> refreshTimezoneLabels.run());
+        refreshTimezoneLabels.run();
+
         
         dlgPanel.setLayout(new BorderLayout());
         

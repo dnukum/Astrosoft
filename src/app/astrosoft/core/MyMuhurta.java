@@ -114,7 +114,7 @@ public class MyMuhurta {
             placeStr = selectedPlace.city().trim();
             if (selectedPlace.state() != null && !selectedPlace.state().trim().isEmpty()) placeStr += ", " + selectedPlace.state().trim();
             if (selectedPlace.country() != null && !selectedPlace.country().trim().isEmpty()) placeStr += ", " + selectedPlace.country().trim();
-            tzStr = selectedPlace.astrosoftTimeZone().toString();
+            tzStr = selectedPlace.astrosoftTimeZone().toString(eventInstant);
         }
         
         rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.DATE_STR, dateStr));
