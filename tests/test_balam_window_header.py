@@ -23,7 +23,7 @@ class BalamWindowHeaderTest(unittest.TestCase):
     def test_worker_handles_stale_selection(self):
         s=(ROOT/"src/app/astrosoft/ui/comp/BalamCalendarPanel.java").read_text()
         self.assertIn("doInBackground()",s)
-        self.assertIn("context.getBalamWindowDetails(start, end)",s)
+        self.assertIn("context.getBalamWindowDetails(start, end, matches)",s)
         self.assertIn("isCancelled() || request != detailsRequest",s)
         self.assertIn("detailsWorker.cancel(true)",s)
         self.assertIn("removeNotify()",s)

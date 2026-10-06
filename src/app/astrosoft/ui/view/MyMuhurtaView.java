@@ -62,6 +62,7 @@ public class MyMuhurtaView extends AstrosoftView {
     private AstrosoftTableModel tableModel;
     private AstrosoftTable table;
     private JPanel chartsPanel;
+    private JPanel chartControlStrip;
     private JPanel flyoutHost;
     private app.astrosoft.ui.comp.BalamCalendarPanel balamFlyout;
     private javax.swing.JButton balamBtn;
@@ -117,6 +118,15 @@ public class MyMuhurtaView extends AstrosoftView {
         toolbarHost.add(createPeopleToolbar(), BorderLayout.WEST);
         chartArea.add(toolbarHost, BorderLayout.NORTH);
         chartArea.add(scrollWrapper, BorderLayout.CENTER);
+        // Outside the chart viewport border, aligned with the first (Muhurta) chart.
+        chartControlStrip = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        chartControlStrip.setBorder(BorderFactory.createEmptyBorder(0, 11, 0, 0));
+        JPanel chartControls = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 6));
+        chartControls.setPreferredSize(new Dimension(chartSize.width, 42));
+        chartControls.add(balamBtn);
+        chartArea.add(chartControlStrip, BorderLayout.SOUTH);
+        chartControlStrip.add(chartControls);
+
         flyoutHost = new JPanel(new BorderLayout(0, 10) {
             @Override
             public void layoutContainer(java.awt.Container parent) {
@@ -129,7 +139,9 @@ public class MyMuhurtaView extends AstrosoftView {
                 }
             }
         });
-        flyoutHost.add(chartArea, BorderLayout.NORTH);
+        JPanel chartContainer = new JPanel(new BorderLayout());
+        chartContainer.add(chartArea, BorderLayout.CENTER);
+        flyoutHost.add(chartContainer, BorderLayout.NORTH);
         mainPanel.add(flyoutHost, BorderLayout.CENTER);
         
         MyMuhurtaView.this.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -175,6 +187,8 @@ public class MyMuhurtaView extends AstrosoftView {
         tableModel.updateData(new MyMuhurta(selectedDate, selectedTime, selectedPlace, null).getTableData());
         boolean hasPeople = person1Horoscope != null || person2Horoscope != null;
         balamBtn.setEnabled(hasPeople);
+        balamBtn.setVisible(hasPeople);
+        chartControlStrip.setVisible(hasPeople);
         balamBtn.setToolTipText(hasPeople ? "Show personal Balam calendar" : "Select Person 1 or Person 2 to view personal Balam");
         if (!hasPeople) hideBalamFlyout();
         updatePeopleButtons();
@@ -354,7 +368,7 @@ public class MyMuhurtaView extends AstrosoftView {
             }
         });
 
-        bottomPanel.add(balamBtn);
+
         bottomPanel.add(editBtn);
         return bottomPanel;
     }

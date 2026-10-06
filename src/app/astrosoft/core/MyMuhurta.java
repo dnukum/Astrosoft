@@ -61,6 +61,13 @@ public class MyMuhurta {
 
     /** Domain orchestration; call outside the Swing event-dispatch thread. */
     public app.astrosoft.beans.BalamWindowDetails getBalamWindowDetails(Date start, Date end) {
+        return getBalamWindowDetails(start, end, java.util.EnumSet.noneOf(Nakshathra.class));
+    }
+
+    public app.astrosoft.beans.BalamWindowDetails getBalamWindowDetails(Date start, Date end,
+            java.util.EnumSet<Nakshathra> matches) {
+        if (matches == null) throw new IllegalArgumentException("Matching stars required");
+        java.util.EnumSet<Nakshathra> selectedMatches = matches.clone();
         if (start == null || end == null) throw new IllegalArgumentException("Window required");
         Date windowStart = new Date(start.getTime());
         Date windowEnd = new Date(end.getTime());
@@ -71,7 +78,12 @@ public class MyMuhurta {
             entries.add(new app.astrosoft.beans.BalamWindowDetails.Entry(segment.start, segment.end,
                 segment.paksha, segment.thithi, segment.weekday, segment.isWarning()));
         }
-        return new app.astrosoft.beans.BalamWindowDetails(windowStart, windowEnd, tz, entries);
+        List<app.astrosoft.beans.BalamWindowDetails.Suitability> suitability = new ArrayList<>();
+        for (Nakshathra star : selectedMatches) {
+            suitability.add(new app.astrosoft.beans.BalamWindowDetails.Suitability(star,
+                NakshatraEventSuitability.eventsFor(star)));
+        }
+        return new app.astrosoft.beans.BalamWindowDetails(windowStart, windowEnd, tz, entries, suitability);
     }
 
     public TableData<MapTableRow> getTableData() {

@@ -41,7 +41,7 @@ class PeopleSelectionTest(unittest.TestCase):
 
     def test_calendar_under_charts_and_compact_people(self):
         s=(ROOT/"src/app/astrosoft/ui/view/MyMuhurtaView.java").read_text()
-        self.assertIn("flyoutHost.add(chartArea, BorderLayout.NORTH)",s)
+        self.assertIn("flyoutHost.add(chartContainer, BorderLayout.NORTH)",s)
         self.assertNotIn("clearPerson1Btn",s)
         self.assertNotIn("wrapChartName(person.getPersonName())",s)
     def test_update_applies_selected_window_without_closing(self):
@@ -64,7 +64,7 @@ class PeopleSelectionTest(unittest.TestCase):
         self.assertIn("toolbarHost.add(createPeopleToolbar(), BorderLayout.WEST)",s)
         self.assertIn("resizeChartViewport()",s)
         s=(ROOT/"src/app/astrosoft/ui/comp/BalamCalendarPanel.java").read_text()
-        self.assertIn("topPanel.add(updateButton)",s)
+        self.assertIn("updatePanel.add(updateButton)",s)
         self.assertNotIn("header.add(updateButton, BorderLayout.EAST)",s)
 
     def test_calendar_height_is_bounded(self):

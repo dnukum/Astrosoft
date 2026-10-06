@@ -28,6 +28,9 @@ public class BalamCalendarPanel extends JPanel {
     private AstrosoftTable table;
     private AstrosoftTableModel tableModel;
     private JLabel monthLabel;
+    private JComboBox<String> monthChoice;
+    private JComboBox<Integer> yearChoice;
+    private boolean syncingMonthChoices;
     private Horoscope partnerHoroscope;
     private Horoscope primaryHoroscope;
     private String primaryLabel = "Person";
@@ -94,7 +97,8 @@ public class BalamCalendarPanel extends JPanel {
     private void initComponents() {
         setLayout(new BorderLayout());
         
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 6));
+        JPanel topPanel = new JPanel(new BorderLayout(20, 0));
+        JPanel navigationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 6));
         JButton prevBtn = new JButton("< Prev Month");
         JButton nextBtn = new JButton("Next Month >");
         monthLabel = new JLabel("");
@@ -115,9 +119,25 @@ public class BalamCalendarPanel extends JPanel {
         });
         
 
-        topPanel.add(prevBtn);
-        topPanel.add(monthLabel);
-        topPanel.add(nextBtn);
+        monthChoice = new JComboBox<String>(new String[] {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"});
+        yearChoice = new JComboBox<Integer>();
+        monthChoice.setEditable(false);
+        yearChoice.setEditable(false);
+        monthChoice.setToolTipText("Choose calendar month");
+        yearChoice.setToolTipText("Choose calendar year");
+        java.awt.event.ActionListener chooseMonth = e -> {
+            if (syncingMonthChoices || muhurta == null || yearChoice.getSelectedItem() == null) return;
+            currentMonth = monthChoice.getSelectedIndex() + 1;
+            currentYear = (Integer) yearChoice.getSelectedItem();
+            updateTable();
+        };
+        monthChoice.addActionListener(chooseMonth);
+        yearChoice.addActionListener(chooseMonth);
+        navigationPanel.add(prevBtn);
+        navigationPanel.add(monthChoice);
+        navigationPanel.add(yearChoice);
+        navigationPanel.add(nextBtn);
+        topPanel.add(navigationPanel, BorderLayout.CENTER);
         updateButton = new JButton("Update");
         updateButton.setEnabled(false);
         updateButton.setToolTipText("Apply the selected window start date/time to Muhurta");
@@ -129,8 +149,9 @@ public class BalamCalendarPanel extends JPanel {
                 updateAction.accept(new java.util.Date(((BalamDateCell) cell).getRow().getStartTime().getTime()));
             }
         });
-        topPanel.add(updateButton);
-        // Keep Update beside month navigation, centered as one responsive group.
+        JPanel updatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
+        updatePanel.add(updateButton);
+        topPanel.add(updatePanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
         
         scrollPane = new JScrollPane();
@@ -146,10 +167,27 @@ public class BalamCalendarPanel extends JPanel {
         CalendarResizeHandles.install(this);
     }
     
+    /** Synchronize controls without triggering recursive table regeneration.
+     * Rolling 101-year list stays centered on the displayed year; arrow navigation remains unbounded.
+     */
+    private void syncMonthChoices() {
+        syncingMonthChoices = true;
+        try {
+            monthChoice.setSelectedIndex(currentMonth - 1);
+            if (yearChoice.getItemCount() == 0 || currentYear < yearChoice.getItemAt(0)
+                    || currentYear > yearChoice.getItemAt(yearChoice.getItemCount() - 1)) {
+                yearChoice.removeAllItems();
+                for (int year = Math.max(1, currentYear - 50); year <= currentYear + 50; year++) yearChoice.addItem(year);
+            }
+            yearChoice.setSelectedItem(currentYear);
+        } finally { syncingMonthChoices = false; }
+    }
+
     private void updateTable() {
         cancelDetailsRequest();
         String[] months = {"", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
         monthLabel.setText(months[currentMonth] + " " + currentYear);
+        syncMonthChoices();
         
         TableData<MapTableRow> data = muhurta.getBalamCalendarTable(currentYear, currentMonth, partnerHoroscope);
         
@@ -247,13 +285,18 @@ public class BalamCalendarPanel extends JPanel {
         final java.util.Date end = new java.util.Date(cell.getRow().getEndTime().getTime());
         final app.astrosoft.consts.Nakshathra nak = cell.getRow().getTransitNakshathra();
         final app.astrosoft.consts.Rasi rasi = cell.getRow().getTransitRasi();
+        final Object matchValue = table.getValueAt(row, table.getColumnCount() - 1);
+        final java.util.EnumSet<app.astrosoft.consts.Nakshathra> matches =
+            matchValue instanceof app.astrosoft.beans.BalamMatchCell
+                ? ((app.astrosoft.beans.BalamMatchCell) matchValue).getMatches()
+                : java.util.EnumSet.noneOf(app.astrosoft.consts.Nakshathra.class);
         final MyMuhurta context = muhurta;
         final long request = detailsRequest;
         detailsPane.setText("<html><body>Loading window details...</body></html>");
         detailsWorker = new SwingWorker<app.astrosoft.beans.BalamWindowDetails, Void>() {
             @Override
             protected app.astrosoft.beans.BalamWindowDetails doInBackground() {
-                return context.getBalamWindowDetails(start, end);
+                return context.getBalamWindowDetails(start, end, matches);
             }
             @Override
             protected void done() {
@@ -283,8 +326,23 @@ public class BalamCalendarPanel extends JPanel {
         sb.append("<div style='margin:0 0 6px 0;'><b>Start:</b> ")
           .append(htmlEscape(dateFormat.format(details.getStart())))
           .append("<br><b>End:</b> ").append(htmlEscape(dateFormat.format(details.getEnd()))).append("</div>");
+        for (app.astrosoft.beans.BalamWindowDetails.Suitability item : details.getSuitabilities()) {
+            sb.append("<b>").append(htmlEscape(item.getStar().toString())).append(":</b> ");
+            java.util.EnumSet<app.astrosoft.consts.MuhurtaEvent> events = item.getEvents();
+            if (events.isEmpty()) sb.append("<font color='red'>Not recommended</font>");
+            else {
+                boolean first = true;
+                for (app.astrosoft.consts.MuhurtaEvent event : events) {
+                    if (!first) sb.append(", ");
+                    sb.append(htmlEscape(event.toString()));
+                    first = false;
+                }
+            }
+            sb.append("<br>");
+        }
+        if (!details.getSuitabilities().isEmpty()) sb.append("<br>");
         sb.append("<b>Transit Moon:</b> ").append(nak.name()).append(" in ").append(rasi.name())
-          .append("<br><b>Lord:</b> ").append(nak.getLord().name()).append("<br><br>");
+          .append("  (").append(nak.getLord().name()).append(")<br><br>");
         StringBuilder thithis = new StringBuilder();
         StringBuilder varams = new StringBuilder();
         String previousThithi = null;
