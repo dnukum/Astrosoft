@@ -24,6 +24,15 @@ public class BalamWindowDetailsTest {
         check(immutable,"Unmodifiable entries");
         Method render=Class.forName("app.astrosoft.ui.comp.BalamCalendarPanel").getDeclaredMethod("buildDetailsHtml",BalamWindowDetails.class,Nakshathra.class,Rasi.class);
         render.setAccessible(true);
+        List<BalamWindowDetails.Entry> yogaEntries = Arrays.asList(
+            new BalamWindowDetails.Entry(new Date(0),new Date(1000),Paksha.Shukla,Thithi.Prathamai,Calendar.WEDNESDAY,false,AmirthathiYoga.Marana),
+            new BalamWindowDetails.Entry(new Date(1000),new Date(2000),Paksha.Shukla,Thithi.Prathamai,Calendar.WEDNESDAY,false,AmirthathiYoga.Marana),
+            new BalamWindowDetails.Entry(new Date(2000),new Date(3000),Paksha.Shukla,Thithi.Prathamai,Calendar.THURSDAY,false,AmirthathiYoga.Amirtha));
+        BalamWindowDetails yogaDetails = new BalamWindowDetails(new Date(0),new Date(3000),TimeZone.getTimeZone("UTC"),yogaEntries);
+        String yogaHtml = (String)render.invoke(null,yogaDetails,Nakshathra.Ashwini,Rasi.values()[0]);
+        check(yogaHtml.contains("<b>Amirthathi Yoga:</b> Marana &rarr; Amirtha"), "Core Yoga rendered and adjacent repeats suppressed");
+        check(yogaEntries.get(0).getAmirthathiYoga() == AmirthathiYoga.Marana, "Bean carries Core classification");
+
         String html=(String)render.invoke(null,d,Nakshathra.values()[0],Rasi.values()[0]);
         check(!html.contains("<table") && count(html,"<b>Start:</b>")==1 && count(html,"<b>End:</b>")==1,"No table or repeated header");
         check(count(html,"Prathamai")==1 && count(html,"Dvithiyai")==1,"Tithi presentation deduplication");
@@ -32,6 +41,13 @@ public class BalamWindowDetailsTest {
         check(count(html,"<font color='red'>")==1 && html.indexOf("<b>Thithi:</b>")<html.indexOf("<b>Varam:</b>"),"Warning and order");
         Date now=new Date(1791158400000L);
         MyMuhurta core=new MyMuhurta(now,now,null,null);
+        BalamWindowDetails classified = core.getBalamWindowDetails(new Date(0),new Date(3600000));
+        for (BalamWindowDetails.Entry entry : classified.getEntries()) {
+            app.astrosoft.core.Panchang panchang = new app.astrosoft.core.Panchang(entry.getStart());
+            check(entry.getAmirthathiYoga() == AmirthathiYoga.ofWeekdayAndNakshatra(
+                WeekDay.ofIndex(entry.getWeekday()-1),panchang.getNakshathra(),false).getFirst(), "Core uses actual transit star and segment weekday");
+        }
+
         BalamWindowDetails computed=core.getBalamWindowDetails(now,new Date(now.getTime()+86400000L));
         check(computed.getStart().equals(now) && !computed.getEntries().isEmpty(),"Core orchestration");
         check(computed.getTimeZone().equals(TimeZone.getDefault()),"Core timezone fallback");

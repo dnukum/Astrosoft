@@ -17,6 +17,9 @@ public enum Nakshathra {
 	Ashwini, Bharani, Krithika, Rohini, Mrigasira, Thiruvaadhirai, Punarpoosam, Poosam, Ayilyam, Magam, Pooram, Uththiram, Hastam, Chittirai, Swathi, Vishakham, Anusham, Kettai, Moolam, Pooradam, Uththiradam, Thiruvonam, Avittam, Shathayam, Poorattadhi, Uttarattadhi, Revathi;
 	private static Nakshathra vals[] = values();
 
+	/** Next enum value, wrapping at the end. */
+	public Nakshathra next() { return ofIndex(ordinal() + 1); }
+
 	public static Nakshathra ofIndex(int index) {
 		return vals[index % vals.length];
 	}

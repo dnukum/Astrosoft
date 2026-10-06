@@ -75,8 +75,13 @@ public class MyMuhurta {
             : selectedPlace.astrosoftTimeZone().getTimeZone();
         List<app.astrosoft.beans.BalamWindowDetails.Entry> entries = new ArrayList<>();
         for (BalamWindowEngine.Segment segment : BalamWindowEngine.generate(windowStart, windowEnd, tz)) {
+            Panchang segmentPanchang = selectedPlace == null ? new Panchang(segment.start)
+                : new Panchang(segment.start, selectedPlace);
+            app.astrosoft.consts.AmirthathiYoga yoga = app.astrosoft.consts.AmirthathiYoga
+                .ofWeekdayAndNakshatra(app.astrosoft.consts.WeekDay.ofIndex(segment.weekday - 1),
+                    segmentPanchang.getNakshathra(), false).getFirst();
             entries.add(new app.astrosoft.beans.BalamWindowDetails.Entry(segment.start, segment.end,
-                segment.paksha, segment.thithi, segment.weekday, segment.isWarning()));
+                segment.paksha, segment.thithi, segment.weekday, segment.isWarning(), yoga));
         }
         List<app.astrosoft.beans.BalamWindowDetails.Suitability> suitability = new ArrayList<>();
         for (Nakshathra star : selectedMatches) {

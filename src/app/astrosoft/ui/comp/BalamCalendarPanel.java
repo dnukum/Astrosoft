@@ -345,10 +345,18 @@ public class BalamCalendarPanel extends JPanel {
           .append("  (").append(nak.getLord().name()).append(")<br><br>");
         StringBuilder thithis = new StringBuilder();
         StringBuilder varams = new StringBuilder();
+        StringBuilder amirthathiYogas = new StringBuilder();
+        app.astrosoft.consts.AmirthathiYoga previousAmirthathiYoga = null;
         String previousThithi = null;
         int previousVaram = -1;
         String[] weekdays = new java.text.DateFormatSymbols().getWeekdays();
         for (app.astrosoft.beans.BalamWindowDetails.Entry entry : details.getEntries()) {
+            app.astrosoft.consts.AmirthathiYoga amirthathiYoga = entry.getAmirthathiYoga();
+            if (amirthathiYoga != null && amirthathiYoga != previousAmirthathiYoga) {
+                if (amirthathiYogas.length() > 0) amirthathiYogas.append(" &rarr; ");
+                amirthathiYogas.append(htmlEscape(amirthathiYoga.name()));
+                previousAmirthathiYoga = amirthathiYoga;
+            }
             String thithi = htmlEscape(entry.getPaksha().toString()) + " " + htmlEscape(entry.getThithi().toString());
             if (!thithi.equals(previousThithi)) {
                 if (thithis.length() > 0) thithis.append(" &rarr; ");
@@ -364,7 +372,10 @@ public class BalamCalendarPanel extends JPanel {
             }
         }
         sb.append("<b>Thithi:</b> ").append(thithis).append("<br>")
-          .append("<b>Varam:</b> ").append(varams).append("<br></body></html>");
+          .append("<b>Varam:</b> ").append(varams).append("<br>");
+        if (amirthathiYogas.length() > 0)
+            sb.append("<b>Amirthathi Yoga:</b> ").append(amirthathiYogas).append("<br>");
+        sb.append("</body></html>");
         return sb.toString();
     }
 
