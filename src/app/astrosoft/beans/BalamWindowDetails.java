@@ -50,6 +50,8 @@ public final class BalamWindowDetails {
         public Nakshathra getStar() { return star; }
         public EnumSet<MuhurtaEvent> getEvents() { return events.clone(); }
     }
+    private final List<app.astrosoft.core.MuhurtaWindowsCalculator.Window> timingWindows;
+    public List<app.astrosoft.core.MuhurtaWindowsCalculator.Window> getTimingWindows(){return timingWindows;}
     private final List<Suitability> suitabilities;
     private final long start, end;
     private final TimeZone timezone;
@@ -59,6 +61,10 @@ public final class BalamWindowDetails {
     }
     public BalamWindowDetails(Date start, Date end, TimeZone timezone, List<Entry> entries,
             List<Suitability> suitabilities) {
+        this(start,end,timezone,entries,suitabilities,Collections.<app.astrosoft.core.MuhurtaWindowsCalculator.Window>emptyList());
+    }
+    public BalamWindowDetails(Date start,Date end,TimeZone timezone,List<Entry> entries,List<Suitability> suitabilities,List<app.astrosoft.core.MuhurtaWindowsCalculator.Window> windows){
+        this.timingWindows=Collections.unmodifiableList(new ArrayList<>(windows));
         this.suitabilities = Collections.unmodifiableList(new ArrayList<Suitability>(suitabilities));
         this.start = start.getTime(); this.end = end.getTime();
         this.timezone = (TimeZone) timezone.clone();

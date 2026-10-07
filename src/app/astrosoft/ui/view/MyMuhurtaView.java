@@ -315,6 +315,12 @@ public class MyMuhurtaView extends AstrosoftView {
             }
             
             @Override
+            public String getToolTipText(java.awt.event.MouseEvent event) {
+                int row=rowAtPoint(event.getPoint());
+                return row<0?null:app.astrosoft.core.PanchangTransitionHelp.forRow(String.valueOf(getValueAt(row,0)));
+            }
+
+            @Override
             public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
                 java.awt.Component c = super.prepareRenderer(renderer, row, column);
                 if (c instanceof javax.swing.JComponent) {

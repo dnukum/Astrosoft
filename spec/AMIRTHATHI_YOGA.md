@@ -27,3 +27,23 @@ Boundary search: hourly bracketing and millisecond bisection, assuming continuou
 
 ## Main Muhurta table
 Product layout: Date, Time, Location, Sunrise, Sunset, then existing Panchanga rows; Amirthathi Yoga immediately after Yoga (End). Standalone Panchang table unchanged. Domain adds main-table classification at eventInstant and actual changes through the next civil midnight (inclusive via 1 ms final segment), timestamped dd MMM HH:mm z. Inputs: event instant, selected timezone and existing Swiss sidereal positions; formula T[weekday,transit star] unchanged. Adjacent identical classifications omitted; exact-midnight events use new day. No fixed assumption that a star change always changes classification. Table layout test verifies rise/set location and Amirthathi placement/value. This horizon is a product decision, not a traditional day definition.
+
+
+## Sunrise Vara integration (2026-10-06)
+Domain convention: expert clarification confirms Vara runs local sunrise to next sunrise.
+Product decision: the table Day and details weekday remain civil; Amirthathi alone uses sunrise Vara.
+Legacy lookup table, tuple branches, and null-input behavior remain unchanged.
+Inputs: window instants, selected/default geographic place, location timezone, sidereal nakshatra.
+Formula: Y(t)=T[V(t)][N(t)]; V(t) is the weekday of the latest local sunrise at or before t.
+Implementation: SunriseVara resolves/caches SunTimes sunrise per local date; interval engine splits at sunrise as well as existing nakshatra/civil boundaries. Both MyMuhurta callers consume segment.vara and getFirst().
+Output: real classifications through the requested half-open window; main row remains current instant to civil midnight, without including tomorrow at the endpoint.
+Fallback product policy: calculation failure or invalid date-bound sunrise logs a warning and uses 06:00 local. Before fallback sunrise use previous Vara; equality uses new Vara.
+Tests: before/exact/after sunrise, weekend wrap, thrown/invalid sunrise fallback, midnight civil/Vara separation, simultaneous sunrise/star change, Revathi wrap, DST and empty windows; existing table 378 pairs unchanged.
+This supersedes the civil-weekday calculation described in the earlier integration section; it does not independently validate the lookup table.
+
+
+## Named successors and tooltip presentation (2026-10-06)
+Product decision: MyMuhurta shows current until local end time → named successor for Nakshatra, Thithi, Nitya Yoga and successive Karanas. Date is explicit when local end hours cross midnight; year is shown on year rollover. Other Panchang table consumers retain legacy formatting.
+Implementation: uses existing PanEvent values and end hours; no ephemeris or reference-time changes. Nakshatra/yoga wrap cyclically, thithi uses the 30-slot lunar phase (including Pournami/Amavasya), Karana uses the 60 half-thithi slots rather than enum cycling.
+Row help is available over both columns, explains civil Day versus sunrise Vara, transitions, daily Panchang reference time, and Subha Hora versus Nitya Yoga Subha. Rahu, Yama and Subha Hora calculations remain unchanged.
+Inputs: existing event names/end hours, Sun/Moon phase and local Calendar. Output: presentation strings. Tests: successor names, Karana special slots, next-day/multiple-day/year rollover, help text and unchanged non-transition rows, plus full core/UI suite.

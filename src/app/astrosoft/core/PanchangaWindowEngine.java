@@ -31,12 +31,14 @@ public final class PanchangaWindowEngine {
   public final Karana karana;
   public final Nakshathra nak;
   public final int weekday;
-  Segment(long a,long b,int[] s,TimeZone tz) {
+  public final WeekDay vara;
+  Segment(long a,long b,int[] s,TimeZone tz,SunriseVara sunrise) {
    start=new Date(a);end=new Date(b);
    paksha=s[0]<15?Paksha.Shukla:Paksha.Krishna;
    thithi=s[0]==29?Thithi.Amavasya:Thithi.ofIndex(s[0]%15);
    yoga=Yoga.ofIndex(s[2]);nak=Nakshathra.ofIndex(s[3]);karana=karanaAt(s[1]*6);
    Calendar c=Calendar.getInstance(tz);c.setTimeInMillis(a);weekday=c.get(Calendar.DAY_OF_WEEK);
+   vara=sunrise==null?WeekDay.ofIndex(weekday-1):sunrise.weekdayAt(a);
   }
   public boolean isWarning(){return thithi==Thithi.Amavasya || thithi==Thithi.Ashtami || thithi==Thithi.Navami || thithi==Thithi.Prathamai;}
  }
@@ -48,7 +50,18 @@ public final class PanchangaWindowEngine {
    return new double[]{p.get(Planet.Sun),p.get(Planet.Moon)};
   });
  }
+ public static List<Segment> generate(Date start,Date end,TimeZone tz,app.astrosoft.beans.Place place) {
+  final SwissHelper swiss=new SwissHelper();
+  return generate(start,end,tz,t->{
+   swiss.setSweDate(new SweDate(t/86400000.0+2440587.5));
+   EnumMap<Planet,Double> p=swiss.getPlanetaryPosition(EnumSet.of(Planet.Sun,Planet.Moon));
+   return new double[]{p.get(Planet.Sun),p.get(Planet.Moon)};
+  },SunriseVara.forPlace(tz,place));
+ }
  public static List<Segment> generate(Date start,Date end,TimeZone tz,LongitudeSource source) {
+  return generate(start,end,tz,source,null);
+ }
+ public static List<Segment> generate(Date start,Date end,TimeZone tz,LongitudeSource source,SunriseVara sunrise) {
   if(start==null || end==null || tz==null || source==null || end.before(start))throw new IllegalArgumentException("Valid window, timezone and source required");
   long cursor=start.getTime(),limit=end.getTime();List<Segment> result=new ArrayList<>();
   while(cursor<limit) {
@@ -56,6 +69,7 @@ public final class PanchangaWindowEngine {
    Calendar midnight=Calendar.getInstance(tz);midnight.setTimeInMillis(cursor);midnight.add(Calendar.DAY_OF_MONTH,1);
    midnight.set(Calendar.HOUR_OF_DAY,0);midnight.set(Calendar.MINUTE,0);midnight.set(Calendar.SECOND,0);midnight.set(Calendar.MILLISECOND,0);
    boundary=Math.min(boundary,midnight.getTimeInMillis());
+   if(sunrise!=null)boundary=Math.min(boundary,sunrise.nextSunrise(cursor));
    long probe=cursor;
    while(probe<boundary) {
     long next=Math.min(boundary,probe+3600000L);
@@ -67,7 +81,7 @@ public final class PanchangaWindowEngine {
     probe=next;
    }
    if(boundary<=cursor)throw new IllegalStateException("Non-progressing window");
-   result.add(new Segment(cursor,boundary,current,tz));cursor=boundary;
+   result.add(new Segment(cursor,boundary,current,tz,sunrise));cursor=boundary;
   }
   return result;
  }

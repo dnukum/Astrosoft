@@ -76,6 +76,8 @@ public enum WeekDay {
 		return formatDynamicTime(start, start + 1.5, false, sunrise, sunset);
 	}
 	
+    /** Defensive copy for instant-based window consumers; existing formatted API unchanged. */
+    public double[][] auspiciousTimeBlocks(){double[][] source=auspiciousTimeOffsets[ordinal()],copy=new double[source.length][];for(int i=0;i<source.length;i++)copy[i]=source[i].clone();return copy;}
 	public String[] auspiciousTime(double sunrise, double sunset){
 		double[][] blocks = auspiciousTimeOffsets[ordinal()];
 		java.util.List<String> list = new java.util.ArrayList<String>();

@@ -320,7 +320,7 @@ public class BalamCalendarPanel extends JPanel {
     /** Presentation only: formats a completed immutable Core result. */
     private static String buildDetailsHtml(app.astrosoft.beans.BalamWindowDetails details,
             app.astrosoft.consts.Nakshathra nak, app.astrosoft.consts.Rasi rasi) {
-        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; padding:8px;'>");
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; padding:8px;'><table width='100%' cellpadding='8'><tr><td width='57%' valign='top'>");
         java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy HH:mm z");
         dateFormat.setTimeZone(details.getTimeZone());
         sb.append("<div style='margin:0 0 6px 0;'><b>Start:</b> ")
@@ -390,7 +390,16 @@ public class BalamCalendarPanel extends JPanel {
             sb.append("<b>Amirthathi Yoga:</b> ").append(amirthathiYogas).append("<br>");
         if (yogas.length() > 0) sb.append("<b>Yoga (Nitya Yoga):</b> ").append(yogas).append("<br>");
         if (karanas.length() > 0) sb.append("<b>Karana:</b> ").append(karanas).append("<br>");
-        sb.append("</body></html>");
+        sb.append("</td><td width='43%' valign='top'>");
+        for(String kind:new String[]{"Subha Hora","Abhijit Muhurta","Brahma Muhurta"}){
+            sb.append("<b>").append(kind).append(":</b><br>");boolean found=false;
+            for(app.astrosoft.core.MuhurtaWindowsCalculator.Window window:details.getTimingWindows())if(window.kind.equals(kind)){
+                sb.append(htmlEscape(app.astrosoft.core.MuhurtaWindowsCalculator.format(window,details.getTimeZone()))).append("<br>");found=true;
+            }
+            if(!found)sb.append("No overlap<br>");
+            sb.append("<br>");
+        }
+        sb.append("</td></tr></table></body></html>");
         return sb.toString();
     }
 

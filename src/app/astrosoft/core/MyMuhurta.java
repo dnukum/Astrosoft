@@ -74,9 +74,9 @@ public class MyMuhurta {
         java.util.TimeZone tz = selectedPlace == null ? java.util.TimeZone.getDefault()
             : selectedPlace.astrosoftTimeZone().getTimeZone();
         List<app.astrosoft.beans.BalamWindowDetails.Entry> entries = new ArrayList<>();
-        for (PanchangaWindowEngine.Segment segment : PanchangaWindowEngine.generate(windowStart, windowEnd, tz)) {
+        for (PanchangaWindowEngine.Segment segment : PanchangaWindowEngine.generate(windowStart, windowEnd, tz, amirthathiPlace())) {
             app.astrosoft.consts.AmirthathiYoga yoga = app.astrosoft.consts.AmirthathiYoga
-                .ofWeekdayAndNakshatra(app.astrosoft.consts.WeekDay.ofIndex(segment.weekday - 1),
+                .ofWeekdayAndNakshatra(segment.vara,
                     segment.nak, false).getFirst();
             entries.add(new app.astrosoft.beans.BalamWindowDetails.Entry(segment.start, segment.end,
                 segment.paksha, segment.thithi, segment.weekday, segment.isWarning(), yoga, segment.yoga, segment.karana));
@@ -86,7 +86,7 @@ public class MyMuhurta {
             suitability.add(new app.astrosoft.beans.BalamWindowDetails.Suitability(star,
                 NakshatraEventSuitability.eventsFor(star)));
         }
-        return new app.astrosoft.beans.BalamWindowDetails(windowStart, windowEnd, tz, entries, suitability);
+        return new app.astrosoft.beans.BalamWindowDetails(windowStart, windowEnd, tz, entries, suitability, MuhurtaWindowsCalculator.forWindow(windowStart.getTime(),windowEnd.getTime(),tz,amirthathiPlace()));
     }
 
     public TableData<MapTableRow> getTableData() {
@@ -121,7 +121,7 @@ public class MyMuhurta {
         rows.add(helper.createRow("Time", timeStr + "," + tzStr));
         rows.add(helper.createRow("Location", placeStr));
         
-        TableData<MapTableRow> panchangRows = pan.getPanchangTableData();
+        TableData<MapTableRow> panchangRows = pan.getPanchangTableData(true);
         for (String sunLabel : new String[] {app.astrosoft.consts.DisplayStrings.SUNRISE_STR.toString(),
                 app.astrosoft.consts.DisplayStrings.SUNSET_STR.toString()}) {
             for (int i = 0; i < panchangRows.getRowCount(); i++) {
@@ -129,6 +129,8 @@ public class MyMuhurta {
                 if (sunLabel.equals(row.getColumnData(AstrosoftTableColumn.Key).toString())) rows.add(row);
             }
         }
+        java.util.Calendar timingDate=java.util.Calendar.getInstance(tz);timingDate.setTime(eventInstant);
+        java.util.List<MuhurtaWindowsCalculator.Window> dailyTimings=MuhurtaWindowsCalculator.forDay(timingDate,amirthathiPlace());
         String amirthathiDetails = getAmirthathiDayDetails(tz);
         for (int i = 0; i < panchangRows.getRowCount(); i++) {
             MapTableRow row = panchangRows.getRow(i);
@@ -137,6 +139,13 @@ public class MyMuhurta {
                     || key.equals(app.astrosoft.consts.DisplayStrings.SUNRISE_STR.toString())
                     || key.equals(app.astrosoft.consts.DisplayStrings.SUNSET_STR.toString())) continue;
             rows.add(row);
+            if(key.startsWith(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString()) && dailyTimings.isEmpty()){
+                rows.add(helper.createRow("Abhijit Muhurta","Unavailable: invalid solar event ordering"));
+                rows.add(helper.createRow("Brahma Muhurta","Unavailable: invalid solar event ordering"));
+            }
+            if(key.startsWith(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString()))
+                for(MuhurtaWindowsCalculator.Window timing:dailyTimings)
+                    if(!timing.kind.equals("Subha Hora"))rows.add(helper.createRow(timing.kind,MuhurtaWindowsCalculator.format(timing,tz)));
             if (key.startsWith(app.astrosoft.consts.DisplayStrings.YOGA_STR.toString()))
                 rows.add(helper.createRow("Amirthathi Yoga", amirthathiDetails));
         }
@@ -162,6 +171,10 @@ public class MyMuhurta {
         return TableDataFactory.getTableData(rows);
     }
 
+    private Place amirthathiPlace() {
+        return selectedPlace == null ? app.astrosoft.ui.AstroSoft.getPreferences().getPlace() : selectedPlace;
+    }
+
     /** Current instant through next civil midnight; only real classification changes shown. */
     private String getAmirthathiDayDetails(java.util.TimeZone tz) {
         Calendar nextDay = Calendar.getInstance(tz);
@@ -174,9 +187,9 @@ public class MyMuhurta {
         StringBuilder text = new StringBuilder();
         app.astrosoft.consts.AmirthathiYoga previous = null;
         for (PanchangaWindowEngine.Segment segment : PanchangaWindowEngine.generate(
-                new Date(eventInstant.getTime()), new Date(nextDay.getTimeInMillis() + 1), tz)) {
+                new Date(eventInstant.getTime()), new Date(nextDay.getTimeInMillis()), tz, amirthathiPlace())) {
             app.astrosoft.consts.AmirthathiYoga current = app.astrosoft.consts.AmirthathiYoga
-                .ofWeekdayAndNakshatra(app.astrosoft.consts.WeekDay.ofIndex(segment.weekday - 1), segment.nak, false).getFirst();
+                .ofWeekdayAndNakshatra(segment.vara, segment.nak, false).getFirst();
             if (current != previous) {
                 if (text.length() > 0) text.append(" → (").append(time.format(segment.start)).append(") ");
                 text.append(current.name()); previous = current;

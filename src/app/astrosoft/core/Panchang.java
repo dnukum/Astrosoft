@@ -365,6 +365,20 @@ public class Panchang {
 		return cal;
 	};
 	
+    private String nextThithiName() {
+        int slot=(int)(((moon-sun+360)%360)/12);
+        int next=(slot+1)%30;
+        Thithi result=next==29?Thithi.Amavasya:Thithi.ofIndex(next%15);
+        return result.toString();
+    }
+    private String nextKaranaDetails() {
+        double phase=(moon-sun+360)%360;
+        int slot=(int)(phase/6);
+        String third=PanchangaWindowEngine.karanaAt(((slot+2)%60)*6).toString();
+        return PanchangTransitionHelp.until(karana.first.event,karana.first.ending,karana.second.event,cal)
+            + PanchangTransitionHelp.until("",karana.second.ending,third,cal);
+    }
+
 	private static DefaultColumnMetaData getPanchangColumnMetaData() {
 		
 		if (panchangColumnMetaData == null){
@@ -375,6 +389,11 @@ public class Panchang {
 	}
 	
 	public TableData<MapTableRow> getPanchangTableData() {
+        return getPanchangTableData(false);
+    }
+
+    /** Optional named successors for MyMuhurta; legacy table consumers unchanged. */
+    public TableData<MapTableRow> getPanchangTableData(boolean showSuccessors) {
 		
 		List<MapTableRow> rows = new ArrayList<MapTableRow>();
 		
@@ -382,11 +401,11 @@ public class Panchang {
 		
 		rows.add(helper.createRow(DisplayStrings.DATE_STR, AstroUtil.formatDate(cal.getTime())));
 		rows.add(helper.createRow(DisplayStrings.DAY_STR, weekday));
-		rows.add(helper.createRow(DisplayStrings.NAK_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", nakshathra));
-		rows.add(helper.createRow(DisplayStrings.THITHI_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", thithi));
+		rows.add(helper.createRow(DisplayStrings.NAK_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", showSuccessors ? PanchangTransitionHelp.until(nakshathra.event, nakshathra.ending, Nakshathra.ofDeg(moon).next().toString(), cal) : nakshathra));
+		rows.add(helper.createRow(DisplayStrings.THITHI_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", showSuccessors ? PanchangTransitionHelp.until(thithi.event, thithi.ending, nextThithiName(), cal) : thithi));
 		rows.add(helper.createRow(DisplayStrings.PAKSHA_STR, pak));
-		rows.add(helper.createRow(DisplayStrings.YOGA_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", yoga));
-		rows.add(helper.createRow(DisplayStrings.KARANA_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", karana));
+		rows.add(helper.createRow(DisplayStrings.YOGA_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", showSuccessors ? PanchangTransitionHelp.until(yoga.event, yoga.ending, Yoga.ofIndex(Yoga.ofDeg(sun, moon).ordinal()+1).toString(), cal) : yoga));
+		rows.add(helper.createRow(DisplayStrings.KARANA_STR + " ( " + AstrosoftTableColumn.End.toString() + " ) ", showSuccessors ? nextKaranaDetails() : karana));
 		rows.add(helper.createRow(DisplayStrings.SUNRISE_STR, AstroUtil.timeFormat(sunrise)));
 		rows.add(helper.createRow(DisplayStrings.SUNSET_STR, AstroUtil.timeFormat(sunset)));
 		String auspiciousTime = Arrays.toString(weekday.auspiciousTime(sunrise, sunset));

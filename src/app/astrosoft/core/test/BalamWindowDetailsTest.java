@@ -36,7 +36,7 @@ public class BalamWindowDetailsTest {
         check(yogaEntries.get(0).getAmirthathiYoga() == AmirthathiYoga.Marana, "Bean carries Core classification");
 
         String html=(String)render.invoke(null,d,Nakshathra.values()[0],Rasi.values()[0]);
-        check(!html.contains("<table") && count(html,"<b>Start:</b>")==1 && count(html,"<b>End:</b>")==1,"No table or repeated header");
+        check(count(html,"<table")==1 && html.contains("<b>Subha Hora:</b>") && count(html,"<b>Start:</b>")==1 && count(html,"<b>End:</b>")==1,"Two-column layout without repeated header");
         check(count(html,"Prathamai")==1 && count(html,"Dvithiyai")==1,"Tithi presentation deduplication");
         String[] days=new java.text.DateFormatSymbols().getWeekdays();
         check(count(html,days[Calendar.THURSDAY])==1 && count(html,days[Calendar.FRIDAY])==1,"Core weekday presentation");
@@ -47,7 +47,9 @@ public class BalamWindowDetailsTest {
         for (BalamWindowDetails.Entry entry : classified.getEntries()) {
             app.astrosoft.core.Panchang panchang = new app.astrosoft.core.Panchang(entry.getStart());
             check(entry.getAmirthathiYoga() == AmirthathiYoga.ofWeekdayAndNakshatra(
-                WeekDay.ofIndex(entry.getWeekday()-1),panchang.getNakshathra(),false).getFirst(), "Core uses actual transit star and segment weekday");
+                app.astrosoft.core.SunriseVara.forPlace(classified.getTimeZone(),
+                    app.astrosoft.ui.AstroSoft.getPreferences().getPlace()).weekdayAt(entry.getStart().getTime()),
+                panchang.getNakshathra(),false).getFirst(), "Core uses actual transit star and sunrise Vara");
         }
 
         BalamWindowDetails computed=core.getBalamWindowDetails(now,new Date(now.getTime()+86400000L));
