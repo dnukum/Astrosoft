@@ -23,6 +23,7 @@ public class MyMuhurta {
     private Horoscope userHoroscope;
     private Panchang pan;
     private final Date eventInstant;
+    private Horoscope eventHoroscope;
 
     public MyMuhurta(Date date, Date time, Place place, Horoscope horoscope) {
         this.selectedDate = date;
@@ -55,6 +56,14 @@ public class MyMuhurta {
         } else {
             pan = new Panchang(cal.getTime());
         }
+        
+        Place placeToUse = selectedPlace != null ? selectedPlace : app.astrosoft.ui.AstroSoft.getPreferences().getPlace();
+        app.astrosoft.beans.BirthData eventBD = new app.astrosoft.beans.BirthData("Muhurta", app.astrosoft.consts.Sex.Male, cal.get(Calendar.DATE), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND), placeToUse);
+        eventHoroscope = new Horoscope(eventBD);
+    }
+
+    public Horoscope getEventHoroscope() {
+        return eventHoroscope;
     }
 
     public Date getEventInstant() { return new Date(eventInstant.getTime()); }

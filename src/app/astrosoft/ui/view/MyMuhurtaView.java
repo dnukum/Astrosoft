@@ -219,10 +219,7 @@ public class MyMuhurtaView extends AstrosoftView {
 
         Chart muhurtaRasiChart = new Chart(new app.astrosoft.beans.PlanetChartData(
             app.astrosoft.consts.Varga.Rasi,
-            muhurta.getPanchang().getPlanetPositions(),
-            muhurta.getPanchang().getPlanetDirection(),
-            muhurta.getPanchang().getPlanetNakshathra(),
-            muhurta.getPanchang().getPlanetLongitudes()) {
+            muhurta.getEventHoroscope().getPlanetaryInfo()) {
             public String getChartName() { return "<html><center>Muhurta<br>Rasi</center></html>"; }
         }, chartSize);
         chartsPanel.add(muhurtaRasiChart);
