@@ -372,7 +372,7 @@ public class BalamCalendarPanel extends JPanel {
             }
             String thithi = htmlEscape(entry.getPaksha().toString()) + " " + htmlEscape(entry.getThithi().toString());
             if (!thithi.equals(previousThithi)) {
-                if (thithis.length() > 0) thithis.append(" &rarr; ");
+                if (thithis.length() > 0) thithis.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
                 if (entry.isWarning()) thithis.append("<font color='red'>");
                 thithis.append(thithi);
                 if (entry.isWarning()) thithis.append("</font>");
