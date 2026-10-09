@@ -179,7 +179,7 @@ public class Panchang {
     	
     	Date nakEndDate = transitHelper.getTransitDate(AstroUtil.nakEndPosition(moon), swissHelper.getSweDate().getJulDay());
     	
-    	double nakEndTime = AstroUtil.dateToTimeDouble(nakEndDate);
+    	double nakEndTime = AstroUtil.dateToTimeDouble(nakEndDate, place.astrosoftTimeZone().getTimeZone());
     	
     	if (((nakEndDate.getTime() - cal.getTimeInMillis()) / AstroConsts.MILLIS_IN_DAY) > 1){
     		nakEndTime = nakEndTime + 24.00;

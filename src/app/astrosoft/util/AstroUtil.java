@@ -470,6 +470,12 @@ public class AstroUtil {
 	   return AstroUtil.decimal(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
    }
    
+   public static double dateToTimeDouble(Date date, java.util.TimeZone tz) {
+       Calendar cal = new GregorianCalendar(tz);
+       cal.setTime(date);
+       return AstroUtil.decimal(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+   }
+   
    /*public static Date doubleTimeToDateCurrentTZ(double time){
 	   int []hr_min = int_dms(time);
 	   Calendar cal = new GregorianCalendar();
