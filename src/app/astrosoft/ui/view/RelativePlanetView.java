@@ -66,8 +66,15 @@ public class RelativePlanetView extends JPanel {
 		for (Planet p : sortedPlanets) {
 			MapTableRow row = new MapTableRow();
 			String name = p.name();
-			if (planetDir.containsKey(p) && planetDir.get(p)) {
+			boolean isRetro = planetDir.containsKey(p) && planetDir.get(p);
+			boolean isCombust = planetaryInfo.getPlanetCombustion() != null && planetaryInfo.getPlanetCombustion().containsKey(p) && planetaryInfo.getPlanetCombustion().get(p);
+			
+			if (isRetro && isCombust) {
+				name += " (R, C)";
+			} else if (isRetro) {
 				name += " (R)";
+			} else if (isCombust) {
+				name += " (C)";
 			}
 			row.addColumn(AstrosoftTableColumn.Planet, name);
 			

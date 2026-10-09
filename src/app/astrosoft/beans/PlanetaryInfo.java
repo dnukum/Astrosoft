@@ -45,6 +45,8 @@ public class PlanetaryInfo implements Exportable{
 
 	private EnumMap<Planet, Boolean> planetDirection;
 
+	private EnumMap<Planet, Boolean> planetCombustion;
+
 	private EnumMap<Planet, Rasi> planetRasi;
 
 	private EnumMap<Planet, Integer> planetLocation;
@@ -116,7 +118,46 @@ public class PlanetaryInfo implements Exportable{
 		}
 		
 		calcPlanetCharacter();
+		calcCombustion();
 
+	}
+
+	private void calcCombustion() {
+		planetCombustion = new EnumMap<Planet, Boolean>(Planet.class);
+		if (!planetPosition.containsKey(Planet.Sun)) return;
+		
+		double sunPos = planetPosition.get(Planet.Sun);
+		
+		for (Planet p : Planet.majorPlanets()) {
+			if (p == Planet.Sun || p == Planet.Moon || p == Planet.Ascendant || p.isNode()) {
+				planetCombustion.put(p, false);
+				continue;
+			}
+			
+			if (!planetPosition.containsKey(p)) continue;
+			
+			double pos = planetPosition.get(p);
+			double diff = Math.abs(pos - sunPos);
+			if (diff > 180) diff = 360 - diff;
+			
+			boolean isRetro = planetDirection != null && planetDirection.containsKey(p) && planetDirection.get(p);
+			double orb = 0;
+			
+			switch(p) {
+				case Mars: orb = 17.0; break;
+				case Mercury: orb = isRetro ? 12.0 : 14.0; break;
+				case Jupiter: orb = 11.0; break;
+				case Venus: orb = isRetro ? 8.0 : 10.0; break;
+				case Saturn: orb = 5.0; break;
+				default: orb = 0; break;
+			}
+			
+			if (diff <= orb) {
+				planetCombustion.put(p, true);
+			} else {
+				planetCombustion.put(p, false);
+			}
+		}
 	}
 
 	
@@ -131,6 +172,10 @@ public class PlanetaryInfo implements Exportable{
 	/**
 	 * @return Returns the planetDirection.
 	 */
+	public EnumMap<Planet, Boolean> getPlanetCombustion() {
+		return planetCombustion;
+	}
+
 	public EnumMap<Planet, Boolean> getPlanetDirection() {
 		return planetDirection;
 	}
