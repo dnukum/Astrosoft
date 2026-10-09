@@ -51,8 +51,18 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
         new EnumMap<Planet, app.astrosoft.consts.Nakshathra>(Planet.class);
 
     private final EnumMap<Planet, Double> planetLongitudes = new EnumMap<Planet, Double>(Planet.class);
+    private final EnumMap<Planet, Integer> planetTooltipHouse = new EnumMap<Planet, Integer>(Planet.class);
+    private final EnumMap<Planet, Double> planetOrb = new EnumMap<Planet, Double>(Planet.class);
     public Double getPlanetLongitude(Planet planet) {
         return planet == null ? null : planetLongitudes.get(planet);
+    }
+
+    public Integer getPlanetTooltipHouse(Planet planet) {
+        return planet == null ? null : planetTooltipHouse.get(planet);
+    }
+
+    public Double getPlanetOrb(Planet planet) {
+        return planet == null ? null : planetOrb.get(planet);
     }
 
     /** Lookup only: the domain has already computed these results. */
@@ -87,14 +97,24 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
             EnumMap<Planet, Boolean> directions,
             EnumMap<Planet, app.astrosoft.consts.Nakshathra> nakshathras) {
         this(varga, positions, directions);
+        planetTooltipHouse.putAll(positions);
         if (nakshathras != null) planetNakshathra.putAll(nakshathras);
     }
 
     public PlanetChartData(Varga varga, EnumMap<Planet, Integer> positions,
             EnumMap<Planet, Boolean> directions, EnumMap<Planet, app.astrosoft.consts.Nakshathra> stars,
             EnumMap<Planet, Double> longitudes) {
+        this(varga, positions, directions, stars, longitudes, positions, longitudes);
+    }
+
+    public PlanetChartData(Varga varga, EnumMap<Planet, Integer> positions,
+            EnumMap<Planet, Boolean> directions, EnumMap<Planet, app.astrosoft.consts.Nakshathra> stars,
+            EnumMap<Planet, Double> longitudes, EnumMap<Planet, Integer> tooltipHouse,
+            EnumMap<Planet, Double> orbs) {
         this(varga, positions, directions, stars);
         if (longitudes != null) planetLongitudes.putAll(longitudes);
+        if (tooltipHouse != null) planetTooltipHouse.putAll(tooltipHouse);
+        if (orbs != null) planetOrb.putAll(orbs);
     }
 
 	public static EnumMap<Rasi, List<Planet>> calcPlanetsInRasi(EnumMap<Planet, Integer> planetPosition){

@@ -122,12 +122,24 @@ public class Chart extends JPanel{
                         if (row >= 0 && col >= 0 && chartData instanceof PlanetChartData) {
                             Object value = getValueAt(row, col);
                             if (value instanceof Planet) {
-                                app.astrosoft.consts.Nakshathra nak =
-                                    ((PlanetChartData) chartData).getPlanetNakshathra((Planet) value);
-                                String longitude = formatAbsoluteLongitude(
-                                    ((PlanetChartData) chartData).getPlanetLongitude((Planet) value));
-                                return longitude == null ? (nak == null ? null : nak.toString())
-                                    : longitude + (nak == null ? "" : ", " + nak.toString());
+                                Planet planet = (Planet) value;
+                                PlanetChartData planetData = (PlanetChartData) chartData;
+                                app.astrosoft.consts.Nakshathra nak = planetData.getPlanetNakshathra(planet);
+                                String longitude = formatAbsoluteLongitude(planetData.getPlanetLongitude(planet));
+                                String orb = formatAbsoluteLongitude(planetData.getPlanetOrb(planet));
+                                StringBuilder text = new StringBuilder();
+                                if (orb != null) {
+                                    text.append("Orb ").append(orb);
+                                }
+                                if (longitude != null) {
+                                    if (text.length() > 0) text.append(", ");
+                                    text.append(longitude);
+                                }
+                                if (nak != null) {
+                                    if (text.length() > 0) text.append(", ");
+                                    text.append(nak.toString());
+                                }
+                                return text.length() == 0 ? null : text.toString();
                             }
                         }
                         // Keep the existing house tooltip outside occupied planet cells.
