@@ -196,9 +196,9 @@ public class BalamCalendarDialog extends JDialog {
             sb.append("<h3 style='margin:0 0 6px 0;'>").append(dc.formatStart())
               .append(" &rarr; ").append(dc.formatEnd()).append("</h3>");
             app.astrosoft.consts.Nakshathra nak = dc.getRow().getTransitNakshathra();
-            sb.append("<b>Transit Moon:</b> ").append(nak.name())
-              .append(" in ").append(dc.getRow().getTransitRasi().name()).append("<br>")
-              .append("<b>Lord:</b> ").append(nak.getLord().name()).append("<br><br>");
+            sb.append("<b>Transit Moon:</b> ").append(nak.toString())
+              .append(" in ").append(dc.getRow().getTransitRasi().toString()).append("<br>")
+              .append("<b>Lord:</b> ").append(nak.getLord().toString()).append("<br><br>");
         } else {
             sb.append("<h3>").append(dateVal).append("</h3>");
         }

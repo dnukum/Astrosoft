@@ -79,7 +79,7 @@ public class MyMuhurtaView extends AstrosoftView {
         if (balamFlyout != null) {
             return;
         }
-        balamFlyout = new app.astrosoft.ui.comp.BalamCalendarPanel(createMuhurta(), instant -> applyCalendarDate(instant), person1Horoscope, person2Horoscope);
+        balamFlyout = new app.astrosoft.ui.comp.BalamCalendarPanel(createMuhurta(), (startInstant, endInstant) -> applyCalendarDate(startInstant, endInstant), person1Horoscope, person2Horoscope);
         balamFlyout.setPeople(person1Horoscope, person2Horoscope);
         flyoutHost.add(balamFlyout, BorderLayout.CENTER);
         balamBtn.setText("Hide Balam Calendar");
@@ -171,9 +171,51 @@ public class MyMuhurtaView extends AstrosoftView {
         return new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, person1Horoscope != null ? person1Horoscope : person2Horoscope);
     }
 
-    private void applyCalendarDate(java.util.Date instant) {
-        selectedDate = new java.util.Date(instant.getTime());
+    private void applyCalendarDate(java.util.Date startInstant, java.util.Date endInstant) {
+        selectedDate = new java.util.Date(startInstant.getTime());
         selectedTime = selectedDate;
+        
+        try {
+            app.astrosoft.beans.Place placeToUse = selectedPlace != null ? selectedPlace : app.astrosoft.ui.AstroSoft.getPreferences().getPlace();
+            java.util.Calendar cal = java.util.Calendar.getInstance(placeToUse.astrosoftTimeZone().getTimeZone());
+            cal.setTime(startInstant);
+            java.util.List<app.astrosoft.core.MuhurtaWindowsCalculator.Window> timings = 
+                app.astrosoft.core.MuhurtaWindowsCalculator.forDay(cal, placeToUse);
+            
+            Long firstHoraStart = null;
+            long selectedEpochStart = startInstant.getTime();
+            long selectedEpochEnd = endInstant.getTime();
+            
+            for (app.astrosoft.core.MuhurtaWindowsCalculator.Window w : timings) {
+                if ("Subha Hora".equals(w.kind)) {
+                    // Check if Subha Hora OVERLAPS the selected window (or starts within it)
+                    // The simplest is to find the first Subha Hora that starts *before* the end of the window
+                    // AND ends *after* the start of the window.
+                    if (w.start < selectedEpochEnd && w.end > selectedEpochStart) {
+                        if (firstHoraStart == null || w.start < firstHoraStart) {
+                            firstHoraStart = w.start;
+                        }
+                    }
+                }
+            }
+            
+            // If no Subha Hora is available inside the window, the user said:
+            // "If no Subha Hora is availabel, it will pick start time of widnow in the selction."
+            // So we DO NOT fall back to the first Subha Hora of the day! We leave selectedTime as selectedDate (start time of window).
+            
+            if (firstHoraStart != null) {
+                // If the Subha Hora starts BEFORE the window starts, we should snap to the window start
+                // OR we can just snap to the Subha Hora start. The user said: "For time, is should the first Subha Hora hour."
+                // I will use the maximum of the Subha Hora start and the Window start so it's strictly inside the window,
+                // OR just the Subha Hora start. The user's screenshot showed exactly the Subha Hora start time in their own example (8:46).
+                // Actually, I'll just use the Subha Hora start, since that's what makes sense astrologically.
+                long snappedTime = Math.max(firstHoraStart, selectedEpochStart);
+                selectedTime = new java.util.Date(snappedTime);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         updateView(false);
     }
 

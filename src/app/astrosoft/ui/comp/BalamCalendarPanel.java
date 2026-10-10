@@ -19,7 +19,7 @@ import app.astrosoft.ui.table.TableDataFactory;
 import app.astrosoft.ui.table.DefaultColumnMetaData;
 
 public class BalamCalendarPanel extends JPanel {
-    private final java.util.function.Consumer<java.util.Date> updateAction;
+    private final java.util.function.BiConsumer<java.util.Date, java.util.Date> updateAction;
     private JButton updateButton;
     private MyMuhurta muhurta;
     private int currentYear;
@@ -54,11 +54,11 @@ public class BalamCalendarPanel extends JPanel {
     }
 
 
-    public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.Consumer<java.util.Date> updateAction) {
+    public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.BiConsumer<java.util.Date, java.util.Date> updateAction) {
         this(muhurta, updateAction, null, null);
     }
 
-    public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.Consumer<java.util.Date> updateAction, Horoscope person1, Horoscope person2) {
+    public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.BiConsumer<java.util.Date, java.util.Date> updateAction, Horoscope person1, Horoscope person2) {
         super();
         this.updateAction = updateAction;
         initComponents();
@@ -140,13 +140,16 @@ public class BalamCalendarPanel extends JPanel {
         topPanel.add(navigationPanel, BorderLayout.CENTER);
         updateButton = new JButton("Update");
         updateButton.setEnabled(false);
+        updateButton.setFocusable(false);
         updateButton.setToolTipText("Apply the selected window start date/time to Muhurta");
         updateButton.addActionListener(e -> {
             int row = table == null ? -1 : table.getSelectedRow();
             if (row < 0) return;
             Object cell = table.getValueAt(row, 0);
             if (cell instanceof BalamDateCell) {
-                updateAction.accept(new java.util.Date(((BalamDateCell) cell).getRow().getStartTime().getTime()));
+                app.astrosoft.beans.BalamRowBean rowBean = ((BalamDateCell) cell).getRow();
+                updateAction.accept(new java.util.Date(rowBean.getStartTime().getTime()), new java.util.Date(rowBean.getEndTime().getTime()));
+                if (table != null) table.requestFocusInWindow();
             }
         });
         JPanel updatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
@@ -341,8 +344,8 @@ public class BalamCalendarPanel extends JPanel {
             sb.append("<br>");
         }
         if (!details.getSuitabilities().isEmpty()) sb.append("<br>");
-        sb.append("<b>Transit Moon:</b> ").append(nak.name()).append(" in ").append(rasi.name())
-          .append("  (").append(nak.getLord().name()).append(")<br><br>");
+        sb.append("<b>Transit Moon:</b> ").append(nak.toString()).append(" in ").append(rasi.toString())
+          .append("  (").append(nak.getLord().toString()).append(")<br><br>");
         StringBuilder thithis = new StringBuilder();
         StringBuilder varams = new StringBuilder();
         StringBuilder amirthathiYogas = new StringBuilder();
@@ -359,7 +362,7 @@ public class BalamCalendarPanel extends JPanel {
             app.astrosoft.consts.AmirthathiYoga amirthathiYoga = entry.getAmirthathiYoga();
             if (amirthathiYoga != null && amirthathiYoga != previousAmirthathiYoga) {
                 if (amirthathiYogas.length() > 0) amirthathiYogas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
-                amirthathiYogas.append(htmlEscape(amirthathiYoga.name()));
+                amirthathiYogas.append(htmlEscape(amirthathiYoga.toString()));
                 previousAmirthathiYoga = amirthathiYoga;
             }
             if (entry.getYoga() != null && entry.getYoga() != previousYoga) {
