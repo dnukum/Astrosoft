@@ -35,6 +35,8 @@ import app.astrosoft.ui.table.TableDataFactory;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.ui.util.UIUtil;
 import app.astrosoft.beans.PlanetChartData;
+import app.astrosoft.beans.MuhurtaProfile;
+import app.astrosoft.ui.dlg.MuhurtaProfileDialog;
 import app.astrosoft.consts.Varga;
 import java.util.EnumMap;
 import app.astrosoft.consts.Planet;
@@ -54,8 +56,8 @@ public class MyMuhurtaView extends AstrosoftView {
     private java.util.Date selectedDate = new java.util.Date();
     private java.util.Date selectedTime = new java.util.Date();
     private app.astrosoft.beans.Place selectedPlace = app.astrosoft.ui.AstroSoft.getPreferences().getPlace();
-    private Horoscope person1Horoscope;
-    private Horoscope person2Horoscope;
+    private MuhurtaProfile person1Profile;
+    private MuhurtaProfile person2Profile;
     private javax.swing.JButton person1Btn, person2Btn;
     private javax.swing.JScrollPane chartScrollPane;
     
@@ -79,8 +81,8 @@ public class MyMuhurtaView extends AstrosoftView {
         if (balamFlyout != null) {
             return;
         }
-        balamFlyout = new app.astrosoft.ui.comp.BalamCalendarPanel(createMuhurta(), (startInstant, endInstant) -> applyCalendarDate(startInstant, endInstant), person1Horoscope, person2Horoscope);
-        balamFlyout.setPeople(person1Horoscope, person2Horoscope);
+        balamFlyout = new app.astrosoft.ui.comp.BalamCalendarPanel(createMuhurta(), (startInstant, endInstant) -> applyCalendarDate(startInstant, endInstant), person1Profile, person2Profile);
+        balamFlyout.setPeople(person1Profile, person2Profile);
         flyoutHost.add(balamFlyout, BorderLayout.CENTER);
         balamBtn.setText("Hide Balam Calendar");
         flyoutHost.revalidate();
@@ -98,6 +100,10 @@ public class MyMuhurtaView extends AstrosoftView {
     }
 
     public MyMuhurtaView(Point loc, Horoscope userHoroscope) {
+        this(loc, userHoroscope != null ? new MuhurtaProfile(userHoroscope) : null);
+    }
+
+    public MyMuhurtaView(Point loc, MuhurtaProfile userProfile) {
         super(viewSize, loc);
         // Person selection is always explicit, independent of the main-screen chart.
 
@@ -168,7 +174,7 @@ public class MyMuhurtaView extends AstrosoftView {
     }
     
     private app.astrosoft.core.MyMuhurta createMuhurta() {
-        return new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, person1Horoscope != null ? person1Horoscope : person2Horoscope);
+        return new app.astrosoft.core.MyMuhurta(selectedDate, selectedTime, selectedPlace, person1Profile != null ? person1Profile : person2Profile);
     }
 
     private void applyCalendarDate(java.util.Date startInstant, java.util.Date endInstant) {
@@ -226,8 +232,8 @@ public class MyMuhurtaView extends AstrosoftView {
     private void updateView(boolean refreshCalendar) {
         app.astrosoft.core.MyMuhurta muhurta = createMuhurta();
         
-        tableModel.updateData(new MyMuhurta(selectedDate, selectedTime, selectedPlace, null).getTableData());
-        boolean hasPeople = person1Horoscope != null || person2Horoscope != null;
+        tableModel.updateData(new MyMuhurta(selectedDate, selectedTime, selectedPlace).getTableData());
+        boolean hasPeople = person1Profile != null || person2Profile != null;
         balamBtn.setEnabled(hasPeople);
         balamBtn.setVisible(hasPeople);
         chartControlStrip.setVisible(hasPeople);
@@ -238,7 +244,7 @@ public class MyMuhurtaView extends AstrosoftView {
 
         refreshCharts(muhurta);
         if (balamFlyout != null && refreshCalendar) {
-            balamFlyout.setPeople(person1Horoscope, person2Horoscope);
+            balamFlyout.setPeople(person1Profile, person2Profile);
             balamFlyout.setContext(muhurta);
         }
     }
@@ -266,8 +272,8 @@ public class MyMuhurtaView extends AstrosoftView {
         }, chartSize);
         chartsPanel.add(muhurtaRasiChart);
 
-        addPersonChart("Person 1", person1Horoscope);
-        addPersonChart("Person 2", person2Horoscope);
+        addPersonChart("Person 1", person1Profile != null ? person1Profile.getHoroscope() : null);
+        addPersonChart("Person 2", person2Profile != null ? person2Profile.getHoroscope() : null);
         resizeChartViewport();
         chartsPanel.revalidate();
         chartsPanel.repaint();
@@ -304,8 +310,8 @@ public class MyMuhurtaView extends AstrosoftView {
     private JPanel createPeopleToolbar() {
         JPanel bar = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 8, 4));
         bar.setBorder(BorderFactory.createTitledBorder("Personal horoscopes"));
-        person1Btn = createRoundedButton("Person 1: Select...", java.awt.Font.PLAIN, new Dimension(190, 30));
-        person2Btn = createRoundedButton("Person 2: Select...", java.awt.Font.PLAIN, new Dimension(190, 30));
+        person1Btn = createRoundedButton("Person 1: Select...", java.awt.Font.PLAIN, new Dimension(200, 30));
+        person2Btn = createRoundedButton("Person 2: Select...", java.awt.Font.PLAIN, new Dimension(200, 30));
         person1Btn.addActionListener(e -> selectPerson(true));
         person2Btn.addActionListener(e -> selectPerson(false));
         bar.add(person1Btn);
@@ -314,25 +320,55 @@ public class MyMuhurtaView extends AstrosoftView {
     }
 
     private void selectPerson(boolean person1) {
-        String file = app.astrosoft.util.FileOps.openFileDialog(
-            javax.swing.SwingUtilities.getWindowAncestor(this), app.astrosoft.util.FileOps.FileDialogMode.OPEN,
-            app.astrosoft.util.AstrosoftFileFilter.HOROSCOPE_EXTN);
-        if (file == null) return;
-        Horoscope person = Horoscope.createFromFile(file);
-        if (person == null) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Unable to load horoscope file.",
-                "Load horoscope", javax.swing.JOptionPane.ERROR_MESSAGE);
-            return;
+        MuhurtaProfile current = person1 ? person1Profile : person2Profile;
+        String label = person1 ? "Person 1" : "Person 2";
+        MuhurtaProfileDialog dlg = new MuhurtaProfileDialog(
+            javax.swing.SwingUtilities.getWindowAncestor(this), label, current);
+        dlg.setVisible(true);
+        if (dlg.isApplied()) {
+            if (person1) {
+                person1Profile = dlg.getSelectedProfile();
+            } else {
+                person2Profile = dlg.getSelectedProfile();
+            }
+            updateView();
         }
-        if (person1) person1Horoscope = person; else person2Horoscope = person;
-        updateView();
     }
 
     private void updatePeopleButtons() {
-        person1Btn.setText(person1Horoscope == null ? "Person 1: Select..." : "Person 1: " + person1Horoscope.getPersonName());
-        person2Btn.setText(person2Horoscope == null ? "Person 2: Select..." : "Person 2: " + person2Horoscope.getPersonName());
-        person1Btn.setToolTipText(person1Btn.getText() + " — click to load or replace");
-        person2Btn.setToolTipText(person2Btn.getText() + " — click to load or replace");
+        person1Btn.setText(getButtonLabel("Person 1", person1Profile));
+        person2Btn.setText(getButtonLabel("Person 2", person2Profile));
+        person1Btn.setToolTipText(getButtonTooltip("Person 1", person1Profile));
+        person2Btn.setToolTipText(getButtonTooltip("Person 2", person2Profile));
+    }
+
+    private String getButtonLabel(String role, MuhurtaProfile profile) {
+        if (profile == null) {
+            return role + ": Select...";
+        }
+        String name = profile.getName();
+        if (name == null || name.trim().isEmpty()) {
+            name = role;
+        }
+        return role + ": " + name;
+    }
+
+    private String getButtonTooltip(String role, MuhurtaProfile profile) {
+        if (profile == null) {
+            return role + ": Select... — click to select full horoscope or quick entry";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(profile.getName());
+        if (profile.getRasi() != null && profile.getNakshathra() != null) {
+            sb.append(" (").append(profile.getRasi()).append(" / ").append(profile.getNakshathra()).append(")");
+        }
+        if (profile.hasHoroscope()) {
+            sb.append(" [Full Horoscope]");
+        } else {
+            sb.append(" [Quick Entry]");
+        }
+        sb.append(" — click to change or clear");
+        return sb.toString();
     }
 
     private JPanel createTablePanel() {

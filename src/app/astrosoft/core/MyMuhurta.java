@@ -20,16 +20,18 @@ public class MyMuhurta {
     private Date selectedDate;
     private Date selectedTime;
     private Place selectedPlace;
+    private app.astrosoft.beans.MuhurtaProfile userProfile;
     private Horoscope userHoroscope;
     private Panchang pan;
     private final Date eventInstant;
     private Horoscope eventHoroscope;
 
-    public MyMuhurta(Date date, Date time, Place place, Horoscope horoscope) {
+    public MyMuhurta(Date date, Date time, Place place, app.astrosoft.beans.MuhurtaProfile profile) {
         this.selectedDate = date;
         this.selectedTime = time;
         this.selectedPlace = place;
-        this.userHoroscope = horoscope;
+        this.userProfile = profile;
+        this.userHoroscope = (profile != null) ? profile.getHoroscope() : null;
         
         java.util.TimeZone tz = java.util.TimeZone.getDefault();
         if (selectedPlace != null) {
@@ -60,6 +62,10 @@ public class MyMuhurta {
         Place placeToUse = selectedPlace != null ? selectedPlace : app.astrosoft.ui.AstroSoft.getPreferences().getPlace();
         app.astrosoft.beans.BirthData eventBD = new app.astrosoft.beans.BirthData("Muhurta", app.astrosoft.consts.Sex.Male, cal.get(Calendar.DATE), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND), placeToUse);
         eventHoroscope = new Horoscope(eventBD);
+    }
+
+    public MyMuhurta(Date date, Date time, Place place) {
+        this(date, time, place, (app.astrosoft.beans.MuhurtaProfile) null);
     }
 
     public Horoscope getEventHoroscope() {
@@ -104,8 +110,8 @@ public class MyMuhurta {
         meta.localizeColumns();
         MapTableRowHelper helper = new MapTableRowHelper(meta);
         
-        if (userHoroscope != null && userHoroscope.getPersonName() != null && !userHoroscope.getPersonName().isEmpty()) {
-            rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.NAME_STR, userHoroscope.getPersonName()));
+        if (userProfile != null && userProfile.getName() != null && !userProfile.getName().isEmpty()) {
+            rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.NAME_STR, userProfile.getName()));
         }
         
         java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MMMM d, yyyy");
@@ -159,8 +165,8 @@ public class MyMuhurta {
                 rows.add(helper.createRow("Amirthathi Yoga", amirthathiDetails));
         }
 
-        if (userHoroscope != null) {
-            app.astrosoft.consts.Nakshathra birthNak = userHoroscope.getNakshathra().getNak();
+        if (userProfile != null && userProfile.getNakshathra() != null && userProfile.getRasi() != null) {
+            app.astrosoft.consts.Nakshathra birthNak = userProfile.getNakshathra();
             app.astrosoft.consts.Nakshathra transitNak = pan.getNakshathra();
             
             BalamRank taraBalam = evalTaraBalam(birthNak, transitNak);
@@ -168,7 +174,7 @@ public class MyMuhurta {
             
             rows.add(helper.createRow("Tara Balam", taraIndex + " (" + taraBalam.name() + ")"));
             
-            app.astrosoft.consts.Rasi birthRasi = userHoroscope.getRasi();
+            app.astrosoft.consts.Rasi birthRasi = userProfile.getRasi();
             app.astrosoft.consts.Rasi transitRasi = pan.getRasi();
             
             BalamRank chandraBalam = evalChandraBalam(birthRasi, transitRasi);
@@ -349,11 +355,15 @@ public class MyMuhurta {
         return new app.astrosoft.beans.ChandraBalamResult(app.astrosoft.consts.ChandraHouse.of(house), rank);
     }
 
-    public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month, Horoscope partner) {
+    public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month, app.astrosoft.beans.MuhurtaProfile partner) {
         java.util.TimeZone tz = java.util.TimeZone.getDefault();
         if (selectedPlace != null) {
             tz = selectedPlace.astrosoftTimeZone().getTimeZone();
         }
-        return new BalamCalendarModel(tz, userHoroscope).buildTable(year, month, partner);
+        return new BalamCalendarModel(tz, userProfile).buildTable(year, month, partner);
+    }
+
+    public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month, Horoscope partner) {
+        return getBalamCalendarTable(year, month, partner != null ? new app.astrosoft.beans.MuhurtaProfile(partner) : null);
     }
 }

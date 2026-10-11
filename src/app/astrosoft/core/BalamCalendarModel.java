@@ -18,17 +18,19 @@ import app.astrosoft.ui.table.MapTableRowHelper;
 import app.astrosoft.ui.table.TableData;
 import app.astrosoft.ui.table.TableDataFactory;
 
+import app.astrosoft.beans.MuhurtaProfile;
+
 public class BalamCalendarModel {
 
     private final TimeZone timeZone;
-    private final Horoscope primaryHoroscope;
+    private final MuhurtaProfile primaryProfile;
 
-    public BalamCalendarModel(TimeZone timeZone, Horoscope primaryHoroscope) {
+    public BalamCalendarModel(TimeZone timeZone, MuhurtaProfile primaryProfile) {
         this.timeZone = timeZone;
-        this.primaryHoroscope = primaryHoroscope;
+        this.primaryProfile = primaryProfile;
     }
 
-    public TableData<MapTableRow> buildTable(int year, int month, Horoscope partnerHoroscope) {
+    public TableData<MapTableRow> buildTable(int year, int month, MuhurtaProfile partnerProfile) {
         List<BalamRowBean> engineRows = BalamCalendarEngine.generateCalendar(year, month, timeZone);
         List<MapTableRow> tableRows = new ArrayList<MapTableRow>();
 
@@ -36,7 +38,7 @@ public class BalamCalendarModel {
         cols.add(AstrosoftTableColumn.Date);
         cols.add(AstrosoftTableColumn.TaraBalam);
         cols.add(AstrosoftTableColumn.ChandraBalam);
-        if (partnerHoroscope != null) {
+        if (partnerProfile != null) {
             cols.add(AstrosoftTableColumn.SpouseTaraBalam);
             cols.add(AstrosoftTableColumn.SpouseChandraBalam);
         }
@@ -54,13 +56,13 @@ public class BalamCalendarModel {
         Nakshathra partnerNak = null;
         Rasi partnerRasi = null;
 
-        if (primaryHoroscope != null) {
-            birthNak = primaryHoroscope.getNakshathra().getNak();
-            birthRasi = primaryHoroscope.getRasi();
+        if (primaryProfile != null) {
+            birthNak = primaryProfile.getNakshathra();
+            birthRasi = primaryProfile.getRasi();
         }
-        if (partnerHoroscope != null) {
-            partnerNak = partnerHoroscope.getNakshathra().getNak();
-            partnerRasi = partnerHoroscope.getRasi();
+        if (partnerProfile != null) {
+            partnerNak = partnerProfile.getNakshathra();
+            partnerRasi = partnerProfile.getRasi();
         }
 
         for (BalamRowBean row : engineRows) {
@@ -97,7 +99,7 @@ public class BalamCalendarModel {
             BalamDateCell dateCell = new BalamDateCell(row, sdf);
             MapTableRow tRow;
 
-            if (partnerHoroscope == null) {
+            if (partnerProfile == null) {
                 tRow = helper.createRow(dateCell, taraObj, chandraObj, matchCell);
             } else {
                 tRow = helper.createRow(dateCell, taraObj, chandraObj, pTaraObj, pChandraObj, matchCell);

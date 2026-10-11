@@ -31,8 +31,8 @@ public class BalamCalendarPanel extends JPanel {
     private JComboBox<String> monthChoice;
     private JComboBox<Integer> yearChoice;
     private boolean syncingMonthChoices;
-    private Horoscope partnerHoroscope;
-    private Horoscope primaryHoroscope;
+    private app.astrosoft.beans.MuhurtaProfile partnerProfile;
+    private app.astrosoft.beans.MuhurtaProfile primaryProfile;
     private String primaryLabel = "Person";
     private String partnerLabel = "Person";
     private JScrollPane scrollPane;
@@ -55,10 +55,14 @@ public class BalamCalendarPanel extends JPanel {
 
 
     public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.BiConsumer<java.util.Date, java.util.Date> updateAction) {
-        this(muhurta, updateAction, null, null);
+        this(muhurta, updateAction, (app.astrosoft.beans.MuhurtaProfile) null, (app.astrosoft.beans.MuhurtaProfile) null);
     }
 
     public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.BiConsumer<java.util.Date, java.util.Date> updateAction, Horoscope person1, Horoscope person2) {
+        this(muhurta, updateAction, person1 != null ? new app.astrosoft.beans.MuhurtaProfile(person1) : null, person2 != null ? new app.astrosoft.beans.MuhurtaProfile(person2) : null);
+    }
+
+    public BalamCalendarPanel(MyMuhurta muhurta, java.util.function.BiConsumer<java.util.Date, java.util.Date> updateAction, app.astrosoft.beans.MuhurtaProfile person1, app.astrosoft.beans.MuhurtaProfile person2) {
         super();
         this.updateAction = updateAction;
         initComponents();
@@ -81,13 +85,18 @@ public class BalamCalendarPanel extends JPanel {
         updateTable();
     }
 
-    /** Shared selectors are owned by the main MyMuhurta screen. */
     public void setPeople(Horoscope person1, Horoscope person2) {
-        Horoscope primary = person1 != null ? person1 : person2;
-        primaryHoroscope = primary;
-        partnerHoroscope = person1 != null ? person2 : null;
-        primaryLabel = person1 != null ? "Person 1" : "Person 2";
-        partnerLabel = "Person 2";
+        setPeople(person1 != null ? new app.astrosoft.beans.MuhurtaProfile(person1) : null,
+                  person2 != null ? new app.astrosoft.beans.MuhurtaProfile(person2) : null);
+    }
+
+    /** Shared selectors are owned by the main MyMuhurta screen. */
+    public void setPeople(app.astrosoft.beans.MuhurtaProfile person1, app.astrosoft.beans.MuhurtaProfile person2) {
+        app.astrosoft.beans.MuhurtaProfile primary = person1 != null ? person1 : person2;
+        primaryProfile = primary;
+        partnerProfile = person1 != null ? person2 : null;
+        primaryLabel = person1 != null ? (person1.getName().isEmpty() ? "Person 1" : person1.getName()) : "Person 2";
+        partnerLabel = (person2 != null && !person2.getName().isEmpty()) ? person2.getName() : "Person 2";
     }
 
     private static String htmlEscape(String text) {
@@ -192,10 +201,10 @@ public class BalamCalendarPanel extends JPanel {
         monthLabel.setText(months[currentMonth] + " " + currentYear);
         syncMonthChoices();
         
-        TableData<MapTableRow> data = muhurta.getBalamCalendarTable(currentYear, currentMonth, partnerHoroscope);
+        TableData<MapTableRow> data = muhurta.getBalamCalendarTable(currentYear, currentMonth, partnerProfile);
         
         DefaultColumnMetaData meta;
-        if (partnerHoroscope == null) {
+        if (partnerProfile == null) {
             meta = new DefaultColumnMetaData(
                 app.astrosoft.consts.AstrosoftTableColumn.Date,
                 app.astrosoft.consts.AstrosoftTableColumn.TaraBalam,
@@ -248,14 +257,14 @@ public class BalamCalendarPanel extends JPanel {
         BalamStarRenderer starRenderer = new BalamStarRenderer();
         table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
         table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.ChandraBalam);
-        if (partnerHoroscope != null) {
+        if (partnerProfile != null) {
             table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.SpouseTaraBalam);
             table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.SpouseChandraBalam);
         }
         
         table.getColumnModel().getColumn(1).setHeaderValue(primaryLabel + " — Tara");
         table.getColumnModel().getColumn(2).setHeaderValue(primaryLabel + " — Chandra");
-        if (partnerHoroscope != null) {
+        if (partnerProfile != null) {
             table.getColumnModel().getColumn(3).setHeaderValue(partnerLabel + " — Tara");
             table.getColumnModel().getColumn(4).setHeaderValue(partnerLabel + " — Chandra");
         }
@@ -409,10 +418,15 @@ public class BalamCalendarPanel extends JPanel {
     /** Presentation only: domain resolves candidates; UI formats returned sets. */
     private void appendCandidateSets(StringBuilder sb, String label, Horoscope person,
             Object taraVal, Object chandraVal) {
+        appendCandidateSets(sb, label, person != null ? new app.astrosoft.beans.MuhurtaProfile(person) : null, taraVal, chandraVal);
+    }
+
+    private void appendCandidateSets(StringBuilder sb, String label, app.astrosoft.beans.MuhurtaProfile person,
+            Object taraVal, Object chandraVal) {
         if (person == null || !(taraVal instanceof TaraBalamResult)
                 || !(chandraVal instanceof ChandraBalamResult)) return;
         app.astrosoft.beans.TaraChandraMatchResult result = MyMuhurta.find_tara_chandra_match(
-            person.getNakshathra().getNak(), person.getRasi(),
+            person.getNakshathra(), person.getRasi(),
             ((TaraBalamResult) taraVal).getTara().getNumber(),
             ((ChandraBalamResult) chandraVal).getHouse().getHouseNumber());
         sb.append("<h4>").append(htmlEscape(label)).append(" — Candidates</h4>");
