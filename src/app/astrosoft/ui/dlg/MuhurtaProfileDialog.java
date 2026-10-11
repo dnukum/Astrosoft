@@ -49,6 +49,7 @@ public class MuhurtaProfileDialog extends JDialog {
     private JTextField nameField;
     private JComboBox<Rasi> rasiCombo;
     private JComboBox<Nakshathra> nakCombo;
+    private boolean isUpdatingRasi = false;
 
     private Horoscope loadedHoroscope;
     private MuhurtaProfile resultProfile;
@@ -60,6 +61,10 @@ public class MuhurtaProfileDialog extends JDialog {
         initComponents();
         populateCurrent(currentProfile);
         pack();
+        int width = Math.max(390, getWidth());
+        int height = Math.max(300, getHeight());
+        setSize(width, height);
+        setMinimumSize(new Dimension(390, 300));
         setResizable(false);
         setLocationRelativeTo(owner);
     }
@@ -99,9 +104,18 @@ public class MuhurtaProfileDialog extends JDialog {
         gbc.insets = new Insets(4, 6, 4, 6);
         gbc.anchor = GridBagConstraints.WEST;
 
-        nameField = new JTextField(14);
+        nameField = new JTextField(15);
         rasiCombo = new JComboBox<Rasi>(Rasi.values());
-        nakCombo = new JComboBox<Nakshathra>(Nakshathra.values());
+        nakCombo = new JComboBox<Nakshathra>();
+        updateNakshatraCombo(null);
+
+        rasiCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (!isUpdatingRasi) {
+                    updateNakshatraCombo(null);
+                }
+            }
+        });
 
         gbc.gridx = 0; gbc.gridy = 0;
         quickPanel.add(new JLabel("Name / Label:"), gbc);
@@ -176,6 +190,23 @@ public class MuhurtaProfileDialog extends JDialog {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    private void updateNakshatraCombo(Nakshathra preferredNak) {
+        Rasi selectedRasi = (Rasi) rasiCombo.getSelectedItem();
+        if (selectedRasi == null) {
+            return;
+        }
+        nakCombo.removeAllItems();
+        java.util.EnumSet<Nakshathra> validNaks = Nakshathra.ofRasi(selectedRasi);
+        for (Nakshathra nak : validNaks) {
+            nakCombo.addItem(nak);
+        }
+        if (preferredNak != null && validNaks.contains(preferredNak)) {
+            nakCombo.setSelectedItem(preferredNak);
+        } else if (nakCombo.getItemCount() > 0) {
+            nakCombo.setSelectedIndex(0);
+        }
+    }
+
     private void updateModeState() {
         boolean isFileMode = radioHoroscope.isSelected();
         browseBtn.setEnabled(isFileMode);
@@ -189,10 +220,10 @@ public class MuhurtaProfileDialog extends JDialog {
             if (loadedHoroscope != null) {
                 fileStatusLabel.setText("Loaded: " + loadedHoroscope.getPersonName());
                 nameField.setText(loadedHoroscope.getPersonName());
+                isUpdatingRasi = true;
                 rasiCombo.setSelectedItem(loadedHoroscope.getRasi());
-                if (loadedHoroscope.getNakshathra() != null) {
-                    nakCombo.setSelectedItem(loadedHoroscope.getNakshathra().getNak());
-                }
+                isUpdatingRasi = false;
+                updateNakshatraCombo(loadedHoroscope.getNakshathra() != null ? loadedHoroscope.getNakshathra().getNak() : null);
             } else {
                 fileStatusLabel.setText("No file selected");
             }
@@ -212,18 +243,20 @@ public class MuhurtaProfileDialog extends JDialog {
         }
 
         loadedHoroscope = h;
-        fileStatusLabel.setText("<html><b>" + h.getPersonName() + "</b> (" + h.getRasi() + " / " + h.getNakshathra().getNak() + ")</html>");
+        Nakshathra nak = (h.getNakshathra() != null) ? h.getNakshathra().getNak() : null;
+        fileStatusLabel.setText("<html><b>" + h.getPersonName() + "</b> (" + h.getRasi() + " / " + (nak != null ? nak.toString() : "") + ")</html>");
         nameField.setText(h.getPersonName());
+        isUpdatingRasi = true;
         rasiCombo.setSelectedItem(h.getRasi());
-        if (h.getNakshathra() != null) {
-            nakCombo.setSelectedItem(h.getNakshathra().getNak());
-        }
+        isUpdatingRasi = false;
+        updateNakshatraCombo(nak);
     }
 
     private void populateCurrent(MuhurtaProfile current) {
         if (current == null) {
             radioQuick.setSelected(true);
             nameField.setText(personLabel);
+            updateNakshatraCombo(null);
             updateModeState();
             return;
         }
@@ -235,12 +268,12 @@ public class MuhurtaProfileDialog extends JDialog {
         } else {
             radioQuick.setSelected(true);
             nameField.setText(current.getName());
+            isUpdatingRasi = true;
             if (current.getRasi() != null) {
                 rasiCombo.setSelectedItem(current.getRasi());
             }
-            if (current.getNakshathra() != null) {
-                nakCombo.setSelectedItem(current.getNakshathra());
-            }
+            isUpdatingRasi = false;
+            updateNakshatraCombo(current.getNakshathra());
             updateModeState();
         }
     }
