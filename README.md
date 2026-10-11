@@ -7,17 +7,36 @@ Astrosoft is a free indian astrology software program for astrologers
 
 ## Installation:
 
-* Install Java JDK from [oracle](https://www.oracle.com/java/technologies/javase-downloads.html) if you don't already have Java installed on your system.
-* Run `java -version` to verify if Java is installed. 
-* You will need Java version 8 or later. If you have older version Java Installed, please install version higher than Java 8.
-* Download code from [GitHub](https://github.com/erajasekar/Astrosoft) by clicking this [link](https://github.com/erajasekar/Astrosoft/archive/master.zip) or clicking `Clone or download -> Download Zip` button in Github
-* Unzip `Astrosoft - master.zip`
-* Open command window on windows or terminal window in Mac/Linux.
-* Change dir to Astrosoft installation dir for e.g `cd C:\Astrosoft - master`. For help with changing dirs in Linux or Mac, watch this [video](https://www.youtube.com/watch?v=y7mooASbLfQ).
-* Run `cd bin`
-* Launch Astrosoft by running command `./RunAstroSoft.bat` 
-* If you have Linux or MacOS, then run ./RunAstroSoft.sh to Launch Astrosoft.
-* If you run into problems or need help contact **[innovativeastrosolutions@gmail.com](mailto:innovativeastrosolutions@gmail.com)**
+* Install Java (JDK or JRE) from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium Temurin](https://adoptium.net/) if you don't already have Java installed on your system.
+* Run `java -version` to verify Java is installed. Java 8 or later is required (Java 11, 17, or 21 LTS recommended).
+* Clone the repository or download the source code:
+  * Using Git: `git clone https://github.com/dnukum/Astrosoft.git`
+  * Or download the ZIP from [GitHub](https://github.com/dnukum/Astrosoft) by clicking this [link](https://github.com/dnukum/Astrosoft/archive/master.zip) and unzip `Astrosoft-master.zip`.
+* Open a Command Prompt / PowerShell window on Windows, or a Terminal window on Mac / Linux.
+* Navigate to the Astrosoft installation directory:
+  ```bash
+  cd Astrosoft
+  ```
+
+### Launching Astrosoft:
+
+* **On Windows:**
+  * Run `RunAstroSoft.bat` (or navigate to `bin` and run `RunAstroSoft.bat`):
+    ```cmd
+    RunAstroSoft.bat
+    ```
+* **On macOS / Linux:**
+  * Ensure the launch script is executable (especially if downloaded via ZIP):
+    ```bash
+    chmod +x RunAstroSoft.sh bin/RunAstroSoft.sh
+    ```
+  * Launch Astrosoft:
+    ```bash
+    ./RunAstroSoft.sh
+    ```
+    *(Or from `bin`: `cd bin && ./RunAstroSoft.sh`)*
+
+> **Note for Java 8 users:** The launch scripts include `--add-exports java.desktop/sun.awt.shell=ALL-UNNAMED` for modern Java (Java 9+). If running on Java 8, this flag can simply be omitted.
 
 Features:
 ---------
@@ -42,6 +61,8 @@ Features:
 
 + Muhurtha:  Provides auspicious muhurtha days with thara and chandara bala for given rasi/nakshathra. 
 
++ My Muhurta & Balam Calendar: Provides personal Muhurta evaluation with dual-profile Tara/Chandra Balam calendars, exact Thithi transition timestamps, and Subha Hora snapping.
+
 + Marriage Compactability:  Computes compactibility kutas and dosha for given pair of birth chart or nakshathra. 
 
 + Ayanamsa:  Supports Lahari, Raman and Krishnamoorthy ayanamsa. 
@@ -53,10 +74,20 @@ Features:
 Development Setup:
 -------------------
 
-1. Install [JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html), [apache ant](http://ant.apache.org/bindownload.cgi) and add to system PATH.
-2. cd to Astrosoft dir `cd Astrosoft`
-3. Run ant target to deploy and run astrosoft application `ant deploy-run`
+1. Install JDK (Java 8 or higher) and [Apache Ant](https://ant.apache.org/bindownload.cgi) and ensure both are added to your system `PATH`.
+2. Navigate to the Astrosoft project directory:
+   ```bash
+   cd Astrosoft
+   ```
+3. Build and package the application:
+   ```bash
+   ant deploy
+   ```
+4. Build, deploy, and launch the application:
+   ```bash
+   ant deploy-run
+   ```
 
 License:
 ---------
-Astrosoft source code is licensed under [GNU public license version 2] (http://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+Astrosoft source code is licensed under [GNU General Public License version 2](http://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
