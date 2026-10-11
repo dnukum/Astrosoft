@@ -28,6 +28,8 @@ import javax.swing.UIManager;
 
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.PlanetChartData;
+import app.astrosoft.beans.AshtaVargaChartData;
+import app.astrosoft.consts.AshtavargaName;
 import app.astrosoft.consts.Ayanamsa;
 import app.astrosoft.consts.Command;
 import app.astrosoft.consts.DisplayStrings;
@@ -295,55 +297,133 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	public JPanel createChartView() {
 
-
 		JPanel infoView = new InfoView(h.getHoroscopeInfo(), new Point(20,20));
 		
-		javax.swing.JPanel leftPanel = new javax.swing.JPanel();
-		leftPanel.setLayout(new javax.swing.BoxLayout(leftPanel, javax.swing.BoxLayout.Y_AXIS));
-		leftPanel.add(infoView);
-		leftPanel.add(javax.swing.Box.createVerticalStrut(20));
-		leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
-		leftPanel.add(javax.swing.Box.createVerticalStrut(20));
-		leftPanel.add(new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo()));
+		final Chart rasi = new Chart(new PlanetChartData(Varga.Rasi, h.getPlanetaryInfo()), new Dimension(360,320));
+		final Chart navamsa = new Chart(new PlanetChartData(Varga.Navamsa, h.getPlanetaryInfo()), new Dimension(360,320));
 
+		final JPanel rasiNavamsaPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+		rasiNavamsaPanel.setOpaque(false);
+		rasiNavamsaPanel.add(rasi);
+		rasiNavamsaPanel.add(navamsa);
+		rasiNavamsaPanel.setPreferredSize(new Dimension(740, 320));
+		rasiNavamsaPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 
-		//FIXME:
-		/*EnumMap<Planet, Integer> pos = new EnumMap<Planet, Integer>(Planet.class);
+		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createTabbedPane(h.getAshtaVarga());
+		ashtavargaPane.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 
-		pos.put(Planet.Sun, 1);
-    	pos.put(Planet.Moon, 1);
-    	pos.put(Planet.Mars, 1);
-    	pos.put(Planet.Mercury, 1);
-    	pos.put(Planet.Jupiter, 1);
-    	pos.put(Planet.Venus, 1);
-    	pos.put(Planet.Saturn, 1);
-    	pos.put(Planet.Rahu, 1);
-    	pos.put(Planet.Ketu, 1);
-    	pos.put(Planet.Ascendant, 1);*/
+		final JPanel rightContainer = new JPanel();
+		rightContainer.setLayout(new javax.swing.BoxLayout(rightContainer, javax.swing.BoxLayout.Y_AXIS));
+		rightContainer.setOpaque(false);
+		rightContainer.add(rasiNavamsaPanel);
+		rightContainer.setPreferredSize(new Dimension(760, 320));
 
-		//Chart rasi = new Chart(new PlanetChartData(Varga.Rasi.toString(), h.getDivChart(Varga.Rasi), h.getPlanetDirection(), DisplayFormat.SYMBOL), new Dimension(360,320));
-
-    	Chart rasi = new Chart(new PlanetChartData(Varga.Rasi, h.getPlanetaryInfo()), new Dimension(360,320));
-
-		Chart navamsa = new Chart(new PlanetChartData(Varga.Navamsa, h.getPlanetaryInfo()), new Dimension(360,320));
-
-		JPanel chartPanel = new JPanel(new GridLayout(1, 2, 20, 0));
-		chartPanel.setOpaque(false);
-		chartPanel.add(rasi);
-		chartPanel.add(navamsa);
-		chartPanel.setPreferredSize(new Dimension(740, 320));
-
-		javax.swing.JScrollPane chartScrollPane = new javax.swing.JScrollPane(chartPanel,
+		final javax.swing.JScrollPane chartScrollPane = new javax.swing.JScrollPane(rightContainer,
 				javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER,
 				javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		chartScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder());
 		chartScrollPane.getViewport().setOpaque(false);
 		chartScrollPane.setOpaque(false);
-		chartScrollPane.setPreferredSize(new Dimension(760, 340));
+		chartScrollPane.setPreferredSize(new Dimension(770, 340));
 
-		JPanel contentPanel = new JPanel(new BorderLayout(40, 0));
+		final JPanel contentPanel = new JPanel(new BorderLayout(40, 0));
 		contentPanel.setOpaque(false);
-		contentPanel.add(leftPanel, BorderLayout.CENTER);
+
+		final JPanel planetOffsetsView = new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo());
+		planetOffsetsView.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+		infoView.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+
+		final javax.swing.JPanel leftPanel = new javax.swing.JPanel();
+		leftPanel.setLayout(new javax.swing.BoxLayout(leftPanel, javax.swing.BoxLayout.Y_AXIS));
+		leftPanel.setOpaque(false);
+
+		final javax.swing.JPanel leftWrapper = new javax.swing.JPanel(new java.awt.BorderLayout());
+		leftWrapper.setOpaque(false);
+		leftWrapper.add(leftPanel, java.awt.BorderLayout.NORTH);
+
+		final javax.swing.JPanel controlsPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 12, 0));
+		controlsPanel.setOpaque(false);
+		controlsPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+		controlsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+
+		final javax.swing.JCheckBox planetOffsetsCheck = new javax.swing.JCheckBox("Planet Offsets");
+		planetOffsetsCheck.setSelected(true);
+		planetOffsetsCheck.setOpaque(false);
+		planetOffsetsCheck.setFocusable(false);
+		planetOffsetsCheck.setFont(new java.awt.Font("Verdana", java.awt.Font.PLAIN, 11));
+		planetOffsetsCheck.setForeground(UIConsts.DARK_BLUE);
+		controlsPanel.add(planetOffsetsCheck);
+
+		final javax.swing.JCheckBox ashtaVargaCheck = new javax.swing.JCheckBox("AshtaVarga");
+		ashtaVargaCheck.setOpaque(false);
+		ashtaVargaCheck.setFocusable(false);
+		ashtaVargaCheck.setFont(new java.awt.Font("Verdana", java.awt.Font.PLAIN, 11));
+		ashtaVargaCheck.setForeground(UIConsts.DARK_BLUE);
+		controlsPanel.add(ashtaVargaCheck);
+
+		final Runnable updateLeftLayout = new Runnable() {
+			public void run() {
+				boolean showOffsets = planetOffsetsCheck.isSelected();
+				leftPanel.removeAll();
+				leftPanel.add(infoView);
+				leftPanel.add(javax.swing.Box.createVerticalStrut(12));
+				leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
+				leftPanel.add(javax.swing.Box.createVerticalStrut(6));
+				leftPanel.add(controlsPanel);
+				if (showOffsets) {
+					leftPanel.add(javax.swing.Box.createVerticalStrut(6));
+					leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
+					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
+					leftPanel.add(planetOffsetsView);
+				}
+				leftPanel.revalidate();
+				leftPanel.repaint();
+				leftWrapper.revalidate();
+				leftWrapper.repaint();
+				contentPanel.revalidate();
+				contentPanel.repaint();
+			}
+		};
+
+		planetOffsetsCheck.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent e) {
+				updateLeftLayout.run();
+			}
+		});
+
+		updateLeftLayout.run();
+
+		ashtaVargaCheck.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent e) {
+				boolean show = ashtaVargaCheck.isSelected();
+				rightContainer.removeAll();
+				rightContainer.add(rasiNavamsaPanel);
+				if (show) {
+					rightContainer.add(javax.swing.Box.createVerticalStrut(15));
+					rightContainer.add(ashtavargaPane);
+					rightContainer.setPreferredSize(new Dimension(760, 725));
+					chartScrollPane.setPreferredSize(new Dimension(770, 680));
+					chartScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+				} else {
+					rightContainer.setPreferredSize(new Dimension(760, 320));
+					chartScrollPane.setPreferredSize(new Dimension(770, 340));
+					chartScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+				}
+				rightContainer.revalidate();
+				rightContainer.repaint();
+				chartScrollPane.revalidate();
+				chartScrollPane.repaint();
+				contentPanel.revalidate();
+				contentPanel.repaint();
+				java.awt.Container parent = contentPanel.getParent();
+				if (parent != null) {
+					parent.revalidate();
+					parent.repaint();
+				}
+			}
+		});
+
+		contentPanel.add(leftWrapper, BorderLayout.CENTER);
 		contentPanel.add(chartScrollPane, BorderLayout.EAST);
 
 		JPanel view = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 20));

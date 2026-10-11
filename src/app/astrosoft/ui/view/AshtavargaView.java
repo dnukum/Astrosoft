@@ -39,10 +39,13 @@ public class AshtavargaView extends AstrosoftView {
 	public AshtavargaView(String title, Ashtavarga ashtavarga, Point loc) {
 		
 		super(title, viewSize, loc);
+		add(createTabbedPane(ashtavarga), BorderLayout.CENTER);
+	}
+
+	public static AstrosoftTabbedPane createTabbedPane(Ashtavarga ashtavarga) {
 		
 		AstrosoftTabbedPane tabbedPane = new AstrosoftTabbedPane(tabbedPaneSize);
 		Font font = UIUtil.getFont(Font.BOLD, 12,Font.BOLD, 10 );
-		//System.out.println(tabbedPane.);
 		
 		for(AshtavargaName name : AshtavargaName.ashtavargas()){
 		
@@ -79,7 +82,7 @@ public class AshtavargaView extends AstrosoftView {
 			
 		}
 		
-		add(tabbedPane, BorderLayout.CENTER);
+		return tabbedPane;
 	}
 
 }
