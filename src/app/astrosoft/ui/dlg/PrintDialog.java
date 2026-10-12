@@ -91,6 +91,7 @@ public class PrintDialog extends AstrosoftDialog {
 
 	private JRadioButton radioPdf = new JRadioButton("PDF", true);
 	private JRadioButton radioMd = new JRadioButton("Markdown (.md)", false);
+	private JRadioButton radioXml = new JRadioButton("XML (.xml)", false);
 	private ButtonGroup formatGroup = new ButtonGroup();
 
 	private JButton print;
@@ -150,7 +151,7 @@ public class PrintDialog extends AstrosoftDialog {
 			arrow.setEnabled(false);
 		}
 		
-		outputFileChooser = new FileChooserPanel(fileChooserSize, getDefaultFile(),"Output File " , FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.PDF_EXTN, AstrosoftFileFilter.MD_EXTN );
+		outputFileChooser = new FileChooserPanel(fileChooserSize, getDefaultFile(),"Output File " , FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.PDF_EXTN, AstrosoftFileFilter.MD_EXTN, AstrosoftFileFilter.XML_EXTN );
 		printPanel.add(outputFileChooser);
 		
 		JPanel buttonPanel = new JPanel();
@@ -193,11 +194,14 @@ public class PrintDialog extends AstrosoftDialog {
 			return;
 		}
 
-		if (radioMd.isSelected() && !outputFile.toLowerCase().endsWith(".md")) {
-			outputFile = outputFile.replaceAll("(?i)\\.pdf$", "") + ".md";
+		if (radioXml.isSelected() && !outputFile.toLowerCase().endsWith(".xml")) {
+			outputFile = outputFile.replaceAll("(?i)\\.(pdf|md)$", "") + ".xml";
+			outputFileChooser.setFilePath(outputFile);
+		} else if (radioMd.isSelected() && !outputFile.toLowerCase().endsWith(".md")) {
+			outputFile = outputFile.replaceAll("(?i)\\.(pdf|xml)$", "") + ".md";
 			outputFileChooser.setFilePath(outputFile);
 		} else if (radioPdf.isSelected() && !outputFile.toLowerCase().endsWith(".pdf")) {
-			outputFile = outputFile.replaceAll("(?i)\\.md$", "") + ".pdf";
+			outputFile = outputFile.replaceAll("(?i)\\.(md|xml)$", "") + ".pdf";
 			outputFileChooser.setFilePath(outputFile);
 		}
 		
@@ -250,9 +254,9 @@ public class PrintDialog extends AstrosoftDialog {
 		
 		JPanel p = new JPanel(new SpringLayout());
 		
-		boolean isMd = outputFileChooser.getFilePath().toLowerCase().endsWith(".md");
+		boolean isPdf = outputFileChooser.getFilePath().toLowerCase().endsWith(".pdf");
 		
-		if (!isMd) {
+		if (isPdf) {
 			acrobatPanel = new FileChooserPanel(acrobatSize,AstroSoft.getPreferences().getAcrobatExecutable(), "Acrobat Executable", FileOps.FileDialogMode.OPEN);
 			p.add(acrobatPanel);
 		} else {
@@ -281,7 +285,7 @@ public class PrintDialog extends AstrosoftDialog {
 		
 		p.add(buttonPanel);
 		
-		if (isMd) {
+		if (!isPdf) {
 			SpringUtilities.makeCompactGrid(p, 1, 1, 10,10,10,10);
 		} else {
 			SpringUtilities.makeCompactGrid(p, 2, 1, 10,10,10,10);
@@ -360,8 +364,10 @@ public class PrintDialog extends AstrosoftDialog {
 
 		formatGroup.add(radioPdf);
 		formatGroup.add(radioMd);
+		formatGroup.add(radioXml);
 		radioPdf.setOpaque(false);
 		radioMd.setOpaque(false);
+		radioXml.setOpaque(false);
 
 		ActionListener formatListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -370,11 +376,13 @@ public class PrintDialog extends AstrosoftDialog {
 		};
 		radioPdf.addActionListener(formatListener);
 		radioMd.addActionListener(formatListener);
+		radioXml.addActionListener(formatListener);
 
 		JPanel formatPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
 		formatPanel.setOpaque(false);
 		formatPanel.add(radioPdf);
 		formatPanel.add(radioMd);
+		formatPanel.add(radioXml);
 		
 		typePanel.add(new JLabel("Print "));
 		typePanel.add(comboPanel);
@@ -389,19 +397,8 @@ public class PrintDialog extends AstrosoftDialog {
 	private void formatChanged() {
 		if (outputFileChooser != null) {
 			String currentPath = outputFileChooser.getFilePath();
-			if (radioMd.isSelected()) {
-				if (currentPath.toLowerCase().endsWith(".pdf")) {
-					currentPath = currentPath.substring(0, currentPath.length() - 4) + ".md";
-				} else if (!currentPath.toLowerCase().endsWith(".md")) {
-					currentPath = currentPath + ".md";
-				}
-			} else {
-				if (currentPath.toLowerCase().endsWith(".md")) {
-					currentPath = currentPath.substring(0, currentPath.length() - 3) + ".pdf";
-				} else if (!currentPath.toLowerCase().endsWith(".pdf")) {
-					currentPath = currentPath + ".pdf";
-				}
-			}
+			String targetExt = radioXml.isSelected() ? ".xml" : (radioMd.isSelected() ? ".md" : ".pdf");
+			currentPath = currentPath.replaceAll("(?i)\\.(pdf|md|xml)$", "") + targetExt;
 			outputFileChooser.setFilePath(currentPath);
 			if (new File(currentPath).exists()) {
 				printCompleted();
@@ -469,8 +466,10 @@ public class PrintDialog extends AstrosoftDialog {
 			}
 		}
 		
-		if (file != null && radioMd != null && radioMd.isSelected()) {
-			file = file.replaceAll("(?i)\\.pdf$", ".md");
+		if (file != null) {
+			String targetExt = (radioXml != null && radioXml.isSelected()) ? ".xml" :
+			                   ((radioMd != null && radioMd.isSelected()) ? ".md" : ".pdf");
+			file = file.replaceAll("(?i)\\.pdf$", targetExt);
 		}
 		
 		return file;
@@ -532,7 +531,9 @@ public class PrintDialog extends AstrosoftDialog {
 		sb.append("_");
 		sb.append(cal.get(Calendar.YEAR));
 		
-		sb.append(".pdf");
+		String targetExt = (radioXml != null && radioXml.isSelected()) ? ".xml" :
+		                   ((radioMd != null && radioMd.isSelected()) ? ".md" : ".pdf");
+		sb.append(targetExt);
 		return sb.toString();
 		
 	}

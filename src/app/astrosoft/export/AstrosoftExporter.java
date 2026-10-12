@@ -108,9 +108,28 @@ public class AstrosoftExporter {
 		return task;
 	}
 
+	public static FutureTask<Object> export2XmlTask(final Type exporterType, final Exportable exportable, final String xmlFile){
+
+		Runnable r = new Runnable () {
+			
+			public void run() {
+				export2Xml(exporterType, exportable, xmlFile);
+				log.info("XML File: " + xmlFile);
+			}
+		};
+		
+		FutureTask<Object> task = new FutureTask<Object>(r, null);
+		
+		new Thread(task).start();
+		
+		return task;
+	}
+
 	public static FutureTask<Object> export(final Type exporterType, final Exportable exportable, final String outputFile){
 		if (outputFile != null && outputFile.toLowerCase().endsWith(".md")) {
 			return export2Markdown(exporterType, exportable, outputFile);
+		} else if (outputFile != null && outputFile.toLowerCase().endsWith(".xml")) {
+			return export2XmlTask(exporterType, exportable, outputFile);
 		} else {
 			return export2Pdf(exporterType, exportable, outputFile);
 		}

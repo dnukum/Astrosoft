@@ -16,6 +16,8 @@ public class AstrosoftFileFilter extends FileFilter {
 
 	public static final AstrosoftFileFilter MD_EXTN = new AstrosoftFileFilter(".md", "Markdown Documents (*.md)");
 
+	public static final AstrosoftFileFilter XML_EXTN = new AstrosoftFileFilter(".xml", "XML Documents (*.xml)");
+
 	public static final AstrosoftFileFilter COMPACTIBILITY_EXTN = new AstrosoftFileFilter(".asc", "AstroSoft Compactibility (*.asc)");
 
 	public static final AstrosoftFileFilter ALL_FILES = new AstrosoftFileFilter("*", "All Files (*.*)");
