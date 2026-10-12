@@ -28,12 +28,14 @@ import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JWindow;
 import javax.swing.SpringLayout;
 import javax.swing.border.EtchedBorder;
@@ -62,18 +64,18 @@ public class PrintDialog extends AstrosoftDialog {
 
 	private static final Logger log = Logger.getLogger(PrintDialog.class.getName());
 	
-	private static final Dimension dlgSize = new Dimension(440,270);
+	private static final Dimension dlgSize = new Dimension(450,290);
 	
 	//private static final Dimension dlgSize = new Dimension(440,320);
 	
-	private static final Dimension extDlgSize = new Dimension(440,380);
+	private static final Dimension extDlgSize = new Dimension(450,390);
 	
 	private static final Dimension fileChooserSize = new Dimension(dlgSize.width - 60,60);
 	private static final Dimension acrobatSize = new Dimension(dlgSize.width - 60,60);
 	
 	private static final Dimension progressSize = new Dimension(dlgSize.width - 60,25);
 	
-	private static final Dimension printPanelSize = new Dimension(dlgSize.width - 60,dlgSize.height - 60);
+	private static final Dimension printPanelSize = new Dimension(dlgSize.width - 60,dlgSize.height - 40);
 	
 	private static final String defaultPath = AstroSoft.getPreferences().getAstrosoftFilesDir();
 	
@@ -86,6 +88,10 @@ public class PrintDialog extends AstrosoftDialog {
 	JPanel printPanel;
 
 	private JComboBox printTypes;
+
+	private JRadioButton radioPdf = new JRadioButton("PDF", true);
+	private JRadioButton radioMd = new JRadioButton("Markdown (.md)", false);
+	private ButtonGroup formatGroup = new ButtonGroup();
 
 	private JButton print;
 
@@ -169,7 +175,7 @@ public class PrintDialog extends AstrosoftDialog {
 		printPanel.add(buttonPanel);
 		
 		
-		SpringUtilities.makeCompactGrid(printPanel, 3, 1, 10,10,10,23);
+		SpringUtilities.makeCompactGrid(printPanel, 3, 1, 10,8,10,12);
 		
 		printPanel.setBorder(UIConsts.getTitleBorder("Print"));
 		
@@ -185,6 +191,14 @@ public class PrintDialog extends AstrosoftDialog {
 		if (outputFile == null || outputFile.isEmpty()){
 			OptionDialog.showDialog("Please choose valid file " , JOptionPane.ERROR_MESSAGE);
 			return;
+		}
+
+		if (radioMd.isSelected() && !outputFile.toLowerCase().endsWith(".md")) {
+			outputFile = outputFile.replaceAll("(?i)\\.pdf$", "") + ".md";
+			outputFileChooser.setFilePath(outputFile);
+		} else if (radioPdf.isSelected() && !outputFile.toLowerCase().endsWith(".pdf")) {
+			outputFile = outputFile.replaceAll("(?i)\\.md$", "") + ".pdf";
+			outputFileChooser.setFilePath(outputFile);
 		}
 		
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -343,13 +357,58 @@ public class PrintDialog extends AstrosoftDialog {
 		
 		comboPanel.add(printTypes, BorderLayout.CENTER);
 		comboPanel.add(arrow, BorderLayout.EAST);
+
+		formatGroup.add(radioPdf);
+		formatGroup.add(radioMd);
+		radioPdf.setOpaque(false);
+		radioMd.setOpaque(false);
+
+		ActionListener formatListener = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				formatChanged();
+			}
+		};
+		radioPdf.addActionListener(formatListener);
+		radioMd.addActionListener(formatListener);
+
+		JPanel formatPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+		formatPanel.setOpaque(false);
+		formatPanel.add(radioPdf);
+		formatPanel.add(radioMd);
 		
 		typePanel.add(new JLabel("Print "));
 		typePanel.add(comboPanel);
+		typePanel.add(new JLabel("Format "));
+		typePanel.add(formatPanel);
 		
-		SpringUtilities.makeCompactGrid(typePanel, 1, 2, 0,0,5,5);
+		SpringUtilities.makeCompactGrid(typePanel, 2, 2, 0,0,5,6);
 		
 		return typePanel;
+	}
+
+	private void formatChanged() {
+		if (outputFileChooser != null) {
+			String currentPath = outputFileChooser.getFilePath();
+			if (radioMd.isSelected()) {
+				if (currentPath.toLowerCase().endsWith(".pdf")) {
+					currentPath = currentPath.substring(0, currentPath.length() - 4) + ".md";
+				} else if (!currentPath.toLowerCase().endsWith(".md")) {
+					currentPath = currentPath + ".md";
+				}
+			} else {
+				if (currentPath.toLowerCase().endsWith(".md")) {
+					currentPath = currentPath.substring(0, currentPath.length() - 3) + ".pdf";
+				} else if (!currentPath.toLowerCase().endsWith(".pdf")) {
+					currentPath = currentPath + ".pdf";
+				}
+			}
+			outputFileChooser.setFilePath(currentPath);
+			if (new File(currentPath).exists()) {
+				printCompleted();
+			} else {
+				refresh();
+			}
+		}
 	}
 	
 	protected void arrowClicked() {
@@ -399,18 +458,22 @@ public class PrintDialog extends AstrosoftDialog {
 	private String getDefaultFile(){
 		
 	    app.astrosoft.export.AstrosoftExporter.Type type = (app.astrosoft.export.AstrosoftExporter.Type)printTypes.getSelectedItem();
-		
+		String file = null;
 		if (type != null) {
 			if (type.equals(AstrosoftExporter.Type.Horosocope)){
-				return parent.getHoroscope().createDocumentName();
+				file = parent.getHoroscope().createDocumentName();
 			}else if (type.equals(AstrosoftExporter.Type.Compactibility)){
-				return parent.getCompactibility().createDocumentName();
+				file = parent.getCompactibility().createDocumentName();
 			}else if (type.equals(AstrosoftExporter.Type.Panchang)) {
-				return getPanchangOutputFile(null);
+				file = getPanchangOutputFile(null);
 			}
 		}
 		
-		return null;
+		if (file != null && radioMd != null && radioMd.isSelected()) {
+			file = file.replaceAll("(?i)\\.pdf$", ".md");
+		}
+		
+		return file;
 	}
 	
 	private Window createPanchangInputWindow(){
