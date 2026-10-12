@@ -32,23 +32,21 @@ public class FileChooserPanel extends JPanel {
 	private String defaultPath;
 	private String title;
 	private FileOps.FileDialogMode mode;
-	private AstrosoftFileFilter fileFilter; 
+	private AstrosoftFileFilter[] fileFilters; 
 	
-	
-	public FileChooserPanel(Dimension size, String defaultPath, String title, FileOps.FileDialogMode mode, AstrosoftFileFilter fileFilter){
+	public FileChooserPanel(Dimension size, String defaultPath, String title, FileOps.FileDialogMode mode, AstrosoftFileFilter... fileFilters){
 		
 		this.defaultPath = defaultPath;
 		this.title = title;
 		this.mode = mode;
-		this.fileFilter = fileFilter;
+		this.fileFilters = fileFilters;
 		setLayout(new SpringLayout());
 		setPreferredSize(size);
 		addComponents();
 	}
 	
-	
 	public FileChooserPanel(Dimension size, String defaultPath, String title, FileOps.FileDialogMode mode){
-		this(size,defaultPath,title,mode,  AstrosoftFileFilter.ALL_FILES);
+		this(size,defaultPath,title,mode, AstrosoftFileFilter.ALL_FILES);
 	}
 
 	private void addComponents() {
@@ -65,7 +63,7 @@ public class FileChooserPanel extends JPanel {
 
 			public void actionPerformed(ActionEvent e) {
 				
-				String selectedFile = FileOps.openFileDialog(FileChooserPanel.this, mode, fileFilter);
+				String selectedFile = FileOps.openFileDialog(FileChooserPanel.this, mode, fileFilters);
 				
 				if (selectedFile != null) {
 					filePath.setText(selectedFile);

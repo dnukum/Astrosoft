@@ -39,7 +39,7 @@ public class FileOps {
      * @param mode FileDialogMode - open, save
      * @return Selected file as String
      */
-    public static String openFileDialog( Component parent, FileDialogMode mode, AstrosoftFileFilter astrosoftFileFilter ) {
+    public static String openFileDialog( Component parent, FileDialogMode mode, AstrosoftFileFilter... astrosoftFileFilters ) {
 
     	AstrosoftPref pref = AstroSoft.getPreferences();
     	
@@ -49,13 +49,18 @@ public class FileOps {
         UIUtil.setPanelBackground(fd, UIConsts.THEME_CLR);
         fd.setOpaque(true);
         
-        fd.setFileFilter( astrosoftFileFilter );
+        if (astrosoftFileFilters != null && astrosoftFileFilters.length > 0) {
+            for (AstrosoftFileFilter filter : astrosoftFileFilters) {
+                fd.addChoosableFileFilter(filter);
+            }
+            fd.setFileFilter(astrosoftFileFilters[0]);
+        }
         
         String selectedFile = null;
         if (mode == FileDialogMode.OPEN){
-        	selectedFile = showFileOpenDialog(parent, fd, astrosoftFileFilter);
+        	selectedFile = showFileOpenDialog(parent, fd);
         }else if (mode == FileDialogMode.SAVE) {
-        	selectedFile = showFileSaveDialog(parent, fd, astrosoftFileFilter);
+        	selectedFile = showFileSaveDialog(parent, fd);
         }
 
         if (selectedFile != null) {
@@ -65,7 +70,7 @@ public class FileOps {
         return selectedFile;
     }
     
-    private static String showFileSaveDialog(Component parent, JFileChooser fd, AstrosoftFileFilter fileFilter){
+    private static String showFileSaveDialog(Component parent, JFileChooser fd){
     	
     	while (true) {
     		
@@ -73,7 +78,7 @@ public class FileOps {
         	
         	if (returnVal == JFileChooser.APPROVE_OPTION){
         		
-        		String selectedFile = getSelectedFile(fd, fileFilter);
+        		String selectedFile = getSelectedFile(fd);
 
                 if (new File(selectedFile).exists()){
                 	int option = OptionDialog.showDialog(selectedFile + " already exists. \n Do you want to overwrite it ? " , JOptionPane.QUESTION_MESSAGE);
@@ -93,7 +98,7 @@ public class FileOps {
     	
     }
     
-    private static String showFileOpenDialog(Component parent, JFileChooser fd, AstrosoftFileFilter fileFilter){
+    private static String showFileOpenDialog(Component parent, JFileChooser fd){
     	
     	while(true){
     		
@@ -101,7 +106,7 @@ public class FileOps {
         	
         	if (returnVal == JFileChooser.APPROVE_OPTION){
         		
-        		String selectedFile = getSelectedFile(fd, fileFilter);
+        		String selectedFile = getSelectedFile(fd);
         		
         		if ( !(new File(selectedFile).exists()) ){
         			OptionDialog.showDialog(selectedFile + " does not exists. \n Please choose valid file. " , JOptionPane.ERROR_MESSAGE);
@@ -118,15 +123,22 @@ public class FileOps {
     	return null;
     }
 
-    private static String getSelectedFile(JFileChooser fd, AstrosoftFileFilter fileFilter){
+    private static String getSelectedFile(JFileChooser fd){
     	
     	String selectedFile = ( fd.getSelectedFile(  ) ).getAbsolutePath(  );
         
-        
-        String fileExtn = fileFilter.getExtension();
-        if ( !fileExtn.equals("*") && !selectedFile.endsWith(fileExtn)){
-        	selectedFile = selectedFile + fileExtn;
-		}
+        javax.swing.filechooser.FileFilter currentFilter = fd.getFileFilter();
+        if (currentFilter instanceof AstrosoftFileFilter) {
+            String fileExtn = ((AstrosoftFileFilter) currentFilter).getExtension();
+            if (!fileExtn.equals("*")) {
+                String lower = selectedFile.toLowerCase();
+                if (lower.endsWith(".pdf") || lower.endsWith(".md") || lower.endsWith(".xml") || lower.endsWith(".ash") || lower.endsWith(".asc")) {
+                    // Keep user-specified supported extension
+                } else if (!selectedFile.endsWith(fileExtn)) {
+                    selectedFile = selectedFile + fileExtn;
+                }
+            }
+        }
         
         return selectedFile;
     }

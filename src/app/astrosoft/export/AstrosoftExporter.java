@@ -86,6 +86,36 @@ public class AstrosoftExporter {
 		return task;
 	}
 
+	public static FutureTask<Object> export2Markdown(final Type exporterType, final Exportable exportable, final String mdFile){
+
+		Runnable r = new Runnable () {
+			
+			public void run() {
+				String xmlFile = mdFile.replaceAll("(?i)\\.md$", ".xml");
+				export2Xml(exporterType, exportable, xmlFile);
+		
+				log.info("XML File: " + xmlFile);
+				log.info("MD File: " + mdFile);
+		
+				AstrosoftMarkdownExporter.exportToMarkdown(exporterType, xmlFile, mdFile);
+			}
+		};
+		
+		FutureTask<Object> task = new FutureTask<Object>(r, null);
+		
+		new Thread(task).start();
+		
+		return task;
+	}
+
+	public static FutureTask<Object> export(final Type exporterType, final Exportable exportable, final String outputFile){
+		if (outputFile != null && outputFile.toLowerCase().endsWith(".md")) {
+			return export2Markdown(exporterType, exportable, outputFile);
+		} else {
+			return export2Pdf(exporterType, exportable, outputFile);
+		}
+	}
+
 	public static void export2Xml(Type exporterType, Exportable exportable, String xmlFile){
 
 		exporterType.getExporter(xmlFile).export2Xml(exportable);
