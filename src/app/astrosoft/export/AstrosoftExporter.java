@@ -6,6 +6,7 @@
 
 package app.astrosoft.export;
 
+import java.io.File;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
 
@@ -64,74 +65,75 @@ public class AstrosoftExporter {
 
 	private static final Logger log = Logger.getLogger(AstrosoftExporter.class.getName());
 
-	public static FutureTask<Object> export2Pdf(final Type exporterType, final Exportable exportable, final String pdfFile){
+	public static FutureTask<Object> export(final Type exporterType, final Exportable exportable, final String baseOutputFile, final boolean exportPdf, final boolean exportMd, final boolean exportXml) {
 
 		Runnable r = new Runnable () {
 			
 			public void run() {
-				String xmlFile = pdfFile.replaceAll(".pdf|.PDF",".xml");
-				export2Xml(exporterType,exportable,xmlFile);
-		
-				log.info("XML File: " + xmlFile);
-				log.info("PDF File: " + pdfFile);
-		
-				FOPTransformer.exportToPDF(xmlFile, exporterType.getTemplate(), pdfFile);
+				String basePath = (baseOutputFile != null) ? baseOutputFile.replaceAll("(?i)\\.(pdf|md|xml)$", "") : "output";
+				String pdfFile = basePath + ".pdf";
+				String mdFile = basePath + ".md";
+				String xmlFile = basePath + ".xml";
+
+				File tempXml = null;
+				String workingXmlFile = null;
+
+				try {
+					if (exportXml) {
+						workingXmlFile = xmlFile;
+						export2Xml(exporterType, exportable, workingXmlFile);
+						log.info("XML File: " + workingXmlFile);
+					} else if (exportPdf || exportMd) {
+						tempXml = File.createTempFile("astrosoft_export_", ".xml");
+						tempXml.deleteOnExit();
+						workingXmlFile = tempXml.getAbsolutePath();
+						export2Xml(exporterType, exportable, workingXmlFile);
+					}
+
+					if (exportPdf && workingXmlFile != null) {
+						log.info("PDF File: " + pdfFile);
+						FOPTransformer.exportToPDF(workingXmlFile, exporterType.getTemplate(), pdfFile);
+					}
+
+					if (exportMd && workingXmlFile != null) {
+						log.info("MD File: " + mdFile);
+						AstrosoftMarkdownExporter.exportToMarkdown(exporterType, workingXmlFile, mdFile);
+					}
+				} catch (Exception e) {
+					log.log(java.util.logging.Level.SEVERE, "Export failed", e);
+					throw new RuntimeException(e);
+				} finally {
+					if (tempXml != null && tempXml.exists()) {
+						tempXml.delete();
+					}
+				}
 			}
 		};
-		
-		FutureTask<Object> task = new FutureTask<Object>(r,null);
-		
+
+		FutureTask<Object> task = new FutureTask<Object>(r, null);
 		new Thread(task).start();
-		
 		return task;
+	}
+
+	public static FutureTask<Object> export2Pdf(final Type exporterType, final Exportable exportable, final String pdfFile){
+		return export(exporterType, exportable, pdfFile, true, false, false);
 	}
 
 	public static FutureTask<Object> export2Markdown(final Type exporterType, final Exportable exportable, final String mdFile){
-
-		Runnable r = new Runnable () {
-			
-			public void run() {
-				String xmlFile = mdFile.replaceAll("(?i)\\.md$", ".xml");
-				export2Xml(exporterType, exportable, xmlFile);
-		
-				log.info("XML File: " + xmlFile);
-				log.info("MD File: " + mdFile);
-		
-				AstrosoftMarkdownExporter.exportToMarkdown(exporterType, xmlFile, mdFile);
-			}
-		};
-		
-		FutureTask<Object> task = new FutureTask<Object>(r, null);
-		
-		new Thread(task).start();
-		
-		return task;
+		return export(exporterType, exportable, mdFile, false, true, false);
 	}
 
 	public static FutureTask<Object> export2XmlTask(final Type exporterType, final Exportable exportable, final String xmlFile){
-
-		Runnable r = new Runnable () {
-			
-			public void run() {
-				export2Xml(exporterType, exportable, xmlFile);
-				log.info("XML File: " + xmlFile);
-			}
-		};
-		
-		FutureTask<Object> task = new FutureTask<Object>(r, null);
-		
-		new Thread(task).start();
-		
-		return task;
+		return export(exporterType, exportable, xmlFile, false, false, true);
 	}
 
 	public static FutureTask<Object> export(final Type exporterType, final Exportable exportable, final String outputFile){
 		if (outputFile != null && outputFile.toLowerCase().endsWith(".md")) {
-			return export2Markdown(exporterType, exportable, outputFile);
+			return export(exporterType, exportable, outputFile, false, true, false);
 		} else if (outputFile != null && outputFile.toLowerCase().endsWith(".xml")) {
-			return export2XmlTask(exporterType, exportable, outputFile);
+			return export(exporterType, exportable, outputFile, false, false, true);
 		} else {
-			return export2Pdf(exporterType, exportable, outputFile);
+			return export(exporterType, exportable, outputFile, true, false, false);
 		}
 	}
 
