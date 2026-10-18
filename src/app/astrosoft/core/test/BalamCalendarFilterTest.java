@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 
 import junit.framework.TestCase;
@@ -240,6 +241,48 @@ public class BalamCalendarFilterTest extends TestCase {
             assertEquals("Button text must return to 'Filter'", "Filter", filterBtn.getText());
             int unfilteredNovCount = findTable(panel).getRowCount();
             assertTrue("Unfiltered November has more rows than filtered November", unfilteredNovCount > filteredNovCount);
+        } finally {
+            panel.removeNotify();
+        }
+    }
+
+    /**
+     * Test Case 8: Subha Hora dropdown population inside the details area,
+     * selection of alternative Subha Hora, and Update button applying chosen instant.
+     */
+    public void testCase08_SubhaHoraDropdownPopulationAndUpdate() throws Exception {
+        Date refDate = istDate(2026, 10, 15, 10, 0);
+        MyMuhurta muhurta = new MyMuhurta(refDate, refDate, CHENNAI, PERSON_1);
+
+        final List<Date[]> updates = new ArrayList<>();
+        BalamCalendarPanel panel = new BalamCalendarPanel(
+            muhurta, (s, e) -> updates.add(new Date[] { s, e }), PERSON_1, PERSON_2);
+        try {
+            JTable table = findTable(panel);
+            assertNotNull(table);
+            table.setRowSelectionInterval(10, 10);
+
+            long start = System.currentTimeMillis();
+            JComboBox<BalamCalendarPanel.HoraItem> combo = panel.getHoraCombo();
+            assertNotNull("Hora combo must be present", combo);
+            while (combo.getItemCount() == 0 && System.currentTimeMillis() - start < 3000) {
+                Thread.sleep(50);
+            }
+            assertTrue("Subha Hora combo must be populated", combo.getItemCount() > 0);
+
+            if (combo.getItemCount() > 1) {
+                combo.setSelectedIndex(1);
+            }
+            BalamCalendarPanel.HoraItem chosen = (BalamCalendarPanel.HoraItem) combo.getSelectedItem();
+            assertNotNull(chosen);
+
+            JButton updateBtn = findButton(panel, "Update");
+            assertNotNull(updateBtn);
+            assertTrue(updateBtn.isEnabled());
+            updateBtn.doClick();
+
+            assertEquals(1, updates.size());
+            assertEquals("Update action received chosen Subha Hora start", chosen.getTargetTime(), updates.get(0)[0].getTime());
         } finally {
             panel.removeNotify();
         }

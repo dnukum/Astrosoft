@@ -108,9 +108,9 @@ Subdivides arbitrary time windows into contiguous segments $[start, end)$ classi
 
 ### 3.1 Inline Calendar Panel (`BalamCalendarPanel.java`)
 - Embedded directly below the charts inside `flyoutHost` when toggled.
-- **Navigation Controls**: Non-editable month/year selectors with synchronized arrow buttons (rolling span $\pm 50$ years) and an "Update" button to refresh the calendar grid.
+- **Navigation Controls**: Non-editable month/year selectors with synchronized arrow buttons (rolling span $\pm 50$ years) in the top center/left panel.
 - **Filter / Show All Toggle**:
-  - Positioned immediately to the left of the "Update" button in the top control panel.
+  - Positioned in the top right control panel.
   - **Default State**: Label `Filter`, displaying all raw monthly transit segments.
   - **Filtered State**: Label `Show All`, filtering out inauspicious segments based on:
     - **Tara Balam = 7** (*Naidhana*) for Person 1 or Person 2.
@@ -119,12 +119,15 @@ Subdivides arbitrary time windows into contiguous segments $[start, end)$ classi
   - **Stickiness**: Toggle state persists across month and year navigation controls (`Prev Month`, `Next Month`, and combo choices).
 - **Row Selection**: Clicking a row immediately synchronizes the main screen via `applyCalendarDate(startInstant, endInstant)`, updating the Muhurta chart and Panchanga table synchronously, and triggers asynchronous loading of window details.
 
-### 3.2 Two-Column Details View (57% / 43% HTML Split)
+### 3.2 Two-Column Details View (50% / 50% Horizontal Split with Wrapping)
 
-#### Left Column (57% width)
+Divided by a subtle horizontal split pane with 50/50 resize weighting. Both panels enforce horizontal viewport width tracking so all text wraps cleanly without squeezing the opposite column.
+
+#### Left Column (50% width)
 1. **Window Boundaries**:
-   - `<b>Start:</b> dd MMM yyyy HH:mm z`
-   - `<b>End:</b> dd MMM yyyy HH:mm z`
+   - `<b>Start:</b> dd MMM yyyy, hh:mm a z`
+   - `<b>End:</b> dd MMM yyyy, hh:mm a z`
+   - `<b>Sunrise on <MMM d>:</b> hh:mm a z` (included immediately below `End` if and only if the time window straddles a local sunrise; omitted if the window does not straddle a sunrise).
 2. **Matching-Star Event Suitability**:
    - `<b><Star>:</b> <Activities>` (or `<font color='red'>Not recommended</font>`)
    - Blank separator line.
@@ -132,16 +135,23 @@ Subdivides arbitrary time windows into contiguous segments $[start, end)$ classi
    - `<b>Transit Moon:</b> <Nakshathra> in <Rasi> (<Lord>)`
    - Blank separator line.
 4. **Panchanga & Transitions**:
-   - **Thithi**: Timed transitions (`&rarr; (dd MMM, HH:mm z)`). `Amavasya`, `Prathamai`, `Ashtami`, `Navami`, and Riktha thithis in red.
+   - **Thithi**: Timed transitions (`&rarr; (dd MMM, hh:mm a z)`). `Amavasya`, `Prathamai`, `Ashtami`, `Navami`, and Riktha thithis in red.
    - **Varam**: Local weekday. `Tuesday` and `Saturday` in red.
    - **Amirthathi Yoga**: Evaluated via sunrise Vara. `Marana` in red.
-   - **Yoga (Nitya Yoga)** & **Karana**: Classified transition sequences.
+   - **Yoga (Nitya Yoga)** & **Karana**: Classified transition sequences (`&rarr; (dd MMM, hh:mm a z)`).
 
-#### Right Column (43% width)
-- **Subha Hora**: Intersecting intervals or `No overlap`.
-- **Abhijit Muhurta**: Intersecting intervals (with `[Wednesday: additional scrutiny]` if applicable) or `No overlap`.
-- **Brahma Muhurta**: Intersecting intervals or `No overlap`.
+#### Right Column (50% width)
+- **Subha Hora Selection & Update Action**:
+  - Horizontal control row containing `<b>Subha Hora:</b>` label, interactive dropdown combo box (`horaCombo`), and the **Update** button.
+  - The dropdown is populated with all overlapping Subha Horas in that transit window, formatted in 12-hour AM/PM time (`hh:mm a` or `dd MMM, hh:mm a`), plus an option for `Window Start (<time>)`.
+  - The first Subha Hora is selected by default.
+  - When the user clicks **Update**, the chosen Subha Hora start instant (or window start) is applied to the main Muhurta event time.
+- **Available Subha Horas**:
+  - Heading `<b>Available:</b>` followed by bulleted list of all individual Subha Hora time intervals overlapping the transit window formatted in 12-hour AM/PM time (`dd MMM yyyy, hh:mm a z`), or `Not Applicable` if none.
+- **Abhijit Muhurta**: Intersecting intervals (with `[Wednesday: additional scrutiny]` if applicable) or `Not Applicable`.
+- **Brahma Muhurta**: Intersecting intervals or `Not Applicable`.
 - Partial intersections are labelled `(partial overlap)`.
+- **Typography & Formatting Consistency**: Both panes use 13px base font (`SansSerif`) with generous vertical spacing and line-height (1.45 - 1.5). Standardized 12-hour AM/PM formatting (`hh:mm a` / `hh:mm a z`) is applied consistently across all panels (Balam Calendar dates, detail view boundaries, sunrises, timed transitions, Subha Hora choices, and timing blocks).
 
 ---
 

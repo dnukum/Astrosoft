@@ -37,13 +37,37 @@ public class BalamCalendarPanel extends JPanel {
     private app.astrosoft.beans.MuhurtaProfile primaryProfile;
     private String primaryLabel = "Person";
     private String partnerLabel = "Person";
-    private JScrollPane scrollPane;
+    public static class HoraItem {
+        private final String label;
+        private final long targetTime;
+
+        public HoraItem(String label, long targetTime) {
+            this.label = label;
+            this.targetTime = targetTime;
+        }
+
+        public long getTargetTime() { return targetTime; }
+        public String getLabel() { return label; }
+
+        @Override
+        public String toString() { return label; }
+    }
+
+    private JComboBox<HoraItem> horaCombo;
+    private JEditorPane leftDetailsPane;
+    private JEditorPane rightDetailsPane;
     private JEditorPane detailsPane;
     private JSplitPane splitPane;
     private SwingWorker<app.astrosoft.beans.BalamWindowDetails, Void> detailsWorker;
     private long detailsRequest;
     private java.util.Date selectedWindowStart;
     private java.util.Date selectedWindowEnd;
+
+    public JComboBox<HoraItem> getHoraCombo() {
+        return horaCombo;
+    }
+
+    private JScrollPane scrollPane;
 
     private void cancelDetailsRequest() {
         detailsRequest++;
@@ -159,10 +183,51 @@ public class BalamCalendarPanel extends JPanel {
             filterButton.setText(isFiltered ? "Show All" : "Filter");
             updateTable();
         });
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
+        filterPanel.add(filterButton);
+        topPanel.add(filterPanel, BorderLayout.EAST);
+        add(topPanel, BorderLayout.NORTH);
+        
+        scrollPane = new JScrollPane();
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        Font detailFont = new Font("SansSerif", Font.PLAIN, 13);
+
+        leftDetailsPane = new JEditorPane("text/html", EMPTY_DETAILS) {
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                return true;
+            }
+        };
+        leftDetailsPane.setEditable(false);
+        leftDetailsPane.setBackground(Color.WHITE);
+        leftDetailsPane.setFont(detailFont);
+        leftDetailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+
+        JPanel rightPanel = new JPanel();
+        rightPanel.setBackground(Color.WHITE);
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+
+        JPanel horaControlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        horaControlPanel.setBackground(Color.WHITE);
+        horaControlPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel horaLabel = new JLabel("Subha Hora:");
+        horaLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+
+        horaCombo = new JComboBox<HoraItem>();
+        horaCombo.setPrototypeDisplayValue(new HoraItem("Window Start (00:00 - 00:00)", 0L));
+        horaCombo.setFont(detailFont);
+        horaCombo.setPreferredSize(new Dimension(230, 28));
+        horaCombo.setFocusable(false);
+        horaCombo.setEnabled(false);
+
         updateButton = new JButton("Update");
+        updateButton.setFont(new Font("SansSerif", Font.BOLD, 12));
+        updateButton.setPreferredSize(new Dimension(85, 28));
         updateButton.setEnabled(false);
         updateButton.setFocusable(false);
-        updateButton.setToolTipText("Apply the selected window start date/time to Muhurta");
+        updateButton.setToolTipText("Apply the selected window Subha Hora / start date/time to Muhurta");
         updateButton.addActionListener(e -> {
             int row = table == null ? -1 : table.getSelectedRow();
             if (row < 0) return;
@@ -171,22 +236,64 @@ public class BalamCalendarPanel extends JPanel {
                 app.astrosoft.beans.BalamRowBean rowBean = ((BalamDateCell) cell).getRow();
                 selectedWindowStart = new java.util.Date(rowBean.getStartTime().getTime());
                 selectedWindowEnd = new java.util.Date(rowBean.getEndTime().getTime());
-                updateAction.accept(new java.util.Date(rowBean.getStartTime().getTime()), new java.util.Date(rowBean.getEndTime().getTime()));
+                long chosenTime = selectedWindowStart.getTime();
+                if (horaCombo != null) {
+                    Object sel = horaCombo.getSelectedItem();
+                    if (sel instanceof HoraItem) {
+                        chosenTime = ((HoraItem) sel).getTargetTime();
+                    }
+                }
+                updateAction.accept(new java.util.Date(chosenTime), new java.util.Date(rowBean.getEndTime().getTime()));
                 if (table != null) table.requestFocusInWindow();
             }
         });
-        JPanel updatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
-        updatePanel.add(filterButton);
-        updatePanel.add(updateButton);
-        topPanel.add(updatePanel, BorderLayout.EAST);
-        add(topPanel, BorderLayout.NORTH);
-        
-        scrollPane = new JScrollPane();
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        detailsPane = new JEditorPane("text/html", EMPTY_DETAILS);
-        detailsPane.setEditable(false);
-        
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPane, new JScrollPane(detailsPane));
+
+        horaControlPanel.add(horaLabel);
+        horaControlPanel.add(horaCombo);
+        horaControlPanel.add(updateButton);
+
+        rightDetailsPane = new JEditorPane("text/html", "") {
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                return true;
+            }
+        };
+        rightDetailsPane.setEditable(false);
+        rightDetailsPane.setBackground(Color.WHITE);
+        rightDetailsPane.setFont(detailFont);
+        rightDetailsPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+        rightDetailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+
+        rightPanel.add(horaControlPanel);
+        rightPanel.add(Box.createVerticalStrut(4));
+        rightPanel.add(rightDetailsPane);
+
+        JScrollPane leftScroll = new JScrollPane(leftDetailsPane);
+        leftScroll.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+        leftScroll.setBackground(Color.WHITE);
+        leftScroll.getViewport().setBackground(Color.WHITE);
+        leftScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        leftScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        leftScroll.setMinimumSize(new Dimension(150, 50));
+
+        JScrollPane rightScroll = new JScrollPane(rightPanel);
+        rightScroll.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+        rightScroll.setBackground(Color.WHITE);
+        rightScroll.getViewport().setBackground(Color.WHITE);
+        rightScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        rightScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        rightScroll.setMinimumSize(new Dimension(150, 50));
+
+        JSplitPane bottomSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftScroll, rightScroll);
+        bottomSplit.setResizeWeight(0.5);
+        bottomSplit.setDividerSize(5);
+        bottomSplit.setContinuousLayout(true);
+        bottomSplit.setBorder(BorderFactory.createEmptyBorder());
+        SwingUtilities.invokeLater(() -> bottomSplit.setDividerLocation(0.5));
+
+        detailsPane = leftDetailsPane;
+
+        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPane, bottomSplit);
         splitPane.setResizeWeight(0.5);
         splitPane.setDividerLocation(170);
         splitPane.setOneTouchExpandable(true);
@@ -309,7 +416,12 @@ public class BalamCalendarPanel extends JPanel {
             updateButton.setEnabled(true);
             requestDetails(r);
         } else {
-            detailsPane.setText(EMPTY_DETAILS);
+            if (leftDetailsPane != null) leftDetailsPane.setText(EMPTY_DETAILS);
+            if (rightDetailsPane != null) rightDetailsPane.setText("");
+            if (horaCombo != null) {
+                horaCombo.removeAllItems();
+                horaCombo.setEnabled(false);
+            }
             updateButton.setEnabled(false);
         }
     }
@@ -350,13 +462,18 @@ public class BalamCalendarPanel extends JPanel {
     }
     
     private static final String EMPTY_DETAILS =
-        "<html><body style='font-family:sans-serif; padding:10px;'>Select a row to see details...</body></html>";
+        "<html><body style='font-family:sans-serif; font-size:13px; padding:10px;'>Select a row to see details...</body></html>";
     
     /** UI lifecycle only: snapshot selection, schedule Core, ignore stale completions. */
     private void requestDetails(int row) {
         cancelDetailsRequest();
         if (row < 0 || !(table.getValueAt(row, 0) instanceof BalamDateCell)) {
-            detailsPane.setText(EMPTY_DETAILS);
+            if (leftDetailsPane != null) leftDetailsPane.setText(EMPTY_DETAILS);
+            if (rightDetailsPane != null) rightDetailsPane.setText("");
+            if (horaCombo != null) {
+                horaCombo.removeAllItems();
+                horaCombo.setEnabled(false);
+            }
             return;
         }
         final BalamDateCell cell = (BalamDateCell) table.getValueAt(row, 0);
@@ -371,7 +488,12 @@ public class BalamCalendarPanel extends JPanel {
                 : java.util.EnumSet.noneOf(app.astrosoft.consts.Nakshathra.class);
         final MyMuhurta context = muhurta;
         final long request = detailsRequest;
-        detailsPane.setText("<html><body>Loading window details...</body></html>");
+        if (leftDetailsPane != null) leftDetailsPane.setText("<html><body style='font-family:sans-serif; font-size:13px; padding:10px;'>Loading window details...</body></html>");
+        if (rightDetailsPane != null) rightDetailsPane.setText("");
+        if (horaCombo != null) {
+            horaCombo.removeAllItems();
+            horaCombo.setEnabled(false);
+        }
         detailsWorker = new SwingWorker<app.astrosoft.beans.BalamWindowDetails, Void>() {
             @Override
             protected app.astrosoft.beans.BalamWindowDetails doInBackground() {
@@ -381,15 +503,60 @@ public class BalamCalendarPanel extends JPanel {
             protected void done() {
                 if (isCancelled() || request != detailsRequest) return;
                 try {
-                    detailsPane.setText(buildDetailsHtml(get(), nak, rasi));
-                    detailsPane.setCaretPosition(0);
+                    app.astrosoft.beans.BalamWindowDetails details = get();
+                    if (leftDetailsPane != null) {
+                        leftDetailsPane.setText(buildLeftDetailsHtml(details, nak, rasi));
+                        leftDetailsPane.setCaretPosition(0);
+                    }
+
+                    if (horaCombo != null) {
+                        horaCombo.removeAllItems();
+                        java.util.List<app.astrosoft.core.MuhurtaWindowsCalculator.Window> subhaHoras = new java.util.ArrayList<>();
+                        for (app.astrosoft.core.MuhurtaWindowsCalculator.Window w : details.getTimingWindows()) {
+                            if ("Subha Hora".equals(w.kind)) {
+                                subhaHoras.add(w);
+                            }
+                        }
+                        java.text.SimpleDateFormat tf = new java.text.SimpleDateFormat("hh:mm a");
+                        tf.setTimeZone(details.getTimeZone());
+                        java.text.SimpleDateFormat dtf = new java.text.SimpleDateFormat("dd MMM, hh:mm a");
+                        dtf.setTimeZone(details.getTimeZone());
+
+                        java.util.Calendar calStart = java.util.Calendar.getInstance(details.getTimeZone());
+                        calStart.setTime(start);
+
+                        if (subhaHoras.isEmpty()) {
+                            horaCombo.addItem(new HoraItem("Window Start (" + tf.format(start) + ")", start.getTime()));
+                        } else {
+                            for (app.astrosoft.core.MuhurtaWindowsCalculator.Window w : subhaHoras) {
+                                long effStart = Math.max(w.start, start.getTime());
+                                java.util.Calendar calH = java.util.Calendar.getInstance(details.getTimeZone());
+                                calH.setTimeInMillis(effStart);
+                                boolean sameDay = calH.get(java.util.Calendar.DAY_OF_YEAR) == calStart.get(java.util.Calendar.DAY_OF_YEAR)
+                                    && calH.get(java.util.Calendar.YEAR) == calStart.get(java.util.Calendar.YEAR);
+                                String label = (sameDay ? tf.format(new java.util.Date(effStart)) : dtf.format(new java.util.Date(effStart)))
+                                    + " – " + tf.format(new java.util.Date(w.end));
+                                horaCombo.addItem(new HoraItem(label, effStart));
+                            }
+                            horaCombo.addItem(new HoraItem("Window Start (" + tf.format(start) + ")", start.getTime()));
+                        }
+                        horaCombo.setSelectedIndex(0);
+                        horaCombo.setEnabled(true);
+                    }
+
+                    if (rightDetailsPane != null) {
+                        rightDetailsPane.setText(buildRightDetailsHtml(details));
+                        rightDetailsPane.setCaretPosition(0);
+                    }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 } catch (java.util.concurrent.CancellationException ex) {
                     // A newer selection owns the panel.
                 } catch (java.util.concurrent.ExecutionException ex) {
-                    detailsPane.setText("<html><body>Unable to load window details: "
-                        + htmlEscape(String.valueOf(ex.getCause().getMessage())) + "</body></html>");
+                    if (leftDetailsPane != null) {
+                        leftDetailsPane.setText("<html><body>Unable to load window details: "
+                            + htmlEscape(String.valueOf(ex.getCause().getMessage())) + "</body></html>");
+                    }
                 }
             }
         };
@@ -400,11 +567,22 @@ public class BalamCalendarPanel extends JPanel {
     private static String buildDetailsHtml(app.astrosoft.beans.BalamWindowDetails details,
             app.astrosoft.consts.Nakshathra nak, app.astrosoft.consts.Rasi rasi) {
         StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; padding:8px;'><table width='100%' cellpadding='8'><tr><td width='57%' valign='top'>");
-        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy HH:mm z");
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a z", java.util.Locale.ENGLISH);
         dateFormat.setTimeZone(details.getTimeZone());
         sb.append("<div style='margin:0 0 6px 0;'><b>Start:</b> ")
           .append(htmlEscape(dateFormat.format(details.getStart())))
-          .append("<br><b>End:</b> ").append(htmlEscape(dateFormat.format(details.getEnd()))).append("</div>");
+          .append("<br><b>End:</b> ").append(htmlEscape(dateFormat.format(details.getEnd())));
+        if (details.getSunrises() != null && !details.getSunrises().isEmpty()) {
+            java.text.SimpleDateFormat sunriseDayFormat = new java.text.SimpleDateFormat("MMM d", java.util.Locale.ENGLISH);
+            sunriseDayFormat.setTimeZone(details.getTimeZone());
+            java.text.SimpleDateFormat sunriseTimeFormat = new java.text.SimpleDateFormat("hh:mm a z", java.util.Locale.ENGLISH);
+            sunriseTimeFormat.setTimeZone(details.getTimeZone());
+            for (java.util.Date sunrise : details.getSunrises()) {
+                sb.append("<br><b>Sunrise on ").append(sunriseDayFormat.format(sunrise)).append(":</b> ")
+                  .append(htmlEscape(sunriseTimeFormat.format(sunrise)));
+            }
+        }
+        sb.append("</div>");
         for (app.astrosoft.beans.BalamWindowDetails.Suitability item : details.getSuitabilities()) {
             sb.append("<b>").append(htmlEscape(item.getStar().toString())).append(":</b> ");
             java.util.EnumSet<app.astrosoft.consts.MuhurtaEvent> events = item.getEvents();
@@ -428,7 +606,7 @@ public class BalamCalendarPanel extends JPanel {
         StringBuilder yogas = new StringBuilder(), karanas = new StringBuilder();
         app.astrosoft.consts.Yoga previousYoga = null;
         app.astrosoft.consts.Karana previousKarana = null;
-        java.text.SimpleDateFormat transitionFormat = new java.text.SimpleDateFormat("dd MMM, HH:mm z");
+        java.text.SimpleDateFormat transitionFormat = new java.text.SimpleDateFormat("dd MMM, hh:mm a z", java.util.Locale.ENGLISH);
         transitionFormat.setTimeZone(details.getTimeZone());
         app.astrosoft.consts.AmirthathiYoga previousAmirthathiYoga = null;
         String previousThithi = null;
@@ -486,10 +664,141 @@ public class BalamCalendarPanel extends JPanel {
             for(app.astrosoft.core.MuhurtaWindowsCalculator.Window window:details.getTimingWindows())if(window.kind.equals(kind)){
                 sb.append(htmlEscape(app.astrosoft.core.MuhurtaWindowsCalculator.format(window,details.getTimeZone()))).append("<br>");found=true;
             }
-            if(!found)sb.append("No overlap<br>");
+            if(!found)sb.append("Not Applicable<br>");
             sb.append("<br>");
         }
         sb.append("</td></tr></table></body></html>");
+        return sb.toString();
+    }
+
+    private static String buildLeftDetailsHtml(app.astrosoft.beans.BalamWindowDetails details,
+            app.astrosoft.consts.Nakshathra nak, app.astrosoft.consts.Rasi rasi) {
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; font-size:13px; line-height:1.45; padding:6px 8px;'>");
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a z", java.util.Locale.ENGLISH);
+        dateFormat.setTimeZone(details.getTimeZone());
+        sb.append("<div style='margin-bottom:8px;'><b>Start:</b> ")
+          .append(htmlEscape(dateFormat.format(details.getStart())))
+          .append("<br><b>End:</b> ").append(htmlEscape(dateFormat.format(details.getEnd())));
+        if (details.getSunrises() != null && !details.getSunrises().isEmpty()) {
+            java.text.SimpleDateFormat sunriseDayFormat = new java.text.SimpleDateFormat("MMM d", java.util.Locale.ENGLISH);
+            sunriseDayFormat.setTimeZone(details.getTimeZone());
+            java.text.SimpleDateFormat sunriseTimeFormat = new java.text.SimpleDateFormat("hh:mm a z", java.util.Locale.ENGLISH);
+            sunriseTimeFormat.setTimeZone(details.getTimeZone());
+            for (java.util.Date sunrise : details.getSunrises()) {
+                sb.append("<br><b>Sunrise on ").append(sunriseDayFormat.format(sunrise)).append(":</b> ")
+                  .append(htmlEscape(sunriseTimeFormat.format(sunrise)));
+            }
+        }
+        sb.append("</div>");
+        for (app.astrosoft.beans.BalamWindowDetails.Suitability item : details.getSuitabilities()) {
+            sb.append("<div style='margin-bottom:6px;'><b>").append(htmlEscape(item.getStar().toString())).append(":</b> ");
+            java.util.EnumSet<app.astrosoft.consts.MuhurtaEvent> events = item.getEvents();
+            if (events.isEmpty()) sb.append("<font color='red'>Not recommended</font>");
+            else {
+                boolean first = true;
+                for (app.astrosoft.consts.MuhurtaEvent event : events) {
+                    if (!first) sb.append(", ");
+                    sb.append(htmlEscape(event.toString()));
+                    first = false;
+                }
+            }
+            sb.append("</div>");
+        }
+        if (!details.getSuitabilities().isEmpty()) sb.append("<div style='height:4px;'></div>");
+        sb.append("<div style='margin-bottom:8px;'><b>Transit Moon:</b> ").append(nak.toString()).append(" in ").append(rasi.toString())
+          .append("  (").append(nak.getLord().toString()).append(")</div>");
+        StringBuilder thithis = new StringBuilder();
+        StringBuilder varams = new StringBuilder();
+        StringBuilder amirthathiYogas = new StringBuilder();
+        StringBuilder yogas = new StringBuilder(), karanas = new StringBuilder();
+        app.astrosoft.consts.Yoga previousYoga = null;
+        app.astrosoft.consts.Karana previousKarana = null;
+        java.text.SimpleDateFormat transitionFormat = new java.text.SimpleDateFormat("dd MMM, hh:mm a z", java.util.Locale.ENGLISH);
+        transitionFormat.setTimeZone(details.getTimeZone());
+        app.astrosoft.consts.AmirthathiYoga previousAmirthathiYoga = null;
+        String previousThithi = null;
+        int previousVaram = -1;
+        String[] weekdays = new java.text.DateFormatSymbols().getWeekdays();
+        for (app.astrosoft.beans.BalamWindowDetails.Entry entry : details.getEntries()) {
+            app.astrosoft.consts.AmirthathiYoga amirthathiYoga = entry.getAmirthathiYoga();
+            if (amirthathiYoga != null && amirthathiYoga != previousAmirthathiYoga) {
+                if (amirthathiYogas.length() > 0) amirthathiYogas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
+                boolean isMarana = (amirthathiYoga == app.astrosoft.consts.AmirthathiYoga.Marana);
+                if (isMarana) amirthathiYogas.append("<font color='red'>");
+                amirthathiYogas.append(htmlEscape(amirthathiYoga.toString()));
+                if (isMarana) amirthathiYogas.append("</font>");
+                previousAmirthathiYoga = amirthathiYoga;
+            }
+            if (entry.getYoga() != null && entry.getYoga() != previousYoga) {
+                if (yogas.length() > 0) yogas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
+                yogas.append(htmlEscape(entry.getYoga().toString())); previousYoga = entry.getYoga();
+            }
+            if (entry.getKarana() != null && entry.getKarana() != previousKarana) {
+                if (karanas.length() > 0) karanas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
+                karanas.append(htmlEscape(entry.getKarana().toString())); previousKarana = entry.getKarana();
+            }
+            String thithi = htmlEscape(entry.getPaksha().toString()) + " " + htmlEscape(entry.getThithi().toString());
+            if (!thithi.equals(previousThithi)) {
+                if (thithis.length() > 0) thithis.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
+                boolean isWarningThithi = entry.isWarning()
+                    || entry.getThithi() == app.astrosoft.consts.Thithi.Amavasya
+                    || entry.getThithi() == app.astrosoft.consts.Thithi.Prathamai
+                    || entry.getThithi() == app.astrosoft.consts.Thithi.Ashtami
+                    || entry.getThithi() == app.astrosoft.consts.Thithi.Navami;
+                if (isWarningThithi) thithis.append("<font color='red'>");
+                thithis.append(thithi);
+                if (isWarningThithi) thithis.append("</font>");
+                previousThithi = thithi;
+            }
+            if (entry.getWeekday() != previousVaram) {
+                if (varams.length() > 0) varams.append(" &rarr; ");
+                boolean isRedVara = (entry.getWeekday() == java.util.Calendar.TUESDAY || entry.getWeekday() == java.util.Calendar.SATURDAY);
+                if (isRedVara) varams.append("<font color='red'>");
+                varams.append(htmlEscape(weekdays[entry.getWeekday()]));
+                if (isRedVara) varams.append("</font>");
+                previousVaram = entry.getWeekday();
+            }
+        }
+        sb.append("<div style='line-height:1.5;'>");
+        sb.append("<b>Thithi:</b> ").append(thithis).append("<br>")
+          .append("<b>Varam:</b> ").append(varams).append("<br>");
+        if (amirthathiYogas.length() > 0)
+            sb.append("<b>Amirthathi Yoga:</b> ").append(amirthathiYogas).append("<br>");
+        if (yogas.length() > 0) sb.append("<b>Yoga (Nitya Yoga):</b> ").append(yogas).append("<br>");
+        if (karanas.length() > 0) sb.append("<b>Karana:</b> ").append(karanas).append("<br>");
+        sb.append("</div>");
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private static String buildRightDetailsHtml(app.astrosoft.beans.BalamWindowDetails details) {
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; font-size:13px; line-height:1.45; padding:6px 8px;'>");
+        java.util.List<app.astrosoft.core.MuhurtaWindowsCalculator.Window> subhaHoras = new java.util.ArrayList<>();
+        for (app.astrosoft.core.MuhurtaWindowsCalculator.Window window : details.getTimingWindows()) {
+            if ("Subha Hora".equals(window.kind)) subhaHoras.add(window);
+        }
+        if (!subhaHoras.isEmpty()) {
+            sb.append("<div style='margin-bottom:10px;'><b>Available:</b><br>");
+            for (app.astrosoft.core.MuhurtaWindowsCalculator.Window w : subhaHoras) {
+                sb.append("• ").append(htmlEscape(app.astrosoft.core.MuhurtaWindowsCalculator.format(w, details.getTimeZone()))).append("<br>");
+            }
+            sb.append("</div>");
+        } else {
+            sb.append("<div style='margin-bottom:10px;'><b>Available:</b><br>Not Applicable</div>");
+        }
+        for (String kind : new String[]{"Abhijit Muhurta", "Brahma Muhurta"}) {
+            sb.append("<div style='margin-bottom:10px;'><b>").append(kind).append(":</b><br>");
+            boolean found = false;
+            for (app.astrosoft.core.MuhurtaWindowsCalculator.Window window : details.getTimingWindows()) {
+                if (window.kind.equals(kind)) {
+                    sb.append(htmlEscape(app.astrosoft.core.MuhurtaWindowsCalculator.format(window, details.getTimeZone()))).append("<br>");
+                    found = true;
+                }
+            }
+            if (!found) sb.append("Not Applicable<br>");
+            sb.append("</div>");
+        }
+        sb.append("</body></html>");
         return sb.toString();
     }
 

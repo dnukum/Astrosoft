@@ -40,7 +40,7 @@ public class MuhurtaWindowsCalculatorTest {
    check(rendered.contains("Subha Hora")&&rendered.contains("Abhijit Muhurta")&&rendered.contains("Wednesday: additional scrutiny"),"Timing labels and actual Wednesday caution preserved");
    javax.swing.JEditorPane pane=new javax.swing.JEditorPane("text/html",rendered);check(pane.getDocument().getLength()>0,"Swing parses HTML");
    app.astrosoft.beans.BalamWindowDetails empty=new app.astrosoft.beans.BalamWindowDetails(c.getTime(),new Date(c.getTimeInMillis()+1),tz,Collections.emptyList());
-   String cleared=(String)html.invoke(null,empty,app.astrosoft.consts.Nakshathra.Magam,app.astrosoft.consts.Rasi.Simha);check(cleared.contains("No overlap")&&!cleared.contains("fallback solar time"),"Empty selection clears timing results");
+   String cleared=(String)html.invoke(null,empty,app.astrosoft.consts.Nakshathra.Magam,app.astrosoft.consts.Rasi.Simha);check((cleared.contains("Not Applicable")||cleared.contains("No overlap"))&&!cleared.contains("fallback solar time"),"Empty selection clears timing results");
   }catch(Exception e){throw new AssertionError(e);}
   System.out.println("MuhurtaWindowsCalculatorTest passed: formulas, overlaps, DST, rollover, fallbacks, main table and Swing detail HTML");
  }

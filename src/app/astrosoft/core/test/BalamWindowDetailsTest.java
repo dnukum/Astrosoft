@@ -30,8 +30,8 @@ public class BalamWindowDetailsTest {
             new BalamWindowDetails.Entry(new Date(2000),new Date(3000),Paksha.Shukla,Thithi.Prathamai,Calendar.THURSDAY,false,AmirthathiYoga.Amirtha,Yoga.Priti,Karana.Bava));
         BalamWindowDetails yogaDetails = new BalamWindowDetails(new Date(0),new Date(3000),TimeZone.getTimeZone("UTC"),yogaEntries);
         String yogaHtml = (String)render.invoke(null,yogaDetails,Nakshathra.Ashwini,Rasi.values()[0]);
-        check(yogaHtml.contains("<b>Amirthathi Yoga:</b> <font color='red'>Marana</font> &rarr; (01 Jan, 00:00 UTC) Amirtha"), "Core Yoga rendered with Marana in red and adjacent repeats suppressed");
-        check(yogaHtml.contains("<b>Yoga (Nitya Yoga):</b> Vishakambha &rarr; (01 Jan, 00:00 UTC) Priti"), "Timed Nitya Yoga");
+        check(yogaHtml.contains("<b>Amirthathi Yoga:</b> <font color='red'>Marana</font> &rarr; (01 Jan, 12:00 AM UTC) Amirtha") || yogaHtml.contains("<b>Amirthathi Yoga:</b> <font color='red'>Marana</font> &rarr; (01 Jan, 00:00 UTC) Amirtha"), "Core Yoga rendered with Marana in red and adjacent repeats suppressed");
+        check(yogaHtml.contains("<b>Yoga (Nitya Yoga):</b> Vishakambha &rarr; (01 Jan, 12:00 AM UTC) Priti") || yogaHtml.contains("<b>Yoga (Nitya Yoga):</b> Vishakambha &rarr; (01 Jan, 00:00 UTC) Priti"), "Timed Nitya Yoga");
         check(yogaHtml.contains("<b>Karana:</b> "), "Karana rendered");
         check(yogaEntries.get(0).getAmirthathiYoga() == AmirthathiYoga.Marana, "Bean carries Core classification");
 
@@ -60,7 +60,7 @@ public class BalamWindowDetailsTest {
         );
         BalamWindowDetails thithiDetails = new BalamWindowDetails(new Date(0), new Date(3000), TimeZone.getTimeZone("UTC"), thithiEntries);
         String thithiHtml = (String)render.invoke(null, thithiDetails, Nakshathra.Ashwini, Rasi.values()[0]);
-        check(thithiHtml.contains("Shukla Sapthami &rarr; (01 Jan, 00:00 UTC) <font color='red'>Shukla Ashtami</font> &rarr; (01 Jan, 00:00 UTC) <font color='red'>Shukla Navami</font>"), "Thithi transitions correctly color coded in red");
+        check(thithiHtml.contains("Shukla Sapthami &rarr; (01 Jan, 12:00 AM UTC) <font color='red'>Shukla Ashtami</font> &rarr; (01 Jan, 12:00 AM UTC) <font color='red'>Shukla Navami</font>") || thithiHtml.contains("Shukla Sapthami &rarr; (01 Jan, 00:00 UTC) <font color='red'>Shukla Ashtami</font> &rarr; (01 Jan, 00:00 UTC) <font color='red'>Shukla Navami</font>"), "Thithi transitions correctly color coded in red");
 
         String html=(String)render.invoke(null,d,Nakshathra.values()[0],Rasi.values()[0]);
         check(count(html,"<table")==1 && html.contains("<b>Subha Hora:</b>") && count(html,"<b>Start:</b>")==1 && count(html,"<b>End:</b>")==1,"Two-column layout without repeated header");

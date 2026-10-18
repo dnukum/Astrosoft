@@ -114,7 +114,32 @@ public class MyMuhurta {
             suitability.add(new app.astrosoft.beans.BalamWindowDetails.Suitability(star,
                 NakshatraEventSuitability.eventsFor(star)));
         }
-        return new app.astrosoft.beans.BalamWindowDetails(windowStart, windowEnd, tz, entries, suitability, MuhurtaWindowsCalculator.forWindow(windowStart.getTime(),windowEnd.getTime(),tz,amirthathiPlace()));
+        List<Date> sunrises = new ArrayList<>();
+        try {
+            SunriseVara sunriseVara = SunriseVara.forPlace(tz, amirthathiPlace());
+            long cursor = windowStart.getTime();
+            long limit = windowEnd.getTime();
+            long nextRise = sunriseVara.nextSunrise(cursor);
+            while (nextRise < limit) {
+                if (nextRise > cursor) {
+                    sunrises.add(new Date(nextRise));
+                }
+                long afterRise = nextRise + 1000L;
+                if (afterRise <= nextRise) break;
+                nextRise = sunriseVara.nextSunrise(afterRise);
+            }
+        } catch (Exception ignored) {
+        }
+        Place placeToUse = selectedPlace;
+        if (placeToUse == null) {
+            Place defaultPlace = amirthathiPlace();
+            if (defaultPlace != null && tz.hasSameRules(defaultPlace.astrosoftTimeZone().getTimeZone())) {
+                placeToUse = defaultPlace;
+            }
+        }
+        return new app.astrosoft.beans.BalamWindowDetails(windowStart, windowEnd, tz, entries, suitability,
+            MuhurtaWindowsCalculator.forWindow(windowStart.getTime(),windowEnd.getTime(),tz,placeToUse),
+            sunrises);
     }
 
     public TableData<MapTableRow> getTableData() {
@@ -215,7 +240,7 @@ public class MyMuhurta {
         nextDay.add(Calendar.DAY_OF_MONTH, 1);
         nextDay.set(Calendar.HOUR_OF_DAY, 0); nextDay.set(Calendar.MINUTE, 0);
         nextDay.set(Calendar.SECOND, 0); nextDay.set(Calendar.MILLISECOND, 0);
-        java.text.SimpleDateFormat time = new java.text.SimpleDateFormat("dd MMM, HH:mm z");
+        java.text.SimpleDateFormat time = new java.text.SimpleDateFormat("dd MMM, hh:mm a z", java.util.Locale.ENGLISH);
         time.setTimeZone(tz);
         StringBuilder text = new StringBuilder();
         app.astrosoft.consts.AmirthathiYoga previous = null;
