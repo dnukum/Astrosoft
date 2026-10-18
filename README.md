@@ -5,6 +5,11 @@ Astrosoft is a free indian astrology software program for astrologers
 
 
 
+## Documentation:
+
+* 📥 **[Tester Download & Installation Guide](docs/INSTALLATION_GUIDE.md)**: Step-by-step installation instructions for Windows, macOS, and Linux.
+* 🌟 **[Muhurta User Guide (9-Step Workflow)](docs/MUHURTA_USER_GUIDE.md)**: Complete guide to electing auspicious Muhurtas (Tara Balam, Chandra Balam, Nakshatra priorities, Panchanga, and chart evaluation).
+
 ## Installation:
 
 * Install Java (JDK or JRE) from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium Temurin](https://adoptium.net/) if you don't already have Java installed on your system.

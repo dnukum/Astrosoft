@@ -1,2 +1,2 @@
-java --add-exports java.desktop/sun.awt.shell=ALL-UNNAMED -Djava.util.logging.config.file=./bin/logging.properties -Djava.util.prefs.PreferencesFactory=app.astrosoft.pref.UserPreferencesFactory -jar bin/AstroSoft.jar %1
+java --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.awt.shell=ALL-UNNAMED -Djava.util.logging.config.file=./bin/logging.properties -Djava.util.prefs.PreferencesFactory=app.astrosoft.pref.UserPreferencesFactory -jar bin/AstroSoft.jar %1
 rem pause
