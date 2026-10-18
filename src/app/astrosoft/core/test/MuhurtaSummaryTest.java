@@ -207,8 +207,8 @@ public class MuhurtaSummaryTest extends TestCase {
             }
         }
 
-        // At 10:15 AM (after 08:18 AM), transit star is Hasta, so Tara to Uththiram is 2 (BEST), matching Balam Calendar!
-        assertEquals("2 (BEST)", taraValue);
-        assertEquals("6 (MIXED)", chandraValue);
+        // At 10:15 AM (after 08:18 AM), transit star is Hasta, so Tara to Uththiram is raw score 2, and Chandra is raw score 6!
+        assertEquals("2", taraValue);
+        assertEquals("6", chandraValue);
     }
 }

@@ -172,18 +172,14 @@ public class MyMuhurta {
             app.astrosoft.beans.NakshathraPada transitNakPada = (pi != null && pi.getPlanetNakshathra() != null) ? pi.getPlanetNakshathra().get(Planet.Moon) : null;
             app.astrosoft.consts.Nakshathra transitNak = (transitNakPada != null) ? transitNakPada.getNak() : pan.getNakshathra();
             
-            BalamRank taraBalam = evalTaraBalam(birthNak, transitNak);
             int taraIndex = calcTaraIndex(birthNak, transitNak);
-            
-            rows.add(helper.createRow("Tara Balam", taraIndex + " (" + taraBalam.name() + ")"));
+            rows.add(helper.createRow("Tara Balam", String.valueOf(taraIndex)));
             
             app.astrosoft.consts.Rasi birthRasi = userProfile.getRasi();
             app.astrosoft.consts.Rasi transitRasi = (pi != null && pi.getPlanetRasi() != null) ? pi.getPlanetRasi().get(Planet.Moon) : pan.getRasi();
             
-            BalamRank chandraBalam = evalChandraBalam(birthRasi, transitRasi);
             int house = calcChandraHouse(birthRasi, transitRasi);
-            
-            rows.add(helper.createRow("Chandra Balam", house + " (" + chandraBalam.name() + ")"));
+            rows.add(helper.createRow("Chandra Balam", String.valueOf(house)));
         }
         
         return TableDataFactory.getTableData(rows);
