@@ -32,9 +32,14 @@ The My Muhurta screen (`MyMuhurtaView.java`) presents an integrated dashboard pa
 - **Fixed Column Widths**:
   - Key column (`AstrosoftTableColumn.Key`): 130px.
   - Value column (`AstrosoftTableColumn.Value`): 270px (total table width: 400px).
+- **Row Hierarchy & Panchanga Elements**:
+  - Displays event metadata (`Date`, `Time`, `Location`) followed by solar events (`Sunrise`, `Sunset`).
+  - Separates civil day from astrological day: **`Day`** displays the civil weekday (midnight-to-midnight), immediately followed by **`Vara (Solar Day)`** displaying the Vedic sunrise-to-sunrise solar day transition formatted as `prevDay -> (sunrise time) currentDay` (e.g. `Wednesday -> (06:42 AM) Thursday`).
+  - Followed by `Nakshathra`, `Thithi`, `Paksha`, `Yoga`, `Amirthathi Yoga`, `Karana`, auspicious timings (`Auspicious Time`, `Abhijit Muhurta`, `Brahma Muhurta`), and inauspicious periods (`Rahu Kalam`, `Yama Kandam`).
+  - Displays personal scores (`Tara Balam`, `Chandra Balam`) when a profile is selected.
 - **Multi-Line Wrapping**:
   - Value column utilizes a custom `TableCellRenderer` (`multiLineRenderer`) that dynamically calculates line breaks and sets row heights based on font metrics.
-  - Breaks naturally on comma delimiters (e.g. `Transit Moon`), en-dash separators (e.g. `Abhijit Muhurta`), or transition arrows (`→`).
+  - Breaks naturally on comma delimiters (e.g. `Time`, `Location`), en-dash separators (e.g. `Abhijit Muhurta`), or transition arrows (`→` / `->`).
 - **Action Buttons (`createBottomPanel`)**:
   - **"Summarize"**: Opens `MuhurtaSummaryDialog` displaying a formatted plain-text summary suitable for copying or exporting.
   - **"Edit Date/Time"**: Opens `MuhurtaConfigDialog` allowing interactive changes to event date, time, and geographic location without leaving the screen.
@@ -72,6 +77,10 @@ Let $D = \text{sunset}_d - \text{sunrise}_d$ (daylight length) and $R = \text{su
    - *Balam Calendar Details*: Evaluates `forWindow(...)` for the selected cell's half-open transit window $[start, end)$. Intersecting intervals are clipped and marked `(partial overlap)`. If no intersection exists within that interval, it displays `No overlap`.
 
 ### 2.2 Amirthathi Yoga & Sunrise Vara (`AmirthathiYoga.java`, `SunriseVara.java`)
+- **Civil Day vs. Vedic Solar Day (Vara)**:
+  - *Civil Day* (`Day` row): Governed by standard midnight-to-midnight ($00:00 \to 00:00$) calendar boundaries.
+  - *Vedic Solar Day* (`Vara (Solar Day)` row): Governed strictly by local sunrise-to-sunrise boundaries. Transitions from previous day's Vara to current day's Vara at local sunrise.
+  - *Main Table Presentation*: Displayed as `prevDay -> (sunrise time) currentDay` (e.g. `Wednesday -> (06:42 AM) Thursday`).
 - **Lookup Formula**: $Y(t) = T[V(t)][N(t)]$, where $N(t)$ is the Moon's transit Nakshatra and $V(t)$ is the **Sunrise Vara** (the weekday of the latest local sunrise at or before $t$, resolved via `SunriseVara`).
 - **Table Dimensions**: 189 cells (7 weekdays $\times$ 27 stars) mapping to `Amirtha`, `Siddha`, `Marana`, or `Prabalarshta`.
 - **Cyclic Progression**: Saturday wraps to Sunday; Revathi wraps to Ashwini.
@@ -100,6 +109,14 @@ Subdivides arbitrary time windows into contiguous segments $[start, end)$ classi
 ### 3.1 Inline Calendar Panel (`BalamCalendarPanel.java`)
 - Embedded directly below the charts inside `flyoutHost` when toggled.
 - **Navigation Controls**: Non-editable month/year selectors with synchronized arrow buttons (rolling span $\pm 50$ years) and an "Update" button to refresh the calendar grid.
+- **Filter / Show All Toggle**:
+  - Positioned immediately to the left of the "Update" button in the top control panel.
+  - **Default State**: Label `Filter`, displaying all raw monthly transit segments.
+  - **Filtered State**: Label `Show All`, filtering out inauspicious segments based on:
+    - **Tara Balam = 7** (*Naidhana*) for Person 1 or Person 2.
+    - **Chandra Balam = 8** (*Ashtama*) for Person 1 or Person 2.
+  - Surviving segments remain intact with their exact original start and end timestamps.
+  - **Stickiness**: Toggle state persists across month and year navigation controls (`Prev Month`, `Next Month`, and combo choices).
 - **Row Selection**: Clicking a row immediately synchronizes the main screen via `applyCalendarDate(startInstant, endInstant)`, updating the Muhurta chart and Panchanga table synchronously, and triggers asynchronous loading of window details.
 
 ### 3.2 Two-Column Details View (57% / 43% HTML Split)
@@ -161,7 +178,8 @@ Subdivides arbitrary time windows into contiguous segments $[start, end)$ classi
 | `SunriseVaraTest` | Sunrise-to-sunrise Vara determination, midnight civil separation, Revathi wrap, and fallback handling. |
 | `PanchangaWindowEngineTest` | Continuous bisection, Karana 60-slot cycle, transition boundary isolation, and DST handling. |
 | `NakshatraEventSuitabilityTest` | All 27 nakshatras against 9 suitability categories, empty row red warning, and bean immutability. |
+| `BalamCalendarFilterTest` | Phase 1 whole-row filtering on Tara 7 and Chandra 8 across single-person and partner profiles, row invariant counts, surviving segment timing preservation, and UI toggle button stickiness (Chennai Oct 2026). |
 | `BalamWindowDetailsTest` | HTML two-column rendering, repeat suppression, Marana red font isolation, and worker thread safety. |
-| `MyMuhurtaTableLayoutTest` | Key/Value column widths, value wrapping, en-dash line breaks, and row order. |
+| `MyMuhurtaTableLayoutTest` | Key/Value column widths, value wrapping, en-dash line breaks, row order including `Vara (Solar Day)` immediately after `Day`. |
 | `MyMuhurtaEventTimeTest` | Exact event instant preservation, defensive copies, and edit synchronization. |
 | `MyMuhurtaTimezoneLabelTest` | Localized timezone strings across major global timezones and DST boundaries. |
