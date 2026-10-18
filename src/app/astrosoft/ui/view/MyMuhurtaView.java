@@ -222,7 +222,7 @@ public class MyMuhurtaView extends AstrosoftView {
             e.printStackTrace();
         }
         
-        updateView(false);
+        updateView(true);
     }
 
     private void updateView() {
@@ -232,7 +232,7 @@ public class MyMuhurtaView extends AstrosoftView {
     private void updateView(boolean refreshCalendar) {
         app.astrosoft.core.MyMuhurta muhurta = createMuhurta();
         
-        tableModel.updateData(new MyMuhurta(selectedDate, selectedTime, selectedPlace).getTableData());
+        tableModel.updateData(muhurta.getTableData());
         boolean hasPeople = person1Profile != null || person2Profile != null;
         balamBtn.setEnabled(hasPeople);
         balamBtn.setVisible(hasPeople);
@@ -451,8 +451,29 @@ public class MyMuhurtaView extends AstrosoftView {
         });
 
 
+        javax.swing.JButton summarizeBtn = createRoundedButton("Summarize", java.awt.Font.PLAIN, new java.awt.Dimension(100, 30));
+        summarizeBtn.setToolTipText("Open plain-text summary of Muhurta and planetary positions");
+        summarizeBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                showSummaryDialog();
+            }
+        });
+
+        bottomPanel.add(summarizeBtn);
         bottomPanel.add(editBtn);
         return bottomPanel;
+    }
+
+    private void showSummaryDialog() {
+        app.astrosoft.core.MyMuhurta muhurta = createMuhurta();
+        app.astrosoft.ui.dlg.MuhurtaSummaryDialog dlg = new app.astrosoft.ui.dlg.MuhurtaSummaryDialog(
+            javax.swing.SwingUtilities.getWindowAncestor(this),
+            muhurta,
+            selectedPlace,
+            person1Profile,
+            person2Profile
+        );
+        dlg.setVisible(true);
     }
 
     private javax.swing.JButton createRoundedButton(String text, int fontStyle, java.awt.Dimension preferredSize) {

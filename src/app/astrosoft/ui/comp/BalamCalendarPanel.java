@@ -40,6 +40,8 @@ public class BalamCalendarPanel extends JPanel {
     private JSplitPane splitPane;
     private SwingWorker<app.astrosoft.beans.BalamWindowDetails, Void> detailsWorker;
     private long detailsRequest;
+    private java.util.Date selectedWindowStart;
+    private java.util.Date selectedWindowEnd;
 
     private void cancelDetailsRequest() {
         detailsRequest++;
@@ -157,6 +159,8 @@ public class BalamCalendarPanel extends JPanel {
             Object cell = table.getValueAt(row, 0);
             if (cell instanceof BalamDateCell) {
                 app.astrosoft.beans.BalamRowBean rowBean = ((BalamDateCell) cell).getRow();
+                selectedWindowStart = new java.util.Date(rowBean.getStartTime().getTime());
+                selectedWindowEnd = new java.util.Date(rowBean.getEndTime().getTime());
                 updateAction.accept(new java.util.Date(rowBean.getStartTime().getTime()), new java.util.Date(rowBean.getEndTime().getTime()));
                 if (table != null) table.requestFocusInWindow();
             }
@@ -272,14 +276,66 @@ public class BalamCalendarPanel extends JPanel {
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = table.getSelectedRow();
-                updateButton.setEnabled(selectedRow >= 0 && table.getValueAt(selectedRow, 0) instanceof BalamDateCell);
-                requestDetails(selectedRow);
+                boolean valid = selectedRow >= 0 && table.getValueAt(selectedRow, 0) instanceof BalamDateCell;
+                updateButton.setEnabled(valid);
+                if (valid) {
+                    BalamDateCell cell = (BalamDateCell) table.getValueAt(selectedRow, 0);
+                    selectedWindowStart = new java.util.Date(cell.getRow().getStartTime().getTime());
+                    selectedWindowEnd = new java.util.Date(cell.getRow().getEndTime().getTime());
+                    requestDetails(selectedRow);
+                } else {
+                    requestDetails(-1);
+                }
             }
         });
         
-        detailsPane.setText(EMPTY_DETAILS);
-        updateButton.setEnabled(false);
         scrollPane.setViewportView(table);
+        int targetRow = findMatchingRow();
+        if (targetRow >= 0) {
+            final int r = targetRow;
+            table.setRowSelectionInterval(r, r);
+            table.scrollRectToVisible(table.getCellRect(r, 0, true));
+            updateButton.setEnabled(true);
+            requestDetails(r);
+        } else {
+            detailsPane.setText(EMPTY_DETAILS);
+            updateButton.setEnabled(false);
+        }
+    }
+
+    private int findMatchingRow() {
+        if (table == null || table.getRowCount() == 0) return -1;
+        if (selectedWindowStart != null) {
+            long targetStart = selectedWindowStart.getTime();
+            for (int r = 0; r < table.getRowCount(); r++) {
+                Object val = table.getValueAt(r, 0);
+                if (val instanceof BalamDateCell) {
+                    BalamDateCell cell = (BalamDateCell) val;
+                    if (cell.getRow() != null && cell.getRow().getStartTime() != null) {
+                        if (cell.getRow().getStartTime().getTime() == targetStart) {
+                            return r;
+                        }
+                    }
+                }
+            }
+        }
+        if (muhurta != null && muhurta.getEventInstant() != null) {
+            long eventTime = muhurta.getEventInstant().getTime();
+            for (int r = 0; r < table.getRowCount(); r++) {
+                Object val = table.getValueAt(r, 0);
+                if (val instanceof BalamDateCell) {
+                    BalamDateCell cell = (BalamDateCell) val;
+                    if (cell.getRow() != null && cell.getRow().getStartTime() != null && cell.getRow().getEndTime() != null) {
+                        long start = cell.getRow().getStartTime().getTime();
+                        long end = cell.getRow().getEndTime().getTime();
+                        if (eventTime >= start && eventTime <= end) {
+                            return r;
+                        }
+                    }
+                }
+            }
+        }
+        return -1;
     }
     
     private static final String EMPTY_DETAILS =
@@ -511,5 +567,13 @@ public class BalamCalendarPanel extends JPanel {
             }
             setText("<html>" + number + " (<font color='" + color + "'>" + stars + "</font>)</html>");
         }
+    }
+
+    public JTable getTable() {
+        return table;
+    }
+
+    public JButton getUpdateButton() {
+        return updateButton;
     }
 }
