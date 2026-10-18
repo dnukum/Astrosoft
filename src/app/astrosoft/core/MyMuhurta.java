@@ -2,6 +2,7 @@ package app.astrosoft.core;
 
 import java.util.EnumSet;
 import app.astrosoft.consts.Nakshathra;
+import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
 import java.util.Date;
 import java.util.Calendar;
@@ -167,7 +168,9 @@ public class MyMuhurta {
 
         if (userProfile != null && userProfile.getNakshathra() != null && userProfile.getRasi() != null) {
             app.astrosoft.consts.Nakshathra birthNak = userProfile.getNakshathra();
-            app.astrosoft.consts.Nakshathra transitNak = pan.getNakshathra();
+            app.astrosoft.beans.PlanetaryInfo pi = (eventHoroscope != null) ? eventHoroscope.getPlanetaryInfo() : null;
+            app.astrosoft.beans.NakshathraPada transitNakPada = (pi != null && pi.getPlanetNakshathra() != null) ? pi.getPlanetNakshathra().get(Planet.Moon) : null;
+            app.astrosoft.consts.Nakshathra transitNak = (transitNakPada != null) ? transitNakPada.getNak() : pan.getNakshathra();
             
             BalamRank taraBalam = evalTaraBalam(birthNak, transitNak);
             int taraIndex = calcTaraIndex(birthNak, transitNak);
@@ -175,7 +178,7 @@ public class MyMuhurta {
             rows.add(helper.createRow("Tara Balam", taraIndex + " (" + taraBalam.name() + ")"));
             
             app.astrosoft.consts.Rasi birthRasi = userProfile.getRasi();
-            app.astrosoft.consts.Rasi transitRasi = pan.getRasi();
+            app.astrosoft.consts.Rasi transitRasi = (pi != null && pi.getPlanetRasi() != null) ? pi.getPlanetRasi().get(Planet.Moon) : pan.getRasi();
             
             BalamRank chandraBalam = evalChandraBalam(birthRasi, transitRasi);
             int house = calcChandraHouse(birthRasi, transitRasi);

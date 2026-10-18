@@ -174,4 +174,41 @@ public class MuhurtaSummaryTest extends TestCase {
         assertEquals("Selected row must persist after updateTable()", rowToSelect, table.getSelectedRow());
         assertTrue("Update button must remain enabled after updateTable()", panel.getUpdateButton().isEnabled());
     }
+
+    public void testMarch5DelhiMuhurtaTimeVsPanchang() {
+        Place delhi = new Place("Delhi", "Delhi", "India", 28.6139, 77.2090, "Asia/Calcutta");
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Calcutta"));
+        cal.set(2026, Calendar.MARCH, 5, 10, 15, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date muhurtaInstant = cal.getTime();
+
+        MyMuhurta muhurta = new MyMuhurta(muhurtaInstant, muhurtaInstant, delhi);
+
+        Nakshathra panchangNak = muhurta.getPanchang().getNakshathra();
+        Nakshathra muhurtaInstantNak = muhurta.getEventHoroscope().getPlanetaryInfo().getPlanetNakshathra().get(Planet.Moon).getNak();
+
+        assertEquals(Nakshathra.Uththiram, panchangNak); // Morning ref time: Uttra Phalguni
+        assertEquals(Nakshathra.Hastam, muhurtaInstantNak); // Muhurta instant: Hasta
+
+        // With Person 1 having birth star Uttra Phalguni (Uththiram) and birth rasi Mesha:
+        MuhurtaProfile p1 = new MuhurtaProfile("House_Shift_Muhurta", Rasi.Mesha, Nakshathra.Uththiram);
+        MyMuhurta muhurtaWithProfile = new MyMuhurta(muhurtaInstant, muhurtaInstant, delhi, p1);
+        app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> tableData = muhurtaWithProfile.getTableData();
+
+        String taraValue = null;
+        String chandraValue = null;
+        for (int i = 0; i < tableData.getRowCount(); i++) {
+            app.astrosoft.ui.table.MapTableRow row = tableData.getRow(i);
+            Object key = row.getColumnData(app.astrosoft.consts.AstrosoftTableColumn.Key);
+            if ("Tara Balam".equals(key)) {
+                taraValue = String.valueOf(row.getColumnData(app.astrosoft.consts.AstrosoftTableColumn.Value));
+            } else if ("Chandra Balam".equals(key)) {
+                chandraValue = String.valueOf(row.getColumnData(app.astrosoft.consts.AstrosoftTableColumn.Value));
+            }
+        }
+
+        // At 10:15 AM (after 08:18 AM), transit star is Hasta, so Tara to Uththiram is 2 (BEST), matching Balam Calendar!
+        assertEquals("2 (BEST)", taraValue);
+        assertEquals("6 (MIXED)", chandraValue);
+    }
 }
