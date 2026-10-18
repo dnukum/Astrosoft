@@ -1,153 +1,167 @@
-# Specification: MyMuhurta Screen
+# My Muhurta Screen Specification
 
-## 1. Overview
-The **MyMuhurta** screen is an interactive personalized astrological dashboard accessible via the menu (`View -> My Muhurta`). 
-While the traditional `Panchang` view displays generalized daily planetary information (Tithi, Nakshatra, Auspicious Times), the `MyMuhurta` screen overlays this daily data with the **currently loaded user's natal profile** (or up to two individuals for event/marriage evaluation), calculating personalized compatibilities, displaying transit and natal charts side-by-side, and providing an inline transit calendar (Balam Calendar).
+Reference: Unified design and computational specification for the **My Muhurta** feature in Astrosoft. Consolidates screen presentation, timing windows, Amirthathi Yoga, Balam Calendar, and matching-star suitability.
 
 ---
 
-## 2. UI Layout & Components
+## 1. Screen Architecture & Visual Layout
 
-The screen uses a two-column responsive split layout designed for standard and widescreen displays:
+The My Muhurta screen (`MyMuhurtaView.java`) presents an integrated dashboard pairing the event's Panchanga parameters with transit charts and an optional personal auspiciousness calendar.
 
 ```
-+------------------------------------+---------------------------------------------------+
-|  Main Panchanga & Muhurta Table    |  Personal Horoscopes Selectors (Person 1 / 2)     |
-|  - Date, Time (with TimeZone)      +---------------------------------------------------+
-|  - Location                        |  Side-by-Side Charts (350x300 each):              |
-|  - Sunrise, Sunset                 |  [ Muhurta Rasi ] [ Person 1 Rasi ] [ Person 2 ]  |
-|  - Nakshatra, Thithi (Transitions) +---------------------------------------------------+
-|  - Amirthathi Yoga, Nitya Yoga     |  [ Show/Hide Balam Calendar ] Button              |
-|  - Auspicious Time (Subha Hora)    +---------------------------------------------------+
-|  - Abhijit Muhurta & Brahma Muhurta|  Inline Balam Calendar Panel (When Open):         |
-|  - Rahu Kala, Yama Kanda           |  - Navigation (< Prev, Month, Year, Next >)       |
-|  - Tara Balam: Score (Name)        |  - Transit Table (Date, Tara, Chandra, Match)     |
-|  - Chandra Balam Score             |  - Update Button (Applies window to Muhurta)      |
-|                                    |  - Two-Column Window Details Panel:               |
-|  [ Summarize ] [ Edit Date/Time ]  |    Left: Thithi, Varam, Amirthathi, Suitability   |
-|                                    |    Right: Subha Hora, Abhijit, Brahma Muhurtas    |
-+------------------------------------+---------------------------------------------------+
++------------------------------------+---------------------------------------------------------------+
+|  Panchanga Table (WEST)            |  Multi-Chart Dashboard (CENTER)                               |
+|                                    |  +---------------------------------------------------------+  |
+|  - Date, Time, Location            |  | Person 1 Toolbar | Person 2 Toolbar                     |  |
+|  - Sunrise, Sunset, Length of Day  |  +---------------------------------------------------------+  |
+|  - Day, Tithi, Nakshatra           |  | [Muhurta Rasi]   | [Person 1 Rasi]   | [Person 2 Rasi]  |  |
+|  - Yoga, Amirthathi Yoga, Karana   |  +---------------------------------------------------------+  |
+|  - Auspicious Time                 |  | [Show Balam Calendar] (aligned below Muhurta chart)     |  |
+|  - Abhijit Muhurta, Brahma Muhurta |  +---------------------------------------------------------+  |
+|  - Rahu Kalam, Yama Kandam         |                                                               |
+|  - Subha Hora                      |  (When Expanded)                                              |
+|  - Tara Balam, Chandra Balam       |  +---------------------------------------------------------+  |
+|                                    |  | Balam Calendar Grid (Month/Year controls, Update)       |  |
+|  Action Buttons (Bottom-Right):    |  +---------------------------------------------------------+  |
+|  [Summarize]  [Edit Date/Time]     |  | Two-Column HTML Window Details (57% / 43% split)        |  |
++------------------------------------+---------------------------------------------------------------+
 ```
 
-### 2.1 Main Panchanga & Muhurta Table (Left Column)
-Anchored at the top left with dynamic row heights and multi-line cell rendering to prevent text clipping:
-* **Date & Time:** Event instant displayed in the chosen location's timezone (e.g. `MMMM d, yyyy` and `hh:mm:ss a, <TimeZone> (GMT +/-HH:MM)`).
-* **Location:** Displays selected city, state, country, or default place.
-* **Sunrise & Sunset:** Calculated via Swiss Ephemeris for the local event date and coordinates.
-* **Named Transitions:** For Nakshathra, Thithi, Nitya Yoga, and Karana, displays current value until transition time followed by the arrow (`→`) and the named successor (e.g., `Rohini until 10:41 PM → Mrigasira`).
-* **Amirthathi Yoga:** Evaluates Amirthathi Yoga based on sunrise Vara and transit Moon Nakshatra, displaying transitions through the civil day.
-* **Auspicious Time Windows:**
-  * **Subha Hora:** Weekday auspicious blocks scaled to actual sunrise/sunset intervals.
-  * **Abhijit Muhurta:** 8th of 15 daytime divisions. Flagged with `[Wednesday: additional scrutiny]` on Wednesdays due to classical Durmuhurta/Rahu afflictions.
-  * **Brahma Muhurta:** 14th of 15 nighttime divisions preceding local sunrise.
-* **Inauspicious Windows:** Rahu Kala and Yama Kanda.
-* **Personalized Scores (when Profile Loaded):**
-  * **Tara Balam:** Displays raw score (1–9) with classical Tara name in parentheses, e.g. `2 (Sampat)`, `6 (Sadhana)`.
-  * **Chandra Balam:** Displays raw inclusive house count (1–12) from natal Moon to transit Moon.
+### 1.1 Left Column: Panchanga Table & Action Buttons
+- **Layout & Positioning**: Anchored in `BorderLayout.WEST`. To avoid awkward vertical stretching on large monitors, the content is wrapped in a top-aligned `BorderLayout.NORTH` container.
+- **Fixed Column Widths**:
+  - Key column (`AstrosoftTableColumn.Key`): 130px.
+  - Value column (`AstrosoftTableColumn.Value`): 270px (total table width: 400px).
+- **Multi-Line Wrapping**:
+  - Value column utilizes a custom `TableCellRenderer` (`multiLineRenderer`) that dynamically calculates line breaks and sets row heights based on font metrics.
+  - Breaks naturally on comma delimiters (e.g. `Transit Moon`), en-dash separators (e.g. `Abhijit Muhurta`), or transition arrows (`→`).
+- **Action Buttons (`createBottomPanel`)**:
+  - **"Summarize"**: Opens `MuhurtaSummaryDialog` displaying a formatted plain-text summary suitable for copying or exporting.
+  - **"Edit Date/Time"**: Opens `MuhurtaConfigDialog` allowing interactive changes to event date, time, and geographic location without leaving the screen.
 
-### 2.2 Table Action Buttons
-Located immediately below the main table:
-1. **`[ Summarize ]` Button:** Opens the modal `MuhurtaSummaryDialog`, generating a structured plain-text report intended for easy copying and feeding to LLMs:
-   * 1) Muhurta Date
-   * 2) Muhurta Time
-   * 3) Location with timezone
-   * 4) Paksha and Thithi
-   * 5) Vara
-   * 6) Nakshatra (with Pada)
-   * 7) Amirthathi Yoga
-   * 8) Tara and Chandra Balam (with score, name, and evaluative rank for Person 1 and Person 2)
-   * 9) Panchanga Yoga
-   * 10) Karana
-   * Clockwise Planetary Positions starting from Ascendant (one line per planet: `Planet, Zodiac Sign, Longitude within Sign (DD° MM' SS"), Nakshatra (Pada N)`).
-   * Features a one-click **Copy to Clipboard** button with temporary confirmation feedback and `Escape`/`Enter` dismissal.
-2. **`[ Edit Date/Time ]` Button:** Opens `MuhurtaConfigDialog` allowing immediate adjustment of:
-   * Event Date (JCalendar combo picker)
-   * Event Time (24-hour hour and minute spinners)
-   * Location (`PlaceChooser` integration)
-   * Refreshes the view and Balam calendar immediately upon OK without overwriting application global preferences.
-
-### 2.3 Horoscopes & Multi-Chart Panel (Top Right)
-* **Person Selectors:** Person 1 and Person 2 selector buttons open `MuhurtaProfileDialog` to load an existing `.ash` horoscope file or perform Quick Entry (specifying Name, Janma Rasi, and Janma Nakshatra). Clear buttons (`X`) remove individual profiles.
-* **Side-by-Side Charts (`350x300`):**
-  * **Muhurta Rasi Chart:** Transit D1 chart for the event instant and location.
-  * **Person 1 Rasi Chart:** Natal chart for Person 1 (if loaded).
-  * **Person 2 Rasi Chart:** Natal chart for Person 2 (if loaded).
-* Charts maintain rigid cell sizing to prevent symbol truncation (`Su`, `Mo`, `As`, etc.) and support hover tooltips showing original sidereal longitude and Nakshatra.
-
-### 2.4 Inline Balam Calendar (Bottom Right)
-Toggled via the **Show/Hide Balam Calendar** button located below the charts:
-* **Month Navigation:** `< Prev Month`, month/year dropdowns (synchronized rolling +/-50 year range), and `Next Month >`.
-* **Table Columns:**
-  * `Date`: Transit transition start date/time (e.g. `Oct 28, 10:41 PM`).
-  * `Person 1 Tara`: Raw score and star rating (e.g. `6 (★★)`).
-  * `Person 1 Chandra`: Raw house and star rating (e.g. `3 (★★★)`).
-  * `Person 2 Tara` & `Person 2 Chandra`: Added dynamically if Person 2 is loaded.
-  * `Match`: Matching stars between natal profiles and transit window.
-* **`Update` Button:** Applies the selected calendar row's start date and time directly to the Muhurta event and main table. Chosen table row selection persists after the update.
-* **Two-Column Details Panel:**
-  * **Left Column:**
-    * Start and End timestamps.
-    * Matching Star Event Suitability (activities like Marriage, Vehicle Buying, Travel, etc., or "Not recommended" in red).
-    * Transit Moon sign and Nakshatra lord.
-    * **Thithi:** Warning thithis (Amavasya, Prathamai, Ashtami, Navami) styled in `<font color='red'>`. Transitions isolate red formatting to warning items only.
-    * **Varam:** Tuesday and Saturday styled in `<font color='red'>`.
-    * **Amirthathi Yoga:** Marana Yoga styled in `<font color='red'>`.
-    * **Yoga (Nitya Yoga)** and **Karana**.
-  * **Right Column:**
-    * **Subha Hora:** Overlapping auspicious hours within the transit window.
-    * **Abhijit Muhurta:** Overlapping midday window, or `No overlap` if window falls outside midday.
-    * **Brahma Muhurta:** Overlapping pre-dawn window, or `No overlap`.
+### 1.2 Right Column: Multi-Chart Dashboard
+- **Chart Selection**: Rasi charts only (360x320 px each). Navamsa charts are deliberately omitted to preserve visual clarity.
+  - **Muhurta Chart**: Transit planetary positions and Ascendant computed for the exact event instant and location.
+  - **Person 1 Rasi Chart**: Natal horoscope of the primary person (loaded via Profile dialog or file).
+  - **Person 2 Rasi Chart**: Natal horoscope of partner/secondary person.
+- **People Toolbars**: Mounted above the chart area. Contains load/edit/clear buttons for Person 1 and Person 2.
+- **Calendar Toggle Button**:
+  - Rounded button labeled "Show Balam Calendar" / "Hide Balam Calendar" (160x30 px).
+  - Centered inside a control strip aligned directly with the first (Muhurta) chart column (`chartSize.width`).
+  - Disabled and hidden when no personal profile is loaded; visible and enabled when Person 1 or Person 2 is present.
 
 ---
 
-## 3. Data Flow & Architecture
+## 2. Core Calculations & Domain Engines
 
-The feature strictly adheres to the layered architecture outlined in `spec/ARCHITECTURE.md`:
+All mathematical and astrological calculations reside in `app.astrosoft.core.*`, completely isolated from Swing components.
 
-```
-+-----------------------------------------------------------------------------+
-|                            PRESENTATION LAYER                               |
-|  MyMuhurtaView  <--->  BalamCalendarPanel  <--->  MuhurtaSummaryDialog      |
-|         |                      |                                            |
-|  (User Input/Swing)      (SwingWorker)           (Displays text from core)  |
-+---------|----------------------|--------------------------------------------+
-          |                      |
-          v                      v
-+-----------------------------------------------------------------------------+
-|                            DOMAIN CORE LAYER                                |
-|  MyMuhurta.java                                                             |
-|  ├── getTableData()                 --> TableData<MapTableRow>              |
-|  ├── getSummaryText(...)            --> Plain text report for LLMs          |
-|  ├── getBalamCalendarTable(...)     --> BalamCalendarModel / Engine         |
-|  └── getBalamWindowDetails(...)     --> BalamWindowDetails                  |
-|                                                                             |
-|  Supporting Core Engines:                                                   |
-|  ├── PanchangaWindowEngine          --> Exact boundary bisection            |
-|  ├── MuhurtaWindowsCalculator       --> Abhijit, Brahma, Subha Hora windows |
-|  └── NakshatraEventSuitability      --> Activity suitability mappings       |
-+-----------------------------------------------------------------------------+
-          |
-          v
-+-----------------------------------------------------------------------------+
-|                      MATHEMATICAL & DATA LAYER                              |
-|  SwissHelper / swisseph             --> Planetary physics & coordinates     |
-|  Beans: MuhurtaProfile, BalamWindowDetails, TaraBalamResult, etc.           |
-|  Enums: Nakshathra, Rasi, Planet, Tara, AmirthathiYoga, Thithi, Karana      |
-+-----------------------------------------------------------------------------+
-```
+### 2.1 Seasonal Timing Windows (`MuhurtaWindowsCalculator.java`)
+Calculates seasonal daylight and nighttime muhurta divisions based on local sunrise and sunset instants, rather than a fixed 48-minute approximation.
+
+Let $D = \text{sunset}_d - \text{sunrise}_d$ (daylight length) and $R = \text{sunrise}_d - \text{sunset}_{d-1}$ (preceding night length).
+
+1. **Abhijit Muhurta**: The 8th of 15 equal daytime divisions:
+   $$\text{Abhijit} = \left[\text{sunrise}_d + \text{round}\left(\frac{7D}{15}\right), \text{sunrise}_d + \text{round}\left(\frac{8D}{15}\right)\right)$$
+   - *Wednesday Scrutiny*: On Wednesdays, Abhijit Muhurta coincides with Durmuhurtha under classical rules. The engine preserves the window but appends the note `[Wednesday: additional scrutiny]`. It is not suppressed.
+2. **Brahma Muhurta**: The 14th of 15 equal night divisions, ending one muhurta before sunrise:
+   $$\text{Brahma} = \left[\text{sunrise}_d - \text{round}\left(\frac{2R}{15}\right), \text{sunrise}_d - \text{round}\left(\frac{R}{15}\right)\right)$$
+3. **Subha Hora**: Scaled auspicious daytime/nighttime blocks derived from `WeekDay.auspiciousTimeBlocks()`.
+4. **Main Table vs. Balam Calendar Scopes**:
+   - *Main Table*: Evaluates `forDay(...)` for the full civil day of the event instant. Placed immediately after "Auspicious Time".
+   - *Balam Calendar Details*: Evaluates `forWindow(...)` for the selected cell's half-open transit window $[start, end)$. Intersecting intervals are clipped and marked `(partial overlap)`. If no intersection exists within that interval, it displays `No overlap`.
+
+### 2.2 Amirthathi Yoga & Sunrise Vara (`AmirthathiYoga.java`, `SunriseVara.java`)
+- **Lookup Formula**: $Y(t) = T[V(t)][N(t)]$, where $N(t)$ is the Moon's transit Nakshatra and $V(t)$ is the **Sunrise Vara** (the weekday of the latest local sunrise at or before $t$, resolved via `SunriseVara`).
+- **Table Dimensions**: 189 cells (7 weekdays $\times$ 27 stars) mapping to `Amirtha`, `Siddha`, `Marana`, or `Prabalarshta`.
+- **Cyclic Progression**: Saturday wraps to Sunday; Revathi wraps to Ashwini.
+- **Main Table Presentation**: Evaluated at event instant with transitions displayed through the next civil midnight (e.g. `Siddha → (15 Oct, 04:30 IST) Amirtha`).
+- **Inauspicious Warning**: `Marana` yoga is displayed in red font (`<font color='red'>Marana</font>`). When transitions occur, only the keyword `Marana` is wrapped in red tags; transition arrows and timestamps remain in standard font.
+
+### 2.3 Matching-Star Event Suitability (`NakshatraEventSuitability.java`)
+Evaluates permitted activities for the selected Balam cell's matching stars (the intersection of personal Tara and Chandra balam candidates, distinct from the transit star).
+- **Nine Categories**: General, Travel, Medication, Property, Trade, Study, Farming, Marriage, Construction.
+- **Rule Source**: Domain mapping matrix. "General" applies strictly to Magha, Chitra, and Swati alongside specific activities.
+- **Empty Set Behavior**: Stars with no recommended activities display `<font color='red'>Not recommended</font>`.
+
+### 2.4 Personal Balams (`MyMuhurta.java`)
+- **Tara Balam**: Count from natal star to transit star modulo 9. Main table displays raw score and name: `score (Name)`, e.g. `2 (Sampat)`.
+- **Chandra Balam**: Count from natal Moon rasi to transit Moon rasi (1 to 12). Main table displays raw house index: `score`, e.g. `11`.
+
+### 2.5 Panchanga Engine Transitions (`PanchangaWindowEngine.java`)
+Subdivides arbitrary time windows into contiguous segments $[start, end)$ classified by sidereal positions:
+- Hourly bracketing and millisecond bisection across Nakshatra, Tithi, Karana, Nitya Yoga, and civil midnight boundaries.
+- Karana uses the continuous 60 half-tithi cyclic sequence rather than enum wrapping.
 
 ---
 
-## 4. Testing & Verification
+## 3. Balam Calendar & Window Details Presentation
 
-1. **Exhaustive Balam Domain Coverage (`MyMuhurtaTest.java`):**
-   * All 729 combinations of birth and transit Nakshatras for Tara index, Paryaya, and rank.
-   * All 144 combinations of birth and transit Rasi for Chandra house counting and Chandra Ashtama rejection.
-2. **Panchanga Golden Validation (`PanchangGoldenTest.java`):**
-   * Validated against Swiss Ephemeris golden data across 11 global coordinates and critical DST boundary dates.
-3. **Table Layout & Multi-Line Wrapping (`MyMuhurtaTableLayoutTest.java`):**
-   * Verifies table ordering, Yoga details, and automatic `<br>` injection for Time and Location strings.
-4. **Summary Report Verification (`MuhurtaSummaryTest.java`):**
-   * Asserts all 10 summary fields, clockwise planetary ordering starting with Ascendant, degree formatting, and Person 1/2 score integration.
-5. **Window Details & Red Color-Coding (`BalamWindowDetailsTest.java`):**
-   * Validates HTML generation, bean immutability, repeat suppression, and red color-coding for Tuesday/Saturday, warning thithis, and Marana yoga.
+### 3.1 Inline Calendar Panel (`BalamCalendarPanel.java`)
+- Embedded directly below the charts inside `flyoutHost` when toggled.
+- **Navigation Controls**: Non-editable month/year selectors with synchronized arrow buttons (rolling span $\pm 50$ years) and an "Update" button to refresh the calendar grid.
+- **Row Selection**: Clicking a row immediately synchronizes the main screen via `applyCalendarDate(startInstant, endInstant)`, updating the Muhurta chart and Panchanga table synchronously, and triggers asynchronous loading of window details.
+
+### 3.2 Two-Column Details View (57% / 43% HTML Split)
+
+#### Left Column (57% width)
+1. **Window Boundaries**:
+   - `<b>Start:</b> dd MMM yyyy HH:mm z`
+   - `<b>End:</b> dd MMM yyyy HH:mm z`
+2. **Matching-Star Event Suitability**:
+   - `<b><Star>:</b> <Activities>` (or `<font color='red'>Not recommended</font>`)
+   - Blank separator line.
+3. **Transit Moon**:
+   - `<b>Transit Moon:</b> <Nakshathra> in <Rasi> (<Lord>)`
+   - Blank separator line.
+4. **Panchanga & Transitions**:
+   - **Thithi**: Timed transitions (`&rarr; (dd MMM, HH:mm z)`). `Amavasya`, `Prathamai`, `Ashtami`, `Navami`, and Riktha thithis in red.
+   - **Varam**: Local weekday. `Tuesday` and `Saturday` in red.
+   - **Amirthathi Yoga**: Evaluated via sunrise Vara. `Marana` in red.
+   - **Yoga (Nitya Yoga)** & **Karana**: Classified transition sequences.
+
+#### Right Column (43% width)
+- **Subha Hora**: Intersecting intervals or `No overlap`.
+- **Abhijit Muhurta**: Intersecting intervals (with `[Wednesday: additional scrutiny]` if applicable) or `No overlap`.
+- **Brahma Muhurta**: Intersecting intervals or `No overlap`.
+- Partial intersections are labelled `(partial overlap)`.
+
+---
+
+## 4. Dialogs & Utilities
+
+### 4.1 Edit Date/Time/Place (`MuhurtaConfigDialog.java`)
+- Modal dialog allowing instant adjustments to event date, time, and geographic location.
+- Uses `PlaceChooser` with country/state/city auto-complete and custom coordinates.
+- On confirmation, triggers `updateView()` to recompute the entire dashboard synchronously.
+
+### 4.2 Profile Dialogs (`MuhurtaProfileDialog.java`)
+- Supports loading saved horoscopes or quick manual entry of Janma Rasi and Nakshatra.
+- Dynamically filters permitted Nakshatra options based on selected Rasi.
+
+### 4.3 Plain-Text Summary (`MuhurtaSummaryDialog.java`, `MyMuhurta.getSummaryText`)
+- Generates a cleanly structured plain-text report including:
+  - Header with event instant, location, and coordinates.
+  - Sunrise, sunset, and daylight duration.
+  - Complete Panchanga parameters (with transition times).
+  - Auspicious timing windows (Abhijit, Brahma, Subha Hora) and inauspicious periods (Rahu Kalam, Yama Kandam).
+  - Personal compatibility analysis (Tara Balam, Chandra Balam) for Person 1 and Person 2.
+- Clean MVC design: `MyMuhurta.getSummaryText(...)` handles formatting in domain core; `MuhurtaSummaryDialog` handles Swing display and clipboard copying.
+
+---
+
+## 5. Verification & Test Suite
+
+| Test Class | Focus & Verification |
+| :--- | :--- |
+| `MyMuhurtaTest` | Core domain instantiation, table data structure, Panchang retrieval, and Tara/Chandra candidate matching. |
+| `MuhurtaSummaryTest` | Plain-text summary output, header formatting, solar calculations, and multi-profile compatibility text. |
+| `MuhurtaWindowsCalculatorTest` | Seasonal 15-part formulas, equinox timings, DST shifts, year rollover, Wednesday caution, and fallback solar times. |
+| `AmirthathiYogaTest` | All 189 table cells, both boolean branches (378 ordered pairs), cyclic wrapping, and null handling. |
+| `SunriseVaraTest` | Sunrise-to-sunrise Vara determination, midnight civil separation, Revathi wrap, and fallback handling. |
+| `PanchangaWindowEngineTest` | Continuous bisection, Karana 60-slot cycle, transition boundary isolation, and DST handling. |
+| `NakshatraEventSuitabilityTest` | All 27 nakshatras against 9 suitability categories, empty row red warning, and bean immutability. |
+| `BalamWindowDetailsTest` | HTML two-column rendering, repeat suppression, Marana red font isolation, and worker thread safety. |
+| `MyMuhurtaTableLayoutTest` | Key/Value column widths, value wrapping, en-dash line breaks, and row order. |
+| `MyMuhurtaEventTimeTest` | Exact event instant preservation, defensive copies, and edit synchronization. |
+| `MyMuhurtaTimezoneLabelTest` | Localized timezone strings across major global timezones and DST boundaries. |
