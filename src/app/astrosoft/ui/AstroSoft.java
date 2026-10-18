@@ -50,7 +50,9 @@ import app.astrosoft.ui.comp.AstrosoftMenuBar;
 import app.astrosoft.ui.comp.AstrosoftToolBar;
 import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.comp.DateListener;
+import app.astrosoft.ui.dlg.AboutDialog;
 import app.astrosoft.ui.dlg.BirthInputDialog;
+import app.astrosoft.util.Version;
 import app.astrosoft.ui.dlg.CompactibilityInputDialog;
 import app.astrosoft.ui.dlg.ExportDialog;
 import app.astrosoft.ui.dlg.MuhurthaInput;
@@ -598,6 +600,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 	
 	public void computeNumeroNumber(){
 		new ComputeNumberDialog(this);
+	}
+	
+	public void showAbout(){
+		new AboutDialog(this).setVisible(true);
 	}
 	
 	private void optionAyanamsaChanged(Ayanamsa ayanamsa) {

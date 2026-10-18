@@ -143,6 +143,9 @@ public class AstrosoftAction extends AbstractAction {
 		}else if(cmd.equals(Command.EXPORT_COMPACTIBILITY_TO_PDF)){
 			log.fine("EXPORT_COMPACTIBILITY_TO_PDF menu clicked");
 			handler.exportCompactibility2Pdf();
+		}else if(cmd.equals(Command.ABOUT)){
+			log.fine("ABOUT menu clicked");
+			handler.showAbout();
 		}
 	}
 }

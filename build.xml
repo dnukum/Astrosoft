@@ -40,7 +40,20 @@
 		<mkdir dir="${dist_resources_dir}" />
 	</target>
 
-	<target name="build" description="Builds Astrosoft Application" depends="compile,copy-resources" />
+	<target name="generate-version" description="Generates version properties with build timestamp">
+		<tstamp>
+			<format pattern="yyyyMMdd:HHmmss" property="build.version" />
+			<format pattern="MM/dd/yyyy HH:mm:ss" property="tstamp.default" />
+		</tstamp>
+		<echo file="${dist_resources_dir}/version.properties">build.version=${build.version}
+build.date=${tstamp.default}
+</echo>
+		<echo file="${resources_dir}/version.properties">build.version=${build.version}
+build.date=${tstamp.default}
+</echo>
+	</target>
+
+	<target name="build" description="Builds Astrosoft Application" depends="compile,copy-resources,generate-version" />
 
 	<target name="compile" description="Compiles source files" depends="clean">
 		<javac srcdir="${src_dir}" destdir="${deploy_dir}" source="1.8" target="1.8" classpathref="libraries">
@@ -72,15 +85,13 @@
 			<classpath refid="classpath" />
 		</manifestclasspath>
 
-		<tstamp>
-			<format pattern="MM/dd/yyyy HH:mm:ss" property="tstamp.default" />
-		</tstamp>
 		<jar basedir="${deploy_dir}" destfile="${bin_dir}/AstroSoft.jar">
 			<manifest>
 				<attribute name="Main-Class" value="app.astrosoft.ui.AstroSoft" />
 				<attribute name="Jar-Name" value="AstroSoft.jar" />
 				<attribute name="Class-Path" value="${lib.list}" />
 				<attribute name="Create-Date" value="${tstamp.default}" />
+				<attribute name="Implementation-Version" value="${build.version}" />
 				<attribute name="Java-Version" value="${java.version}" />
 				<attribute name="Built-By" value="${user.name}" />
 			</manifest>

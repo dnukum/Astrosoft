@@ -171,8 +171,15 @@ public class AstrosoftMenuBar extends JMenuBar
         }
         
         addMenuItems(menu, optionMenuItems);
-        
+
         menus.add(menu);
+
+        // Help Menu
+        JMenu helpMenu = new JMenu("Help");
+        JMenuItem aboutMenuItem = new JMenuItem(actionMgr.getAction(Command.ABOUT));
+        aboutMenuItem.setIcon(null);
+        helpMenu.add(aboutMenuItem);
+        menus.add(helpMenu);
 
         AstrosoftPref preferences = AstroSoft.getPreferences();
         ayaMenuItems[preferences.getAyanamsa().ordinal()].setSelected( true );

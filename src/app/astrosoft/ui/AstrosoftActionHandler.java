@@ -49,4 +49,6 @@ public interface AstrosoftActionHandler
     public void setDefaultCursor();
     
     public void computeNumeroNumber();
+    
+    public void showAbout();
 }
