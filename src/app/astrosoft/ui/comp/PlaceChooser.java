@@ -304,7 +304,6 @@ public class PlaceChooser extends JPanel {
 
 			public void run() {
 				timeZoneCombo.setSelectedItem(p.astrosoftTimeZone());
-				System.out.println("done");
 				
 				javax.swing.SwingUtilities.invokeLater(new Runnable() {
 				    public void run() {
