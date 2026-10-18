@@ -1,6 +1,7 @@
 package app.astrosoft.ui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
@@ -12,6 +13,8 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
 import app.astrosoft.consts.AstrosoftTableColumn;
@@ -251,15 +254,62 @@ public class MyMuhurtaView extends AstrosoftView {
 
     private void applyRowHeights() {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            Object val = tableModel.getValueAt(i, 0);
-            if (val != null && val.toString().contains(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString())) {
-                table.setRowHeight(i, 100); // 100 allows 4-5 lines of text to breathe
-            } else if (val != null && val.toString().equals("Time")) {
-                table.setRowHeight(i, RowHeight * 2);
-            } else {
-                table.setRowHeight(i, RowHeight);
+            TableCellRenderer renderer = table.getCellRenderer(i, 1);
+            Component c = table.prepareRenderer(renderer, i, 1);
+            int prefH = c.getPreferredSize().height;
+            int lines = Math.max(1, Math.round((float) prefH / 15f));
+            int calculatedHeight = Math.max(RowHeight, Math.max(lines * 18 + 12, prefH + 12));
+            table.setRowHeight(i, calculatedHeight);
+        }
+    }
+
+    public static String formatMultiLineValue(String key, String value, int width) {
+        if (value == null || value.trim().isEmpty()) {
+            return "";
+        }
+        String s = value.trim();
+        if (s.startsWith("<html>")) {
+            return s;
+        }
+
+        if (key != null && key.equals("Time")) {
+            s = s.replace(",", "<br>");
+        } else if (key != null && (key.contains(DisplayStrings.AUS_TIME_STR.toString())
+                || key.contains("Auspicious Time") || key.contains("Subha Hora"))) {
+            s = s.replace(", ", "<br>").replace(",", "<br>");
+        } else {
+            if (s.contains(" → ")) {
+                s = s.replace(" → ", " →<br>");
+            } else if (s.contains(" -> ")) {
+                s = s.replace(" -> ", " →<br>");
+            }
+
+            if (s.contains(" – ")) {
+                s = s.replace(" – ", " –<br>");
+            } else if (s.contains(" - ") && key != null && (key.contains("Muhurta") || key.contains("Brahma") || key.contains("Abhijit"))) {
+                s = s.replace(" - ", " –<br>");
+            }
+
+            if (key != null && key.equals("Location")) {
+                if (s.length() > 25 && s.contains(",")) {
+                    String[] parts = s.split(",\\s*");
+                    if (parts.length == 2) {
+                        s = parts[0] + ",<br>" + parts[1];
+                    } else if (parts.length >= 3) {
+                        if ((parts[1] + ", " + parts[2]).length() <= 28) {
+                            s = parts[0] + ",<br>" + parts[1] + ", " + parts[2];
+                        } else {
+                            s = parts[0] + ",<br>" + parts[1] + ",<br>" + parts[2];
+                        }
+                    }
+                }
             }
         }
+
+        if (s.contains("<br>") || s.length() > 28) {
+            return "<html><table cellpadding=\"0\" cellspacing=\"0\" width=\"" + width + "\"><tr><td>" + s + "</td></tr></table></html>";
+        }
+        return value;
     }
 
     private void refreshCharts(app.astrosoft.core.MyMuhurta muhurta) {
@@ -378,13 +428,23 @@ public class MyMuhurtaView extends AstrosoftView {
         ));
         
         table = new AstrosoftTable(tableModel, TableStyle.GRID) {
-            TableCellRenderer multiLineRenderer = new MultiLineCellRenderer(",");
+            TableCellRenderer multiLineRenderer = new DefaultTableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value,
+                        boolean isSelected, boolean hasFocus, int row, int column) {
+                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    Object keyVal = table.getValueAt(row, 0);
+                    String key = keyVal != null ? keyVal.toString() : "";
+                    String valStr = value != null ? value.toString() : "";
+                    setText(formatMultiLineValue(key, valStr, ValueColWidth - 15));
+                    return this;
+                }
+            };
+
+            @Override
             public TableCellRenderer getCellRenderer(int row, int col) {
-                Object keyVal = getValueAt(row, 0);
-                if (keyVal != null && col == 1) {
-                    if (keyVal.toString().contains(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString()) || keyVal.toString().equals("Time")) {
-                        return multiLineRenderer;
-                    }
+                if (col == 1) {
+                    return multiLineRenderer;
                 }
                 return super.getCellRenderer(row, col);
             }
