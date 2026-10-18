@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
+import app.astrosoft.consts.Tara;
 import java.util.Date;
 import java.util.Calendar;
 import java.util.List;
@@ -173,7 +174,8 @@ public class MyMuhurta {
             app.astrosoft.consts.Nakshathra transitNak = (transitNakPada != null) ? transitNakPada.getNak() : pan.getNakshathra();
             
             int taraIndex = calcTaraIndex(birthNak, transitNak);
-            rows.add(helper.createRow("Tara Balam", String.valueOf(taraIndex)));
+            Tara tara = Tara.of(taraIndex);
+            rows.add(helper.createRow("Tara Balam", taraIndex + " (" + tara.getName() + ")"));
             
             app.astrosoft.consts.Rasi birthRasi = userProfile.getRasi();
             app.astrosoft.consts.Rasi transitRasi = (pi != null && pi.getPlanetRasi() != null) ? pi.getPlanetRasi().get(Planet.Moon) : pan.getRasi();

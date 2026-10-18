@@ -427,7 +427,10 @@ public class BalamCalendarPanel extends JPanel {
             app.astrosoft.consts.AmirthathiYoga amirthathiYoga = entry.getAmirthathiYoga();
             if (amirthathiYoga != null && amirthathiYoga != previousAmirthathiYoga) {
                 if (amirthathiYogas.length() > 0) amirthathiYogas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
+                boolean isMarana = (amirthathiYoga == app.astrosoft.consts.AmirthathiYoga.Marana);
+                if (isMarana) amirthathiYogas.append("<font color='red'>");
                 amirthathiYogas.append(htmlEscape(amirthathiYoga.toString()));
+                if (isMarana) amirthathiYogas.append("</font>");
                 previousAmirthathiYoga = amirthathiYoga;
             }
             if (entry.getYoga() != null && entry.getYoga() != previousYoga) {
@@ -441,14 +444,22 @@ public class BalamCalendarPanel extends JPanel {
             String thithi = htmlEscape(entry.getPaksha().toString()) + " " + htmlEscape(entry.getThithi().toString());
             if (!thithi.equals(previousThithi)) {
                 if (thithis.length() > 0) thithis.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
-                if (entry.isWarning()) thithis.append("<font color='red'>");
+                boolean isWarningThithi = entry.isWarning()
+                    || entry.getThithi() == app.astrosoft.consts.Thithi.Amavasya
+                    || entry.getThithi() == app.astrosoft.consts.Thithi.Prathamai
+                    || entry.getThithi() == app.astrosoft.consts.Thithi.Ashtami
+                    || entry.getThithi() == app.astrosoft.consts.Thithi.Navami;
+                if (isWarningThithi) thithis.append("<font color='red'>");
                 thithis.append(thithi);
-                if (entry.isWarning()) thithis.append("</font>");
+                if (isWarningThithi) thithis.append("</font>");
                 previousThithi = thithi;
             }
             if (entry.getWeekday() != previousVaram) {
                 if (varams.length() > 0) varams.append(" &rarr; ");
+                boolean isRedVara = (entry.getWeekday() == java.util.Calendar.TUESDAY || entry.getWeekday() == java.util.Calendar.SATURDAY);
+                if (isRedVara) varams.append("<font color='red'>");
                 varams.append(htmlEscape(weekdays[entry.getWeekday()]));
+                if (isRedVara) varams.append("</font>");
                 previousVaram = entry.getWeekday();
             }
         }

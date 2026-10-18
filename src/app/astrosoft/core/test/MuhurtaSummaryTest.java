@@ -207,8 +207,8 @@ public class MuhurtaSummaryTest extends TestCase {
             }
         }
 
-        // At 10:15 AM (after 08:18 AM), transit star is Hasta, so Tara to Uththiram is raw score 2, and Chandra is raw score 6!
-        assertEquals("2", taraValue);
+        // At 10:15 AM (after 08:18 AM), transit star is Hasta, so Tara to Uththiram is raw score 2 (Sampat), and Chandra is raw score 6!
+        assertEquals("2 (Sampat)", taraValue);
         assertEquals("6", chandraValue);
     }
 }

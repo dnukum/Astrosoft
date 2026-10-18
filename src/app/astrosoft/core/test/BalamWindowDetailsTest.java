@@ -30,10 +30,37 @@ public class BalamWindowDetailsTest {
             new BalamWindowDetails.Entry(new Date(2000),new Date(3000),Paksha.Shukla,Thithi.Prathamai,Calendar.THURSDAY,false,AmirthathiYoga.Amirtha,Yoga.Priti,Karana.Bava));
         BalamWindowDetails yogaDetails = new BalamWindowDetails(new Date(0),new Date(3000),TimeZone.getTimeZone("UTC"),yogaEntries);
         String yogaHtml = (String)render.invoke(null,yogaDetails,Nakshathra.Ashwini,Rasi.values()[0]);
-        check(yogaHtml.contains("<b>Amirthathi Yoga:</b> Marana &rarr; (01 Jan, 00:00 UTC) Amirtha"), "Core Yoga rendered and adjacent repeats suppressed");
+        check(yogaHtml.contains("<b>Amirthathi Yoga:</b> <font color='red'>Marana</font> &rarr; (01 Jan, 00:00 UTC) Amirtha"), "Core Yoga rendered with Marana in red and adjacent repeats suppressed");
         check(yogaHtml.contains("<b>Yoga (Nitya Yoga):</b> Vishakambha &rarr; (01 Jan, 00:00 UTC) Priti"), "Timed Nitya Yoga");
         check(yogaHtml.contains("<b>Karana:</b> "), "Karana rendered");
         check(yogaEntries.get(0).getAmirthathiYoga() == AmirthathiYoga.Marana, "Bean carries Core classification");
+
+        // Verify Vara transitions: Friday -> Saturday (Saturday in red) and Tuesday -> Wednesday (Tuesday in red)
+        List<BalamWindowDetails.Entry> varaEntries = Arrays.asList(
+            new BalamWindowDetails.Entry(new Date(0), new Date(1000), Paksha.Shukla, Thithi.Dvithiyai, Calendar.FRIDAY, false),
+            new BalamWindowDetails.Entry(new Date(1000), new Date(2000), Paksha.Shukla, Thithi.Dvithiyai, Calendar.SATURDAY, false)
+        );
+        BalamWindowDetails varaDetails = new BalamWindowDetails(new Date(0), new Date(2000), TimeZone.getTimeZone("UTC"), varaEntries);
+        String varaHtml = (String)render.invoke(null, varaDetails, Nakshathra.Ashwini, Rasi.values()[0]);
+        check(varaHtml.contains("<b>Varam:</b> Friday &rarr; <font color='red'>Saturday</font>"), "Friday -> Saturday transition with Saturday in red");
+
+        List<BalamWindowDetails.Entry> tueEntries = Arrays.asList(
+            new BalamWindowDetails.Entry(new Date(0), new Date(1000), Paksha.Shukla, Thithi.Dvithiyai, Calendar.TUESDAY, false),
+            new BalamWindowDetails.Entry(new Date(1000), new Date(2000), Paksha.Shukla, Thithi.Dvithiyai, Calendar.WEDNESDAY, false)
+        );
+        BalamWindowDetails tueDetails = new BalamWindowDetails(new Date(0), new Date(2000), TimeZone.getTimeZone("UTC"), tueEntries);
+        String tueHtml = (String)render.invoke(null, tueDetails, Nakshathra.Ashwini, Rasi.values()[0]);
+        check(tueHtml.contains("<b>Varam:</b> <font color='red'>Tuesday</font> &rarr; Wednesday"), "Tuesday -> Wednesday transition with Tuesday in red");
+
+        // Verify Thithi transitions: Sapthami -> Ashtami (Ashtami in red)
+        List<BalamWindowDetails.Entry> thithiEntries = Arrays.asList(
+            new BalamWindowDetails.Entry(new Date(0), new Date(1000), Paksha.Shukla, Thithi.Sapthami, Calendar.WEDNESDAY, false),
+            new BalamWindowDetails.Entry(new Date(1000), new Date(2000), Paksha.Shukla, Thithi.Ashtami, Calendar.WEDNESDAY, true),
+            new BalamWindowDetails.Entry(new Date(2000), new Date(3000), Paksha.Shukla, Thithi.Navami, Calendar.WEDNESDAY, true)
+        );
+        BalamWindowDetails thithiDetails = new BalamWindowDetails(new Date(0), new Date(3000), TimeZone.getTimeZone("UTC"), thithiEntries);
+        String thithiHtml = (String)render.invoke(null, thithiDetails, Nakshathra.Ashwini, Rasi.values()[0]);
+        check(thithiHtml.contains("Shukla Sapthami &rarr; (01 Jan, 00:00 UTC) <font color='red'>Shukla Ashtami</font> &rarr; (01 Jan, 00:00 UTC) <font color='red'>Shukla Navami</font>"), "Thithi transitions correctly color coded in red");
 
         String html=(String)render.invoke(null,d,Nakshathra.values()[0],Rasi.values()[0]);
         check(count(html,"<table")==1 && html.contains("<b>Subha Hora:</b>") && count(html,"<b>Start:</b>")==1 && count(html,"<b>End:</b>")==1,"Two-column layout without repeated header");

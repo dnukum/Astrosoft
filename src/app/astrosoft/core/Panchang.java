@@ -277,7 +277,8 @@ public class Panchang {
  	    correction = AstroUtil.endTime(totalSpeed, bal);
  	    
  	    if (Math.abs(bal) > PAN_APPROXIMATION) {
- 	    	correction = correction + yogaCorrection(newposition, expected, caltime + correction);
+ 	    	if (depth > 20) return correction;
+	    	correction = correction + yogaCorrection(newposition, expected, caltime + correction, depth + 1);
  	    }
     	return correction;
     	 
