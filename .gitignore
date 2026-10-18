@@ -42,3 +42,8 @@ add_*.py
 run_failed_tests.java
 temp*.json
 pure2.json
+
+# Scratch directories and cache
+scratch/
+__pycache__/
+tests/__pycache__/
