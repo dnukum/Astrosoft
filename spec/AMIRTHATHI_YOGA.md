@@ -47,3 +47,11 @@ Product decision: MyMuhurta shows current until local end time → named success
 Implementation: uses existing PanEvent values and end hours; no ephemeris or reference-time changes. Nakshatra/yoga wrap cyclically, thithi uses the 30-slot lunar phase (including Pournami/Amavasya), Karana uses the 60 half-thithi slots rather than enum cycling.
 Row help is available over both columns, explains civil Day versus sunrise Vara, transitions, daily Panchang reference time, and Subha Hora versus Nitya Yoga Subha. Rahu, Yama and Subha Hora calculations remain unchanged.
 Inputs: existing event names/end hours, Sun/Moon phase and local Calendar. Output: presentation strings. Tests: successor names, Karana special slots, next-day/multiple-day/year rollover, help text and unchanged non-transition rows, plus full core/UI suite.
+
+
+## Auspiciousness and warning color coding (2026-10)
+Product decision: Balam Calendar window details highlights inauspicious and warning elements in red to allow instant visual assessment of quality:
+- **Amirthathi Yoga**: `Marana` yoga is displayed in red font (`<font color='red'>Marana</font>`). When transitions occur across the window, only the word `Marana` is wrapped in red tags; transition arrows (`&rarr;`) and timestamp intervals remain in standard text color (e.g., `<font color='red'>Marana</font> &rarr; (01 Jan, 00:00 UTC) Amirtha`).
+- **Varam**: Inauspicious weekdays `Tuesday` and `Saturday` are highlighted in red font.
+- **Thithi**: Warning thithis (`Amavasya`, `Prathamai`, `Ashtami`, `Navami`, or segments marked `isWarning()`) are highlighted in red font.
+- **Suitability**: In the event suitability section, stars with no recommended activities display `<font color='red'>Not recommended</font>`.

@@ -4,69 +4,97 @@ This document serves as a high-level architectural blueprint for the Astrosoft a
 
 ## 1. Architectural Overview
 
-Astrosoft is a monolithic Java Swing desktop application structured into distinct architectural layers. It separates the presentation (UI) from the astrological business logic and mathematical calculations. 
+Astrosoft is a monolithic Java Swing desktop application structured into distinct architectural layers. It separates presentation (UI) from astrological business logic and mathematical calculations. 
 
 At its core, Astrosoft relies on the **Swiss Ephemeris** (via a Java port) for high-precision astronomical calculations, wrapping these complex mathematical operations in a domain-driven design using Java `enums` and POJOs.
 
 ### Directory Structure
-- `src/app/astrosoft/ui/` - Presentation Layer (Swing UI)
-- `src/app/astrosoft/core/` - Core Business Logic (Domain Models)
-- `src/app/astrosoft/beans/` - Data Transfer Objects / POJOs
-- `src/app/astrosoft/consts/` - System Constants & Enums
-- `src/app/astrosoft/util/` - Utilities & Ephemeris Adapters
-- `src/app/astrosoft/export/` - Persistence & XML Serialization
+- `src/app/astrosoft/ui/` - Presentation Layer (Swing UI frames, views, components, and dialogs)
+- `src/app/astrosoft/core/` - Core Business Logic & Astrological Orchestrators
+- `src/app/astrosoft/beans/` - Data Transfer Objects & Immutable POJOs
+- `src/app/astrosoft/consts/` - System Constants & Strongly-Typed Domain Enums
+- `src/app/astrosoft/util/` - Utilities, Ephemeris Adapters, and Versioning
+- `src/app/astrosoft/export/` - Persistence, PDF Generation & XML Serialization
 - `src/app/astrosoft/xps/` - Expert System (Rule-based Analysis)
-- `resources/` - Localization bundles (`.properties` files)
+- `resources/` - Localization bundles (`.properties` files), icons, and static XML configurations
 - `ephe123/` - Astronomical data files for the Swiss Ephemeris
+- `spec/` - Feature specifications and architectural blueprints
 
 ## 2. Core Layers
 
 ### 2.1 Presentation Layer (UI)
 The presentation layer is built exclusively with Java Swing.
-- **Main Shell:** `AstroSoft.java` acts as the primary application frame and orchestrator, managing the lifecycle of the application and the main menu bar.
-- **Views:** The application is divided into specialized view panels (e.g., `HoroscopeView`, `CompactibilityView`, `MuhurthaView`, `PanchangView`). Each view is responsible for rendering data from its corresponding core domain object.
-- **Components:** Extensive use of custom table models (`AstrosoftTableModel`) and cell renderers (`LocalizedCellRenderer`) to display tabular data dynamically.
-- **Localization:** UI strings are not hardcoded. They are loaded dynamically from `AstrosoftBundle_en.properties` and `AstrosoftBundle_ta.properties` using the `DisplayStrings` enum and `Internalization` utility.
+- **Main Shell:** `AstroSoft.java` acts as the primary application frame and orchestrator, managing the application lifecycle, menu bars, toolbars, and global view transitions.
+- **Views:** The application is modularized into specialized view panels implementing or managed by `ViewManager`:
+  - `HoroscopeView`: Rasi, Navamsa, and divisional charts.
+  - `CompactibilityView`: Marriage compatibility analysis.
+  - `MuhurthaView`: Classical electional astrology timings.
+  - `MyMuhurtaView`: Personalized daily dashboard combining Muhurta Rasi, Person 1/2 natal charts, dynamic Panchang table, inline Balam Calendar flyout, and configuration/summary dialogs.
+  - `PanchangView`: Daily Panchang table and charts.
+  - `EphemerisView`: Planetary daily/monthly ephemeris tables.
+  - `AshtavargaView`, `ShadBalaView`, `BhavaView`, `FindNameView`.
+- **Components & Renderers:** Custom table models (`AstrosoftTableModel`), cell renderers (`LocalizedCellRenderer`, `ColoredCellRenderer`, `PlanetCellRenderer`), and specialized panels (`BalamCalendarPanel`, `BirthDataPanel`, `PlaceChooser`).
+- **Dialogs:** Modal dialogs for user workflows:
+  - `MuhurtaConfigDialog`: In-place date, time, and location adjustment for Muhurta events.
+  - `MuhurtaProfileDialog`: Quick entry or file selection for Person 1 / Person 2 in Muhurta evaluation.
+  - `MuhurtaSummaryDialog`: Plaintext summary modal designed for easy copying and feeding to LLMs.
+  - `AboutDialog`: Accessible via `Help -> About AstroSoft`, displaying application name, description, build timestamp version, and Java runtime version.
+  - `PrintDialog`: Multi-format report printing options.
+  - `BirthInputDialog`, `CompactibilityInputDialog`, `PlaceOptionDialog`.
+- **Window State Persistence:** Managed by `WindowPlacement.java`, persisting normal window bounds and maximized state across sessions in Java user preferences.
+- **Localization:** 
+  - Standard table keys and planetary concepts are localized through `DisplayStrings` and loaded dynamically from `AstrosoftBundle_en.properties` and `AstrosoftBundle_ta.properties`.
+  - *Practical Note:* Dialog headers, top-level menus, buttons, and newer configuration panels currently use English string literals; comprehensive localization across all UI controls is slated for a future unified pass.
 
 ### 2.2 Domain Business Logic
-The `core` package contains the primary astrological orchestrators. These classes encapsulate the business rules for specific astrological functions:
+The `core` package contains the primary astrological orchestrators encapsulating astrological computation and rules:
 - **`Horoscope`**: Generates birth charts, planetary longitudes, divisional charts (Vargas), and Vimshottari Dasa.
 - **`Compactibility`**: Calculates marriage matching (Kutas) and Doshas between two `BirthData` instances.
 - **`Muhurtha`**: Computes auspicious timings based on Tara Balam, Chandra Balam, and planetary transits.
-- **`Panchang`**: Calculates daily Tithi, Nakshatra, Yoga, and time periods (Rahu Kalam, Yama Kandam).
+- **`MyMuhurta`**: Orchestrator for personalized Muhurta evaluation. Computes Tara Balam (index, Paryaya, grade), Chandra Balam (house count and rank), dynamic Panchanga transitions, Amirthathi Yoga, and exports structured plain-text summaries (`getSummaryText`).
+- **`Panchang`**: Calculates daily Tithi, Nakshatra, Yoga, Karana, and time periods (Rahu Kalam, Yama Kandam).
+- **`PanchangaWindowEngine`**: Bisects planetary time windows down to millisecond precision at Nakshatra, Tithi, Karana, Yoga, civil midnight, and sunrise boundaries.
+- **`MuhurtaWindowsCalculator`**: Calculates seasonal 1/15th daytime/nighttime divisions for **Abhijit Muhurta**, **Brahma Muhurta**, and scaled **Subha Hora**, with caution flags for Wednesday and polar fallback handling.
+- **`BalamCalendarEngine` & `BalamCalendarModel`**: Generates full-month transit calendars mapping matching stars and multi-person Tara/Chandra scores.
+- **`NakshatraEventSuitability`**: Domain mapping of Nakshatras to auspicious life activities (marriage, vehicle purchase, travel, etc.).
 
 ### 2.3 Mathematical Engine & Utilities
-- **Swiss Ephemeris Adapter:** The `swisseph` library performs the heavy lifting. The `SwissHelper` class acts as the adapter, translating Astrosoft's requests (e.g., "Where is the Moon at this Julian day?") into Swiss Ephemeris API calls.
-- **Astrological Utilities:** `AstroUtil` provides helper methods for degree formatting, Julian day conversions, and mathematical modulo operations essential for astrology.
+- **Swiss Ephemeris Adapter:** `swisseph` library performs celestial physics calculations. `SwissHelper` adapts requests into Swiss Ephemeris API calls (sidereal longitudes, house cusps, planetary speeds).
+- **Astrological Utilities:** `AstroUtil` provides helper methods for DMS degree formatting, time conversions, Julian day arithmetic, and mathematical modulo operations.
+- **Build Versioning:** `Version.java` dynamically retrieves the build version from `/resources/version.properties` or the JAR `MANIFEST.MF` `Implementation-Version`.
 
 ### 2.4 Data Models (Beans & Consts)
-- **Beans:** `BirthData`, `Place`, `PlanetaryInfo`, and `Interval` act as the primary data carriers across the application layers.
-- **Enums:** The application heavily leverages Java Enums (`Planet`, `Rasi`, `Nakshathra`) to strictly type astrological concepts. These enums often contain embedded logic (e.g., ruling planets, longitude bounds) rather than being simple constants.
+- **Beans:** Clean, immutable POJOs carrying state across layers:
+  - `BirthData`, `Place`, `PlanetaryInfo`, `Interval`.
+  - `MuhurtaProfile`: Represents a person via full `Horoscope` or quick-entry Janma Rasi/Nakshatra.
+  - `BalamWindowDetails`: Immutable snapshot of transit window segments, suitabilities, and timing windows.
+  - `TaraBalamResult`, `ChandraBalamResult`, `BalamRowBean`, `BalamDateCell`.
+- **Enums:** Strongly typed domain concepts with embedded astrological logic:
+  - `Planet`, `Rasi`, `Nakshathra`, `Tara`, `AmirthathiYoga`, `Thithi`, `Paksha`, `Karana`, `Yoga`, `WeekDay`, `ChandraHouse`, `BalamRank`.
 
 ### 2.5 Persistence & State
-- **File Storage:** Horoscopes are serialized and deserialized to XML files (`.ash`) using `XMLHelper`.
-- **User Preferences:** Stored persistently using the standard `java.util.prefs.Preferences` API (managed by `AstrosoftPref`), capturing the user's default location, Ayanamsa, and language.
+- **File Storage:** Horoscopes serialized to XML files (`.ash`) via `XMLHelper`.
+- **User Preferences:** Stored persistently via `java.util.prefs.Preferences` (`AstrosoftPref`), capturing default location, Ayanamsa, language, and window placement (`WindowPlacement`).
+
+### 2.6 Build & Versioning Pipeline
+- **Ant Build (`build.xml`)**:
+  - `compile`: Compiles sources with JDK 8 target.
+  - `generate-version`: Invokes Ant `<tstamp>` to generate a 24-hour timestamp in `yyyyMMdd:HHmmss` format and writes `version.properties` to `resources/` and `deploy/resources/`.
+  - `deploy`: Packages `bin/AstroSoft.jar` embedding `Implementation-Version: ${build.version}` and `Create-Date` in `MANIFEST.MF`.
 
 ## 3. Extensibility Points
 
-Astrosoft's architecture provides several natural seams for extending functionality:
-
 ### 3.1 Expert System (XPS) Expansion
-The `src/app/astrosoft/xps` package is designed as a rule-based expert system. 
-- **Extension:** New Yogas, Doshas, or analytical rules (e.g., Shadbala analysis, predictive astrology) can be added here without modifying the core charting logic. By implementing new `YogaCombination` rules, the expert system can automatically scan birth charts for new astrological formations.
+The `src/app/astrosoft/xps` package provides a rule-based expert system for detecting Yogas and Doshas without altering charting logic.
 
 ### 3.2 View Plug-ins
-The UI is modularized into distinct `*View` panels.
-- **Extension:** Adding a new feature (e.g., "Transit Analysis" or "Prashna/Horary Chart") simply requires creating a new `JPanel` view and registering it in the main `AstroSoft.java` sidebar/menu, isolated from existing views.
+New UI views extend `JPanel` and register with `ViewManager` and `AstroSoft.java` actions, completely isolated from existing view code.
 
 ### 3.3 Ayanamsa & Calculation Strategies
-The core logic relies on the `Ayanamsa` enum to offset planetary positions.
-- **Extension:** Additional Ayanamsas (e.g., Fagan/Bradley, Pushya Paksha) can be introduced by simply adding them to the `Ayanamsa` enum and hooking them into the `SwissHelper` configuration, instantly propagating the new calculation standard across all charts.
+Additional Ayanamsas can be added to the `Ayanamsa` enum and configured in `SwissHelper`, propagating instantly across all calculations.
 
 ### 3.4 Localization
-The `DisplayStrings` enum and `.properties` bundles dictate the UI language.
-- **Extension:** Adding a new language (e.g., Hindi, Telugu) requires zero code changes to the UI layer. It only requires dropping in a new `AstrosoftBundle_hi.properties` file and registering the language in the application preferences.
+`DisplayStrings` and `.properties` bundles dictate UI table keys and astronomical terms. A future unified sweep will extend this to all dialogs, menus, and buttons.
 
 ### 3.5 External Data Providers
-Locations are currently fetched via the `PlaceFinder` which hooks into the OpenStreetMap Nominatim API.
-- **Extension:** The `PlaceFinder` can easily be subclassed or interfaced to support fallback APIs (e.g., Google Maps API, offline SQLite databases) for geocoding, completely transparent to the UI layer.
+Geocoding in `PlaceFinder` hooks into Nominatim and can be extended with offline databases or alternative APIs transparently to the UI layer.

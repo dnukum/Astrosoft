@@ -1,9 +1,37 @@
-# Main window placement
+# Main Window Placement Specification
 
-Product decision: first launch or changed display configuration opens near the upper-left of the startup monitor usable area, not centered or automatically maximized. Restore last normal outer bounds and explicitly selected maximized state only when the display signature is unchanged and saved bounds fit a current monitor. Existing view layouts and astrology calculations remain untouched.
+Reference: Desktop display management specification for `Astrosoft`.
 
-Inputs: monitor usable rectangle W/H/origin excluding desktop insets, monitor identifiers and primary identity, scaling transforms, saved normal bounds and maximized state. Formula in logical pixels: width=min(round(0.9W),1400), height=min(round(0.9H),900), constrained to usable dimensions; x=left+min(20,W-width), y=top+min(20,H-height). Expected result is a fully visible left/top-aligned normal window. A user-restored position need not remain left-aligned.
+## Objectives and Product Behavior (`WindowPlacement.java`)
+- **First Launch or Changed Topology**: Opens near the upper-left of the startup monitor usable area (offset by 20px margins), sized proportionally to the screen, rather than centered or automatically maximized.
+- **Subsequent Launches**: Restores the last normal outer bounds and explicitly selected maximized state, provided the display topology signature is unchanged and the saved bounds fit within the current monitor's usable bounds.
+- **Non-Interference**: Pure presentation layer policy; domain astrology calculations and view layouts remain untouched.
 
-Persistence: use the existing Java Preferences backend in a MainWindow child node. Save normal bounds and maximized state after a 500 ms move/resize debounce and explicitly before application exit. Never store iconified bounds as normal bounds. Changes to monitor topology, usable bounds, primary identity or scaling invalidate saved placement. Missing/invalid/offscreen data falls back safely; preference failures log warnings without preventing startup.
+## Sizing and Coordinate Formulas
+Let $W$ and $H$ be the width and height of the startup monitor's usable rectangle (accounting for OS taskbars and menu bars via screen insets).
+All calculations are in logical pixels:
 
-Tests: large external screen with nonzero origin (1940,45,1400,900), laptop usable 1440x835 (20,45,1296,752), exact saved restoration, changed display signature, disconnected/offscreen bounds, invalid sizes, missing preferences, tiny/negative-origin display and defensive copy. Integration checks verify pack/install/show ordering and explicit save before exit. Visual verification remains necessary for native maximize/restore behavior and real display changes.
+$$\text{width} = \min(\max(1, \text{round}(0.9 \times W)), 1400, W)$$
+$$\text{height} = \min(\max(1, \text{round}(0.9 \times H)), 900, H)$$
+$$x = \text{usable.x} + \min(20, W - \text{width})$$
+$$y = \text{usable.y} + \min(20, H - \text{height})$$
+
+This ensures a comfortable, bounded window ($1400 \times 900$ maximum) that never clips on smaller screens or laptop displays.
+
+## Display Signature and State Validation
+- **Display Signature**: A composite string encoding all screen device IDs, usable origins, dimensions, and affine scaling transforms, alongside the primary monitor device ID.
+- **Topology Changes**: Any change to monitor resolution, arrangement, scaling, or disconnection invalidates saved placement and reverts safely to `defaults(usable)`.
+- **Maximized vs. Normal Bounds**: Normal window dimensions are tracked separately from the maximized state; minimized/iconified bounds are never persisted as normal bounds.
+
+## Persistence (`java.util.prefs.Preferences`)
+- Stored under user package node `AstrosoftPref.class.node("MainWindow")`.
+- **Debounced Writes**: Changes to window bounds or state during user movement/resizing are debounced with a 500 ms swing timer to avoid excessive I/O.
+- **Application Exit Hook**: Window bounds are explicitly persisted on window closing / application exit.
+- Preference storage failures log warnings and fall back gracefully without blocking application startup.
+
+## Tests (`WindowPlacementTest.java`)
+- Sizing on large external displays ($1940 \times 1080 \to 1400 \times 900$ max cap).
+- Sizing on standard laptop usable areas ($1440 \times 835 \to 1296 \times 752$).
+- Persistence and restoration on identical display signatures.
+- Reversion to defaults on changed display topology or disconnected screens.
+- Tiny and negative-origin multi-monitor topologies.

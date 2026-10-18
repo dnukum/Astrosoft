@@ -1,17 +1,53 @@
-# Matching-star event suitability
+# Matching-Star Event Suitability and Balam Calendar Details
 
-Approved source: Excel screenshot pasted_image_1791252565_0.jpeg, supplied 5 Oct 2026. User amendment: use the Excel exactly; ignore fallback interpretation. This is a user-approved domain mapping, not independently asserted classical provenance. Nine categories in spreadsheet column order. General only for Magha/Chitra/Swati, alongside specific activities. Empty rows stay empty.
+Reference: Event suitability rules approved from domain matrix (5 Oct 2026). Nine suitability categories in spreadsheet column order: General, Travel, Medication, Property, Trade, Study, Farming, Marriage, Construction. General applies strictly to Magha, Chitra, and Swati alongside specific activities. Empty rows stay empty.
 
-Inputs: existing last-column BalamMatchCell matching stars, NOT the separate transit Nakshatra or a natal star. Lookup E(n)={event | checked in Excel row n}. Output: immutable ordered star/event entries on BalamWindowDetails. Core catalog owns rules; MyMuhurta orchestrates; bean carries data; UI only formats before Transit Moon, one line per matching star. No ranking/filtering/time window changes or new astronomical calculation.
+## Core Rules and Mapping (`NakshatraEventSuitability.java`)
+- **Inputs**: The set of matching stars from the selected Balam Calendar cell's matching stars (NOT the separate transit Nakshatra or a natal star).
+- **Lookup**: $E(n) = \{ \text{event} \mid \text{checked for star } n \}$.
+- **Empty Rows**: Any star with no checked events produces an empty event set, which formats as `<font color='red'>Not recommended</font>`.
+- **Immutability**: Suitability entries are packaged into immutable `BalamWindowDetails.Suitability` beans attached to `BalamWindowDetails`.
 
-Edge cases: reject null catalog star/matches; empty set produces no suitability lines; star with empty row displays Not recommended in red. Enum order determines stars and spreadsheet column order determines events. Snapshot matches before worker starts; preserve request cancellation/version guarding against stale selection.
+## UI Integration and Presentation (`BalamCalendarPanel.java`)
 
-Tests: all 27 rows against nine checked columns, all eight blank rows, General exactly three explicit rows, defensive copies, immutable bean list, Core orchestration and backward-compatible details method, multiple matches distinct from transit star, renderer column order/before Transit Moon, cleared results without stale categories; existing regressions.
+### 1. Two-Column Layout
+The details pane beneath the Balam Calendar grid is rendered using HTML in a responsive two-column table (57% / 43% split):
 
-Presentation amendment: blank line between matching-star entries and Transit Moon; transit Nakshatra lord displayed inline in parentheses, no separate Lord line. Domain mapping unchanged.
+#### Left Column (57% width)
+1. **Window Interval**:
+   - `<b>Start:</b> dd MMM yyyy HH:mm z`
+   - `<b>End:</b> dd MMM yyyy HH:mm z`
+2. **Matching-Star Event Suitability**:
+   - One line per matching star in enum order: `<b><Star>:</b> <Comma-separated events>`
+   - Stars with no permitted activities display `<font color='red'>Not recommended</font>`.
+   - Blank line following suitability entries.
+3. **Transit Moon**:
+   - `<b>Transit Moon:</b> <Nakshathra> in <Rasi> (<Lord>)`
+   - Followed by a blank line.
+4. **Panchanga Elements and Timed Transitions**:
+   - **Thithi**: Transitions split at tithi boundaries with transition timestamps (`&rarr; (dd MMM, HH:mm z)`). Amavasya, Prathamai, Ashtami, Navami, and Riktha/warning thithis are highlighted in `<font color='red'>`.
+   - **Varam**: Local weekday. Tuesday and Saturday are highlighted in `<font color='red'>`.
+   - **Amirthathi Yoga**: Evaluated using sunrise-to-sunrise Vara (`SunriseVara`). `Marana` yoga is wrapped in `<font color='red'>Marana</font>`. In transitions, only the word `Marana` is red; arrows and timestamps remain standard font.
+   - **Yoga (Nitya Yoga)**: Sourced from `PanchangaWindowEngine` transit intervals.
+   - **Karana**: 60-slot half-tithi cyclic sequence.
 
-Calendar layout: toggle below chart, Update on right. Noneditable month/year choices synchronized with arrows/context using event guard. Rolling year list +/-50 around displayed year; arrows recenter when exceeded.
+#### Right Column (43% width)
+- **Subha Hora**: Timing window intersections within $[start, end)$, or `No overlap`.
+- **Abhijit Muhurta**: Timing window intersections within $[start, end)$, or `No overlap`. Flagged with `[Wednesday: additional scrutiny]` if falling on Wednesday.
+- **Brahma Muhurta**: Timing window intersections within $[start, end)$, or `No overlap`.
+- Clipped intervals are marked `(partial overlap)`.
 
-Toggle alignment amendment: place Show/Hide inside the Muhurta chart column, centered within that individual chart width, not across the multi-chart area. Reattach the same button when charts refresh.
+### 2. Calendar Toggle Button and Controls (`MyMuhurtaView.java`)
+- **Toggle Button**: "Show Balam Calendar" / "Hide Balam Calendar", styled with rounded corners (160x30 px).
+- **Placement**: Situated in `chartControlStrip` immediately below the first (Muhurta) chart, centered within the chart's column width (`chartSize.width`).
+- **Visibility**: Disabled and hidden until at least one person (Person 1 or Person 2) horoscope is configured and loaded (`hasPeople == true`).
+- **Mounting**: Toggling expands/collapses the calendar inside `flyoutHost` directly under the chart scroll pane, auto-fitting the calendar dimensions.
+- **Header Controls**: Month/year selectors with rolling +/-50 year span and synchronized navigation arrows; "Update" button on right.
+- **Row Selection**: Clicking a row immediately applies its start instant to the Muhurta view (`applyCalendarDate`), updating the Muhurta chart and Panchanga table synchronously, and asynchronously queries window details with request cancellation to prevent stale display.
 
-Latest toggle amendment: outside the bordered chart scroll pane, in an independent 350px-wide centered footer aligned with the Muhurta chart. Footer and button hidden until Person 1 or Person 2 horoscope loads successfully; built-in Muhurta chart alone does not qualify. No hidden footer space.
+## Tests
+- Comprehensive unit tests covering all 27 nakshatras against the nine suitability categories.
+- Verification of `<font color='red'>Not recommended</font>` for empty rows.
+- Defensive copying and immutability of `BalamWindowDetails`.
+- Background worker cancellation and race condition prevention on fast row selection.
+- Multi-line rendering and HTML escaping for all text fields.
