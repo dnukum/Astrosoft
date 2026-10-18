@@ -33,6 +33,9 @@ public enum WeekDay {
 	/** Next enum value, wrapping at the end. */
 	public WeekDay next() { return ofIndex(ordinal() + 1); }
 
+	/** Previous enum value, wrapping at the beginning. */
+	public WeekDay prev() { return ofIndex((ordinal() + vals.length - 1) % vals.length); }
+
 	public static WeekDay ofIndex(int index) {
 		return vals[index % vals.length];
 	}

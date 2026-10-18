@@ -19,6 +19,7 @@ public final class PanchangTransitionHelp {
   if(key.equals("Abhijit Muhurta")||key.equals("Brahma Muhurta"))return MuhurtaWindowsCalculator.help(key);
   if(key.equals("Amirthathi Yoga"))return "Calculated from the active nakshatra and sunrise-to-sunrise Vara. Before sunrise, the previous weekday's Vara applies, regardless of the displayed Day. Arrow times use the selected location's time zone.";
   if(key.equals(DisplayStrings.DAY_STR.toString()))return "Civil weekday for the displayed date. Amirthathi Yoga uses sunrise-based Vara separately.";
+  if(key.equals("Vara (Solar Day)"))return "Vedic solar day (Vaara), measured from sunrise to sunrise. Transitions from the previous day's Vara to the current day's Vara at local sunrise.";
   if(key.startsWith(DisplayStrings.AUS_TIME_STR.toString()))return "These are auspicious time blocks, not the Nitya Yoga named Subha. Read the other Panchang rows at the time you intend to select.";
   if(key.startsWith(DisplayStrings.NAK_STR.toString())||key.startsWith(DisplayStrings.THITHI_STR.toString())||key.startsWith(DisplayStrings.YOGA_STR.toString())||key.startsWith(DisplayStrings.KARANA_STR.toString()))return "The classification before the arrow applies until the displayed time; the name after it applies from that instant. Times use the selected location's time zone. A date is shown for transitions after midnight. These rows retain the daily Panchang reference-time calculation.";
   return null;

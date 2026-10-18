@@ -21,6 +21,8 @@ import app.astrosoft.ui.table.DefaultColumnMetaData;
 public class BalamCalendarPanel extends JPanel {
     private final java.util.function.BiConsumer<java.util.Date, java.util.Date> updateAction;
     private JButton updateButton;
+    private JButton filterButton;
+    private boolean isFiltered = false;
     private MyMuhurta muhurta;
     private int currentYear;
     private int currentMonth;
@@ -149,6 +151,14 @@ public class BalamCalendarPanel extends JPanel {
         navigationPanel.add(yearChoice);
         navigationPanel.add(nextBtn);
         topPanel.add(navigationPanel, BorderLayout.CENTER);
+        filterButton = new JButton("Filter");
+        filterButton.setFocusable(false);
+        filterButton.setToolTipText("Filter out rows with inauspicious Tara or Chandra Balam");
+        filterButton.addActionListener(e -> {
+            isFiltered = !isFiltered;
+            filterButton.setText(isFiltered ? "Show All" : "Filter");
+            updateTable();
+        });
         updateButton = new JButton("Update");
         updateButton.setEnabled(false);
         updateButton.setFocusable(false);
@@ -166,6 +176,7 @@ public class BalamCalendarPanel extends JPanel {
             }
         });
         JPanel updatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
+        updatePanel.add(filterButton);
         updatePanel.add(updateButton);
         topPanel.add(updatePanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
@@ -205,7 +216,7 @@ public class BalamCalendarPanel extends JPanel {
         monthLabel.setText(months[currentMonth] + " " + currentYear);
         syncMonthChoices();
         
-        TableData<MapTableRow> data = muhurta.getBalamCalendarTable(currentYear, currentMonth, partnerProfile);
+        TableData<MapTableRow> data = muhurta.getBalamCalendarTable(currentYear, currentMonth, partnerProfile, isFiltered);
         
         DefaultColumnMetaData meta;
         if (partnerProfile == null) {

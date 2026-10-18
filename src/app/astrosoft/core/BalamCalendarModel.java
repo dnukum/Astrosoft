@@ -19,19 +19,33 @@ import app.astrosoft.ui.table.TableData;
 import app.astrosoft.ui.table.TableDataFactory;
 
 import app.astrosoft.beans.MuhurtaProfile;
+import app.astrosoft.beans.Place;
 
 public class BalamCalendarModel {
 
     private final TimeZone timeZone;
     private final MuhurtaProfile primaryProfile;
+    private final Place place;
 
     public BalamCalendarModel(TimeZone timeZone, MuhurtaProfile primaryProfile) {
+        this(timeZone, primaryProfile, app.astrosoft.ui.AstroSoft.getPreferences().getPlace());
+    }
+
+    public BalamCalendarModel(TimeZone timeZone, MuhurtaProfile primaryProfile, Place place) {
         this.timeZone = timeZone;
         this.primaryProfile = primaryProfile;
+        this.place = place;
     }
 
     public TableData<MapTableRow> buildTable(int year, int month, MuhurtaProfile partnerProfile) {
+        return buildTable(year, month, partnerProfile, false);
+    }
+
+    public TableData<MapTableRow> buildTable(int year, int month, MuhurtaProfile partnerProfile, boolean filter) {
         List<BalamRowBean> engineRows = BalamCalendarEngine.generateCalendar(year, month, timeZone);
+        if (filter) {
+            engineRows = filterAndTrimRows(engineRows, partnerProfile);
+        }
         List<MapTableRow> tableRows = new ArrayList<MapTableRow>();
 
         List<AstrosoftTableColumn> cols = new ArrayList<AstrosoftTableColumn>();
@@ -166,5 +180,42 @@ public class BalamCalendarModel {
         public ChandraBalamResult getPartnerChandra() {
             return partnerChandra;
         }
+    }
+
+    public List<BalamRowBean> filterAndTrimRows(List<BalamRowBean> rawRows, MuhurtaProfile partnerProfile) {
+        if (rawRows == null || rawRows.isEmpty()) {
+            return new ArrayList<BalamRowBean>();
+        }
+        List<BalamRowBean> filtered = new ArrayList<BalamRowBean>();
+        for (BalamRowBean row : rawRows) {
+            if (isBalamAccepted(row, primaryProfile) && (partnerProfile == null || isBalamAccepted(row, partnerProfile))) {
+                filtered.add(row);
+            }
+        }
+        return filtered;
+    }
+
+    private static boolean isBalamAccepted(BalamRowBean row, MuhurtaProfile profile) {
+        if (profile == null || profile.getNakshathra() == null || profile.getRasi() == null) {
+            return true;
+        }
+        int taraNumber = MyMuhurta.getTaraBalamResult(profile.getNakshathra(), row.getTransitNakshathra()).getTara().getNumber();
+        if (taraNumber == 7) {
+            return false;
+        }
+        int chandraHouse = MyMuhurta.getChandraBalamResult(profile.getRasi(), row.getTransitRasi()).getHouse().getHouseNumber();
+        if (chandraHouse == 8) {
+            return false;
+        }
+        return true;
+    }
+
+    public static List<BalamRowBean> filterAndTrimRow(BalamRowBean row, MuhurtaProfile primaryProfile,
+            MuhurtaProfile partnerProfile, List<PanchangaWindowEngine.Segment> segments) {
+        List<BalamRowBean> out = new ArrayList<BalamRowBean>();
+        if (isBalamAccepted(row, primaryProfile) && (partnerProfile == null || isBalamAccepted(row, partnerProfile))) {
+            out.add(row);
+        }
+        return out;
     }
 }

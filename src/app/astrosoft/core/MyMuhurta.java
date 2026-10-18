@@ -19,6 +19,7 @@ import app.astrosoft.beans.NakshathraPada;
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.beans.TaraBalamResult;
 import app.astrosoft.consts.AmirthathiYoga;
+import app.astrosoft.consts.WeekDay;
 import app.astrosoft.util.AstroUtil;
 import app.astrosoft.ui.table.MapTableRow;
 import app.astrosoft.ui.table.TableData;
@@ -166,6 +167,12 @@ public class MyMuhurta {
                     || key.equals(app.astrosoft.consts.DisplayStrings.SUNRISE_STR.toString())
                     || key.equals(app.astrosoft.consts.DisplayStrings.SUNSET_STR.toString())) continue;
             rows.add(row);
+            if (key.equals(app.astrosoft.consts.DisplayStrings.DAY_STR.toString())) {
+                WeekDay curDay = pan.getWeekday();
+                WeekDay prevDay = curDay.prev();
+                String riseTime = AstroUtil.timeFormat(pan.getSunrise());
+                rows.add(helper.createRow("Vara (Solar Day)", prevDay + " -> (" + riseTime + ") " + curDay));
+            }
             if(key.startsWith(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString()) && dailyTimings.isEmpty()){
                 rows.add(helper.createRow("Abhijit Muhurta","Unavailable: invalid solar event ordering"));
                 rows.add(helper.createRow("Brahma Muhurta","Unavailable: invalid solar event ordering"));
@@ -367,11 +374,15 @@ public class MyMuhurta {
     }
 
     public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month, app.astrosoft.beans.MuhurtaProfile partner) {
+        return getBalamCalendarTable(year, month, partner, false);
+    }
+
+    public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month, app.astrosoft.beans.MuhurtaProfile partner, boolean filter) {
         java.util.TimeZone tz = java.util.TimeZone.getDefault();
         if (selectedPlace != null) {
             tz = selectedPlace.astrosoftTimeZone().getTimeZone();
         }
-        return new BalamCalendarModel(tz, userProfile).buildTable(year, month, partner);
+        return new BalamCalendarModel(tz, userProfile, amirthathiPlace()).buildTable(year, month, partner, filter);
     }
 
     public app.astrosoft.ui.table.TableData<app.astrosoft.ui.table.MapTableRow> getBalamCalendarTable(int year, int month, Horoscope partner) {

@@ -457,6 +457,10 @@ public class Panchang {
 	public WeekDay getWeekday() {
 		return weekday;
 	}
+
+	public double getSunrise() {
+		return sunrise;
+	}
 	
     public static void main( String[] args ) {
     	
