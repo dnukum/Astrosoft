@@ -1,6 +1,6 @@
-# Astrosoft Muhurta Guide: 9-Step Auspicious Timing Workflow
+# Muhurta Selection: 9-Step Auspicious Timing Workflow
 
-Welcome to the **Astrosoft Muhurta User Guide**. This document details the exact **9-step Vedic astrology workflow** used by traditional astrologers to identify, filter, evaluate, and lock in the most auspicious timing (*Muhurta*) for significant life events such as **Marriage (Vivaha)**, **House Warming (Grihapravesha)**, **Business Commencement**, **Travel**, and **Asset Acquisition**.
+This document details a  **9-step workflow** to identify, filter, evaluate, and lock in the most auspicious timing (*Muhurta*) for significant life events such as **Marriage (Vivaha)**, **House Warming (Grihapravesha)**, **Business Commencement**, **Travel**, and **Asset Acquisition**.
 
 ---
 
@@ -23,7 +23,7 @@ Welcome to the **Astrosoft Muhurta User Guide**. This document details the exact
 
 ## 1. Overview & Screen Layout
 
-Open the Muhurta module in Astrosoft by choosing **View &rarr; My Muhurta** (or clicking the Muhurta icon on the toolbar).
+Open the Muhurta module in Astrosoft by choosing **View &rarr; My Muhurta**. 
 
 The interface is structured into three synchronized visual areas:
 1. **Top Section - Main Muhurta Charts & Panchanga Table**:
@@ -32,6 +32,7 @@ The interface is structured into three synchronized visual areas:
    * **Calendar Toggle Button**: Expands or collapses the Balam Calendar below the charts.
 2. **Middle Section - Monthly Balam Calendar Table**:
    * Displays transit Moon segments for the month with Tara and Chandra Balam scores for both partners.
+   * Unlike a traditional Panchanga, this table is not organized on a daily (day-by-day) basis. Instead, it is organized by **transit segments of uniform Tara and Chandra Balam**. Within each segment, both the transit Moon's Nakshatra and Rasi remain unchanged, ensuring consistent Balam throughout. Consequently, you will see time segments that straddle across two civil calendar days, or multiple distinct segments occurring on the same calendar day.
    * **Navigation & Filter**: Month/Year selectors, Previous/Next Month arrows, and a sticky **Filter** button to eliminate inauspicious days.
 3. **Bottom Section - 50% / 50% Two-Column Details View**:
    * **Left Column**: Start time, End time, Sunrise (if straddled), Event Suitability for matching stars, Transit Moon position, and timed transitions for Thithi, Varam, Amirthathi Yoga, Nitya Yoga, and Karana.
@@ -68,14 +69,14 @@ Step 7: Yogam / Nitya Yoga (Auspicious combinations; Avoid Vishakambha, Vyatipat
 Step 8: Karnam / Karana (Avoid Vishti/Bhadra and inauspicious fixed karanas)
    │
    ▼
-Step 9: Muhurtha Chart (Lagna strength, Ashtama Suddhi, Kendra benefics - THE MOST CRUCIAL)
+Step 9: Muhurtha Chart (Lagna strength, Ashtama Suddhi, Kendra benefics - **THE MOST CRUCIAL**)
 ```
 
 ---
 
 ### Step 1: Thara Balam (Tara Balam)
 
-**Tara Balam** measures the vibrational compatibility between the transit Moon's Nakshatra and the individual's birth star (*Janma Nakshatra*).
+**Tara Balam** measures the compatibility between the transit Moon's Nakshatra and the individual's birth star (*Janma Nakshatra*).
 
 #### The 9 Taras and Their Effects:
 | Tara # | Sanskrit Name | Meaning / Classification | Auspiciousness |
