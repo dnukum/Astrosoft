@@ -1,6 +1,6 @@
-# Astrosoft - Tester Download & Installation Guide
+# Astrosoft 2.0 - Download & Installation Guide
 
-Welcome to the **Astrosoft** tester program! This guide walks you through installing the required Java 21 runtime, downloading Astrosoft, and launching the software on **Windows** and **macOS**.
+This guide walks you through installing the required Java 21 runtime, downloading Astrosoft, and launching the software on **Windows** and **macOS**.
 
 ---
 
