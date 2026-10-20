@@ -31,6 +31,7 @@ public class ViewManager {
 		MY_MUHURTA_VIEW("My Muhurta"),
 		EPHEMERIS_VIEW("Ephemeris"),
 		COMPACTIBILITY_VIEW("Marriage Compactibility"),
+		MARRIAGE_MATCH_VIEW("Marriage Match"),
 		MUHURTHA_VIEW("Muhurtha"),
 		FIND_NAME_VIEW(DisplayStrings.FIND_NAME_STR.toString(Language.ENGLISH)),
 		YOGA_COMBINATIONS_VIEW(DisplayStrings.YOGA_COMBINATIONS_STR.toString(Language.ENGLISH))

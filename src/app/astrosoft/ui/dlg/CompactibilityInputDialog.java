@@ -57,6 +57,8 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 	private JTextField boyName = new JTextField(14);
 	private JTextField girlName = new JTextField(14);
 
+	private boolean isMarriageMatch = false;
+
 	/*private boolean hasBirthData = false;
 	private boolean hasStarData = false;
 
@@ -84,7 +86,12 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 	}*/
 
 	public CompactibilityInputDialog(AstroSoft parent){
-		super( parent, "Enter Birth Details", dlgSize );
+		this(parent, false);
+	}
+
+	public CompactibilityInputDialog(AstroSoft parent, boolean isMarriageMatch){
+		super( parent, isMarriageMatch ? "Enter Birth Details - Marriage Match" : "Enter Birth Details", dlgSize );
+		this.isMarriageMatch = isMarriageMatch;
 		initComponents();
 		addComponents();
 		setVisible(true);
@@ -119,7 +126,11 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 
 				Horoscope boyHoroscope = new Horoscope(boyDataPanel.getBirthData());
 				Horoscope girlHoroscope = new Horoscope(girlDataPanel.getBirthData());
-				parent.displayCompactibility(boyHoroscope, girlHoroscope);
+				if (isMarriageMatch) {
+					parent.displayMarriageMatch(boyHoroscope, girlHoroscope);
+				} else {
+					parent.displayCompactibility(boyHoroscope, girlHoroscope);
+				}
 				closeDialog();
 			}
 
@@ -135,7 +146,11 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 		        Nakshathra bNak = bRasiNakChooser.getSelectedNakshathra();
 		        Nakshathra gNak = gRasiNakChooser.getSelectedNakshathra();
 
-		        parent.displayCompactibility(boyName.getText(), girlName.getText(), bRasi, gRasi, bNak, gNak);
+		        if (isMarriageMatch) {
+		        	parent.displayMarriageMatch(boyName.getText(), girlName.getText(), bRasi, gRasi, bNak, gNak);
+		        } else {
+		        	parent.displayCompactibility(boyName.getText(), girlName.getText(), bRasi, gRasi, bNak, gNak);
+		        }
 		        closeDialog();
 			}
 		});

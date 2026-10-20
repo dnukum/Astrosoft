@@ -223,7 +223,14 @@ public class Place {
 	}
 	
 	public AstrosoftTimeZone astrosoftTimeZone(){
-		return new AstrosoftTimeZone(timeZoneId);
+		if (timeZoneId != null && !timeZoneId.trim().isEmpty()) {
+			return new AstrosoftTimeZone(timeZoneId);
+		}
+		int hours = (int) Math.abs(timeZone);
+		int minutes = (int) Math.round((Math.abs(timeZone) - hours) * 60);
+		String sign = timeZone < 0 ? "-" : "+";
+		String customId = String.format("GMT%s%02d:%02d", sign, hours, minutes);
+		return new AstrosoftTimeZone(customId);
 	}
 	
 	public Location latitudeLocation(){

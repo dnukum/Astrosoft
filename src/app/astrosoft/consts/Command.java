@@ -41,6 +41,7 @@ public enum Command {
 	PANCHANG_VIEW (View.PANCHANG_VIEW.displayVal(),KeyEvent.VK_G),
 		MY_MUHURTA_VIEW (View.MY_MUHURTA_VIEW.displayVal(),KeyEvent.VK_M),
 	COMPACTIBILITY_VIEW (View.COMPACTIBILITY_VIEW.displayVal(),KeyEvent.VK_M),
+	MARRIAGE_MATCH_VIEW (View.MARRIAGE_MATCH_VIEW.displayVal(),KeyEvent.VK_R),
 	MUHURTHA_VIEW (View.MUHURTHA_VIEW.displayVal()),
 	//
 	//CMP_COMP ("Marriage Compactibility",KeyEvent.VK_M),

@@ -33,10 +33,16 @@ public class AstrosoftTimeZone {
 	}
 	
 	public TimeZone getTimeZone(){
+		if (tzId == null || tzId.trim().isEmpty()) {
+			return TimeZone.getTimeZone("GMT");
+		}
 		return TimeZone.getTimeZone(tzId);
 	}
 	
 	public static double offset(String tzId){
+		if (tzId == null || tzId.trim().isEmpty()) {
+			return 0.0;
+		}
 		TimeZone tz = TimeZone.getTimeZone(tzId);
 		return ((double)tz.getOffset(new GregorianCalendar(tz).getTimeInMillis())) / (AstroConsts.MILLIS_IN_HR);
 	}

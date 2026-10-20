@@ -521,6 +521,22 @@ public class AstroSoft extends javax.swing.JFrame implements
 		viewManager.showView(View.COMPACTIBILITY_VIEW);
 	}
 
+	public void displayMarriageMatch(Horoscope boy, Horoscope girl) {
+
+		compactibility = new Compactibility(boy, girl);
+		actionMgr.enableAction(Command.PRINT, true);
+		viewManager.showView(View.MARRIAGE_MATCH_VIEW);
+	}
+
+	public void displayMarriageMatch(String bName, String gName, Rasi bRasi,
+			Rasi gRasi, Nakshathra bNak, Nakshathra gNak) {
+
+		compactibility = new Compactibility(bName, gName, bNak,
+				gNak, bRasi, gRasi);
+		actionMgr.enableAction(Command.PRINT, true);
+		viewManager.showView(View.MARRIAGE_MATCH_VIEW);
+	}
+
 	public void displayMuhurtha(Muhurtha m) {
 
 		muhurtha = m;
@@ -747,6 +763,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 			case COMPACTIBILITY_VIEW: new CompactibilityInputDialog(this);
 								break;
+			case MARRIAGE_MATCH_VIEW: new CompactibilityInputDialog(this, true);
+								break;
 			case MUHURTHA_VIEW: new MuhurthaInput(this);
 								break;
 								
@@ -856,6 +874,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 				case COMPACTIBILITY_VIEW:
 					actionMgr.enableActions(EnumSet.of(Command.SAVE_COMPACTIBILITY), true);
 					return new CompactibilityView(DisplayStrings.MRAG_COMP_STR.toString(Language.ENGLISH), compactibility, new Point(30,20));
+
+				case MARRIAGE_MATCH_VIEW:
+					actionMgr.enableActions(EnumSet.of(Command.SAVE_COMPACTIBILITY), true);
+					return new app.astrosoft.ui.view.MarriageMatchView(compactibility, new Point(10, 10));
 
 				case MUHURTHA_VIEW:
 					return new MuhurthaPanel(muhurtha, AstroSoft.this);

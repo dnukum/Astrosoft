@@ -56,12 +56,12 @@ public class ShadBalaBarView extends JPanel {
 	private static final DecimalFormat RUPA_FMT = new DecimalFormat("0.00");
 
 	public static class PlanetBalaItem {
-		final Planet planet;
-		final double balaPercent;
-		final double virupas;
-		final double rupa;
-		final int rank;
-		final double minVirupas;
+		public final Planet planet;
+		public final double balaPercent;
+		public final double virupas;
+		public final double rupa;
+		public final int rank;
+		public final double minVirupas;
 
 		public PlanetBalaItem(Planet planet, double balaPercent, double virupas, double rupa, int rank, double minVirupas) {
 			this.planet = planet;
@@ -75,6 +75,27 @@ public class ShadBalaBarView extends JPanel {
 
 	public ShadBalaBarView(ShadBala shadBala) {
 		this(extractItems(shadBala));
+	}
+
+	public ShadBalaBarView(ShadBala shadBala, String customTitle) {
+		this(shadBala, customTitle, null);
+	}
+
+	public ShadBalaBarView(ShadBala shadBala, String customTitle, Dimension customSize) {
+		this(extractItems(shadBala));
+		if (customTitle != null) {
+			title.setText(customTitle);
+		}
+		if (customSize != null) {
+			setPreferredSize(customSize);
+			setMinimumSize(customSize);
+			setMaximumSize(customSize);
+			setSize(customSize);
+		}
+	}
+
+	public void setTitle(String text) {
+		title.setText(text);
 	}
 
 	public static List<PlanetBalaItem> extractItems(ShadBala shadBala) {
@@ -211,11 +232,28 @@ public class ShadBalaBarView extends JPanel {
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
+		int currentW = getWidth();
+		if (currentW <= 0) currentW = getPreferredSize() != null ? getPreferredSize().width : CARD_WIDTH;
+		int currentH = getHeight();
+		if (currentH <= 0) currentH = getPreferredSize() != null ? getPreferredSize().height : CARD_HEIGHT;
+
+		int boxLeft = BOX_LEFT;
+		int boxRight = currentW - 3;
+		int boxTop = BOX_TOP;
+		int boxBottom = currentH - 8;
+
+		title.setBounds(0, 0, currentW, 20);
+
+		// Layout geometry
+		int trackX = Math.min(85, Math.max(70, currentW / 5));
+		int pctWidth = 52;
+		int trackWidth = Math.max(80, boxRight - trackX - pctWidth);
+
 		// Draw bounded border matching RelativePlanetView
-		drawCardBorder(g2);
+		drawCardBorder(g2, boxLeft, boxRight, boxTop, boxBottom);
 
 		// Calculate 100% reference line X
-		int x100 = TRACK_X + (int) Math.round((100.0 / scaleMax) * TRACK_WIDTH);
+		int x100 = trackX + (int) Math.round((100.0 / scaleMax) * trackWidth);
 
 		// Draw 100% reference dashed line & label
 		int barTopY = START_Y + (ROW_HEIGHT - BAR_HEIGHT) / 2;
@@ -249,44 +287,44 @@ public class ShadBalaBarView extends JPanel {
 			int rowY = START_Y + i * ROW_HEIGHT;
 			int barY = rowY + (ROW_HEIGHT - BAR_HEIGHT) / 2;
 
-			// 1. Planet Name (Right-aligned at TRACK_X - 10)
+			// 1. Planet Name (Right-aligned at trackX - 8)
 			g2.setFont(labelFont);
 			g2.setColor(UIConsts.DARK_BLUE);
 			String pName = item.planet.name();
 			int nameW = fmLabel.stringWidth(pName);
-			g2.drawString(pName, TRACK_X - 10 - nameW, barY + BAR_HEIGHT - 3);
+			g2.drawString(pName, trackX - 8 - nameW, barY + BAR_HEIGHT - 3);
 
 			// 2. Background Track
 			g2.setColor(new Color(243, 240, 235));
-			g2.fillRoundRect(TRACK_X, barY, TRACK_WIDTH, BAR_HEIGHT, 6, 6);
+			g2.fillRoundRect(trackX, barY, trackWidth, BAR_HEIGHT, 6, 6);
 
 			// 3. Colored Bar
-			int barWidth = (int) Math.round((item.balaPercent / scaleMax) * TRACK_WIDTH);
-			barWidth = Math.min(barWidth, TRACK_WIDTH);
+			int barWidth = (int) Math.round((item.balaPercent / scaleMax) * trackWidth);
+			barWidth = Math.min(barWidth, trackWidth);
 			Color vedicClr = getVedicPlanetColor(item.planet);
 
 			g2.setColor(vedicClr);
-			g2.fillRoundRect(TRACK_X, barY, barWidth, BAR_HEIGHT, 6, 6);
+			g2.fillRoundRect(trackX, barY, barWidth, BAR_HEIGHT, 6, 6);
 
 			// Hover highlight
 			if (i == hoveredIndex) {
 				g2.setColor(UIConsts.DARK_BLUE);
 				g2.setStroke(new BasicStroke(1.5f));
-				g2.drawRoundRect(TRACK_X, barY, Math.max(barWidth, 6), BAR_HEIGHT, 6, 6);
+				g2.drawRoundRect(trackX, barY, Math.max(barWidth, 6), BAR_HEIGHT, 6, 6);
 				g2.setStroke(origStroke);
 			}
 
-			// 4. Bala % Label (at TRACK_X + TRACK_WIDTH + 8)
+			// 4. Bala % Label (at trackX + trackWidth + 6)
 			g2.setFont(pctFont);
 			g2.setColor(item.balaPercent >= 100.0 ? new Color(0, 100, 0) : new Color(175, 40, 40));
 			String pctStr = PCT_FMT.format(item.balaPercent);
-			g2.drawString(pctStr, TRACK_X + TRACK_WIDTH + 8, barY + BAR_HEIGHT - 3);
+			g2.drawString(pctStr, trackX + trackWidth + 6, barY + BAR_HEIGHT - 3);
 		}
 
 		g2.dispose();
 	}
 
-	private void drawCardBorder(Graphics2D g2) {
+	private void drawCardBorder(Graphics2D g2, int boxLeft, int boxRight, int boxTop, int boxBottom) {
 		int arc = 12;
 		int gap = 8;
 
@@ -295,22 +333,22 @@ public class ShadBalaBarView extends JPanel {
 		int textX = (getWidth() - textW) / 2;
 
 		Path2D p = new Path2D.Double();
-		p.moveTo(BOX_LEFT + arc, BOX_TOP);
-		p.lineTo(Math.max(BOX_LEFT + arc, textX - gap), BOX_TOP);
+		p.moveTo(boxLeft + arc, boxTop);
+		p.lineTo(Math.max(boxLeft + arc, textX - gap), boxTop);
 
-		p.moveTo(Math.min(BOX_RIGHT - arc, textX + textW + gap), BOX_TOP);
-		p.lineTo(BOX_RIGHT - arc, BOX_TOP);
+		p.moveTo(Math.min(boxRight - arc, textX + textW + gap), boxTop);
+		p.lineTo(boxRight - arc, boxTop);
 
-		p.quadTo(BOX_RIGHT, BOX_TOP, BOX_RIGHT, BOX_TOP + arc);
-		p.lineTo(BOX_RIGHT, BOX_BOTTOM - arc);
+		p.quadTo(boxRight, boxTop, boxRight, boxTop + arc);
+		p.lineTo(boxRight, boxBottom - arc);
 
-		p.quadTo(BOX_RIGHT, BOX_BOTTOM, BOX_RIGHT - arc, BOX_BOTTOM);
-		p.lineTo(BOX_LEFT + arc, BOX_BOTTOM);
+		p.quadTo(boxRight, boxBottom, boxRight - arc, boxBottom);
+		p.lineTo(boxLeft + arc, boxBottom);
 
-		p.quadTo(BOX_LEFT, BOX_BOTTOM, BOX_LEFT, BOX_BOTTOM - arc);
-		p.lineTo(BOX_LEFT, BOX_TOP + arc);
+		p.quadTo(boxLeft, boxBottom, boxLeft, boxBottom - arc);
+		p.lineTo(boxLeft, boxTop + arc);
 
-		p.quadTo(BOX_LEFT, BOX_TOP, BOX_LEFT + arc, BOX_TOP);
+		p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
 
 		g2.setColor(new Color(210, 180, 120)); // Warm gold border matching Ashtakavarga & Offsets
 		g2.setStroke(new BasicStroke(1.5f));

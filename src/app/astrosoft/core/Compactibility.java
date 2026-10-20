@@ -68,6 +68,10 @@ public class Compactibility implements Exportable {
 
 	private BirthData girlBirthData;
 
+	private Horoscope boyHoroscope;
+
+	private Horoscope girlHoroscope;
+
 	private EnumMap<Kuta, Integer> kutas;
 
 	private TableData<? extends TableRowData> kutaTableData;
@@ -138,6 +142,9 @@ public class Compactibility implements Exportable {
 
 	public Compactibility(Horoscope b, Horoscope g) {
 		this(b.getBirthData().name(), g.getBirthData().name(), b.getNakshathra().getNak(), g.getNakshathra().getNak(), b.getRasi(), g.getRasi());
+
+		this.boyHoroscope = b;
+		this.girlHoroscope = g;
 
 		this.boyBirthData = b.getBirthData();
 		this.girlBirthData = g.getBirthData();
@@ -1308,6 +1315,64 @@ public class Compactibility implements Exportable {
 
 	public Nakshathra getGirlNak() {
 		return Nakshathra.ofIndex(girlNak);
+	}
+
+	public Horoscope getBoyHoroscope() {
+		if (boyHoroscope == null && boyBirthData != null) {
+			boyHoroscope = new Horoscope(boyBirthData);
+		}
+		return boyHoroscope;
+	}
+
+	public Horoscope getGirlHoroscope() {
+		if (girlHoroscope == null && girlBirthData != null) {
+			girlHoroscope = new Horoscope(girlBirthData);
+		}
+		return girlHoroscope;
+	}
+
+	public int getTotalKutaGained() {
+		return totalKutaGained;
+	}
+
+	public double getBoyDoshaTotal() {
+		return bDoshaTotal;
+	}
+
+	public double getGirlDoshaTotal() {
+		return gDoshaTotal;
+	}
+
+	public String getBoyCurPeriod() {
+		return bCurPeriod;
+	}
+
+	public String getGirlCurPeriod() {
+		return gCurPeriod;
+	}
+
+	public Rasi getBeejaRasi() {
+		return beejaRasi;
+	}
+
+	public double getBeejaPos() {
+		return beejaPos;
+	}
+
+	public Rasi getKshetraRasi() {
+		return kshetraRasi;
+	}
+
+	public double getKshetraPos() {
+		return kshetraPos;
+	}
+
+	public EnumMap<Planet, Double> getBoyDosha() {
+		return boyDosha;
+	}
+
+	public EnumMap<Planet, Double> getGirlDosha() {
+		return girlDosha;
 	}
 
 	public TableData<? extends TableRowData> getKutaTableData() {
