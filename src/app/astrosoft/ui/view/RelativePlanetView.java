@@ -104,7 +104,7 @@ public class RelativePlanetView extends JPanel {
 
 		DefaultColumnMetaData colMetaData = new DefaultColumnMetaData(AstrosoftTableColumn.Planet, AstrosoftTableColumn.Longitude);
 		
-		final int cardWidth = 460;
+		final int cardWidth = 530;
 		final int cardHeight = 184;
 		final Dimension panelSize = new Dimension(cardWidth, cardHeight);
 
@@ -125,10 +125,13 @@ public class RelativePlanetView extends JPanel {
 		
 		for(ListTableData<MapTableRow> data : splittedData){
 			AstrosoftTable table = new AstrosoftTable(new AstrosoftTableModel(data, colMetaData), TableStyle.NONE);
+			table.getColumnModel().getColumn(0).setPreferredWidth(85);
+			table.getColumnModel().getColumn(0).setMaxWidth(95);
+			table.getColumnModel().getColumn(1).setPreferredWidth(140);
 			gridPanel.add(table);
 		}
 		
-		gridPanel.setBounds(32, 40, 396, 110);
+		gridPanel.setBounds(32, 40, 466, 110);
 		add(gridPanel);
 	}
 
@@ -142,7 +145,7 @@ public class RelativePlanetView extends JPanel {
 		int gap = 8;
 
 		int boxLeft = 2;
-		int boxRight = 458;
+		int boxRight = 528;
 		int boxTop = 10;
 		int boxBottom = 180;
 

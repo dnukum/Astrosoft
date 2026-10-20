@@ -333,7 +333,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		rightWrapper.setOpaque(false);
 		rightWrapper.add(rightContainer, BorderLayout.NORTH);
 
-		final JPanel contentPanel = new JPanel(new BorderLayout(50, 0));
+		final JPanel contentPanel = new JPanel(new BorderLayout(40, 0));
 		contentPanel.setOpaque(false);
 
 		final JPanel planetOffsetsView = new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo());
@@ -346,13 +346,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		final javax.swing.JPanel leftWrapper = new javax.swing.JPanel(new java.awt.BorderLayout());
 		leftWrapper.setOpaque(false);
-		leftWrapper.setPreferredSize(new Dimension(485, 540));
+		leftWrapper.setPreferredSize(new Dimension(530, 540));
 		leftWrapper.add(leftPanel, java.awt.BorderLayout.NORTH);
 
 		final javax.swing.JPanel controlsPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 12, 0));
 		controlsPanel.setOpaque(false);
 		controlsPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-		controlsPanel.setPreferredSize(new Dimension(480, 28));
+		controlsPanel.setPreferredSize(new Dimension(525, 28));
 		controlsPanel.setMinimumSize(new Dimension(300, 28));
 		controlsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
 
