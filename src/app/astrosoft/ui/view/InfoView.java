@@ -11,6 +11,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -131,17 +132,28 @@ public class InfoView extends AstrosoftView {
 
     public InfoView(Table horoscopeInfo, Point loc) {
 
-    	super(new Dimension(480, 230), loc);
+    	super(new Dimension(530, 200), loc);
     	
     	ListTableData<MapTableRow> allData = (ListTableData<MapTableRow>) horoscopeInfo.getTableData();
     	ColumnMetaData infoColMetaData = horoscopeInfo.getColumnMetaData();
+    	List<MapTableRow> allRows = allData.getAllRows();
+
+    	List<ListTableData<MapTableRow>> splittedData = new ArrayList<ListTableData<MapTableRow>>();
+    	if (allRows.size() == 15) {
+    		splittedData.add(new ListTableData<MapTableRow>(allRows.subList(0, 7)));
+    		splittedData.add(new ListTableData<MapTableRow>(allRows.subList(7, 15)));
+    	} else {
+    		int splitSize = (allData.getRowCount() + 1) / 2;
+    		splittedData = TableDataFactory.splitTableData(allData, splitSize);
+    	}
     	
     	JPanel infoPanel = new JPanel(new GridLayout(1, 2, 16, 0));
-    	int splitSize = (allData.getRowCount() + 1) / 2;
-    	List<ListTableData<MapTableRow>> splittedData = TableDataFactory.splitTableData(allData, splitSize);
-    	
+    	infoPanel.setOpaque(false);
+    	List<AstrosoftTable> createdTables = new ArrayList<AstrosoftTable>();
+
     	for(ListTableData<MapTableRow> data : splittedData){
     		final AstrosoftTable infoTable = new AstrosoftTable(new AstrosoftTableModel(data, infoColMetaData), TableStyle.NONE);
+    		createdTables.add(infoTable);
     		
     		javax.swing.table.TableColumn keyCol = infoTable.getColumnModel().getColumn(0);
     		javax.swing.table.TableColumn valCol = infoTable.getColumnModel().getColumn(1);
@@ -188,5 +200,19 @@ public class InfoView extends AstrosoftView {
     	}
     	
     	add(infoPanel, BorderLayout.CENTER);
+
+    	int maxTableH = 0;
+    	for (AstrosoftTable tbl : createdTables) {
+    		int h = 0;
+    		for (int r = 0; r < tbl.getRowCount(); r++) {
+    			h += tbl.getRowHeight(r);
+    		}
+    		if (h > maxTableH) maxTableH = h;
+    	}
+
+    	Dimension exactSize = new Dimension(530, maxTableH);
+    	setPreferredSize(exactSize);
+    	setMinimumSize(exactSize);
+    	setMaximumSize(exactSize);
     }
 }

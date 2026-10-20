@@ -528,9 +528,9 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 			rows.add(helper.createRow(DisplayStrings.COORD_STR, birthData.getBirthPlace().coordinates()));
 			rows.add(helper.createRow(DisplayStrings.SID_TIME_STR, AstroUtil.dms(this.getHousePosition().getSiderealTime())));
 			rows.add(helper.createRow(DisplayStrings.SUNRISE_SET_STR, AstroUtil.timeFormat(getSunrise()) + "/" + AstroUtil.timeFormat(getSunset())));
-			rows.add(helper.createRow(DisplayStrings.NAK_STR, getNakshathra()));
-			rows.add(helper.createRow(DisplayStrings.RASI_STR, getRasi()));
 
+			rows.add(helper.createRow(DisplayStrings.RASI_STR, getRasi()));
+			rows.add(helper.createRow(DisplayStrings.NAK_STR, getNakshathra()));
 			rows.add(helper.createRow(DisplayStrings.LANGA_STR, getAscendant()));
 			rows.add(helper.createRow(DisplayStrings.YOGA_STR, getYoga()));
 			//rows.add(helper.createRow(DisplayStrings.RASI_STR, getRasi()));

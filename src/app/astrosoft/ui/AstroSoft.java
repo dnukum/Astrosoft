@@ -389,7 +389,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 				boolean showOffsets = planetOffsetsCheck.isSelected();
 				leftPanel.removeAll();
 				leftPanel.add(infoView);
-				leftPanel.add(javax.swing.Box.createVerticalStrut(12));
+				leftPanel.add(javax.swing.Box.createVerticalStrut(50));
 				leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
 				leftPanel.add(javax.swing.Box.createVerticalStrut(6));
 				leftPanel.add(controlsPanel);
