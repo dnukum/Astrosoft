@@ -340,6 +340,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 		planetOffsetsView.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 		infoView.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 
+		final JPanel shadbalaBarView = new app.astrosoft.ui.view.ShadBalaBarView(h.getShadBala());
+		shadbalaBarView.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+
 		final javax.swing.JPanel leftPanel = new javax.swing.JPanel();
 		leftPanel.setLayout(new javax.swing.BoxLayout(leftPanel, javax.swing.BoxLayout.Y_AXIS));
 		leftPanel.setOpaque(false);
@@ -364,6 +367,14 @@ public class AstroSoft extends javax.swing.JFrame implements
 		planetOffsetsCheck.setForeground(UIConsts.DARK_BLUE);
 		controlsPanel.add(planetOffsetsCheck);
 
+		final javax.swing.JCheckBox shadbalaCheck = new javax.swing.JCheckBox("Shadbala");
+		shadbalaCheck.setSelected(false);
+		shadbalaCheck.setOpaque(false);
+		shadbalaCheck.setFocusable(false);
+		shadbalaCheck.setFont(new java.awt.Font("Verdana", java.awt.Font.PLAIN, 11));
+		shadbalaCheck.setForeground(UIConsts.DARK_BLUE);
+		controlsPanel.add(shadbalaCheck);
+
 		final javax.swing.JCheckBox ashtaVargaCheck = new javax.swing.JCheckBox("AshtaVarga");
 		ashtaVargaCheck.setOpaque(false);
 		ashtaVargaCheck.setFocusable(false);
@@ -387,6 +398,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		final Runnable updateLeftLayout = new Runnable() {
 			public void run() {
 				boolean showOffsets = planetOffsetsCheck.isSelected();
+				boolean showShadbala = shadbalaCheck.isSelected();
 				leftPanel.removeAll();
 				leftPanel.add(infoView);
 				leftPanel.add(javax.swing.Box.createVerticalStrut(50));
@@ -399,8 +411,18 @@ public class AstroSoft extends javax.swing.JFrame implements
 					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
 					leftPanel.add(planetOffsetsView);
 				}
+				if (showShadbala) {
+					if (!showOffsets) {
+						leftPanel.add(javax.swing.Box.createVerticalStrut(6));
+						leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
+					}
+					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
+					leftPanel.add(shadbalaBarView);
+				}
 				leftPanel.revalidate();
 				leftPanel.repaint();
+				int h = leftPanel.getPreferredSize().height;
+				leftWrapper.setPreferredSize(new Dimension(530, Math.max(540, h)));
 				leftWrapper.revalidate();
 				leftWrapper.repaint();
 				contentPanel.revalidate();
@@ -413,6 +435,12 @@ public class AstroSoft extends javax.swing.JFrame implements
 		};
 
 		planetOffsetsCheck.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent e) {
+				updateLeftLayout.run();
+			}
+		});
+
+		shadbalaCheck.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
 				updateLeftLayout.run();
 			}

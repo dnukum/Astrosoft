@@ -113,7 +113,7 @@ public class RelativePlanetView extends JPanel {
 		setMinimumSize(panelSize);
 		setMaximumSize(panelSize);
 
-		title = new JLabel("Rasi Chart Planet Offsets", SwingConstants.CENTER);
+		title = new JLabel("Planet Offset in Rasi", SwingConstants.CENTER);
 		title.setFont(new Font("Verdana", Font.BOLD, 12));
 		title.setForeground(app.astrosoft.ui.util.UIConsts.DARK_BLUE);
 		title.setBounds(0, 0, cardWidth, 20);

@@ -106,13 +106,13 @@ public class AshtavargaView extends AstrosoftView {
 		headerPanel.setOpaque(false);
 		headerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-		JLabel label = new JLabel("Ashtakavarga Chart:");
-		label.setFont(UIUtil.getFont(Font.BOLD, 12));
+		JLabel label = new JLabel("Ashtavarga");
+		label.setFont(new Font("Verdana", Font.BOLD, 12));
 		label.setForeground(UIConsts.DARK_BLUE);
 		headerPanel.add(label);
 
 		final JComboBox<AshtavargaItem> combo = new JComboBox<AshtavargaItem>(items);
-		combo.setFont(UIUtil.getFont(Font.PLAIN, 12));
+		combo.setFont(new Font("Verdana", Font.PLAIN, 12));
 		headerPanel.add(combo);
 
 		final int cardWidth = 424;

@@ -394,17 +394,17 @@ public class ShadBala implements Exportable {
 			type = BhavaType.Uttra;
 		}// TODO: CONJUCTION YET TO TEST
 		else {
-			log.info("Residential Strengh! Need to verify");
+			log.fine("Residential Strengh! Need to verify");
 			double length = bhava.length();
 			double start = bhava.start();
 			double mid = start + (length / 2);
 			double end = mid + (length / 2);
 			
-			log.info("length " + length);
-			log.info("start " + start);
-			log.info("mid " + mid);
-			log.info("end " + end);
-			log.info("pos " + pos);
+			log.fine("length " + length);
+			log.fine("start " + start);
+			log.fine("mid " + mid);
+			log.fine("end " + end);
+			log.fine("pos " + pos);
 
 			if (mid <= 360.0) {
 				if (pos >= start && pos <= mid) {
@@ -422,7 +422,7 @@ public class ShadBala implements Exportable {
 				}
 			}
 			
-			log.info("type " + type);
+			log.fine("type " + type);
 		}
 
 		return type;
@@ -1557,6 +1557,37 @@ public class ShadBala implements Exportable {
 
 	public Map<Planet, Double> getStrengthPer() {
 		return StrengthPer;
+	}
+
+	public Double getPlanetBala(Bala bala, Planet p) {
+		if (PlanetBala != null && PlanetBala.containsKey(bala)) {
+			return PlanetBala.get(bala).get(p);
+		}
+		return null;
+	}
+
+	public Double getShadBala(Planet p) {
+		return getPlanetBala(Bala.ShadBala, p);
+	}
+
+	public Double getRupa(Planet p) {
+		Double val = getShadBala(p);
+		return val != null ? val / 60.0 : null;
+	}
+
+	public Integer getShadBalaRank(Planet p) {
+		if (ShadBalaRank != null) {
+			return ShadBalaRank.get(p);
+		}
+		return null;
+	}
+
+	public static double getMinStrength(Planet p) {
+		double[] minStr = {300.0, 360.0, 300.0, 420.0, 390.0, 330.0, 300.0};
+		if (p.ordinal() < minStr.length) {
+			return minStr[p.ordinal()];
+		}
+		return 300.0;
 	}
 	
 	public TableData<PlanetBalaRow> getPlanetBalaTableData() {
