@@ -27,15 +27,16 @@ Open the Muhurta module in Astrosoft by choosing **View &rarr; My Muhurta**.
 
 The interface is structured into three synchronized visual areas:
 1. **Top Section - Main Muhurta Charts & Panchanga Table**:
-   * **Rasi & Navamsa Charts**: Display the planetary arrangement at the exact selected instant.
-   * **Panchanga & Muhurta Table**: Displays Event Name, Date, Time, Location, Ayanamsa, Thithi, Nakshatra, Yoga, Karana, Solar Vara, and Auspicious Timing Windows (Abhijit, Brahma Muhurta).
-   * **Calendar Toggle Button**: Expands or collapses the Balam Calendar below the charts.
+   * **Panchanga & Muhurta Table (Left Column)**: Displays Date, Time, Location, Ayanamsa, Thithi, Nakshatra, Yoga, Karana, Solar Vara, Auspicious Timings, and personal Balams. Below the table, **Edit Date/Time** adjusts the event instant/location, and **Summarize** opens a complete exportable text summary.
+   * **Personal Horoscopes Toolbar (Right Column Top)**: Contains `[ Person 1: Select... ]` and `[ Person 2: Select... ]` buttons to load saved `.ash` horoscopes or use quick entry (Rasi & Nakshatra).
+   * **Rasi Charts Strip (Right Column Center)**: Displays the **Muhurta Rasi Chart** computed for the exact event instant and location, placed side-by-side with natal **Person 1 Rasi** and **Person 2 Rasi** charts (when loaded).
+   * **Calendar Toggle Button**: The **Show Balam Calendar** button directly below the Muhurta chart expands or collapses the Balam Calendar (enabled once Person 1 or Person 2 is selected).
 2. **Middle Section - Monthly Balam Calendar Table**:
    * Displays transit Moon segments for the month with Tara and Chandra Balam scores for both partners.
    * Unlike a traditional Panchanga, this table is not organized on a daily (day-by-day) basis. Instead, it is organized by **transit segments of uniform Tara and Chandra Balam**. Within each segment, both the transit Moon's Nakshatra and Rasi remain unchanged, ensuring consistent Balam throughout. Consequently, you will see time segments that straddle across two civil calendar days, or multiple distinct segments occurring on the same calendar day.
    * **Navigation & Filter**: Month/Year selectors, Previous/Next Month arrows, and a sticky **Filter** button to eliminate inauspicious days.
 3. **Bottom Section - 50% / 50% Two-Column Details View**:
-   * **Left Column**: Start time, End time, Sunrise (if straddled), Event Suitability for matching stars, Transit Moon position, and timed transitions for Thithi, Varam, Amirthathi Yoga, Nitya Yoga, and Karana.
+   * **Left Column**: Start time, End time, Sunrise (if straddled), Transit Moon position, approved event activities for the active Nakshatra, and timed transitions for Thithi, Varam, Amirthathi Yoga, Nitya Yoga, and Karana.
    * **Right Column**: **Subha Hora** selection dropdown with **Update** button, full list of **Available** Subha Hora blocks, Abhijit Muhurta, and Brahma Muhurta intervals.
 
 ---
@@ -54,7 +55,7 @@ Step 2: Chandra Balam (Both partners; No Ashtama Chandra)
 Step 3: Nakshatram (1st Priority: Event List | 2nd Priority: Swathi, Chithirai, Magham)
    │
    ▼
-Step 4: Thithi (Avoid Amavasya, Prathamai, Ashtami, Navami, Riktha)
+Step 4: Thithi (Avoid Amavasya, Prathamai, Ashtami, Navami)
    │
    ▼
 Step 5: Vara (Sunrise-to-sunrise; Avoid Tuesday & Saturday)
@@ -94,7 +95,7 @@ Step 9: Muhurtha Chart (Lagna strength, Ashtama Suddhi, Kendra benefics - **THE 
 #### Dual-Partner Evaluation & Priority Rules:
 * **Marriage & House Warming (Grihapravesha)**: The **wife's / bride's Tara Balam carries the highest priority**. If the bride has an auspicious Tara (2, 4, 6, 8, 9), minor afflictions in the groom's Tara can be tolerated, but **never vice versa**.
 * **Naidhana Tara (7)** is **strictly forbidden** for either partner.
-* **Filter Feature**: Click the **Filter** button at the top right of the Balam Calendar. This automatically strips away all rows where either person has Tara Balam = 7 (*Naidhana*).
+* **Filter Feature**: Click the **Filter** button at the top right of the Balam Calendar. This automatically strips away all rows where either person has **Tara Balam = 7 (Naidhana) OR Chandra Balam = 8 (Ashtama)**.
 
 ---
 
@@ -112,16 +113,18 @@ Step 9: Muhurtha Chart (Lagna strength, Ashtama Suddhi, Kendra benefics - **THE 
 * **Strictly Rejected**: **8th house (Chandra Ashtama)**:
   * The transit Moon in the 8th house from one's natal Moon causes mental distress, obstacles, health vulnerability, and misfortune.
   * **Chandra Ashtama is strictly avoided** for the primary individual and partner.
-* **Filter Feature**: The **Filter** button in the Balam Calendar automatically excludes all dates with Chandra Balam = 8 (*Ashtama*).
+* **Filter Feature**: The **Filter** button in the Balam Calendar enforces this rule alongside Step 1, simultaneously excluding any transit window where either person has **Chandra Balam = 8 (Ashtama) OR Tara Balam = 7 (Naidhana)**.
 
 ---
 
 ### Step 3: Nakshatram (Transit Moon's Star)
 
-Once Tara and Chandra Balam are satisfied, evaluate the transit Nakshatra itself for the intended event:
+Once Tara and Chandra Balam are satisfied, evaluate the transit Nakshatra for your intended event.
+
+Astrosoft does not require you to pre-select an event. Instead, when you click any window in the calendar, the details pane displays the active transit Nakshatra and automatically lists all classically approved activities for that star (e.g., *Marriage*, *House Warming*, *Vehicle Buying*, *Travel*, etc.). If a star is unsuitable for major milestones, it displays `<font color='red'>Not recommended</font>`. You evaluate whether the star supports the specific event you have in mind:
 
 #### 1st Priority: Event-Specific Auspicious Nakshatras
-Astrosoft checks the transit star against the classical event lists:
+Classical approved stars for major life events:
 * **Marriage (Vivaha)**:
   * *Rohini, Mrigashirsha, Makha, Uttara Phalguni, Hasta, Swati, Anuradha, Moola, Uttara Ashadha, Uttara Bhadrapada, Revati*.
 * **House Warming (Grihapravesha)**:
@@ -136,7 +139,7 @@ If an event-specific star is not available within the desired calendar window, y
 3. **Magham** (Makha)
 
 > [!WARNING]
-> **Strict Rule**: If a star is neither in the event-specific approved list nor in the General List (*Swathi, Chithirai, Magham*), it is **strictly avoided**. The details pane will explicitly highlight `<font color='red'>Not recommended</font>`.
+> **Strict Rule**: If a star supports neither your specific event nor general auspicious activities, it displays `<font color='red'>Not recommended</font>` and should be **strictly avoided** for major beginnings. Move to another transit window.
 
 ---
 
@@ -152,8 +155,6 @@ Evaluate the active Thithi in the transit window:
 * **Amavasya (New Moon)**: Complete absence of Moon's light; strictly avoided for auspicious beginnings.
 * **Prathamai (1st Thithi)**: Dark/turbulent energy following New/Full Moon.
 * **Ashtami (8th Thithi)** & **Navami (9th Thithi)**: Associated with conflict and challenges.
-* **Riktha Thithis (Empty Days)**:
-  * **Chaturthi (4th)**, **Navami (9th)**, and **Chaturdasi (14th)** are called *Riktha* (empty hands/loss) and must be avoided.
 
 > [!TIP]
 > **Timed Transitions**: If a row begins with an inauspicious Thithi (e.g. *Ashtami*) and transitions into an auspicious one (e.g. *Navami* or *Dasami*), the lower left pane displays the exact transition time: `Shukla Ashtami → (18 Oct, 10:21 PM PDT) Shukla Navami`. Use the **Subha Hora** selector or start instant after the transition.
@@ -253,7 +254,7 @@ A Karana is half of a lunar Thithi (6 degrees of lunar distance):
   * Avoid Pushkara Navamsa afflictions, 64th Navamsa, or Gandanta degrees (junctions between water and fire signs).
 
 #### 8. Subha Hora Alignment:
-* Use the **Subha Hora** dropdown in the lower right panel to snap your Muhurta to an auspicious planetary hour (Jupiter, Venus, Mercury, or Moon Hora) during the chosen window, then click **Update**.
+* Use the **Subha Hora** dropdown in the lower right panel to snap your Muhurta to an auspicious planetary hour (Jupiter, Venus, Mercury, or Moon Hora) during the chosen window, then click **Update** (which instantly updates the event date/time and the Muhurta chart).
 
 ---
 
@@ -262,38 +263,39 @@ A Karana is half of a lunar Thithi (6 degrees of lunar distance):
 Here is how to apply this 9-step workflow in Astrosoft:
 
 1. **Set Up Profiles**:
-   * Under **Edit &rarr; Profile**, enter birth details for **Person 1** and **Person 2** (or select existing profiles).
-   * Choose the **Event** (e.g., *Marriage* or *House Warming*).
+   * Click **[ Person 1: Select... ]** (and optionally **[ Person 2: Select... ]**) in the toolbar above the charts.
+   * In the dialog, select an existing `.ash` horoscope file or use **Quick Entry** (enter Name, Rasi, and Nakshatra).
+   * Once loaded, their natal Rasi charts appear next to the Muhurta chart, and the **[ Show Balam Calendar ]** button becomes active.
 2. **Open Balam Calendar**:
-   * Click **Calendar** below the charts to expand the monthly transit table.
+   * Click **Show Balam Calendar** below the Muhurta chart to expand the monthly transit table.
 3. **Filter Inauspicious Days (Steps 1 & 2)**:
    * Click the **Filter** button in the top right.
    * Days with Tara 7 (*Naidhana*) or Chandra 8 (*Ashtama*) for either individual disappear from the list.
 4. **Select a Candidate Day & Window (Step 3)**:
-   * Review the remaining rows. Click a row to load its details.
+   * Review the remaining rows. Click a row to load its details into the bottom split pane.
    * Check the lower left pane:
-     * Does the matching star display approved event activities?
-     * If not, is the transit star one of the 3 general fallback stars (**Swathi**, **Chithirai**, **Magham**)?
+     * Review the list of approved activities displayed for the active transit star.
+     * Confirm that the star supports the event you have in mind (e.g. *Marriage*, *House Warming*, *Travel*, etc.), or is one of the 3 general fallback stars (**Swathi**, **Chithirai**, **Magham**).
      * If it says `<font color='red'>Not recommended</font>`, move to another row.
 5. **Verify Thithi, Vara, Amirthathi Yoga, Nitya Yoga, Karana (Steps 4 - 8)**:
-   * **Thithi**: Confirm it is not Amavasya, Prathamai, Ashtami, Navami, or Riktha (4, 9, 14).
+   * **Thithi**: Confirm it is not Amavasya, Prathamai, Ashtami, or Navami (highlighted in red in Astrosoft).
    * **Vara**: Confirm it is not Tuesday or Saturday (red). Note sunrise transition if before 06:00/07:00 AM.
    * **Amirthathi Yoga**: Confirm it is **Amirtha** or **Siddha** (never red **Marana**).
    * **Yogam & Karana**: Confirm the yoga is auspicious and Karana is not **Vishti (Bhadra)**.
 6. **Pick Subha Hora & Snap Time (Step 9 Setup)**:
    * Look at the lower right pane: select the preferred **Subha Hora** from the dropdown.
-   * Click **Update**. The main event date/time instantly synchronizes to that Subha Hora.
+   * Click **Update**. The main event date/time instantly synchronizes to that Subha Hora. Muhurta chart is also updated.
 7. **Inspect the Muhurta Chart (Step 9)**:
-   * Examine the **Rasi Chart** in the top left:
+   * Examine the **Muhurta Rasi Chart** in the top left:
      * Is the Lagna sign auspicious and fixed/dual?
      * Are benefics in 1, 4, 5, 7, 9, 10?
      * Are malefics in 3, 6, 11?
      * Is the **8th house completely empty (Ashtama Suddhi)**?
      * If marriage, is the **7th house empty (Saptama Suddhi)**?
-   * Inspect the **Navamsa Chart**:
-     * Is the Navamsa Lagna strong and unafflicted?
-8. **Final Confirmation**:
-   * Adjust minutes slightly using the time spinner if needed to achieve an ideal rising degree or Navamsa while staying inside the Subha Hora.
+   * Compare with the adjacent **Person 1 / Person 2 Rasi** charts to ensure harmony with the partners' natal ascendants and moon signs.
+8. **Final Confirmation & Summary**:
+   * Adjust minutes slightly using **[ Edit Date/Time ]** if needed to achieve an ideal rising degree while staying inside the Subha Hora.
+   * Click **[ Summarize ]** at the bottom of the left table to open a formatted plain-text summary of the chosen Muhurta, Panchanga parameters, and planetary positions for copying or printing.
 
 ---
 
@@ -304,7 +306,7 @@ Here is how to apply this 9-step workflow in Astrosoft:
 | **1** | **Tara Balam** | 2 (Sampat), 4 (Kshema), 6 (Sadhana), 8 (Mitra), 9 (Parama Mitra). **Wife highest priority.** | 7 (Naidhana) strictly rejected; 3 (Vipat) and 5 (Pratyak) avoided. |
 | **2** | **Chandra Balam** | 3, 10, 11 (Best); 1, 7 (Good); 2, 5, 9 (Mixed). | **8 (Chandra Ashtama)** strictly rejected; 6, 12 avoided. |
 | **3** | **Nakshatram** | **1st Priority**: Event list.<br>**2nd Priority (Fallback)**: *Swathi, Chithirai, Magham*. | All other nakshatras outside event/fallback list. |
-| **4** | **Thithi** | 2, 3, 5, 7, 10, 11, 13 (Shukla/Krishna). | *Amavasya, Prathamai, Ashtami, Navami, Riktha (4, 9, 14)*. |
+| **4** | **Thithi** | 2, 3, 5, 7, 10, 11, 13 (Shukla/Krishna). | *Amavasya, Prathamai, Ashtami, Navami* (highlighted in red in Astrosoft). |
 | **5** | **Vara (Solar Day)** | Monday, Wednesday, Thursday, Friday. | **Tuesday** and **Saturday** (red). Note Wednesday caution for Abhijit. |
 | **6** | **Amirthathi Yoga** | **Amirtha Yoga**, **Siddha Yoga**. | **Marana Yoga** (red). |
 | **7** | **Yogam** | Auspicious Nitya Yogas (Siddha, Subha, Priti, etc.). | *Vaidhriti, Vyatipata*, initial ghatikas of malefic yogas. |
