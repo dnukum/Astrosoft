@@ -8,6 +8,7 @@ package app.astrosoft.ui.comp;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -111,6 +113,60 @@ public class Chart extends JPanel{
 			
 			JPanel panel = new JPanel();
 			
+			if (chartData instanceof app.astrosoft.beans.AshtaVargaChartData) {
+				app.astrosoft.beans.AshtaVargaChartData avData = (app.astrosoft.beans.AshtaVargaChartData) chartData;
+				panel.setLayout(new BorderLayout());
+				panel.setPreferredSize(houseSize);
+				panel.setBackground(UIConsts.getChartBackground());
+				panel.setBorder(UIConsts.getChartBorder());
+
+				Rasi asc = avData.getAscendant();
+				Rasi moon = avData.getMoonRasi();
+				boolean isAsc = (asc == house);
+				boolean isMoon = (moon == house);
+
+				JPanel topRow = new JPanel(new BorderLayout());
+				topRow.setOpaque(false);
+				topRow.setBorder(BorderFactory.createEmptyBorder(5, 7, 0, 7));
+
+				if (isAsc && isMoon) {
+					JLabel ascLbl = new JLabel("Asc");
+					ascLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+					ascLbl.setForeground(Color.RED);
+					topRow.add(ascLbl, BorderLayout.WEST);
+
+					JLabel moonLbl = new JLabel("Mo");
+					moonLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+					moonLbl.setForeground(Color.MAGENTA);
+					topRow.add(moonLbl, BorderLayout.EAST);
+				} else if (isAsc) {
+					JLabel ascLbl = new JLabel("Asc");
+					ascLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+					ascLbl.setForeground(Color.RED);
+					topRow.add(ascLbl, BorderLayout.WEST);
+				} else if (isMoon) {
+					JLabel moonLbl = new JLabel("Mo");
+					moonLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+					moonLbl.setForeground(Color.MAGENTA);
+					topRow.add(moonLbl, BorderLayout.WEST);
+				}
+
+				panel.add(topRow, BorderLayout.NORTH);
+
+				Integer val = avData.getVarga().get(house);
+				String valStr = (val != null) ? val.toString() : "";
+				JLabel numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER);
+				numLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 15));
+				numLbl.setForeground(UIConsts.DARK_BLUE);
+				panel.add(numLbl, BorderLayout.CENTER);
+
+				panel.add(Box.createVerticalStrut(16), BorderLayout.SOUTH);
+
+				add(panel, getConstrains(houseNo));
+				housePanel.add(houseNo, panel);
+				continue;
+			}
+
 			if(dataHouses.contains(house)){
 
 				Table table = chartData.getChartHouseTable(house);
@@ -192,6 +248,39 @@ public class Chart extends JPanel{
 
 	public void setTitleFont(Font font){
 		title.setFont(font);
+	}
+
+	public void setHouseBackground(Rasi house, Color bg) {
+		int houseNo = house.ordinal();
+		if (houseNo < housePanel.size()) {
+			JPanel panel = housePanel.get(houseNo);
+			if (panel != null) {
+				panel.setBackground(bg);
+				for (Component comp : panel.getComponents()) {
+					comp.setBackground(bg);
+					if (comp instanceof JTable) {
+						((JTable) comp).setBackground(bg);
+					}
+				}
+			}
+		}
+	}
+
+	public void setHouseToolTip(Rasi house, String toolTip) {
+		int houseNo = house.ordinal();
+		if (houseNo < housePanel.size()) {
+			JPanel panel = housePanel.get(houseNo);
+			if (panel != null) {
+				panel.setToolTipText(toolTip);
+				ToolTipManager.sharedInstance().registerComponent(panel);
+				for (Component comp : panel.getComponents()) {
+					if (comp instanceof JComponent) {
+						((JComponent) comp).setToolTipText(toolTip);
+						ToolTipManager.sharedInstance().registerComponent((JComponent) comp);
+					}
+				}
+			}
+		}
 	}
 	
 	private void decoratePlanetChart(Table table, AstrosoftTable houseTable) {

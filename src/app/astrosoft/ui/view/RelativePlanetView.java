@@ -1,15 +1,26 @@
 package app.astrosoft.ui.view;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.RenderingHints;
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.AstrosoftTableColumn;
@@ -26,9 +37,13 @@ import app.astrosoft.util.AstroUtil;
 
 public class RelativePlanetView extends JPanel {
 
+	private final JLabel title;
+	private final JPanel gridPanel;
+
 	public RelativePlanetView(PlanetaryInfo planetaryInfo) {
 		
 		setLayout(new BorderLayout());
+		setOpaque(false);
 		
 		EnumMap<Planet, Rasi> planetRasi = planetaryInfo.getPlanetRasi();
 		final EnumMap<Planet, Double> planetPos = planetaryInfo.getPlanetPosition();
@@ -60,7 +75,7 @@ public class RelativePlanetView extends JPanel {
 			sortedPlanets.addAll(planetsInSign);
 		}
 		
-				EnumMap<Planet, Boolean> planetDir = planetaryInfo.getPlanetDirection();
+		EnumMap<Planet, Boolean> planetDir = planetaryInfo.getPlanetDirection();
 
 		List<MapTableRow> rows = new ArrayList<MapTableRow>();
 		for (Planet p : sortedPlanets) {
@@ -87,16 +102,25 @@ public class RelativePlanetView extends JPanel {
 		}
 		ListTableData<MapTableRow> tableData = new ListTableData<MapTableRow>(rows);
 
-		
 		DefaultColumnMetaData colMetaData = new DefaultColumnMetaData(AstrosoftTableColumn.Planet, AstrosoftTableColumn.Longitude);
 		
-		
-		javax.swing.JLabel title = new javax.swing.JLabel("Rasi Chart Planet Offsets", javax.swing.SwingConstants.CENTER);
-		title.setFont(new java.awt.Font("Verdana", java.awt.Font.BOLD, 12));
+		final int cardWidth = 460;
+		final int cardHeight = 184;
+		final Dimension panelSize = new Dimension(cardWidth, cardHeight);
+
+		setLayout(null);
+		setPreferredSize(panelSize);
+		setMinimumSize(panelSize);
+		setMaximumSize(panelSize);
+
+		title = new JLabel("Rasi Chart Planet Offsets", SwingConstants.CENTER);
+		title.setFont(new Font("Verdana", Font.BOLD, 12));
 		title.setForeground(app.astrosoft.ui.util.UIConsts.DARK_BLUE);
-		add(title, BorderLayout.NORTH);
+		title.setBounds(0, 0, cardWidth, 20);
+		add(title);
 		
-		JPanel gridPanel = new JPanel(new GridLayout(1, 2, 20, 20));
+		gridPanel = new JPanel(new GridLayout(1, 2, 16, 0));
+		gridPanel.setOpaque(false);
 		List<ListTableData<MapTableRow>> splittedData = TableDataFactory.splitTableData(tableData, 5);
 		
 		for(ListTableData<MapTableRow> data : splittedData){
@@ -104,6 +128,61 @@ public class RelativePlanetView extends JPanel {
 			gridPanel.add(table);
 		}
 		
-		add(gridPanel, BorderLayout.CENTER);
+		gridPanel.setBounds(32, 40, 396, 110);
+		add(gridPanel);
+	}
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		Graphics2D g2 = (Graphics2D) g.create();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+		int arc = 12;
+		int gap = 8;
+
+		int boxLeft = 2;
+		int boxRight = 458;
+		int boxTop = 10;
+		int boxBottom = 180;
+
+		FontMetrics fm = title.getFontMetrics(title.getFont());
+		int textW = fm.stringWidth(title.getText());
+		int textX = (getWidth() - textW) / 2;
+
+		Path2D p = new Path2D.Double();
+		// Top-left line to title cutout
+		p.moveTo(boxLeft + arc, boxTop);
+		p.lineTo(Math.max(boxLeft + arc, textX - gap), boxTop);
+
+		// Top-right line from title cutout to right corner
+		p.moveTo(Math.min(boxRight - arc, textX + textW + gap), boxTop);
+		p.lineTo(boxRight - arc, boxTop);
+
+		// Top-right rounded corner
+		p.quadTo(boxRight, boxTop, boxRight, boxTop + arc);
+
+		// Right vertical border (exactly 30px away from table: 458 - 428 = 30)
+		p.lineTo(boxRight, boxBottom - arc);
+
+		// Bottom-right rounded corner
+		p.quadTo(boxRight, boxBottom, boxRight - arc, boxBottom);
+
+		// Bottom horizontal border (exactly 30px away from table: 180 - 150 = 30)
+		p.lineTo(boxLeft + arc, boxBottom);
+
+		// Bottom-left rounded corner
+		p.quadTo(boxLeft, boxBottom, boxLeft, boxBottom - arc);
+
+		// Left vertical border (exactly 30px away from table: 32 - 2 = 30)
+		p.lineTo(boxLeft, boxTop + arc);
+
+		// Top-left rounded corner
+		p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
+
+		g2.setColor(new Color(210, 180, 120)); // Warm gold border matching Ashtakavarga
+		g2.setStroke(new BasicStroke(1.5f));
+		g2.draw(p);
+		g2.dispose();
 	}
 }

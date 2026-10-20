@@ -23,6 +23,7 @@ import app.astrosoft.ui.table.TableRowData;
 public class AshtaVargaChartData extends AbstractChartData implements Exportable{
 
 	private EnumMap<Rasi, Integer> varga;
+	private Rasi moonRasi;
 	
 	public AshtaVargaChartData(AshtavargaName name, EnumMap<Rasi, Integer> varga) {
 		super();
@@ -34,6 +35,26 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
 		if ( count != -1){
 			chartName = chartName + " ( " +String.valueOf(count) + " ) ";
 		}
+	}
+
+	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga) {
+		this(displayName, varga, null, null);
+	}
+
+	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga, Rasi ascendant, Rasi moonRasi) {
+		super();
+		this.varga = varga;
+		this.chartName = displayName;
+		this.ascendant = ascendant;
+		this.moonRasi = moonRasi;
+	}
+
+	public Rasi getMoonRasi() {
+		return moonRasi;
+	}
+
+	public void setMoonRasi(Rasi moonRasi) {
+		this.moonRasi = moonRasi;
 	}
 
 	
