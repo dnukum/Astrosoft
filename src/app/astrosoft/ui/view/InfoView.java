@@ -31,12 +31,12 @@ public class InfoView extends AstrosoftView {
      */
     public InfoView(Table horoscopeInfo, Point loc) {
 
-    	super(new Dimension(800,150), loc);
+    	super(new Dimension(420,150), loc);
     	
     	ListTableData<MapTableRow> allData = (ListTableData<MapTableRow>) horoscopeInfo.getTableData();
     	ColumnMetaData infoColMetaData = horoscopeInfo.getColumnMetaData();
     	
-    	JPanel infoPanel = new JPanel(new GridLayout(1, 3 , 20, 20));
+    	JPanel infoPanel = new JPanel(new GridLayout(1, 2, 15, 0));
     	int splitSize = (allData.getRowCount() + 1) / 2;
     	List<ListTableData<MapTableRow>> splittedData = TableDataFactory.splitTableData(allData, splitSize);
     	

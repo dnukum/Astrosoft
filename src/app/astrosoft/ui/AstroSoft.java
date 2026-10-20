@@ -131,14 +131,16 @@ public class AstroSoft extends javax.swing.JFrame implements
 		this.addComponentListener(new java.awt.event.ComponentAdapter() {
 			public void componentResized(java.awt.event.ComponentEvent e) {
 				java.awt.Dimension size = getContentPane().getSize();
-				java.awt.Rectangle newBounds = new java.awt.Rectangle(0, 0, size.width, size.height);
-				home.setBounds(newBounds);
+				int tbHeight = (toolbar != null && toolbar.isVisible()) ? toolbar.getHeight() : 0;
+				int viewW = size.width;
+				int viewH = Math.max(0, size.height - tbHeight);
+				home.setBounds(0, tbHeight, viewW, viewH);
 				
 				if (home.getComponentCount() > 0) {
 				    java.awt.Component view = home.getComponent(0);
 				    if (view.getClass().getName().contains("MyMuhurtaView")
 				            || isChartView(view)) {
-					    view.setBounds(newBounds);
+					    view.setBounds(0, 0, viewW, viewH);
 				    }
 				    // Do absolutely nothing for other views! Let them keep their original internal bounds & offsets.
 					view.revalidate();
@@ -320,15 +322,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		rightContainer.add(rasiNavamsaPanel);
 		rightContainer.setPreferredSize(new Dimension(760, 320));
 
-		final javax.swing.JScrollPane chartScrollPane = new javax.swing.JScrollPane(rightContainer,
-				javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-				javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		chartScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder());
-		chartScrollPane.getViewport().setOpaque(false);
-		chartScrollPane.setOpaque(false);
-		chartScrollPane.setPreferredSize(new Dimension(770, 340));
-
-		final JPanel contentPanel = new JPanel(new BorderLayout(40, 0));
+		final JPanel contentPanel = new JPanel(new BorderLayout(30, 0));
 		contentPanel.setOpaque(false);
 
 		final JPanel planetOffsetsView = new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo());
@@ -341,11 +335,14 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		final javax.swing.JPanel leftWrapper = new javax.swing.JPanel(new java.awt.BorderLayout());
 		leftWrapper.setOpaque(false);
+		leftWrapper.setPreferredSize(new Dimension(420, 380));
 		leftWrapper.add(leftPanel, java.awt.BorderLayout.NORTH);
 
 		final javax.swing.JPanel controlsPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 12, 0));
 		controlsPanel.setOpaque(false);
 		controlsPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+		controlsPanel.setPreferredSize(new Dimension(400, 28));
+		controlsPanel.setMinimumSize(new Dimension(300, 28));
 		controlsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
 
 		final javax.swing.JCheckBox planetOffsetsCheck = new javax.swing.JCheckBox("Planet Offsets");
@@ -362,6 +359,19 @@ public class AstroSoft extends javax.swing.JFrame implements
 		ashtaVargaCheck.setFont(new java.awt.Font("Verdana", java.awt.Font.PLAIN, 11));
 		ashtaVargaCheck.setForeground(UIConsts.DARK_BLUE);
 		controlsPanel.add(ashtaVargaCheck);
+
+		final JPanel contentWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
+		contentWrapper.setOpaque(false);
+		contentWrapper.add(contentPanel);
+
+		final javax.swing.JScrollPane mainScrollPane = new javax.swing.JScrollPane(contentWrapper,
+				javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		mainScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+		mainScrollPane.getViewport().setOpaque(false);
+		mainScrollPane.setOpaque(false);
+		mainScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+		mainScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
 
 		final Runnable updateLeftLayout = new Runnable() {
 			public void run() {
@@ -384,6 +394,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 				leftWrapper.repaint();
 				contentPanel.revalidate();
 				contentPanel.repaint();
+				contentWrapper.revalidate();
+				contentWrapper.repaint();
+				mainScrollPane.revalidate();
+				mainScrollPane.repaint();
 			}
 		};
 
@@ -404,33 +418,27 @@ public class AstroSoft extends javax.swing.JFrame implements
 					rightContainer.add(javax.swing.Box.createVerticalStrut(15));
 					rightContainer.add(ashtavargaPane);
 					rightContainer.setPreferredSize(new Dimension(760, 725));
-					chartScrollPane.setPreferredSize(new Dimension(770, 680));
-					chartScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				} else {
 					rightContainer.setPreferredSize(new Dimension(760, 320));
-					chartScrollPane.setPreferredSize(new Dimension(770, 340));
-					chartScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 				}
 				rightContainer.revalidate();
 				rightContainer.repaint();
-				chartScrollPane.revalidate();
-				chartScrollPane.repaint();
 				contentPanel.revalidate();
 				contentPanel.repaint();
-				java.awt.Container parent = contentPanel.getParent();
-				if (parent != null) {
-					parent.revalidate();
-					parent.repaint();
-				}
+				contentWrapper.revalidate();
+				contentWrapper.repaint();
+				mainScrollPane.revalidate();
+				mainScrollPane.repaint();
 			}
 		});
 
-		contentPanel.add(leftWrapper, BorderLayout.CENTER);
-		contentPanel.add(chartScrollPane, BorderLayout.EAST);
+		contentPanel.add(leftWrapper, BorderLayout.WEST);
+		contentPanel.add(rightContainer, BorderLayout.CENTER);
 
-		JPanel view = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 20));
+		JPanel view = new JPanel(new BorderLayout());
 		view.setName("ChartView");
-		view.add(contentPanel);
+		view.setOpaque(false);
+		view.add(mainScrollPane, BorderLayout.CENTER);
 		view.setBounds(bounds);
 
 		return view;
@@ -771,7 +779,11 @@ public class AstroSoft extends javax.swing.JFrame implements
 			if (view.getClass().getName().contains("MyMuhurtaView") || isChartView(view)) {
 			    java.awt.Dimension size = getContentPane().getSize();
 			    if (size.width == 0) size = bounds.getSize(); // fallback if not yet laid out
-			    view.setBounds(0, 0, size.width, size.height);
+			    int tbHeight = (toolbar != null && toolbar.isVisible()) ? toolbar.getHeight() : 0;
+			    int viewW = size.width;
+			    int viewH = Math.max(0, size.height - tbHeight);
+			    home.setBounds(0, tbHeight, viewW, viewH);
+			    view.setBounds(0, 0, viewW, viewH);
 			}
 			
 			refreshUI();
