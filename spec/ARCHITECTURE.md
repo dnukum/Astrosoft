@@ -4,7 +4,7 @@ This document serves as a high-level architectural blueprint for the Astrosoft a
 
 ## 1. Architectural Overview
 
-Astrosoft is a monolithic Java Swing desktop application structured into distinct architectural layers. It separates presentation (UI) from astrological business logic and mathematical calculations. 
+Astrosoft is a monolithic Java Swing desktop application structured into distinct architectural layers. It separates presentation (UI) from astrological business logic and mathematical calculations. The application runtime and build pipeline are anchored to **Java 21 (LTS)**. 
 
 At its core, Astrosoft relies on the **Swiss Ephemeris** (via a Java port) for high-precision astronomical calculations, wrapping these complex mathematical operations in a domain-driven design using Java `enums` and POJOs.
 
@@ -27,7 +27,8 @@ The presentation layer is built exclusively with Java Swing.
 - **Main Shell:** `AstroSoft.java` acts as the primary application frame and orchestrator, managing the application lifecycle, menu bars, toolbars, and global view transitions.
 - **Views:** The application is modularized into specialized view panels implementing or managed by `ViewManager`:
   - `HoroscopeView`: Rasi, Navamsa, and divisional charts.
-  - `CompactibilityView`: Marriage compatibility analysis.
+  - `CompactibilityView`: Marriage compatibility analysis (legacy view).
+  - `MarriageMatchView`: Modern dual-mode marriage matching dashboard supporting fixed 2-Column Dashboard and 3-Column Widescreen layouts with side-by-side Rasi/Navamsha charts, Kuta scoring, Papa Samya Dosha analysis, and comparative Shadbala strength graphs.
   - `MuhurthaView`: Classical electional astrology timings.
   - `MyMuhurtaView`: Personalized daily dashboard combining Muhurta Rasi, Person 1/2 natal charts, dynamic Panchang table, inline Balam Calendar flyout, and configuration/summary dialogs.
   - `PanchangView`: Daily Panchang table and charts.
@@ -42,6 +43,9 @@ The presentation layer is built exclusively with Java Swing.
   - `PrintDialog`: Multi-format report printing options.
   - `BirthInputDialog`, `CompactibilityInputDialog`, `PlaceOptionDialog`.
 - **Window State Persistence:** Managed by `WindowPlacement.java`, persisting normal window bounds and maximized state across sessions in Java user preferences.
+- **Layout & Viewport Sizing Principle:**
+  - Complex views (e.g., `MyMuhurtaView`, `MarriageMatchView`) maintain stable, fixed-dimension component footprints (astrological charts, data tables, profile panels) rather than dynamically stretching, squashing, or reflowing components when the application window is resized.
+  - Layout is governed by outer `JScrollPane` containers attached to the main view viewport with horizontal and vertical scrolling enabled as needed (`HORIZONTAL_SCROLLBAR_AS_NEEDED`, `VERTICAL_SCROLLBAR_AS_NEEDED`). This prevents chart deformation, label clipping, and unwanted wrapping during window resize.
 - **Localization:** 
   - Standard table keys and planetary concepts are localized through `DisplayStrings` and loaded dynamically from `AstrosoftBundle_en.properties` and `AstrosoftBundle_ta.properties`.
   - *Practical Note:* Dialog headers, top-level menus, buttons, and newer configuration panels currently use English string literals; comprehensive localization across all UI controls is slated for a future unified pass.
@@ -78,9 +82,10 @@ The `core` package contains the primary astrological orchestrators encapsulating
 
 ### 2.6 Build & Versioning Pipeline
 - **Ant Build (`build.xml`)**:
-  - `compile`: Compiles sources with JDK 8 target.
+  - `compile`: Compiles sources anchored to **Java 21 (LTS)** using `release="21"`.
   - `generate-version`: Invokes Ant `<tstamp>` to generate a 24-hour timestamp in `yyyyMMdd:HHmmss` format and writes `version.properties` to `resources/` and `deploy/resources/`.
   - `deploy`: Packages `bin/AstroSoft.jar` embedding `Implementation-Version: ${build.version}` and `Create-Date` in `MANIFEST.MF`.
+  - JVM flags: Runtime invocations include `--add-exports java.desktop/sun.awt=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.awt.shell=ALL-UNNAMED` for modern Java module boundaries.
 
 ## 3. Extensibility Points
 

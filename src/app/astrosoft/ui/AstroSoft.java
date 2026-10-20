@@ -139,7 +139,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 				if (home.getComponentCount() > 0) {
 				    java.awt.Component view = home.getComponent(0);
 				    if (view.getClass().getName().contains("MyMuhurtaView")
-				            || isChartView(view)) {
+				            || isChartView(view)
+				            || view.getClass().getName().contains("MarriageMatchView")) {
 					    view.setBounds(0, 0, viewW, viewH);
 				    }
 				    // Do absolutely nothing for other views! Let them keep their original internal bounds & offsets.
@@ -834,7 +835,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			home.removeAll();
 			home.add(view);
 			
-			if (view.getClass().getName().contains("MyMuhurtaView") || isChartView(view)) {
+			if (view.getClass().getName().contains("MyMuhurtaView") || isChartView(view) || view.getClass().getName().contains("MarriageMatchView")) {
 			    java.awt.Dimension size = getContentPane().getSize();
 			    if (size.width == 0) size = bounds.getSize(); // fallback if not yet laid out
 			    int tbHeight = (toolbar != null && toolbar.isVisible()) ? toolbar.getHeight() : 0;

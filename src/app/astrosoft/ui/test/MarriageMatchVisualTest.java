@@ -1,11 +1,14 @@
 package app.astrosoft.ui.test;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.imageio.ImageIO;
+import javax.swing.JPanel;
 
 import app.astrosoft.core.Compactibility;
 import app.astrosoft.core.Horoscope;
@@ -40,27 +43,7 @@ public class MarriageMatchVisualTest {
 		ImageIO.write(imgDashboard, "png", out1);
 		System.out.println("Saved Dashboard image to: " + out1.getAbsolutePath());
 
-		// Render Widescreen (3-Column)
-		MarriageMatchView viewWidescreen = new MarriageMatchView(c, new Point(0, 0));
-		viewWidescreen.setViewMode(MarriageMatchView.ViewMode.WIDESCREEN);
-		viewWidescreen.setSize(new Dimension(1500, 920));
-		javax.swing.JFrame f2 = new javax.swing.JFrame();
-		f2.setContentPane(viewWidescreen);
-		f2.setSize(new Dimension(1500, 920));
-		f2.addNotify();
-		viewWidescreen.validate();
-
-		BufferedImage imgWidescreen = new BufferedImage(1500, 920, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g2 = imgWidescreen.createGraphics();
-		viewWidescreen.paint(g2);
-		g2.dispose();
-
-		File out2 = new File("/Users/mukunds100/.gemini/antigravity/brain/9cbad7af-32b0-406c-936b-c81bfa03e7f3/marriage_match_widescreen.png");
-		ImageIO.write(imgWidescreen, "png", out2);
-		System.out.println("Saved Widescreen image to: " + out2.getAbsolutePath());
-
 		f1.dispose();
-		f2.dispose();
 		System.exit(0);
 	}
 

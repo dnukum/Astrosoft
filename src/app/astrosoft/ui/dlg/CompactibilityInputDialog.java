@@ -36,7 +36,7 @@ import app.astrosoft.ui.util.UIUtil;
 
 public class CompactibilityInputDialog extends AstrosoftDialog {
 
-	private static final Dimension dlgSize = new Dimension(660,420);
+	private static final Dimension dlgSize = new Dimension(740, 430);
 	private static final Dimension panelSize = new Dimension(dlgSize.width - 10 , dlgSize.height );
 
 	private static final Dimension couplePanelSize = new Dimension(((int)panelSize.width / 2)  , panelSize.height - 90);

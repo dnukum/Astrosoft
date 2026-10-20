@@ -56,7 +56,7 @@ build.date=${tstamp.default}
 	<target name="build" description="Builds Astrosoft Application" depends="compile,copy-resources,generate-version" />
 
 	<target name="compile" description="Compiles source files" depends="clean">
-		<javac srcdir="${src_dir}" destdir="${deploy_dir}" source="1.8" target="1.8" classpathref="libraries">
+		<javac srcdir="${src_dir}" destdir="${deploy_dir}" release="21" includeantruntime="false" classpathref="libraries">
 		</javac>
 	</target>
 
@@ -72,6 +72,9 @@ build.date=${tstamp.default}
 	<target name="run" description="Run Astrosoft Application">
 		<java fork="true" classname="app.astrosoft.ui.AstroSoft">
 			<classpath refid="classpath" />
+			<jvmarg value="--add-exports=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-exports=java.desktop/sun.awt.shell=ALL-UNNAMED" />
 			<jvmarg value="-Djava.util.logging.config.file=${log_prop}" />
 			<jvmarg value="-Djava.util.prefs.PreferencesFactory=app.astrosoft.pref.UserPreferencesFactory" />
 		</java>
@@ -82,7 +85,7 @@ build.date=${tstamp.default}
 	<target name="deploy" description="Creates and deploys AstroSoft.jar" depends="build">
 
 		<manifestclasspath property="lib.list" jarfile="${bin_dir}/AstroSoft.jar">
-			<classpath refid="classpath" />
+			<classpath refid="libraries" />
 		</manifestclasspath>
 
 		<jar basedir="${deploy_dir}" destfile="${bin_dir}/AstroSoft.jar">
@@ -100,6 +103,9 @@ build.date=${tstamp.default}
 
 	<target name="deploy-run" description="Deploys and Runs Astrosoft Application" depends="deploy">
 		<java fork="true" jar="${bin_dir}/AstroSoft.jar">
+			<jvmarg value="--add-exports=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-exports=java.desktop/sun.awt.shell=ALL-UNNAMED" />
 			<jvmarg value="-Djava.util.logging.config.file=${log_prop}" />
 			<jvmarg value="-Djava.util.prefs.PreferencesFactory=app.astrosoft.pref.UserPreferencesFactory" />
 		</java>
@@ -107,6 +113,9 @@ build.date=${tstamp.default}
 
 	<target name="start" description="Launch Astrosoft Application">
 		<java fork="true" jar="${bin_dir}/AstroSoft.jar">
+			<jvmarg value="--add-exports=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-exports=java.desktop/sun.awt.shell=ALL-UNNAMED" />
 			<jvmarg value="-Djava.util.logging.config.file=${log_prop}" />
 			<jvmarg value="-Djava.util.prefs.PreferencesFactory=app.astrosoft.pref.UserPreferencesFactory" />
 		</java>
@@ -145,6 +154,9 @@ build.date=${tstamp.default}
 	<target name="run-app" description="Run Java program specified as -Dclass=class_name ">
 		<java fork="true" classname="${class}">
 			<classpath refid="classpath" />
+			<jvmarg value="--add-exports=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-exports=java.desktop/sun.awt.shell=ALL-UNNAMED" />
 			<jvmarg value="-Djava.util.logging.config.file=${log_prop}" />
 		</java>
 	</target>

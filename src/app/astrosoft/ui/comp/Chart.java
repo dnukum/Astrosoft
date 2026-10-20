@@ -67,25 +67,36 @@ public class Chart extends JPanel{
 	private int rowHeight;
 	
 	private JLabel title;
+	private String subtitle;
 	
 	public Chart(ChartData chartData, Dimension chartSize) {
+		this(chartData, chartSize, null);
+	}
+
+	public Chart(ChartData chartData, Dimension chartSize, String subtitle) {
 		
 		this.chartData = chartData;
+		this.subtitle = subtitle;
 		
 		houseSize = new Dimension(chartSize.width / 4, chartSize.height / 4);
 		
-		tableSize = new Dimension((int)(houseSize.width * 0.80), (int)(houseSize.height * 0.80));
+		tableSize = new Dimension((int)(houseSize.width * 0.82), (int)(houseSize.height * 0.80));
 		
 		rowHeight = tableSize.height / 3;
 		
 		//Thirteen-th fills center
 		housePanel = new ArrayList<JPanel>();
 		
-		title = new TitleLabel(chartData.getChartName());
+		String name = chartData.getChartName();
+		if ("Navamsa".equalsIgnoreCase(name)) {
+			name = "Navamsha";
+		}
+		title = new TitleLabel(name);
 		
 		setLayout(new GridBagLayout());
 		//setPreferredSize(new Dimension(chartSize.width + (3 * 4), chartSize.height + (3 * 4)));
 		setPreferredSize(chartSize);
+		setMinimumSize(chartSize);
 		addHouseTables();
 		setVisible(true);
 	}
@@ -104,7 +115,10 @@ public class Chart extends JPanel{
 		boolean isPlanetChart = (chartData instanceof PlanetChartData);
 		int houseNo;
 		String toolTip;
-		ToolTipManager toolTipManager =  ToolTipManager.sharedInstance();
+		ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+		toolTipManager.setInitialDelay(200);
+		toolTipManager.setReshowDelay(100);
+		toolTipManager.setDismissDelay(15000);
 		Rasi ascendant = chartData.getAscendant();
 		
 		for(Rasi house : Rasi.values()){
@@ -169,6 +183,7 @@ public class Chart extends JPanel{
 
 			if(dataHouses.contains(house)){
 
+				final Rasi curHouse = house;
 				Table table = chartData.getChartHouseTable(house);
 				AstrosoftTable houseTable = new AstrosoftTable(new AstrosoftTableModel(table), TableStyle.NONE) {
                     @Override
@@ -220,6 +235,7 @@ public class Chart extends JPanel{
 				//houseTable.addMouseListener(new ChartHouseMouseListener());
 			}
 			panel.setPreferredSize(houseSize);
+			panel.setMinimumSize(houseSize);
 			panel.setBackground(UIConsts.getChartBackground());
 			
 			panel.setBorder(UIConsts.getChartBorder());
@@ -238,12 +254,49 @@ public class Chart extends JPanel{
 			//panel.addMouseListener(new ChartHouseMouseListener());
 		}
 		
-		// Add ChartName at Center
+		// Add ChartName and optional Subtitle at Center - Vertically and Horizontally Centered in Middle
 		houseNo = 12;
-		JPanel panel = new JPanel();
+		JPanel panel = new JPanel(new GridBagLayout());
+		Dimension centerSize = new Dimension(houseSize.width * 2, houseSize.height * 2);
+		panel.setPreferredSize(centerSize);
+		panel.setMinimumSize(centerSize);
 		
-		panel.add(title);
+		title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+		
+		GridBagConstraints cGbc = new GridBagConstraints();
+		cGbc.gridx = 0;
+		cGbc.gridy = 0;
+		cGbc.anchor = GridBagConstraints.CENTER;
+		panel.add(title, cGbc);
+		
+		if (subtitle != null && !subtitle.trim().isEmpty()) {
+			cGbc.gridy = 1;
+			cGbc.insets = new java.awt.Insets(2, 0, 0, 0);
+			JLabel subTitleLabel = new JLabel(subtitle, javax.swing.SwingConstants.CENTER);
+			subTitleLabel.setFont(new Font("Verdana", Font.BOLD, 11));
+			subTitleLabel.setForeground(UIConsts.DARK_BLUE);
+			panel.add(subTitleLabel, cGbc);
+		}
+		
+		String tip = title.getText() + " Chart";
+		if (subtitle != null && !subtitle.trim().isEmpty()) {
+			tip += " " + subtitle;
+		}
+		panel.setToolTipText(tip);
+		toolTipManager.registerComponent(panel);
 		add(panel, getConstrains(houseNo));
+	}
+
+	public void setSubtitle(String subtitle) {
+		this.subtitle = subtitle;
+		this.removeAll();
+		addHouseTables();
+		revalidate();
+		repaint();
+	}
+
+	public String getSubtitle() {
+		return subtitle;
 	}
 
 	public void setTitleFont(Font font){
@@ -414,8 +467,11 @@ public class Chart extends JPanel{
 	public void updateChartData(ChartData chartData){
 		
 		this.chartData = chartData;
-		title.setText(chartData.getChartName());
-		//title = new TitleLabel(chartData.getChartName());
+		String name = chartData.getChartName();
+		if ("Navamsa".equalsIgnoreCase(name)) {
+			name = "Navamsha";
+		}
+		title.setText(name);
 		this.removeAll();
 		addHouseTables();
 		

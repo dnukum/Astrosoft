@@ -12,8 +12,8 @@ Astrosoft is a free indian astrology software program for astrologers
 
 ## Installation:
 
-* Install Java (JDK or JRE) from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium Temurin](https://adoptium.net/) if you don't already have Java installed on your system.
-* Run `java -version` to verify Java is installed. Java 8 or later is required (Java 11, 17, or 21 LTS recommended).
+* Install Java (JDK or JRE 21 LTS) from [Adoptium Temurin](https://adoptium.net/) or [Oracle](https://www.oracle.com/java/technologies/downloads/) if you don't already have Java installed on your system.
+* Run `java -version` to verify Java is installed. **Java 21 (LTS)** is required.
 * Clone the repository or download the source code:
   * Using Git: `git clone https://github.com/dnukum/Astrosoft.git`
   * Or download the ZIP from [GitHub](https://github.com/dnukum/Astrosoft) by clicking this [link](https://github.com/dnukum/Astrosoft/archive/master.zip) and unzip `Astrosoft-master.zip`.
@@ -41,7 +41,7 @@ Astrosoft is a free indian astrology software program for astrologers
     ```
     *(Or from `bin`: `cd bin && ./RunAstroSoft.sh`)*
 
-> **Note for Java 8 users:** The launch scripts include `--add-exports java.desktop/sun.awt.shell=ALL-UNNAMED` for modern Java (Java 9+). If running on Java 8, this flag can simply be omitted.
+> **Note:** The launch scripts include `--add-exports` and `--add-opens` flags configured for Java 21 to access Swing/AWT desktop components cleanly.
 
 Features:
 ---------
@@ -79,7 +79,7 @@ Features:
 Development Setup:
 -------------------
 
-1. Install JDK (Java 8 or higher) and [Apache Ant](https://ant.apache.org/bindownload.cgi) and ensure both are added to your system `PATH`.
+1. Install JDK (Java 21 LTS) and [Apache Ant](https://ant.apache.org/bindownload.cgi) and ensure both are added to your system `PATH`.
 2. Navigate to the Astrosoft project directory:
    ```bash
    cd Astrosoft

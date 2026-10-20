@@ -246,7 +246,7 @@ public class ShadBalaBarView extends JPanel {
 
 		// Layout geometry
 		int trackX = Math.min(85, Math.max(70, currentW / 5));
-		int pctWidth = 52;
+		int pctWidth = 72; // Generous margin so xxx% label is comfortably separated from the right card border
 		int trackWidth = Math.max(80, boxRight - trackX - pctWidth);
 
 		// Draw bounded border matching RelativePlanetView

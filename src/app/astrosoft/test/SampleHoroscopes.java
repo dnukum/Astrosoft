@@ -6,11 +6,19 @@
 
 package app.astrosoft.test;
 
+import java.io.File;
 import app.astrosoft.core.Horoscope;
 
 public class SampleHoroscopes {
 
 	public static Horoscope getHoroscope(String file) {
+		File f = new File(file);
+		if (!f.exists()) {
+			File rel = new File("samples", f.getName());
+			if (rel.exists()) {
+				file = rel.getPath();
+			}
+		}
 		return Horoscope.createFromFile(file);
 	}
 	

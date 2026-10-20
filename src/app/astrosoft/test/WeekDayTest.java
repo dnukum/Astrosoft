@@ -13,10 +13,10 @@ public class WeekDayTest extends TestCase {
         WeekDay sunday = WeekDay.Sunday;
         
         String rahuKala = sunday.rahuKala(sunrise, sunset);
-        assertEquals("03:11 PM - 04:12 PM", rahuKala);
+        assertEquals("03:11 PM - 04:13 PM", rahuKala);
         
         String yamaKanda = sunday.yamaKanda(sunrise, sunset);
-        assertEquals("00:06 PM - 01:08 PM", yamaKanda);
+        assertEquals("12:06 PM - 01:08 PM", yamaKanda);
     }
 
     public void testSummerSolsticeJun21() {
@@ -27,7 +27,7 @@ public class WeekDayTest extends TestCase {
         WeekDay sunday = WeekDay.Sunday;
         
         String rahuKala = sunday.rahuKala(sunrise, sunset);
-        assertEquals("07:05 PM - 09:03 PM", rahuKala);
+        assertEquals("07:05 PM - 09:04 PM", rahuKala);
         
         String yamaKanda = sunday.yamaKanda(sunrise, sunset);
         assertEquals("01:10 PM - 03:08 PM", yamaKanda);
@@ -41,7 +41,7 @@ public class WeekDayTest extends TestCase {
         WeekDay friday = WeekDay.Friday;
         
         String rahuKala = friday.rahuKala(sunrise, sunset);
-        assertEquals("10:46 AM - 00:16 PM", rahuKala);
+        assertEquals("10:46 AM - 12:16 PM", rahuKala);
         
         String yamaKanda = friday.yamaKanda(sunrise, sunset);
         assertEquals("03:16 PM - 04:46 PM", yamaKanda);

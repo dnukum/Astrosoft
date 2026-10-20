@@ -52,13 +52,9 @@ public class PlaceChooser extends JPanel {
     
     private void styleLabels() {
         java.awt.Font f = app.astrosoft.ui.util.UIUtil.getFont();
-        java.awt.Color c = app.astrosoft.ui.util.UIConsts.TABLE_HEADER_FOREGROUND;
         for (JLabel l : new JLabel[]{l_place, l_latitude, l_longitude, l_timezone}) {
             l.setFont(f);
-            l.setForeground(c);
-            l.setPreferredSize(new java.awt.Dimension(125, 20)); // 5 initialX + 125 + 10 xPad = 140px perfectly aligned with KeyColWidth
         }
-        setBackground(app.astrosoft.ui.util.UIConsts.TABLE_HEADER_BACKGROUND);
     }
 	private JButton searchButton = new JButton();
 

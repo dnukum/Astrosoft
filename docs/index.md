@@ -39,7 +39,7 @@ Features:
 Development Setup:
 -------------------
 
-1. Install [JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html), [apache ant](http://ant.apache.org/bindownload.cgi) and add to system PATH.
+1. Install [JDK 21 LTS](https://adoptium.net/temurin/releases/?version=21), [Apache Ant](https://ant.apache.org/bindownload.cgi) and add to system PATH.
 2. cd to Astrosoft dir `cd Astrosoft`
 3. Run ant target to deploy and run astrosoft application `ant deploy-run`
 
