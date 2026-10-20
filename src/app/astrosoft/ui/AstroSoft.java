@@ -318,9 +318,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 		final JPanel ashtavargaWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		ashtavargaWrapper.setOpaque(false);
 		ashtavargaWrapper.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-		ashtavargaWrapper.setBorder(javax.swing.BorderFactory.createEmptyBorder(30, 0, 0, 0));
-		ashtavargaWrapper.setPreferredSize(new Dimension(740, ashtavargaPane.getPreferredSize().height + 30));
-		ashtavargaWrapper.setMaximumSize(new Dimension(740, ashtavargaPane.getPreferredSize().height + 30));
+		ashtavargaWrapper.setBorder(javax.swing.BorderFactory.createEmptyBorder(25, 0, 0, 0));
+		ashtavargaWrapper.setPreferredSize(new Dimension(740, ashtavargaPane.getPreferredSize().height + 25));
+		ashtavargaWrapper.setMaximumSize(new Dimension(740, ashtavargaPane.getPreferredSize().height + 25));
 		ashtavargaWrapper.add(ashtavargaPane);
 
 		final JPanel rightContainer = new JPanel();
@@ -328,6 +328,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 		rightContainer.setOpaque(false);
 		rightContainer.add(rasiNavamsaPanel);
 		rightContainer.setPreferredSize(new Dimension(760, 320));
+
+		final JPanel rightWrapper = new JPanel(new BorderLayout());
+		rightWrapper.setOpaque(false);
+		rightWrapper.add(rightContainer, BorderLayout.NORTH);
 
 		final JPanel contentPanel = new JPanel(new BorderLayout(50, 0));
 		contentPanel.setOpaque(false);
@@ -429,6 +433,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 				}
 				rightContainer.revalidate();
 				rightContainer.repaint();
+				rightWrapper.revalidate();
+				rightWrapper.repaint();
 				contentPanel.revalidate();
 				contentPanel.repaint();
 				contentWrapper.revalidate();
@@ -439,7 +445,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		});
 
 		contentPanel.add(leftWrapper, BorderLayout.WEST);
-		contentPanel.add(rightContainer, BorderLayout.CENTER);
+		contentPanel.add(rightWrapper, BorderLayout.CENTER);
 
 		JPanel view = new JPanel(new BorderLayout());
 		view.setName("ChartView");
