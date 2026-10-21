@@ -36,6 +36,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -48,6 +49,8 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.PlanetChartData;
@@ -354,6 +357,12 @@ public class MarriageMatchView extends AstrosoftView {
 		kutaTable.setColumnWidth(140, AstrosoftTableColumn.Kuta);
 		kutaTable.setRowColor(13, Color.RED);
 
+		int kutaIdx = kutaModel.getColumnIndex(AstrosoftTableColumn.Kuta);
+		if (kutaIdx >= 0) {
+			TableColumn tc = kutaTable.getColumnModel().getColumn(kutaIdx);
+			tc.setCellRenderer(new LeftPaddedCellRenderer(tc.getCellRenderer(), 6));
+		}
+
 		JPanel tablePanel = new JPanel(new BorderLayout());
 		tablePanel.setBackground(Color.WHITE);
 		tablePanel.add(kutaTable.getTableHeader(), BorderLayout.NORTH);
@@ -382,6 +391,12 @@ public class MarriageMatchView extends AstrosoftView {
 		doshaTable.setRowColor(5, Color.RED);
 		doshaTable.setColumnNumberFormat(AstrosoftTableColumn.Boy, new java.text.DecimalFormat("00.00"));
 		doshaTable.setColumnNumberFormat(AstrosoftTableColumn.Girl, new java.text.DecimalFormat("00.00"));
+
+		int doshaIdx = ((AstrosoftTableModel) doshaTable.getModel()).getColumnIndex(AstrosoftTableColumn.Dosha);
+		if (doshaIdx >= 0) {
+			TableColumn tc = doshaTable.getColumnModel().getColumn(doshaIdx);
+			tc.setCellRenderer(new LeftPaddedCellRenderer(tc.getCellRenderer(), 6));
+		}
 
 		JPanel tablePanel = new JPanel(new BorderLayout());
 		tablePanel.setBackground(Color.WHITE);
@@ -573,5 +588,29 @@ public class MarriageMatchView extends AstrosoftView {
 		Border titled = BorderFactory.createTitledBorder(line, " " + title + " ", TitledBorder.LEFT, TitledBorder.TOP, TITLE_FONT, UIConsts.DARK_BLUE);
 		Border padding = BorderFactory.createEmptyBorder(6, 6, 6, 6);
 		return BorderFactory.createCompoundBorder(titled, padding);
+	}
+
+	/**
+	 * Wrapper TableCellRenderer that adds left padding to text labels (e.g. Kuta and Dosha names),
+	 * preventing text from hugging the left table/cell border.
+	 */
+	private static class LeftPaddedCellRenderer implements TableCellRenderer {
+		private final TableCellRenderer delegate;
+		private final int padding;
+
+		public LeftPaddedCellRenderer(TableCellRenderer delegate, int padding) {
+			this.delegate = delegate;
+			this.padding = padding;
+		}
+
+		public Component getTableCellRendererComponent(JTable table, Object value,
+				boolean isSelected, boolean hasFocus, int row, int column) {
+			TableCellRenderer r = (delegate != null) ? delegate : table.getDefaultRenderer(table.getColumnClass(column));
+			Component c = r.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (c instanceof JComponent) {
+				((JComponent) c).setBorder(BorderFactory.createEmptyBorder(0, padding, 0, 0));
+			}
+			return c;
+		}
 	}
 }

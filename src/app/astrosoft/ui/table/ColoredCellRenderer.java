@@ -52,6 +52,7 @@ public class ColoredCellRenderer implements TableCellRenderer {
 				
 				l.setFont(c.getFont());
 				l.setHorizontalAlignment(((JLabel)c).getHorizontalAlignment());
+				l.setBorder(((JLabel)c).getBorder());
 				return l;
 			}
 		}else{
