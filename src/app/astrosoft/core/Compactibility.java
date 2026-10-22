@@ -22,6 +22,7 @@ import app.astrosoft.consts.AstroConsts;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.consts.Kuta;
+import app.astrosoft.consts.Nadi;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
@@ -59,6 +60,10 @@ public class Compactibility implements Exportable {
 	private int boyNak;
 
 	private int girlNak;
+
+	private int boyPada = 0;
+
+	private int girlPada = 0;
 
 	private int boyRasi;
 
@@ -117,15 +122,25 @@ public class Compactibility implements Exportable {
 	private boolean hasHoroscope = false;
 
 	/**
-	 * Creates a new instance of Compactibility
+	 * Creates a new instance of Compactibility with Star Quick Entry (Option A: Padas unspecified).
 	 */
 	public Compactibility(String boyName, String girlName, Nakshathra boyNak,
 			Nakshathra girlNak, Rasi boyRasi, Rasi girlRasi) {
+		this(boyName, girlName, boyNak, 0, girlNak, 0, boyRasi, girlRasi);
+	}
+
+	/**
+	 * Creates a new instance of Compactibility with explicit Nakshatra Padas (1 to 4, or 0 if unspecified).
+	 */
+	public Compactibility(String boyName, String girlName, Nakshathra boyNak,
+			int boyPada, Nakshathra girlNak, int girlPada, Rasi boyRasi, Rasi girlRasi) {
 
 		this.boyName = boyName;
 		this.girlName = girlName;
 		this.boyNak = boyNak.ordinal();
+		this.boyPada = boyPada;
 		this.girlNak = girlNak.ordinal();
+		this.girlPada = girlPada;
 		this.boyRasi = boyRasi.ordinal();
 		this.girlRasi = girlRasi.ordinal();
 		kutas = new EnumMap<Kuta, Integer>(Kuta.class);
@@ -141,7 +156,10 @@ public class Compactibility implements Exportable {
 	}
 
 	public Compactibility(Horoscope b, Horoscope g) {
-		this(b.getBirthData().name(), g.getBirthData().name(), b.getNakshathra().getNak(), g.getNakshathra().getNak(), b.getRasi(), g.getRasi());
+		this(b.getBirthData().name(), g.getBirthData().name(),
+				b.getNakshathra().getNak(), b.getNakshathra().getPada(),
+				g.getNakshathra().getNak(), g.getNakshathra().getPada(),
+				b.getRasi(), g.getRasi());
 
 		this.boyHoroscope = b;
 		this.girlHoroscope = g;
@@ -915,13 +933,89 @@ public class Compactibility implements Exportable {
 
 	}
 
+	/**
+	 * Calculates Nadi Kuta agreement (maximum 8 points).
+	 *
+	 * Nadi represents pulse, nervous energy, and physiological constitution,
+	 * corresponding directly to the three Ayurvedic humours (Tridoshas):
+	 * - Vata (Wind / Adi - 1st Nadi)
+	 * - Pitta (Bile / Madhya - 2nd Nadi)
+	 * - Sleshma (Phlegm / Antya - 3rd Nadi)
+	 *
+	 * Evaluation Logic:
+	 * 1. Macro-Level Check:
+	 *    If bride and groom belong to different Nadis at the gross Nakshatra level,
+	 *    there is physiological harmony (no Nadi Dosha) -> award full 8 points.
+	 *
+	 * 2. Exception & Finer Reckoning Rules (when both share the same macro Nadi):
+	 *    - Rule 1: Madhya Nadi Dosha (Both Pitta):
+	 *      Strictly rejected -> award 0 points. As emphasized by Dr. B.V. Raman,
+	 *      stars falling in the middle line cannot be mitigated; Moon Padas are
+	 *      strictly NOT checked.
+	 *    - Rule 2: Adi (Both Vata) or Antya (Both Sleshma):
+	 *      Considered a milder dosha. When Moon Padas are available (Horoscope mode):
+	 *      * The 108 Nakshatra Pada Nadi table is evaluated using the serpentine
+	 *        counting rule (Option 2: forward and backward in threes).
+	 *      * If the couple's Moon Padas fall into DIFFERENT Pada Nadis, the dosha
+	 *        is partially neutralized -> award 4 points.
+	 *      * If the Moon Padas fall into the SAME Pada Nadi, the dosha remains -> award 0 points.
+	 *    - Option A (Star Quick Entry):
+	 *      If Moon Padas are not available (pada == 0), the exception cannot be
+	 *      reckoned, so sharing the same macro Nadi defaults to 0 points.
+	 *
+	 * @return 8 if different macro Nadis; 4 if mitigated by different Moon Padas; 0 otherwise.
+	 */
 	private int calcNadiKuta() {
 
-		int nadi = FileOps.getFromFile(KutaFile.NadiKuta.file(), girlNak + 1,
+		int macroScore = FileOps.getFromFile(KutaFile.NadiKuta.file(), girlNak + 1,
 				boyNak + 1);
 
-		return nadi;
+		// If different Nadis at macro level, full agreement (8 points)
+		if (macroScore > 0) {
+			return macroScore;
+		}
 
+		// Macro score is 0 (Same Nadi) -> Evaluate exception rules
+		return evaluateNadiException();
+	}
+
+	/**
+	 * Evaluates Nadi exception rules when macro Nadi matches.
+	 *
+	 * Encapsulates the exception hierarchy:
+	 * 1. Both Madhya (Pitta) -> strictly 0 points.
+	 * 2. Both Adi (Vata) or Both Antya (Sleshma) -> checks Moon Padas via Option 2.
+	 *    - If Padas map to different Pada Nadis -> 4 points (partial relief).
+	 *    - Otherwise -> 0 points.
+	 *
+	 * @return 4 if dosha is mitigated by different Moon Padas; 0 otherwise.
+	 */
+	private int evaluateNadiException() {
+
+		Nadi boyMacro = Nadi.ofNakshathra(boyNak);
+		Nadi girlMacro = Nadi.ofNakshathra(girlNak);
+
+		// Rule 1: Madhya Nadi Dosha (Both Pitta) - Strictly rejected. Padas are not checked.
+		if (boyMacro == Nadi.Pitta && girlMacro == Nadi.Pitta) {
+			return 0;
+		}
+
+		// Rule 2: Both in Adi (Vata) or Both in Antya (Sleshma)
+		// Check Moon Padas if available (1 to 4)
+		if (boyPada >= 1 && boyPada <= 4 && girlPada >= 1 && girlPada <= 4) {
+
+			// Evaluate Pada Nadis using Option 2 (on-the-fly serpentine formula)
+			Nadi boyPadaNadi = Nadi.ofPada(boyNak, boyPada);
+			Nadi girlPadaNadi = Nadi.ofPada(girlNak, girlPada);
+
+			// Partial relief: award 4 points if Padas belong to different Nadis
+			if (boyPadaNadi != girlPadaNadi) {
+				return 4;
+			}
+		}
+
+		// Either Padas not available (Option A) or both share the same Pada Nadi
+		return 0;
 	}
 
 	private void calcDoshas() {
@@ -1315,6 +1409,18 @@ public class Compactibility implements Exportable {
 
 	public Nakshathra getGirlNak() {
 		return Nakshathra.ofIndex(girlNak);
+	}
+
+	public int getBoyPada() {
+		return boyPada;
+	}
+
+	public int getGirlPada() {
+		return girlPada;
+	}
+
+	public int getKuta(Kuta kuta) {
+		return kutas.get(kuta);
 	}
 
 	public Horoscope getBoyHoroscope() {
