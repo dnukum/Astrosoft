@@ -39,7 +39,7 @@ public class MarriageMatchVisualTest {
 		viewDashboard.paint(g1);
 		g1.dispose();
 
-		File out1 = new File("/Users/mukunds100/.gemini/antigravity/brain/9cbad7af-32b0-406c-936b-c81bfa03e7f3/marriage_match_dashboard.png");
+		File out1 = new File("/Users/mukunds100/.gemini/antigravity/brain/1cda3d64-9487-4165-8fa9-01b571628650/marriage_match_dashboard.png");
 		ImageIO.write(imgDashboard, "png", out1);
 		System.out.println("Saved Dashboard image to: " + out1.getAbsolutePath());
 

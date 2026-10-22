@@ -98,6 +98,10 @@ public class ShadBalaBarView extends JPanel {
 		title.setText(text);
 	}
 
+	public List<PlanetBalaItem> getItems() {
+		return Collections.unmodifiableList(items);
+	}
+
 	public static List<PlanetBalaItem> extractItems(ShadBala shadBala) {
 		List<PlanetBalaItem> list = new ArrayList<PlanetBalaItem>();
 		if (shadBala == null) return list;
@@ -144,10 +148,10 @@ public class ShadBalaBarView extends JPanel {
 			}
 		}
 
-		// Sort descending by Bala %
+		// Standard traditional astrological order: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn
 		Collections.sort(items, new Comparator<PlanetBalaItem>() {
 			public int compare(PlanetBalaItem o1, PlanetBalaItem o2) {
-				return Double.compare(o2.balaPercent, o1.balaPercent);
+				return Integer.compare(o1.planet.ordinal(), o2.planet.ordinal());
 			}
 		});
 

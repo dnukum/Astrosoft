@@ -36,6 +36,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -102,6 +103,9 @@ public class MarriageMatchView extends AstrosoftView {
 	private final Compactibility c;
 	private ViewMode currentMode = ViewMode.DASHBOARD;
 	private Varga currentVarga = Varga.Rasi;
+
+	private JCheckBox shadbalaCheck;
+	private JPanel shadbalaWrapper;
 
 	public MarriageMatchView(Compactibility c, Point loc) {
 		super(VIEW_SIZE, loc);
@@ -173,9 +177,45 @@ public class MarriageMatchView extends AstrosoftView {
 		rightCol.setMaximumSize(new Dimension(660, 810));
 
 		if (c.hasHoroscope()) {
-			rightCol.add(createChartsCard2Col());
-			rightCol.add(Box.createVerticalStrut(25)); // 25px vertical strut (+15px down)
-			rightCol.add(createShadbalaCard2Col());
+			JPanel chartsCard = createChartsCard2Col();
+			chartsCard.setAlignmentX(Component.LEFT_ALIGNMENT);
+			rightCol.add(chartsCard);
+			rightCol.add(Box.createVerticalStrut(8)); // 8 pixels below lower edge of bounding box
+
+			shadbalaCheck = new JCheckBox("Shadbala");
+			shadbalaCheck.setSelected(false);
+			shadbalaCheck.setOpaque(false);
+			shadbalaCheck.setFocusable(false);
+			shadbalaCheck.setFont(new Font("Verdana", Font.PLAIN, 11));
+			shadbalaCheck.setForeground(UIConsts.DARK_BLUE);
+			shadbalaCheck.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if (shadbalaWrapper != null) {
+						shadbalaWrapper.setVisible(shadbalaCheck.isSelected());
+						MarriageMatchView.this.revalidate();
+						MarriageMatchView.this.repaint();
+					}
+				}
+			});
+
+			JPanel checkPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+			checkPanel.setOpaque(false);
+			checkPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			checkPanel.setMaximumSize(new Dimension(660, 24));
+			checkPanel.add(shadbalaCheck);
+			rightCol.add(checkPanel);
+
+			shadbalaWrapper = new JPanel();
+			shadbalaWrapper.setLayout(new BoxLayout(shadbalaWrapper, BoxLayout.Y_AXIS));
+			shadbalaWrapper.setOpaque(false);
+			shadbalaWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+			shadbalaWrapper.add(Box.createVerticalStrut(8));
+			JPanel shadbalaCard = createShadbalaCard2Col();
+			shadbalaCard.setAlignmentX(Component.LEFT_ALIGNMENT);
+			shadbalaWrapper.add(shadbalaCard);
+			shadbalaWrapper.setVisible(false); // Optional: default off
+
+			rightCol.add(shadbalaWrapper);
 		} else {
 			rightCol.add(createQuickEntryNoticeCard());
 		}
@@ -437,12 +477,13 @@ public class MarriageMatchView extends AstrosoftView {
 	private JPanel createChartsCard2Col() {
 		JPanel card = new JPanel(new BorderLayout());
 		card.setOpaque(false);
+		card.setAlignmentX(Component.LEFT_ALIGNMENT);
 		card.setBorder(createCardBorder("Rasi and Navamsha"));
 
 		JPanel inner = new JPanel(new GridBagLayout());
 		inner.setOpaque(false);
-		// 24px bottom padding provides generous clearance so the lower border of bottom charts is never clipped
-		inner.setBorder(BorderFactory.createEmptyBorder(6, 12, 24, 12));
+		// 6px bottom padding matches the top edge to provide balanced margins around charts
+		inner.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
 
 		Dimension chartSize = new Dimension(296, 220);
 
@@ -475,7 +516,7 @@ public class MarriageMatchView extends AstrosoftView {
 		gbc.insets = new Insets(0, 0, 10, 0);
 		inner.add(boyRow, gbc);
 
-		// Separator line: 10px vertical clearance above and below, 10px lateral insets from chart edges
+		// Separator line 1: 10px vertical clearance above and below, 10px lateral insets from chart edges
 		gbc.gridy = 1;
 		gbc.insets = new Insets(0, 10, 10, 10);
 		inner.add(separator, gbc);
@@ -486,9 +527,9 @@ public class MarriageMatchView extends AstrosoftView {
 		inner.add(girlRow, gbc);
 
 		card.add(inner, BorderLayout.CENTER);
-		card.setPreferredSize(new Dimension(660, 525));
-		card.setMinimumSize(new Dimension(660, 525));
-		card.setMaximumSize(new Dimension(660, 525));
+		card.setPreferredSize(new Dimension(660, 505));
+		card.setMinimumSize(new Dimension(660, 505));
+		card.setMaximumSize(new Dimension(660, 505));
 		return card;
 	}
 
@@ -498,6 +539,7 @@ public class MarriageMatchView extends AstrosoftView {
 	private JPanel createShadbalaCard2Col() {
 		JPanel card = new JPanel(new BorderLayout());
 		card.setOpaque(false);
+		card.setAlignmentX(Component.LEFT_ALIGNMENT);
 		card.setBorder(createCardBorder("Shadbala"));
 
 		JPanel inner = new JPanel(new GridLayout(1, 2, 16, 0));
@@ -581,6 +623,25 @@ public class MarriageMatchView extends AstrosoftView {
 
 	public Varga getCurrentChartVarga() {
 		return currentVarga;
+	}
+
+	public JCheckBox getShadbalaCheck() {
+		return shadbalaCheck;
+	}
+
+	public void setShadbalaVisible(boolean visible) {
+		if (shadbalaCheck != null) {
+			shadbalaCheck.setSelected(visible);
+			if (shadbalaWrapper != null) {
+				shadbalaWrapper.setVisible(visible);
+				revalidate();
+				repaint();
+			}
+		}
+	}
+
+	public boolean isShadbalaVisible() {
+		return shadbalaWrapper != null && shadbalaWrapper.isVisible();
 	}
 
 	private Border createCardBorder(String title) {

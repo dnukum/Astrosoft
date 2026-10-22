@@ -85,6 +85,14 @@ public class MarriageMatchTest extends TestCase {
 
 		ShadBalaBarView girlView = new ShadBalaBarView(girlShadBala, "Girl: Mani", new Dimension(360, 218));
 		assertEquals(360, girlView.getPreferredSize().width);
+
+		// Verify traditional astrological order (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn)
+		Planet[] expectedOrder = { Planet.Sun, Planet.Moon, Planet.Mars, Planet.Mercury, Planet.Jupiter, Planet.Venus, Planet.Saturn };
+		List<PlanetBalaItem> renderedItems = boyView.getItems();
+		assertEquals(7, renderedItems.size());
+		for (int i = 0; i < expectedOrder.length; i++) {
+			assertEquals("Planet at row " + i + " must follow traditional order", expectedOrder[i], renderedItems.get(i).planet);
+		}
 	}
 
 	public void testMarriageMatchViewCreationAndModeSwitching() {
@@ -110,6 +118,21 @@ public class MarriageMatchTest extends TestCase {
 
 		view.setChartVarga(app.astrosoft.consts.Varga.Rasi);
 		assertEquals(app.astrosoft.consts.Varga.Rasi, view.getCurrentChartVarga());
+
+		// Test Shadbala optional visibility: default OFF
+		assertNotNull("Shadbala checkbox must exist", view.getShadbalaCheck());
+		assertFalse("Shadbala checkbox must be unchecked by default", view.getShadbalaCheck().isSelected());
+		assertFalse("Shadbala card must be hidden by default", view.isShadbalaVisible());
+
+		// Test toggling Shadbala on
+		view.setShadbalaVisible(true);
+		assertTrue("Shadbala checkbox must be checked when visible", view.getShadbalaCheck().isSelected());
+		assertTrue("Shadbala card must be visible", view.isShadbalaVisible());
+
+		// Test toggling Shadbala back off
+		view.setShadbalaVisible(false);
+		assertFalse("Shadbala checkbox must be unchecked", view.getShadbalaCheck().isSelected());
+		assertFalse("Shadbala card must be hidden", view.isShadbalaVisible());
 	}
 
 	public void testMarriageMatchViewWithQuickStarEntry() {
