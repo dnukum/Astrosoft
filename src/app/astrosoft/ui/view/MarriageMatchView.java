@@ -57,7 +57,11 @@ import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.PlanetChartData;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.DisplayStrings;
+import java.awt.CardLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JRadioButton;
 import app.astrosoft.consts.Kuta;
+import app.astrosoft.ui.comp.DasaTimelinePanel;
 import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.TableStyle;
@@ -104,8 +108,15 @@ public class MarriageMatchView extends AstrosoftView {
 	private ViewMode currentMode = ViewMode.DASHBOARD;
 	private Varga currentVarga = Varga.Rasi;
 
-	private JCheckBox shadbalaCheck;
-	private JPanel shadbalaWrapper;
+	private JRadioButton shadbalaRadio;
+	private JRadioButton timelineRadio;
+	private JPanel dynamicCardWrapper;
+	private DasaTimelinePanel dasaTimelinePanel;
+	private JCheckBox shadbalaCheck; // Compatibility proxy
+
+	private JPanel dashboardContainer;
+	private JPanel rightColPanel;
+	private JScrollPane dashboardScroll;
 
 	public MarriageMatchView(Compactibility c, Point loc) {
 		super(VIEW_SIZE, loc);
@@ -118,7 +129,7 @@ public class MarriageMatchView extends AstrosoftView {
 
 		JPanel dashboardPanel = createDashboardView();
 
-		JScrollPane dashboardScroll = new JScrollPane(dashboardPanel);
+		this.dashboardScroll = new JScrollPane(dashboardPanel);
 		dashboardScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		dashboardScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		dashboardScroll.getHorizontalScrollBar().setUnitIncrement(24);
@@ -135,9 +146,9 @@ public class MarriageMatchView extends AstrosoftView {
 	 * Right Column: 4 Horoscope Charts (Boy & Girl Rasi + Navamsha) & Dual Shadbala bar graphs
 	 */
 	private JPanel createDashboardView() {
-		JPanel container = new JPanel(new GridBagLayout());
-		container.setBackground(Color.WHITE);
-		container.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
+		this.dashboardContainer = new JPanel(new GridBagLayout());
+		dashboardContainer.setBackground(Color.WHITE);
+		dashboardContainer.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
 
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridy = 0;
@@ -164,68 +175,98 @@ public class MarriageMatchView extends AstrosoftView {
 			leftCol.add(createDoshaCard());
 		}
 		leftCol.add(Box.createVerticalGlue());
-		container.add(leftCol, gbc);
+		dashboardContainer.add(leftCol, gbc);
 
-		// --- Right Column (660px FIXED with 4 Charts + Shadbala) ---
+		// --- Right Column (660px Default with 4 Charts + Shadbala / Timeline) ---
 		gbc.gridx = 1;
 		gbc.insets = new Insets(0, 0, 0, 0);
-		JPanel rightCol = new JPanel();
-		rightCol.setLayout(new BoxLayout(rightCol, BoxLayout.Y_AXIS));
-		rightCol.setOpaque(false);
-		rightCol.setPreferredSize(new Dimension(660, 810));
-		rightCol.setMinimumSize(new Dimension(660, 810));
-		rightCol.setMaximumSize(new Dimension(660, 810));
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		this.rightColPanel = new JPanel();
+		rightColPanel.setLayout(new BoxLayout(rightColPanel, BoxLayout.Y_AXIS));
+		rightColPanel.setOpaque(false);
+		rightColPanel.setPreferredSize(new Dimension(660, 810));
+		rightColPanel.setMinimumSize(new Dimension(660, 810));
+		rightColPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
 
 		if (c.hasHoroscope()) {
 			JPanel chartsCard = createChartsCard2Col();
 			chartsCard.setAlignmentX(Component.LEFT_ALIGNMENT);
-			rightCol.add(chartsCard);
-			rightCol.add(Box.createVerticalStrut(8)); // 8 pixels below lower edge of bounding box
+			rightColPanel.add(chartsCard);
+			rightColPanel.add(Box.createVerticalStrut(8)); // 8 pixels below lower edge of bounding box
+
+			shadbalaRadio = new JRadioButton("Shadbala");
+			shadbalaRadio.setSelected(false);
+			shadbalaRadio.setOpaque(false);
+			shadbalaRadio.setFocusable(false);
+			shadbalaRadio.setFont(new Font("Verdana", Font.PLAIN, 11));
+			shadbalaRadio.setForeground(UIConsts.DARK_BLUE);
+
+			timelineRadio = new JRadioButton("Dasa Timeline");
+			timelineRadio.setSelected(false);
+			timelineRadio.setOpaque(false);
+			timelineRadio.setFocusable(false);
+			timelineRadio.setFont(new Font("Verdana", Font.PLAIN, 11));
+			timelineRadio.setForeground(UIConsts.DARK_BLUE);
 
 			shadbalaCheck = new JCheckBox("Shadbala");
-			shadbalaCheck.setSelected(false);
-			shadbalaCheck.setOpaque(false);
-			shadbalaCheck.setFocusable(false);
-			shadbalaCheck.setFont(new Font("Verdana", Font.PLAIN, 11));
-			shadbalaCheck.setForeground(UIConsts.DARK_BLUE);
-			shadbalaCheck.addActionListener(new ActionListener() {
+
+			shadbalaRadio.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if (shadbalaWrapper != null) {
-						shadbalaWrapper.setVisible(shadbalaCheck.isSelected());
-						MarriageMatchView.this.revalidate();
-						MarriageMatchView.this.repaint();
+					if (shadbalaRadio.isSelected() && timelineRadio != null) {
+						timelineRadio.setSelected(false);
 					}
+					updateRightPanelCard();
+				}
+			});
+			timelineRadio.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if (timelineRadio.isSelected() && shadbalaRadio != null) {
+						shadbalaRadio.setSelected(false);
+					}
+					updateRightPanelCard();
 				}
 			});
 
-			JPanel checkPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+			JPanel checkPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
 			checkPanel.setOpaque(false);
 			checkPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 			checkPanel.setMaximumSize(new Dimension(660, 24));
-			checkPanel.add(shadbalaCheck);
-			rightCol.add(checkPanel);
+			checkPanel.add(shadbalaRadio);
+			checkPanel.add(timelineRadio);
+			rightColPanel.add(checkPanel);
 
-			shadbalaWrapper = new JPanel();
-			shadbalaWrapper.setLayout(new BoxLayout(shadbalaWrapper, BoxLayout.Y_AXIS));
-			shadbalaWrapper.setOpaque(false);
-			shadbalaWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
-			shadbalaWrapper.add(Box.createVerticalStrut(8));
+			dynamicCardWrapper = new JPanel(new CardLayout());
+			dynamicCardWrapper.setOpaque(false);
+			dynamicCardWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+
 			JPanel shadbalaCard = createShadbalaCard2Col();
-			shadbalaCard.setAlignmentX(Component.LEFT_ALIGNMENT);
-			shadbalaWrapper.add(shadbalaCard);
-			shadbalaWrapper.setVisible(false); // Optional: default off
+			dynamicCardWrapper.add(shadbalaCard, "SHADBALA");
 
-			rightCol.add(shadbalaWrapper);
+			dasaTimelinePanel = new DasaTimelinePanel(c.getBoyHoroscope(), c.getGirlHoroscope());
+			dasaTimelinePanel.setBorder(createCardBorder("Dasa & Bukti Timeline"));
+			dasaTimelinePanel.setResizeListener(new DasaTimelinePanel.ResizeListener() {
+				public void onResize(int newWidth, int newHeight) {
+					resizeTimelineCard(newWidth, newHeight);
+				}
+			});
+			dynamicCardWrapper.add(dasaTimelinePanel, "TIMELINE");
+
+			dynamicCardWrapper.setVisible(false); // Default off until user selects a radio button
+
+			rightColPanel.add(Box.createVerticalStrut(13)); // 8 + 5px additional vertical spacing
+			rightColPanel.add(dynamicCardWrapper);
 		} else {
-			rightCol.add(createQuickEntryNoticeCard());
+			rightColPanel.add(createQuickEntryNoticeCard());
 		}
-		rightCol.add(Box.createVerticalGlue());
-		container.add(rightCol, gbc);
+		rightColPanel.add(Box.createVerticalGlue());
+		dashboardContainer.add(rightColPanel, gbc);
 
-		container.setPreferredSize(new Dimension(1211, 845));
-		container.setMinimumSize(new Dimension(1211, 845));
+		dashboardContainer.setPreferredSize(new Dimension(1211, 845));
+		dashboardContainer.setMinimumSize(new Dimension(1211, 845));
+		dashboardContainer.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
 
-		return container;
+		return dashboardContainer;
 	}
 
 	/**
@@ -626,22 +667,118 @@ public class MarriageMatchView extends AstrosoftView {
 	}
 
 	public JCheckBox getShadbalaCheck() {
+		if (shadbalaCheck == null) {
+			shadbalaCheck = new JCheckBox("Shadbala");
+		}
+		shadbalaCheck.setSelected(isShadbalaVisible());
 		return shadbalaCheck;
 	}
 
+	public JRadioButton getShadbalaRadio() {
+		return shadbalaRadio;
+	}
+
+	public JRadioButton getTimelineRadio() {
+		return timelineRadio;
+	}
+
+	public DasaTimelinePanel getDasaTimelinePanel() {
+		return dasaTimelinePanel;
+	}
+
 	public void setShadbalaVisible(boolean visible) {
-		if (shadbalaCheck != null) {
-			shadbalaCheck.setSelected(visible);
-			if (shadbalaWrapper != null) {
-				shadbalaWrapper.setVisible(visible);
-				revalidate();
-				repaint();
+		if (shadbalaRadio != null) {
+			shadbalaRadio.setSelected(visible);
+			if (visible && timelineRadio != null) {
+				timelineRadio.setSelected(false);
 			}
+			updateRightPanelCard();
 		}
 	}
 
 	public boolean isShadbalaVisible() {
-		return shadbalaWrapper != null && shadbalaWrapper.isVisible();
+		return shadbalaRadio != null && shadbalaRadio.isSelected() && dynamicCardWrapper != null && dynamicCardWrapper.isVisible();
+	}
+
+	public void setTimelineVisible(boolean visible) {
+		if (timelineRadio != null) {
+			timelineRadio.setSelected(visible);
+			if (visible && shadbalaRadio != null) {
+				shadbalaRadio.setSelected(false);
+			}
+			updateRightPanelCard();
+		}
+	}
+
+	public boolean isTimelineVisible() {
+		return timelineRadio != null && timelineRadio.isSelected() && dynamicCardWrapper != null && dynamicCardWrapper.isVisible();
+	}
+
+	private void updateRightPanelCard() {
+		if (dynamicCardWrapper == null) {
+			return;
+		}
+
+		CardLayout cl = (CardLayout) dynamicCardWrapper.getLayout();
+		if (shadbalaRadio != null && shadbalaRadio.isSelected()) {
+			cl.show(dynamicCardWrapper, "SHADBALA");
+			dynamicCardWrapper.setVisible(true);
+			if (shadbalaCheck != null) {
+				shadbalaCheck.setSelected(true);
+			}
+		} else if (timelineRadio != null && timelineRadio.isSelected()) {
+			cl.show(dynamicCardWrapper, "TIMELINE");
+			dynamicCardWrapper.setVisible(true);
+			if (shadbalaCheck != null) {
+				shadbalaCheck.setSelected(false);
+			}
+		} else {
+			dynamicCardWrapper.setVisible(false);
+			if (shadbalaCheck != null) {
+				shadbalaCheck.setSelected(false);
+			}
+		}
+
+		revalidate();
+		repaint();
+	}
+
+	/**
+	 * Dynamically resizes the Dasa Timeline card, right column, and outer dashboard container
+	 * as the user drags the horizontal or vertical handle bars on the timeline table.
+	 */
+	public void resizeTimelineCard(int newWidth, int newHeight) {
+		int currentW = (dasaTimelinePanel != null) ? dasaTimelinePanel.getPreferredSize().width : 660;
+		int clampedW = Math.max(660, newWidth > 0 ? newWidth : currentW);
+
+		int currentH = (dasaTimelinePanel != null) ? dasaTimelinePanel.getPreferredSize().height : 360;
+		int clampedH = Math.max(220, newHeight > 0 ? newHeight : currentH);
+
+		if (dasaTimelinePanel != null) {
+			dasaTimelinePanel.setPreferredSize(new Dimension(clampedW, clampedH));
+			dasaTimelinePanel.setMinimumSize(new Dimension(clampedW, clampedH));
+		}
+		if (dynamicCardWrapper != null) {
+			dynamicCardWrapper.setPreferredSize(new Dimension(clampedW, clampedH));
+			dynamicCardWrapper.setMinimumSize(new Dimension(clampedW, clampedH));
+		}
+		if (rightColPanel != null) {
+			int chartsHeight = 425; // 4 charts + radio buttons panel
+			rightColPanel.setPreferredSize(new Dimension(clampedW, chartsHeight + clampedH + 20));
+			rightColPanel.setMinimumSize(new Dimension(clampedW, chartsHeight + clampedH + 20));
+		}
+		if (dashboardContainer != null) {
+			int totalW = 500 + 23 + clampedW + 35;
+			int totalH = Math.max(845, 425 + clampedH + 50);
+			dashboardContainer.setPreferredSize(new Dimension(totalW, totalH));
+			dashboardContainer.setMinimumSize(new Dimension(totalW, totalH));
+			dashboardContainer.revalidate();
+			dashboardContainer.repaint();
+		}
+		if (dashboardScroll != null) {
+			dashboardScroll.revalidate();
+			dashboardScroll.repaint();
+		}
 	}
 
 	private Border createCardBorder(String title) {

@@ -120,19 +120,69 @@ public class MarriageMatchTest extends TestCase {
 		assertEquals(app.astrosoft.consts.Varga.Rasi, view.getCurrentChartVarga());
 
 		// Test Shadbala optional visibility: default OFF
-		assertNotNull("Shadbala checkbox must exist", view.getShadbalaCheck());
-		assertFalse("Shadbala checkbox must be unchecked by default", view.getShadbalaCheck().isSelected());
+		assertNotNull("Shadbala radio must exist", view.getShadbalaRadio());
+		assertNotNull("Timeline radio must exist", view.getTimelineRadio());
+		assertFalse("Shadbala radio must be unchecked by default", view.getShadbalaRadio().isSelected());
+		assertFalse("Timeline radio must be unchecked by default", view.getTimelineRadio().isSelected());
 		assertFalse("Shadbala card must be hidden by default", view.isShadbalaVisible());
+		assertFalse("Timeline card must be hidden by default", view.isTimelineVisible());
 
 		// Test toggling Shadbala on
 		view.setShadbalaVisible(true);
-		assertTrue("Shadbala checkbox must be checked when visible", view.getShadbalaCheck().isSelected());
+		assertTrue("Shadbala radio must be checked when visible", view.getShadbalaRadio().isSelected());
+		assertFalse("Timeline radio must be unchecked when Shadbala is visible", view.getTimelineRadio().isSelected());
 		assertTrue("Shadbala card must be visible", view.isShadbalaVisible());
+		assertFalse("Timeline card must be hidden", view.isTimelineVisible());
 
-		// Test toggling Shadbala back off
-		view.setShadbalaVisible(false);
-		assertFalse("Shadbala checkbox must be unchecked", view.getShadbalaCheck().isSelected());
+		// Test switching to Dasa Timeline
+		view.setTimelineVisible(true);
+		assertFalse("Shadbala radio must be unchecked when Timeline is selected", view.getShadbalaRadio().isSelected());
+		assertTrue("Timeline radio must be checked when Timeline is visible", view.getTimelineRadio().isSelected());
 		assertFalse("Shadbala card must be hidden", view.isShadbalaVisible());
+		assertTrue("Timeline card must be visible", view.isTimelineVisible());
+
+		// Verify Dasa Timeline panel existence, data, and status text format
+		assertNotNull("DasaTimelinePanel must exist in view", view.getDasaTimelinePanel());
+		assertEquals("Current Period", view.getDasaTimelinePanel().getCurrentPeriodButton().getText());
+		assertNotNull(view.getDasaTimelinePanel().getWindowCombo());
+		assertEquals("Next 5 Years (Default)", view.getDasaTimelinePanel().getWindowCombo().getSelectedItem());
+		int rowCount = view.getDasaTimelinePanel().getTableModel().getRowCount();
+		assertTrue("DasaTimelinePanel must have populated table rows", rowCount > 0);
+		assertEquals(rowCount + " intervals", view.getDasaTimelinePanel().getStatusText());
+
+		// Test toggling back off programmatically
+		view.setTimelineVisible(false);
+		assertFalse("Timeline card must be hidden", view.isTimelineVisible());
+		assertFalse("Timeline radio must be unselected", view.getTimelineRadio().isSelected());
+		assertFalse("Shadbala radio must be unselected", view.getShadbalaRadio().isSelected());
+
+		// Test interactive toggling via doClick(): deselect both when clicked again
+		view.getTimelineRadio().doClick();
+		assertTrue("Timeline radio should be selected after click", view.getTimelineRadio().isSelected());
+		assertFalse("Shadbala radio should remain unselected", view.getShadbalaRadio().isSelected());
+		assertTrue("Timeline card should be visible", view.isTimelineVisible());
+
+		view.getTimelineRadio().doClick(); // Click again to deselect
+		assertFalse("Timeline radio should be deselected after 2nd click", view.getTimelineRadio().isSelected());
+		assertFalse("Shadbala radio should be deselected", view.getShadbalaRadio().isSelected());
+		assertFalse("Timeline card should be hidden when deselected", view.isTimelineVisible());
+
+		view.getShadbalaRadio().doClick();
+		assertTrue("Shadbala radio should be selected after click", view.getShadbalaRadio().isSelected());
+		assertFalse("Timeline radio should remain unselected", view.getTimelineRadio().isSelected());
+		assertTrue("Shadbala card should be visible", view.isShadbalaVisible());
+
+		view.getTimelineRadio().doClick(); // Click timeline to switch
+		assertTrue("Timeline radio should become selected", view.getTimelineRadio().isSelected());
+		assertFalse("Shadbala radio should become unselected", view.getShadbalaRadio().isSelected());
+		assertTrue("Timeline card should become visible", view.isTimelineVisible());
+		assertFalse("Shadbala card should be hidden", view.isShadbalaVisible());
+
+		view.getTimelineRadio().doClick(); // Click timeline again to turn off both
+		assertFalse("Timeline radio should be deselected", view.getTimelineRadio().isSelected());
+		assertFalse("Shadbala radio should be deselected", view.getShadbalaRadio().isSelected());
+		assertFalse("Timeline card should be hidden", view.isTimelineVisible());
+		assertFalse("Shadbala card should be hidden", view.isShadbalaVisible());
 	}
 
 	public void testMarriageMatchViewWithQuickStarEntry() {
