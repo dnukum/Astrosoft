@@ -1,10 +1,1 @@
-Krishnan
-30
-3
-1968
-13
-40
-80.25
-13.083333333333334
-5.5
-Chennai
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Krishnan</Name><DateTime>Mar 30 1968, 01:40:00 PM</DateTime><Place><City>Chennai</City><Longitude dir="E">80.15</Longitude><Latitude dir="N">13.05</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

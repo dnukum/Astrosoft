@@ -1,10 +1,1 @@
-G.VINOTH
-19
-3
-1992
-2
-40
-77.16666666666667
-8.316666666666666
-5.5
-KULASEKARAM
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>G.VINOTH</Name><DateTime>Mar 19 1992, 02:40:00 AM</DateTime><Place><City>KULASEKARAM</City><Longitude dir="E">77.10</Longitude><Latitude dir="N">08.19</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

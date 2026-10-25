@@ -1,10 +1,1 @@
-T.RAMKUMAR
-20
-2
-1968
-14
-0
-77.5
-10.466666666666667
-5.5
-PLANI
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>T.RAMKUMAR</Name><DateTime>Feb 20 1968, 02:00:00 PM</DateTime><Place><City>PLANI</City><Longitude dir="E">77.30</Longitude><Latitude dir="N">10.28</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

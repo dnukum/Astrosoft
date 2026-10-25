@@ -1,10 +1,1 @@
-C.S.KRISHNAN
-3
-6
-1951
-17
-29
-79.35
-10.95
-5.5
-KUMBAKONAM
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>C.S.KRISHNAN</Name><DateTime>Jun 3 1951, 05:29:00 PM</DateTime><Place><City>KUMBAKONAM</City><Longitude dir="E">79.21</Longitude><Latitude dir="N">10.57</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

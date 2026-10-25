@@ -1,10 +1,1 @@
-P.Santhosh
-23
-1
-1984
-19
-13
-77.73333333333333
-11.366666666666667
-5.5
-Erode
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>P.Santhosh</Name><DateTime>Jan 23 1984, 07:13:00 PM</DateTime><Place><City>Erode</City><Longitude dir="E">77.44</Longitude><Latitude dir="N">11.22</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

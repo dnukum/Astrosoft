@@ -1,10 +1,1 @@
-T.THASNEM.FATHIMA
-12
-12
-2006
-8
-50
-115.0
-4.816666666666666
-5.5
-BRUNIE
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>T.THASNEM.FATHIMA</Name><DateTime>Dec 12 2006, 08:50:00 AM</DateTime><Place><City>BRUNIE</City><Longitude dir="E">115.00</Longitude><Latitude dir="N">04.49</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

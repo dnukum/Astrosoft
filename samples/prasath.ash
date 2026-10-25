@@ -1,10 +1,1 @@
-Prasath
-17
-6
-1975
-23
-0
-78.11666666666666
-9.916666666666666
-5.5
-Madurai
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Prasath</Name><DateTime>Jun 17 1975, 11:00:00 PM</DateTime><Place><City>Madurai</City><Longitude dir="E">78.07</Longitude><Latitude dir="N">09.55</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

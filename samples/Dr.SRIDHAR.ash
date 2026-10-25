@@ -1,10 +1,1 @@
-Dr.SRIDHAR
-27
-2
-1962
-9
-15
-78.2
-11.65
-5.5
-SALEM
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Dr.SRIDHAR</Name><DateTime>Feb 27 1962, 09:15:00 AM</DateTime><Place><City>SALEM</City><Longitude dir="E">78.12</Longitude><Latitude dir="N">11.39</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

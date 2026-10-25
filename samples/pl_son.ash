@@ -1,10 +1,1 @@
-gautham
-16
-11
-2001
-13
-50
-77.73333333333333
-11.366666666666667
-5.5
-Erode
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>gautham</Name><DateTime>Nov 16 2001, 01:50:00 PM</DateTime><Place><City>Erode</City><Longitude dir="E">77.44</Longitude><Latitude dir="N">11.22</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

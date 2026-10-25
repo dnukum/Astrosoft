@@ -1,10 +1,1 @@
-S.Anupriyakaveri
-6
-6
-1978
-10
-52
-80.25
-13.083333333333334
-5.5
-Chennai
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>S.Anupriyakaveri</Name><DateTime>Jun 6 1978, 10:52:00 AM</DateTime><Place><City>Chennai</City><Longitude dir="E">80.15</Longitude><Latitude dir="N">13.05</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

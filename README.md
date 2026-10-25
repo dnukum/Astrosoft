@@ -26,20 +26,22 @@ Astrosoft is a free indian astrology software program for astrologers
 ### Launching Astrosoft:
 
 * **On Windows:**
-  * Run `RunAstroSoft.bat` (or navigate to `bin` and run `RunAstroSoft.bat`):
+  * Run `RunAstroSoft20.bat` (or navigate to `bin` and run `RunAstroSoft20.bat`):
     ```cmd
-    RunAstroSoft.bat
+    RunAstroSoft20.bat
     ```
 * **On macOS / Linux:**
-  * Ensure the launch script is executable (especially if downloaded via ZIP):
+  * **macOS Applications & Dock Setup (Recommended on Mac):** Double-click `InstallMacApp.command` in Finder (or run `./InstallMacApp.command`) to install `Astrosoft20.app` into `/Applications`, then drag it to your Dock. Log files are placed at `~/Library/Logs/Astrosoft20/astrosoft.log`.
+  * **Launch via Terminal:**
+    Ensure the launch script is executable (especially if downloaded via ZIP):
     ```bash
-    chmod +x RunAstroSoft.sh bin/RunAstroSoft.sh
+    chmod +x RunAstroSoft20.sh bin/RunAstroSoft20.sh InstallMacApp.command
     ```
-  * Launch Astrosoft:
+    Launch Astrosoft:
     ```bash
-    ./RunAstroSoft.sh
+    ./RunAstroSoft20.sh
     ```
-    *(Or from `bin`: `cd bin && ./RunAstroSoft.sh`)*
+    *(Or from `bin`: `cd bin && ./RunAstroSoft20.sh`)*
 
 > **Note:** The launch scripts include `--add-exports` and `--add-opens` flags configured for Java 21 to access Swing/AWT desktop components cleanly.
 

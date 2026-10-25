@@ -64,9 +64,9 @@ cd Astrosoft
 
 ### On Windows
 1. Open the extracted `Astrosoft-master` (or `Astrosoft`) folder.
-2. Locate the file **`RunAstroSoft.bat`**.
-3. **Double-click `RunAstroSoft.bat`** to start Astrosoft.  
-   *(Alternatively, open Command Prompt in that folder and type `RunAstroSoft.bat`)*
+2. Locate the file **`RunAstroSoft20.bat`**.
+3. **Double-click `RunAstroSoft20.bat`** to start Astrosoft.  
+   *(Alternatively, open Command Prompt in that folder and type `RunAstroSoft20.bat`)*
 
 > [!NOTE]
 > If Windows SmartScreen displays a protection prompt (*"Windows protected your PC"*), click **More info** and then click **Run anyway**.
@@ -74,6 +74,22 @@ cd Astrosoft
 ---
 
 ### On macOS
+
+#### Method A: Install to Applications & Dock / Launch Bar (Recommended)
+1. Open the extracted **`Astrosoft-master`** folder in **Finder**.
+2. Locate **`InstallMacApp.command`** and **double-click** it (or right-click &rarr; **Open**).
+   * *Note:* If macOS shows an *"unidentified developer"* security prompt on first run, open **System Settings &rarr; Privacy & Security**, scroll down to **Security**, and click **Open Anyway** next to `InstallMacApp.command`.
+3. The installer will automatically build a self-contained **`Astrosoft20`** application inside your macOS **Applications** folder (`/Applications/Astrosoft20.app`) and reveal it in Finder.
+4. Double-click **`Astrosoft20`** in **Applications** to launch it.
+5. **Add to Launch Bar (Dock):** Drag **`Astrosoft20`** from **Applications** onto your **Dock** (or right-click the **Astrosoft20** icon in the Dock while it is running and select **Options &rarr; Keep in Dock**). You can now start Astrosoft20 anytime with a single click!
+
+> [!TIP]
+> **Subsequent Updates:** When you download a newer version of Astrosoft in the future, simply run `InstallMacApp.command` again. It cleanly removes the previous build and updates `/Applications/Astrosoft20.app` with the latest binaries. Your user settings (`~/.astrosoft_prefs/`) and charts are kept safe.
+
+> [!NOTE]
+> Application logs on macOS are standardly saved to `~/Library/Logs/Astrosoft20/astrosoft.log`.
+
+#### Method B: Launch from Terminal (Advanced Users)
 1. Open **Terminal** (press `Cmd + Space`, type `Terminal`, and hit Enter).
 2. Navigate to the extracted folder:
    ```bash
@@ -82,15 +98,16 @@ cd Astrosoft
    *(Replace with your actual folder path; you can type `cd ` and drag the folder from Finder into Terminal).*
 3. Grant execution permissions to the launch scripts:
    ```bash
-   chmod +x RunAstroSoft.sh bin/RunAstroSoft.sh
+   chmod +x RunAstroSoft20.sh bin/RunAstroSoft20.sh InstallMacApp.command
    ```
-4. Launch Astrosoft:
+4. Launch Astrosoft directly:
    ```bash
-   ./RunAstroSoft.sh
+   ./RunAstroSoft20.sh
    ```
+   *(Or run `./InstallMacApp.command` once to install `Astrosoft20.app` into `/Applications`).*
 
 > [!TIP]
-> If macOS displays a gatekeeper security prompt regarding unsigned files, open **System Settings &rarr; Privacy & Security** and click **Open Anyway** next to the prompt.
+> If macOS displays a Gatekeeper security prompt regarding unsigned files, open **System Settings &rarr; Privacy & Security** and click **Open Anyway** next to the prompt.
 
 ---
 
@@ -116,8 +133,8 @@ When Astrosoft launches:
 | Issue | Cause | Solution |
 | :--- | :--- | :--- |
 | `'java' is not recognized as an internal or external command` | Java is not in your system `PATH`. | Re-run the Java installer and ensure the box **"Add to PATH"** is selected, then restart your Command Prompt or Terminal. |
-| `Permission denied` when running `./RunAstroSoft.sh` on Mac | Shell script lacks execution permission. | Run `chmod +x RunAstroSoft.sh bin/RunAstroSoft.sh` in Terminal before executing. |
-| `IllegalAccessError` or Look & Feel crash | Running on modern Java without required export flags. | Use the provided `RunAstroSoft.bat` (Windows) or `RunAstroSoft.sh` (macOS), which include the necessary `--add-exports` flags. |
+| `Permission denied` when running `./RunAstroSoft20.sh` on Mac | Shell script lacks execution permission. | Run `chmod +x RunAstroSoft20.sh bin/RunAstroSoft20.sh` in Terminal before executing. |
+| `IllegalAccessError` or Look & Feel crash | Running on modern Java without required export flags. | Use the provided `RunAstroSoft20.bat` (Windows) or `RunAstroSoft20.sh` (macOS), which include the necessary `--add-exports` flags. |
 | Timezone mismatch or invalid timing windows | Selected place timezone does not match system timezone. | Go to **Options &rarr; Preferences &rarr; Place** and select a place with the correct local timezone. |
 
 ---

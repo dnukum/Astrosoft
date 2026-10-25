@@ -1,10 +1,1 @@
-SIVASELVI
-23
-4
-1982
-23
-15
-77.73333333333333
-8.716666666666667
-5.5
-Thirunelveli
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>SIVASELVI</Name><DateTime>Apr 23 1982, 11:15:00 PM</DateTime><Place><City>Thirunelveli</City><Longitude dir="E">77.44</Longitude><Latitude dir="N">08.43</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

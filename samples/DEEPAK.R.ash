@@ -1,10 +1,1 @@
-DEEPAK.R
-27
-11
-1984
-8
-40
-79.41666666666667
-10.866666666666667
-5.5
-KUMBAKONAM
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>DEEPAK.R</Name><DateTime>Nov 27 1984, 08:40:00 AM</DateTime><Place><City>KUMBAKONAM</City><Longitude dir="E">79.25</Longitude><Latitude dir="N">10.52</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

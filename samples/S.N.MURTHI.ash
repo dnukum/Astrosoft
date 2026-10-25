@@ -1,10 +1,1 @@
-S.N.MURTHI
-2
-4
-1973
-10
-5
-77.73333333333333
-11.366666666666667
-5.5
-Erode
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>S.N.MURTHI</Name><DateTime>Apr 2 1973, 10:05:00 AM</DateTime><Place><City>Erode</City><Longitude dir="E">77.44</Longitude><Latitude dir="N">11.22</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

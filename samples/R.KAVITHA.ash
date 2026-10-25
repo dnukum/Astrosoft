@@ -1,10 +1,1 @@
-R.KAVITHA
-24
-2
-1975
-8
-15
-76.96666666666667
-11.0
-5.5
-CBE
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>R.KAVITHA</Name><DateTime>Feb 24 1975, 08:15:00 AM</DateTime><Place><City>CBE</City><Longitude dir="E">76.58</Longitude><Latitude dir="N">11.00</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

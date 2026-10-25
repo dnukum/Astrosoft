@@ -1,10 +1,1 @@
-Saravanan(R&AC)
-12
-2
-1983
-10
-50
-79.5
-11.95
-5.5
-Villupuram
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Saravanan(R&amp;AC)</Name><DateTime>Feb 12 1983, 10:50:00 AM</DateTime><Place><City>Villupuram</City><Longitude dir="E">79.30</Longitude><Latitude dir="N">11.57</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

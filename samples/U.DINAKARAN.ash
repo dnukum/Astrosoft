@@ -1,10 +1,1 @@
-U.DINAKARAN
-15
-10
-1977
-9
-50
-79.88333333333334
-11.933333333333334
-5.5
-CUDDALORE
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>U.DINAKARAN</Name><DateTime>Oct 15 1977, 09:50:00 AM</DateTime><Place><City>CUDDALORE</City><Longitude dir="E">79.53</Longitude><Latitude dir="N">11.56</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

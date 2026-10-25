@@ -1,10 +1,1 @@
-S.GAJENDRAN
-5
-4
-1960
-7
-45
-77.5
-8.516666666666667
-5.5
-
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>S.GAJENDRAN</Name><DateTime>Apr 5 1960, 07:45:00 AM</DateTime><Place><City/><Longitude dir="E">77.30</Longitude><Latitude dir="N">08.31</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

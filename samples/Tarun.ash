@@ -1,10 +1,1 @@
-Tarun
-21
-5
-1980
-7
-21
-85.1
-20.133333333333333
-5.5
-Naya
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Tarun</Name><DateTime>May 21 1980, 07:21:00 AM</DateTime><Place><City>Naya</City><Longitude dir="E">85.06</Longitude><Latitude dir="N">20.08</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

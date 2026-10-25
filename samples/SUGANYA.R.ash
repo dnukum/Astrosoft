@@ -1,10 +1,1 @@
-SUGANYA
-27
-2
-1982
-11
-30
-77.73333333333333
-11.366666666666667
-5.5
-Erode
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>SUGANYA</Name><DateTime>Feb 27 1982, 11:30:00 AM</DateTime><Place><City>Erode</City><Longitude dir="E">77.44</Longitude><Latitude dir="N">11.22</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

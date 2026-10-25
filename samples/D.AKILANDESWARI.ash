@@ -1,10 +1,1 @@
-D.AKILANDESHWARI
-4
-6
-1983
-2
-21
-78.41666666666667
-10.616666666666667
-5.5
-MANAPPARI
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>D.AKILANDESHWARI</Name><DateTime>Jun 4 1983, 02:21:00 AM</DateTime><Place><City>MANAPPARI</City><Longitude dir="E">78.25</Longitude><Latitude dir="N">10.37</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

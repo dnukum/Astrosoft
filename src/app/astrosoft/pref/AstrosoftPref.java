@@ -45,9 +45,23 @@ public class AstrosoftPref {
 
 	public AstrosoftPref() {
 
-		if (System.getProperty("os.name").toLowerCase().indexOf("windows") >= 0) {
-			defaultAstrosoftFilesDir = defaultAstrosoftFilesDir + File.separator + "My Documents" + File.separator;
+		String os = System.getProperty("os.name").toLowerCase();
+		File homeDir = new File(System.getProperty("user.home"));
+		File docsDir = new File(homeDir, "Documents");
+
+		if (os.contains("windows")) {
+			File myDocs = new File(homeDir, "My Documents");
+			if (docsDir.exists() && docsDir.isDirectory()) {
+				defaultAstrosoftFilesDir = docsDir.getAbsolutePath() + File.separator;
+			} else if (myDocs.exists() && myDocs.isDirectory()) {
+				defaultAstrosoftFilesDir = myDocs.getAbsolutePath() + File.separator;
+			} else {
+				defaultAstrosoftFilesDir = homeDir.getAbsolutePath() + File.separator;
+			}
+		} else if (docsDir.exists() && docsDir.isDirectory()) {
+			defaultAstrosoftFilesDir = docsDir.getAbsolutePath() + File.separator;
 		}
+
 		if (root.getBoolean(Preference.IsInitialized.name(),
 				defaultIsInitialized) == false) {
 			log.info("Initializing Astrosoft Preferences ");

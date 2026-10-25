@@ -1,10 +1,1 @@
-THIYAGRAJAN.R
-8
-11
-1980
-23
-35
-77.75
-11.366666666666667
-5.5
-THIRUPUR
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>THIYAGRAJAN.R</Name><DateTime>Nov 8 1980, 11:35:00 PM</DateTime><Place><City>THIRUPUR</City><Longitude dir="E">77.45</Longitude><Latitude dir="N">11.22</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

@@ -1,10 +1,1 @@
-D.Radha(Krishna sister)
-28
-12
-1983
-23
-50
-80.25
-13.083333333333334
-5.5
-Chennai
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>D.Radha(Krishna sister)</Name><DateTime>Dec 28 1983, 11:50:00 PM</DateTime><Place><City>Chennai</City><Longitude dir="E">80.15</Longitude><Latitude dir="N">13.05</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

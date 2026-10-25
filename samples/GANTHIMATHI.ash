@@ -1,10 +1,1 @@
-GANTHIMATHI
-11
-12
-1984
-8
-26
-77.73333333333333
-8.716666666666667
-5.5
- Thirunelveli
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>GANTHIMATHI</Name><DateTime>Dec 11 1984, 08:26:00 AM</DateTime><Place><City> Thirunelveli</City><Longitude dir="E">77.44</Longitude><Latitude dir="N">08.43</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

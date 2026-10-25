@@ -1,10 +1,1 @@
-Arun(Ramesh Friend)
-3
-4
-1984
-6
-36
-78.11666666666666
-9.916666666666666
-5.5
-Madurai
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Arun(Ramesh Friend)</Name><DateTime>Apr 3 1984, 06:36:00 AM</DateTime><Place><City>Madurai</City><Longitude dir="E">78.07</Longitude><Latitude dir="N">09.55</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

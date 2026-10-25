@@ -1,10 +1,1 @@
-V.KAMESHWAR
-17
-6
-1984
-6
-4
-77.2
-11.65
-5.5
-SALEM
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>V.KAMESHWAR</Name><DateTime>Jun 17 1984, 06:04:00 AM</DateTime><Place><City>SALEM</City><Longitude dir="E">77.12</Longitude><Latitude dir="N">11.39</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

@@ -1,10 +1,1 @@
-SWATHI .S
-14
-7
-1997
-22
-52
-77.73333333333333
-11.366666666666667
-5.5
-Erode
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>SWATHI .S</Name><DateTime>Jul 14 1997, 10:52:00 PM</DateTime><Place><City>Erode</City><Longitude dir="E">77.44</Longitude><Latitude dir="N">11.22</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

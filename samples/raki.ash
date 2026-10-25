@@ -1,10 +1,1 @@
-Raki
-27
-4
-1981
-17
-5
-80.25
-13.083333333333334
-5.5
-Chennai
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Raki</Name><DateTime>Apr 27 1981, 05:05:00 PM</DateTime><Place><City>Chennai</City><Longitude dir="E">80.15</Longitude><Latitude dir="N">13.05</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

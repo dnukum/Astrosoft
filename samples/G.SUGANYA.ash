@@ -1,10 +1,1 @@
-G.SUGANYA
-3
-12
-1990
-23
-30
-77.53333333333333
-8.516666666666667
-5.5
-KULASEKARAM
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>G.SUGANYA</Name><DateTime>Dec 3 1990, 11:30:00 PM</DateTime><Place><City>KULASEKARAM</City><Longitude dir="E">77.32</Longitude><Latitude dir="N">08.31</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

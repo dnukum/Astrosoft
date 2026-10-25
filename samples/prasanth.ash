@@ -1,10 +1,1 @@
-Prasanth
-7
-9
-1979
-18
-0
-80.25
-13.083333333333334
-5.5
-Chennai
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Prasanth</Name><DateTime>Sep 7 1979, 06:00:00 PM</DateTime><Place><City>Chennai</City><Longitude dir="E">80.15</Longitude><Latitude dir="N">13.05</Latitude><TimeZone>IST</TimeZone></Place></BirthData>
