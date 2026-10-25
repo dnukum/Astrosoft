@@ -379,20 +379,11 @@ public class MarriageMatchView extends AstrosoftView {
 	}
 
 	public static String calcDoshaComparison(double bTotal, double gTotal) {
-		if (gTotal == 0.0) {
-			if (bTotal == 0.0) {
-				return "Boy's Dosha is equal to Girl's Dosha (0.00)";
-			} else {
-				return "Boy's Dosha is more than Girl's Dosha (Girl has 0.00)";
-			}
-		}
-
 		double diff = bTotal - gTotal;
-		double diffPercent = Math.abs(diff) / gTotal * 100.0;
 		if (diff > 0.0001) {
-			return String.format(java.util.Locale.ROOT, "Boy's Dosha is %.1f%% more than Girl's Dosha", diffPercent);
+			return String.format(java.util.Locale.ROOT, "Boy's Dosha is %.2f%% more than Girl's Dosha", Math.abs(diff));
 		} else if (diff < -0.0001) {
-			return String.format(java.util.Locale.ROOT, "Boy's Dosha is %.1f%% less than Girl's Dosha", diffPercent);
+			return String.format(java.util.Locale.ROOT, "Boy's Dosha is %.2f%% less than Girl's Dosha", Math.abs(diff));
 		} else {
 			return "Boy's Dosha is equal to Girl's Dosha";
 		}

@@ -202,25 +202,34 @@ public class MarriageMatchTest extends TestCase {
 		String c1 = MarriageMatchView.calcDoshaComparison(100.0, 100.0);
 		assertEquals("Boy's Dosha is equal to Girl's Dosha", c1);
 
-		// 2. Boy is 20% more than Girl
+		// 2. Boy is 20.00% more than Girl
 		String c2 = MarriageMatchView.calcDoshaComparison(120.0, 100.0);
-		assertEquals("Boy's Dosha is 20.0% more than Girl's Dosha", c2);
+		assertEquals("Boy's Dosha is 20.00% more than Girl's Dosha", c2);
 
-		// 3. Boy is 20% less than Girl
+		// 3. Boy is 20.00% less than Girl
 		String c3 = MarriageMatchView.calcDoshaComparison(80.0, 100.0);
-		assertEquals("Boy's Dosha is 20.0% less than Girl's Dosha", c3);
+		assertEquals("Boy's Dosha is 20.00% less than Girl's Dosha", c3);
 
-		// 4. Boy is 50% more than Girl
+		// 4. Boy is 50.00% more than Girl
 		String c4 = MarriageMatchView.calcDoshaComparison(150.0, 100.0);
-		assertEquals("Boy's Dosha is 50.0% more than Girl's Dosha", c4);
+		assertEquals("Boy's Dosha is 50.00% more than Girl's Dosha", c4);
 
-		// 5. Boy is 50% less than Girl
+		// 5. Boy is 50.00% less than Girl
 		String c5 = MarriageMatchView.calcDoshaComparison(50.0, 100.0);
-		assertEquals("Boy's Dosha is 50.0% less than Girl's Dosha", c5);
+		assertEquals("Boy's Dosha is 50.00% less than Girl's Dosha", c5);
 
-		// 6. User screenshot case: 115.00 vs 18.75
+		// 6. Straight difference with fractional percentages: 115.00 vs 18.75 -> 96.25%
 		String c6 = MarriageMatchView.calcDoshaComparison(115.0, 18.75);
-		assertEquals("Boy's Dosha is 513.3% more than Girl's Dosha", c6);
+		assertEquals("Boy's Dosha is 96.25% more than Girl's Dosha", c6);
+
+		// 7. User screenshot case: 178.75 vs 115.00 -> 63.75%
+		String c7 = MarriageMatchView.calcDoshaComparison(178.75, 115.0);
+		assertEquals("Boy's Dosha is 63.75% more than Girl's Dosha", c7);
+
+		// 8. Zero dosha handling
+		assertEquals("Boy's Dosha is equal to Girl's Dosha", MarriageMatchView.calcDoshaComparison(0.0, 0.0));
+		assertEquals("Boy's Dosha is 40.00% more than Girl's Dosha", MarriageMatchView.calcDoshaComparison(40.0, 0.0));
+		assertEquals("Boy's Dosha is 40.00% less than Girl's Dosha", MarriageMatchView.calcDoshaComparison(0.0, 40.0));
 	}
 
 	public static void main(String[] args) {
