@@ -57,6 +57,7 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 	private static final Logger log = Logger.getLogger(Horoscope.class.getName());
 
 	private BirthData birthData;
+	private String filePath;
 
 	private SwissHelper swissHelper;
 
@@ -132,6 +133,7 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 			System.out.println(e);
 		}
 		if (h != null){
+			h.setFilePath(file);
 			return h;
 		}
 
@@ -170,6 +172,9 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 			return null;
 
 		}
+		if (h != null) {
+			h.setFilePath(file);
+		}
 		return h;
 	}
 
@@ -181,6 +186,15 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 		doc.appendChild(birthData.toXMLElement(doc));
 
 		XMLHelper.saveXML(doc, fileName);
+		this.setFilePath(fileName);
+	}
+
+	public String getFilePath() {
+		return filePath;
+	}
+
+	public void setFilePath(String filePath) {
+		this.filePath = (filePath != null) ? new File(filePath).getAbsolutePath() : null;
 	}
 
 	public String getNotes() {

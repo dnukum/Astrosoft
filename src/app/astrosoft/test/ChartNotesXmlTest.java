@@ -362,6 +362,55 @@ public class ChartNotesXmlTest {
         Assert.assertTrue("Editor should contain details", docText.contains("15-Oct-1992"));
     }
 
+    @Test
+    public void testHoroscopeFilePathTrackingAndDirectSave() throws Exception {
+        // 1. Newly created horoscope has null filePath
+        Place place = new Place("Chennai", 13.0827, 80.2707, 5.5);
+        BirthData bd = new BirthData("Fresh User", Sex.Male, 1, 1, 2000, 10, 0, 0, place);
+        Horoscope h = new Horoscope(bd);
+        Assert.assertNull("New horoscope should not have an associated file path yet", h.getFilePath());
+
+        // 2. Horoscope loaded from file tracks its file path
+        File sampleFile = new File("samples/suba.ash");
+        if (sampleFile.exists()) {
+            Horoscope loaded = Horoscope.createFromFile("samples/suba.ash");
+            Assert.assertNotNull("Loaded horoscope should have file path populated", loaded.getFilePath());
+            Assert.assertTrue("File path should point to suba.ash", loaded.getFilePath().endsWith("samples/suba.ash"));
+        }
+
+        // 3. Saving to file updates getFilePath()
+        File tempFile = File.createTempFile("astro_test_", ".ash");
+        tempFile.deleteOnExit();
+
+        h.setNotes("Notes version 1");
+        h.saveToFile(tempFile.getAbsolutePath());
+        Assert.assertEquals("Horoscope filePath should update to saved path", tempFile.getAbsolutePath(), h.getFilePath());
+
+        // 4. Directly re-saving to existing file overwrites without needing dialog
+        h.setNotes("Notes version 2 with updates");
+        h.saveToFile(h.getFilePath());
+
+        Horoscope reloaded = Horoscope.createFromFile(tempFile.getAbsolutePath());
+        Assert.assertNotNull(reloaded);
+        Assert.assertEquals("Notes version 2 with updates", reloaded.getNotes());
+        Assert.assertEquals("Reloaded filePath should match tempFile", tempFile.getAbsolutePath(), reloaded.getFilePath());
+    }
+
+    @Test
+    public void testBirthDataPanelPreservesNotes() {
+        Place place = new Place("Bangalore", 12.9716, 77.5946, 5.5);
+        BirthData originalBd = new BirthData("Raj", Sex.Male, 15, 8, 1995, 9, 30, 0, place);
+        originalBd.setNotes("Important consultation notes");
+
+        app.astrosoft.ui.comp.BirthDataPanel panel = new app.astrosoft.ui.comp.BirthDataPanel(new java.awt.Dimension(350, 300), "Birth Data");
+        panel.setBirthData(originalBd);
+
+        BirthData editedBd = panel.getBirthData();
+        Assert.assertNotNull("Edited BirthData must not be null", editedBd);
+        Assert.assertEquals("Name must match", "Raj", editedBd.name());
+        Assert.assertEquals("Notes must be preserved across BirthDataPanel get/set", "Important consultation notes", editedBd.getNotes());
+    }
+
     private javax.swing.JTextPane getEditor(app.astrosoft.ui.comp.ChartNotesPanel panel) {
         for (java.awt.Component c : panel.getComponents()) {
             if (c instanceof javax.swing.JScrollPane) {

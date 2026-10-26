@@ -25,10 +25,11 @@ public class BirthInputDialog extends AstrosoftDialog {
 	private static final Dimension dlgSize = new Dimension(400,400);
 	
 	private JButton okButton = new JButton(DisplayStrings.OK_STR.toString());
+	private boolean isEdit = false;
 	
 	public BirthInputDialog(AstroSoft parent, BirthData birthData){
 		super( parent, "Enter Birth Details", dlgSize );
-		
+		this.isEdit = (birthData != null);
 		initComponents(birthData);
 		setVisible(true);
 	}
@@ -57,7 +58,7 @@ public class BirthInputDialog extends AstrosoftDialog {
 		okButton.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				parent.computeHoroscope(birthDataPanel.getBirthData());
+				parent.computeHoroscope(birthDataPanel.getBirthData(), isEdit);
 				closeDialog();
 			}
 			

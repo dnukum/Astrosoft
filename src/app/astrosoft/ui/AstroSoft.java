@@ -190,6 +190,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			@Override
 			public void onNotesModified() {
 				actionMgr.enableAction(Command.SAVE, true);
+				actionMgr.enableAction(Command.SAVE_AS, true);
 			}
 		});
 
@@ -467,7 +468,21 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void computeHoroscope(BirthData birthData){
+		computeHoroscope(birthData, false);
+	}
+
+	public void computeHoroscope(BirthData birthData, boolean isEdit){
+		String prevFilePath = (isEdit && h != null) ? h.getFilePath() : null;
+		if (isEdit && birthData.getNotes() == null && h != null && h.getNotes() != null) {
+			birthData.setNotes(h.getNotes());
+		}
 		h = new Horoscope(birthData);
+		if (prevFilePath != null) {
+			h.setFilePath(prevFilePath);
+			setTitle("Astrosoft 2.0 - " + new File(prevFilePath).getName());
+		} else {
+			setTitle("Astrosoft 2.0 - " + birthData.name() + " (Unsaved)");
+		}
 		if (chartNotesPanel != null) {
 			chartNotesPanel.setHoroscope(h);
 		}
@@ -725,8 +740,6 @@ public class AstroSoft extends javax.swing.JFrame implements
 	public void newHoroscope() {
 
 		new BirthInputDialog(this);
-		//FIXME: Should not enable menus if cancel clicked
-		enableActions(true);
 	}
 
 	public void openHoroscope() {
@@ -743,6 +756,11 @@ public class AstroSoft extends javax.swing.JFrame implements
 		h = Horoscope.createFromFile(horoscopeFile);
 
 		if (h != null) {
+			h.setFilePath(horoscopeFile);
+			setTitle("Astrosoft 2.0 - " + new File(horoscopeFile).getName());
+			try {
+				getPreferences().setAstrosoftFilesDir(new File(horoscopeFile).getParent() + File.separator);
+			} catch (Exception e) {}
 			if (chartNotesPanel != null) {
 				chartNotesPanel.setHoroscope(h);
 			}
@@ -760,9 +778,32 @@ public class AstroSoft extends javax.swing.JFrame implements
 	public void saveHoroscope() {
 
 		if (h != null){
+			if (chartNotesPanel != null) {
+				chartNotesPanel.flushToHoroscope();
+			}
+
+			String currentFile = h.getFilePath();
+			if (currentFile != null && !currentFile.trim().isEmpty()) {
+				h.saveToFile(currentFile);
+				setTitle("Astrosoft 2.0 - " + new File(currentFile).getName());
+				log.info("Saved horoscope directly to: " + currentFile);
+			} else {
+				saveAsHoroscope();
+			}
+		}
+	}
+
+	public void saveAsHoroscope() {
+
+		if (h != null){
+			if (chartNotesPanel != null) {
+				chartNotesPanel.flushToHoroscope();
+			}
+
 			String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.HOROSCOPE_EXTN);
 			if (selectedFile != null) {
 				h.saveToFile(selectedFile);
+				setTitle("Astrosoft 2.0 - " + new File(selectedFile).getName());
 			}
 		}
 	}
@@ -774,6 +815,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 			compactibility = Compactibility.createFromXML(fileName);
 		
 			if (compactibility != null){
+				compactibility.setFilePath(fileName);
+				try {
+					getPreferences().setAstrosoftFilesDir(new File(fileName).getParent() + File.separator);
+				} catch (Exception e) {}
 				actionMgr.enableAction(Command.PRINT, true);
 				viewManager.showView(View.COMPACTIBILITY_VIEW);
 			}
@@ -798,6 +843,19 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void saveCompactibility(){
+
+		if (compactibility != null){
+			String currentFile = compactibility.getFilePath();
+			if (currentFile != null && !currentFile.trim().isEmpty()) {
+				compactibility.saveToXML(currentFile);
+				log.info("Saved compactibility directly to: " + currentFile);
+			} else {
+				saveAsCompactibility();
+			}
+		}
+	}
+
+	public void saveAsCompactibility(){
 
 		if (compactibility != null){
 			String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.COMPACTIBILITY_EXTN);
@@ -913,7 +971,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 	public void enableActions(boolean enable) {
 
-		EnumSet<Command> actions = EnumSet.of(Command.SAVE,Command.SAVE_COMPACTIBILITY,
+		EnumSet<Command> actions = EnumSet.of(Command.SAVE, Command.SAVE_AS, Command.SAVE_COMPACTIBILITY,
 				Command.EDIT_COMPACTIBILITY,
 				Command.EDIT_CHART,
 				Command.CHART_VIEW, Command.PLANET_POS_VIEW,

@@ -7,6 +7,8 @@
  */
 package app.astrosoft.core;
 
+import java.io.File;
+
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -56,6 +58,8 @@ public class Compactibility implements Exportable {
 	private String boyName;
 
 	private String girlName;
+
+	private String filePath;
 
 	private int boyNak;
 
@@ -210,6 +214,15 @@ public class Compactibility implements Exportable {
 		}
 
 		XMLHelper.saveXML(doc, fileName);
+		this.setFilePath(fileName);
+	}
+
+	public String getFilePath() {
+		return filePath;
+	}
+
+	public void setFilePath(String filePath) {
+		this.filePath = (filePath != null) ? new File(filePath).getAbsolutePath() : null;
 	}
 
 	public static Compactibility createFromXML(String fileName){
@@ -244,6 +257,9 @@ public class Compactibility implements Exportable {
 					);
 			}
 
+		if (c != null) {
+			c.setFilePath(fileName);
+		}
 		return c;
 	}
 

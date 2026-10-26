@@ -23,6 +23,7 @@ public enum Command {
 	OPEN ("Open",KeyEvent.VK_O, KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK )),
 	OPEN_COMPACTIBILITY ("Open Compactibility", KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK)),
 	SAVE ("Save",KeyEvent.VK_S,KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)),
+	SAVE_AS ("Save As...", KeyEvent.VK_A),
 	SAVE_COMPACTIBILITY("Save Compactibility", KeyEvent.VK_C,KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK)),
 	PRINT ("Print",KeyEvent.VK_P,KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK)),
 	EXIT ("Exit",KeyEvent.VK_X,KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK)),

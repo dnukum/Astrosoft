@@ -22,7 +22,11 @@ public interface AstrosoftActionHandler
 
     public void saveHoroscope();
 
+    public void saveAsHoroscope();
+
     public void saveCompactibility();
+
+    public void saveAsCompactibility();
 
     public void openCompactibility();
 
@@ -51,4 +55,6 @@ public interface AstrosoftActionHandler
     public void computeNumeroNumber();
     
     public void showAbout();
+
+    public void toggleNotes();
 }

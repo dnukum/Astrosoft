@@ -66,6 +66,9 @@ public class AstrosoftAction extends AbstractAction {
 		else if (cmd.equals(Command.SAVE)) {
 			handler.saveHoroscope();
 		}
+		else if (cmd.equals(Command.SAVE_AS)) {
+			handler.saveAsHoroscope();
+		}
 
 		else if (cmd.equals(Command.SAVE_COMPACTIBILITY)) {
 			handler.saveCompactibility();
@@ -146,6 +149,9 @@ public class AstrosoftAction extends AbstractAction {
 		}else if(cmd.equals(Command.ABOUT)){
 			log.fine("ABOUT menu clicked");
 			handler.showAbout();
+		}else if(cmd.equals(Command.NOTES)){
+			log.fine("NOTES toolbar/menu clicked");
+			handler.toggleNotes();
 		}
 	}
 }

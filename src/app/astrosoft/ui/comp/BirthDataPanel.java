@@ -56,6 +56,7 @@ public class BirthDataPanel extends JPanel {
 	
 	private Dimension panelSize;
 	private String title;
+	private String notes;
 	
 	private Worker w = new Worker();
 	
@@ -183,7 +184,11 @@ public class BirthDataPanel extends JPanel {
 	}
 	
 	public BirthData getBirthData(){
-		return new BirthData(getPersonName(), getBirthTime(), getBirthPlace());
+		BirthData bd = new BirthData(getPersonName(), getBirthTime(), getBirthPlace());
+		if (notes != null) {
+			bd.setNotes(notes);
+		}
+		return bd;
 	}
 	
 	public void setPersonName(String personName){
@@ -207,6 +212,7 @@ public class BirthDataPanel extends JPanel {
 		setPersonName(birthData.name());
 		setBirthTime(birthData.birthDay());
 		setBirthPlace(birthData.getBirthPlace());
+		this.notes = birthData.getNotes();
 	}
 	
 	private void browseHoroscope(){

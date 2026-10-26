@@ -445,6 +445,12 @@ public class ChartNotesPanel extends JPanel {
         }
     }
 
+    public void flushToHoroscope() {
+        if (horoscope == null) return;
+        String content = getNotesContent();
+        horoscope.setNotes(content);
+    }
+
     private void syncToHoroscope() {
         if (isUpdating || horoscope == null) return;
 
