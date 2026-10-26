@@ -22,6 +22,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 
 import javax.swing.AbstractAction;
@@ -45,7 +47,9 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
@@ -70,11 +74,42 @@ public class ChartNotesPanel extends JPanel {
     private JButton boldBtn;
     private JButton italicBtn;
     private JButton underlineBtn;
+    private JButton bulletBtn;
+    private JButton numListBtn;
     private JButton timeBtn;
     private JLabel titleLabel;
     private boolean isUpdating = false;
     private boolean isDocked = true;
     private NotesListener listener;
+    private NotesUndoManager undoManager;
+
+    private static class NotesUndoManager extends UndoManager {
+        private CompoundEdit compoundEdit;
+
+        public void startCompoundEdit() {
+            if (compoundEdit != null) {
+                compoundEdit.end();
+            }
+            compoundEdit = new CompoundEdit();
+        }
+
+        public void endCompoundEdit() {
+            if (compoundEdit != null) {
+                compoundEdit.end();
+                addEdit(compoundEdit);
+                compoundEdit = null;
+            }
+        }
+
+        @Override
+        public void undoableEditHappened(UndoableEditEvent e) {
+            if (compoundEdit != null) {
+                compoundEdit.addEdit(e.getEdit());
+            } else {
+                super.undoableEditHappened(e);
+            }
+        }
+    }
 
     public ChartNotesPanel(NotesListener listener) {
         this.listener = listener;
@@ -157,6 +192,30 @@ public class ChartNotesPanel extends JPanel {
         underlineBtn.setMargin(new Insets(2, 6, 2, 6));
         underlineBtn.setFocusable(false);
 
+        Action bulletAction = new AbstractAction("Bulleted List") {
+            public void actionPerformed(ActionEvent e) {
+                toggleList(false);
+            }
+        };
+        bulletBtn = new JButton("•");
+        bulletBtn.setFont(bulletBtn.getFont().deriveFont(Font.BOLD, 14.0f));
+        bulletBtn.setToolTipText("Bulleted List (Cmd+Shift+8 / Ctrl+Shift+8)");
+        bulletBtn.setMargin(new Insets(2, 6, 2, 6));
+        bulletBtn.setFocusable(false);
+        bulletBtn.addActionListener(bulletAction);
+
+        Action numListAction = new AbstractAction("Numbered List") {
+            public void actionPerformed(ActionEvent e) {
+                toggleList(true);
+            }
+        };
+        numListBtn = new JButton("1.");
+        numListBtn.setFont(numListBtn.getFont().deriveFont(Font.BOLD, 11.5f));
+        numListBtn.setToolTipText("Numbered List (Cmd+Shift+7 / Ctrl+Shift+7)");
+        numListBtn.setMargin(new Insets(2, 5, 2, 5));
+        numListBtn.setFocusable(false);
+        numListBtn.addActionListener(numListAction);
+
         timeBtn = new JButton("+ Time");
         timeBtn.setToolTipText("Insert Current Date/Time Stamp");
         timeBtn.setMargin(new Insets(2, 6, 2, 6));
@@ -167,6 +226,9 @@ public class ChartNotesPanel extends JPanel {
         formatToolbar.add(boldBtn);
         formatToolbar.add(italicBtn);
         formatToolbar.add(underlineBtn);
+        formatToolbar.addSeparator(new Dimension(8, 16));
+        formatToolbar.add(bulletBtn);
+        formatToolbar.add(numListBtn);
         formatToolbar.addSeparator(new Dimension(8, 16));
         formatToolbar.add(timeBtn);
 
@@ -199,25 +261,25 @@ public class ChartNotesPanel extends JPanel {
         // Smart Paste Action for proper plain-text / rich-text handling
         Action smartPasteAction = createSmartPasteAction();
 
-        final UndoManager undoManager = new UndoManager();
-        editor.getDocument().addUndoableEditListener(undoManager);
+        this.undoManager = new NotesUndoManager();
+        editor.getDocument().addUndoableEditListener(this.undoManager);
 
         Action undoAction = new AbstractAction("Undo") {
             public void actionPerformed(ActionEvent e) {
-                if (undoManager.canUndo()) undoManager.undo();
+                if (undoManager != null && undoManager.canUndo()) undoManager.undo();
             }
         };
         Action redoAction = new AbstractAction("Redo") {
             public void actionPerformed(ActionEvent e) {
-                if (undoManager.canRedo()) undoManager.redo();
+                if (undoManager != null && undoManager.canRedo()) undoManager.redo();
             }
         };
 
         // Mac & Windows shortcut bindings
-        setupKeyBindings(boldAction, italicAction, underlineAction, smartPasteAction, undoAction, redoAction);
+        setupKeyBindings(boldAction, italicAction, underlineAction, bulletAction, numListAction, smartPasteAction, undoAction, redoAction);
 
-        // Context Popup Menu (Undo, Redo, Cut, Copy, Paste, Select All)
-        setupContextMenu(smartPasteAction, undoAction, redoAction);
+        // Context Popup Menu (Undo, Redo, Cut, Copy, Paste, Bullets, Numbers, Select All)
+        setupContextMenu(smartPasteAction, undoAction, redoAction, bulletAction, numListAction);
 
         // Auto-save sync to Horoscope
         editor.getDocument().addDocumentListener(new DocumentListener() {
@@ -403,7 +465,7 @@ public class ChartNotesPanel extends JPanel {
         };
     }
 
-    private void setupKeyBindings(Action boldAction, Action italicAction, Action underlineAction, Action smartPasteAction, Action undoAction, Action redoAction) {
+    private void setupKeyBindings(Action boldAction, Action italicAction, Action underlineAction, Action bulletAction, Action numListAction, Action smartPasteAction, Action undoAction, Action redoAction) {
         InputMap im = editor.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap am = editor.getActionMap();
 
@@ -411,6 +473,8 @@ public class ChartNotesPanel extends JPanel {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, meta), "font-bold");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_I, meta), "font-italic");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, meta), "font-underline");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_8, meta | InputEvent.SHIFT_DOWN_MASK), "toggle-bullet");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_7, meta | InputEvent.SHIFT_DOWN_MASK), "toggle-numlist");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, meta), "smart-paste");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, meta), DefaultEditorKit.copyAction);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, meta), DefaultEditorKit.cutAction);
@@ -423,6 +487,8 @@ public class ChartNotesPanel extends JPanel {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_DOWN_MASK), "font-bold");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK), "font-italic");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK), "font-underline");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_8, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "toggle-bullet");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_7, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "toggle-numlist");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "smart-paste");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.copyAction);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.cutAction);
@@ -434,13 +500,33 @@ public class ChartNotesPanel extends JPanel {
         am.put("font-bold", boldAction);
         am.put("font-italic", italicAction);
         am.put("font-underline", underlineAction);
+        am.put("toggle-bullet", bulletAction);
+        am.put("toggle-numlist", numListAction);
         am.put("smart-paste", smartPasteAction);
         am.put(DefaultEditorKit.pasteAction, smartPasteAction);
         am.put("undo", undoAction);
         am.put("redo", redoAction);
+
+        // Smart Enter handling for lists & Shift+Enter soft break
+        final Action defaultEnter = am.get(DefaultEditorKit.insertBreakAction);
+        Action smartEnterAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                if (!editor.isEnabled() || !editor.isEditable()) return;
+                if (!handleSmartEnter()) {
+                    if (defaultEnter != null) {
+                        defaultEnter.actionPerformed(e);
+                    } else {
+                        editor.replaceSelection("\n");
+                    }
+                }
+            }
+        };
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "smart-enter");
+        am.put("smart-enter", smartEnterAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK), DefaultEditorKit.insertBreakAction);
     }
 
-    private void setupContextMenu(Action smartPasteAction, Action undoAction, Action redoAction) {
+    private void setupContextMenu(Action smartPasteAction, Action undoAction, Action redoAction, Action bulletAction, Action numListAction) {
         JPopupMenu popup = new JPopupMenu();
 
         JMenuItem undoItem = new JMenuItem(undoAction);
@@ -451,6 +537,8 @@ public class ChartNotesPanel extends JPanel {
         copyItem.setText("Copy");
         JMenuItem pasteItem = new JMenuItem(smartPasteAction);
         pasteItem.setText("Paste");
+        JMenuItem bulletItem = new JMenuItem(bulletAction);
+        JMenuItem numListItem = new JMenuItem(numListAction);
         JMenuItem selectAllItem = new JMenuItem("Select All");
         selectAllItem.addActionListener(e -> editor.selectAll());
 
@@ -461,9 +549,172 @@ public class ChartNotesPanel extends JPanel {
         popup.add(copyItem);
         popup.add(pasteItem);
         popup.addSeparator();
+        popup.add(bulletItem);
+        popup.add(numListItem);
+        popup.addSeparator();
         popup.add(selectAllItem);
 
         editor.setComponentPopupMenu(popup);
+    }
+
+    public void toggleList(boolean isNumbered) {
+        if (!editor.isEnabled() || !editor.isEditable()) return;
+        Document doc = editor.getDocument();
+        int selStart = editor.getSelectionStart();
+        int selEnd = editor.getSelectionEnd();
+        try {
+            String fullText = doc.getText(0, doc.getLength());
+            int lineStart = fullText.lastIndexOf('\n', selStart - 1);
+            lineStart = (lineStart == -1) ? 0 : lineStart + 1;
+
+            int lineEnd = fullText.indexOf('\n', selEnd);
+            lineEnd = (lineEnd == -1) ? doc.getLength() : lineEnd;
+
+            String targetText = fullText.substring(lineStart, lineEnd);
+            String[] lines = targetText.split("\n", -1);
+
+            boolean allMatches = true;
+            for (String l : lines) {
+                if (l.trim().isEmpty()) continue;
+                if (isNumbered) {
+                    if (!l.matches("^\\s*\\d+\\.\\s+.*")) {
+                        allMatches = false;
+                        break;
+                    }
+                } else {
+                    if (!l.matches("^\\s*•\\s+.*")) {
+                        allMatches = false;
+                        break;
+                    }
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+            int counter = 1;
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                if (line.trim().isEmpty()) {
+                    sb.append(line);
+                } else if (allMatches) {
+                    // Toggle off
+                    if (isNumbered) {
+                        sb.append(line.replaceFirst("^\\s*\\d+\\.\\s+", ""));
+                    } else {
+                        sb.append(line.replaceFirst("^\\s*•\\s+", ""));
+                    }
+                } else {
+                    // Format into list
+                    String cleanLine = line.replaceFirst("^\\s*([•]|\\d+\\.)\\s+", "");
+                    if (isNumbered) {
+                        sb.append(counter++).append(". ").append(cleanLine);
+                    } else {
+                        sb.append("• ").append(cleanLine);
+                    }
+                }
+                if (i < lines.length - 1) {
+                    sb.append("\n");
+                }
+            }
+
+            String replacement = sb.toString();
+            if (undoManager != null) {
+                undoManager.startCompoundEdit();
+            }
+            try {
+                if (doc instanceof javax.swing.text.AbstractDocument) {
+                    ((javax.swing.text.AbstractDocument) doc).replace(lineStart, lineEnd - lineStart, replacement, null);
+                } else {
+                    doc.remove(lineStart, lineEnd - lineStart);
+                    doc.insertString(lineStart, replacement, null);
+                }
+            } finally {
+                if (undoManager != null) {
+                    undoManager.endCompoundEdit();
+                }
+            }
+            if (selStart != selEnd) {
+                editor.select(lineStart, lineStart + replacement.length());
+            } else {
+                editor.setCaretPosition(Math.min(lineStart + replacement.length(), doc.getLength()));
+            }
+            editor.requestFocusInWindow();
+        } catch (Exception ex) {
+            // Ignore / keep editor responsive
+        }
+    }
+
+    public boolean handleSmartEnter() {
+        if (!editor.isEnabled() || !editor.isEditable()) return false;
+        if (editor.getSelectionStart() != editor.getSelectionEnd()) {
+            return false;
+        }
+        Document doc = editor.getDocument();
+        int caret = editor.getCaretPosition();
+        try {
+            String fullText = doc.getText(0, doc.getLength());
+            int lineStart = fullText.lastIndexOf('\n', caret - 1);
+            lineStart = (lineStart == -1) ? 0 : lineStart + 1;
+
+            int lineEnd = fullText.indexOf('\n', caret);
+            lineEnd = (lineEnd == -1) ? doc.getLength() : lineEnd;
+
+            String beforeCaret = fullText.substring(lineStart, caret);
+            String wholeLine = fullText.substring(lineStart, lineEnd);
+
+            // 1. Bullet list
+            if (wholeLine.matches("^\\s*•\\s*.*")) {
+                String content = wholeLine.replaceFirst("^\\s*•\\s*", "").trim();
+                if (content.isEmpty()) {
+                    // Empty bullet line -> Exit list
+                    if (undoManager != null) undoManager.startCompoundEdit();
+                    try {
+                        doc.remove(lineStart, lineEnd - lineStart);
+                    } finally {
+                        if (undoManager != null) undoManager.endCompoundEdit();
+                    }
+                    return true;
+                } else if (beforeCaret.matches("^\\s*•\\s*.*")) {
+                    if (undoManager != null) undoManager.startCompoundEdit();
+                    try {
+                        doc.insertString(caret, "\n• ", null);
+                        editor.setCaretPosition(caret + 3);
+                    } finally {
+                        if (undoManager != null) undoManager.endCompoundEdit();
+                    }
+                    return true;
+                }
+            }
+
+            // 2. Numbered list
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s*(.*)").matcher(wholeLine);
+            if (m.matches()) {
+                int num = Integer.parseInt(m.group(1));
+                String content = m.group(2).trim();
+                if (content.isEmpty()) {
+                    // Empty numbered line -> Exit list
+                    if (undoManager != null) undoManager.startCompoundEdit();
+                    try {
+                        doc.remove(lineStart, lineEnd - lineStart);
+                    } finally {
+                        if (undoManager != null) undoManager.endCompoundEdit();
+                    }
+                    return true;
+                } else if (beforeCaret.matches("^\\s*\\d+\\.\\s*.*")) {
+                    String next = "\n" + (num + 1) + ". ";
+                    if (undoManager != null) undoManager.startCompoundEdit();
+                    try {
+                        doc.insertString(caret, next, null);
+                        editor.setCaretPosition(caret + next.length());
+                    } finally {
+                        if (undoManager != null) undoManager.endCompoundEdit();
+                    }
+                    return true;
+                }
+            }
+        } catch (Exception ex) {
+            // Fall back
+        }
+        return false;
     }
 
     private void insertTimestamp() {
@@ -528,6 +779,9 @@ public class ChartNotesPanel extends JPanel {
                 titleLabel.setToolTipText("Notes");
                 editor.setText("");
                 setEnabledState(false);
+                if (undoManager != null) {
+                    undoManager.discardAllEdits();
+                }
             }
         } finally {
             isUpdating = false;
@@ -537,6 +791,9 @@ public class ChartNotesPanel extends JPanel {
     private void setNotesContent(String content) {
         if (content == null || content.trim().isEmpty()) {
             editor.setText("");
+            if (undoManager != null) {
+                undoManager.discardAllEdits();
+            }
             return;
         }
 
@@ -560,6 +817,9 @@ public class ChartNotesPanel extends JPanel {
             editor.setText(sb.toString());
         } else {
             editor.setText(content);
+        }
+        if (undoManager != null) {
+            undoManager.discardAllEdits();
         }
     }
 
@@ -585,6 +845,8 @@ public class ChartNotesPanel extends JPanel {
         boldBtn.setEnabled(enabled);
         italicBtn.setEnabled(enabled);
         underlineBtn.setEnabled(enabled);
+        bulletBtn.setEnabled(enabled);
+        numListBtn.setEnabled(enabled);
         timeBtn.setEnabled(enabled);
     }
 

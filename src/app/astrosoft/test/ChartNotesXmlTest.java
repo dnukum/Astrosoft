@@ -439,6 +439,67 @@ public class ChartNotesXmlTest {
         Assert.assertEquals("Exit should be Q, not Cut (X)", java.awt.event.KeyEvent.VK_Q, exitKey.getKeyCode());
     }
 
+    @Test
+    public void testBulletedAndNumberedListsWithUndoAndSmartEnter() throws Exception {
+        app.astrosoft.beans.BirthData bd = new app.astrosoft.beans.BirthData("ListTest", app.astrosoft.consts.Sex.Male, 1, 1, 1990, 12, 0, 0, new app.astrosoft.beans.Place("Delhi", 28.6, 77.2, 5.5));
+        app.astrosoft.core.Horoscope h = new app.astrosoft.core.Horoscope(bd);
+        app.astrosoft.ui.comp.ChartNotesPanel panel = new app.astrosoft.ui.comp.ChartNotesPanel(null);
+        panel.setHoroscope(h);
+
+        javax.swing.JTextPane editor = panel.getEditor();
+        javax.swing.text.Document doc = editor.getDocument();
+        
+        // 1. Initial multi-line text
+        doc.insertString(doc.getLength(), "Sun in Aries\nMoon in Taurus\nMars in Leo", null);
+        editor.select(0, doc.getLength());
+
+        // 2. Format as Bulleted List
+        panel.toggleList(false);
+        String bulleted = doc.getText(0, doc.getLength()).trim();
+        Assert.assertTrue("Line 1 should have bullet", bulleted.contains("• Sun in Aries"));
+        Assert.assertTrue("Line 2 should have bullet", bulleted.contains("• Moon in Taurus"));
+        Assert.assertTrue("Line 3 should have bullet", bulleted.contains("• Mars in Leo"));
+
+        // 3. Switch to Numbered List
+        editor.select(0, doc.getLength());
+        panel.toggleList(true);
+        String numbered = doc.getText(0, doc.getLength()).trim();
+        Assert.assertTrue("Line 1 should be 1.", numbered.contains("1. Sun in Aries"));
+        Assert.assertTrue("Line 2 should be 2.", numbered.contains("2. Moon in Taurus"));
+        Assert.assertTrue("Line 3 should be 3.", numbered.contains("3. Mars in Leo"));
+
+        // 4. Test Undo (Cmd+Z / Ctrl+Z action)
+        javax.swing.Action undoAction = editor.getActionMap().get("undo");
+        Assert.assertNotNull("Undo action must be registered in editor action map", undoAction);
+        undoAction.actionPerformed(new java.awt.event.ActionEvent(editor, java.awt.event.ActionEvent.ACTION_PERFORMED, "undo"));
+        String reverted = doc.getText(0, doc.getLength()).trim();
+        Assert.assertTrue("Undo should revert back to bullet list", reverted.contains("• Sun in Aries"));
+
+        // 5. Test Smart Enter on Bullet List
+        editor.setCaretPosition(doc.getLength());
+        boolean handledBulletEnter = panel.handleSmartEnter();
+        Assert.assertTrue("Smart enter should handle continuing bullet list", handledBulletEnter);
+        Assert.assertTrue("Text should now end with bullet continuation", doc.getText(0, doc.getLength()).trim().endsWith("•"));
+
+        // 6. Test Smart Enter on empty bullet line (exit list)
+        boolean handledExitBullet = panel.handleSmartEnter();
+        Assert.assertTrue("Smart enter should handle exiting list on empty bullet", handledExitBullet);
+        Assert.assertFalse("Trailing empty bullet should be removed on exit", doc.getText(0, doc.getLength()).trim().endsWith("•"));
+
+        // 7. Test Smart Enter on Numbered List
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "1. Jupiter in Cancer", null);
+        editor.setCaretPosition(doc.getLength());
+        boolean handledNumEnter = panel.handleSmartEnter();
+        Assert.assertTrue("Smart enter should handle continuing numbered list", handledNumEnter);
+        Assert.assertTrue("Text should now continue with 2.", doc.getText(0, doc.getLength()).trim().endsWith("2."));
+
+        // 8. Test Smart Enter on empty number (exit list)
+        boolean handledExitNum = panel.handleSmartEnter();
+        Assert.assertTrue("Smart enter should handle exiting list on empty number", handledExitNum);
+        Assert.assertFalse("Trailing 2. should be removed on exit", doc.getText(0, doc.getLength()).trim().endsWith("2."));
+    }
+
     private javax.swing.JTextPane getEditor(app.astrosoft.ui.comp.ChartNotesPanel panel) {
         for (java.awt.Component c : panel.getComponents()) {
             if (c instanceof javax.swing.JScrollPane) {
