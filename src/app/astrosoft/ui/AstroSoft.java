@@ -7,6 +7,8 @@
  */
 package app.astrosoft.ui;
 
+import java.io.File;
+import java.util.logging.Logger;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.GridLayout;
@@ -22,9 +24,12 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
 
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.UIManager;
+import app.astrosoft.ui.comp.ChartNotesPanel;
 
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.PlanetChartData;
@@ -85,6 +90,8 @@ import app.astrosoft.util.FileOps;
 public class AstroSoft extends javax.swing.JFrame implements
 		AstrosoftActionHandler {
 
+	private static final Logger log = Logger.getLogger(AstroSoft.class.getName());
+
 	private Horoscope h;
 
 	private Ephemeris eph;	
@@ -96,6 +103,16 @@ public class AstroSoft extends javax.swing.JFrame implements
 	private AstrosoftToolBar toolbar;
 
 	private JPanel home;
+
+	private ChartNotesPanel chartNotesPanel;
+
+	private JSplitPane mainSplitPane;
+
+	private JDialog floatingNotesDialog;
+
+	private boolean isNotesFolded = true;
+
+	private int lastNotesDividerLocation = -1;
 
 	private AstrosoftActionManager actionMgr;
 
@@ -126,33 +143,25 @@ public class AstroSoft extends javax.swing.JFrame implements
 		getContentPane().setLayout(new BorderLayout());
 		formMenuAndToolBar();
 		home = new JPanel();
-		
-		// Dynamically update bounds when window is maximized or resized on external monitors
+		home.setLayout(null);
+		home.setBounds(bounds);
+
+		initNotes();
+
 		this.addComponentListener(new java.awt.event.ComponentAdapter() {
 			public void componentResized(java.awt.event.ComponentEvent e) {
-				java.awt.Dimension size = getContentPane().getSize();
-				int tbHeight = (toolbar != null && toolbar.isVisible()) ? toolbar.getHeight() : 0;
-				int viewW = size.width;
-				int viewH = Math.max(0, size.height - tbHeight);
-				home.setBounds(0, tbHeight, viewW, viewH);
-				
 				if (home.getComponentCount() > 0) {
 				    java.awt.Component view = home.getComponent(0);
 				    if (view.getClass().getName().contains("MyMuhurtaView")
 				            || isChartView(view)
 				            || view.getClass().getName().contains("MarriageMatchView")) {
-					    view.setBounds(0, 0, viewW, viewH);
+					    view.setBounds(0, 0, home.getWidth(), home.getHeight());
 				    }
 				    // Do absolutely nothing for other views! Let them keep their original internal bounds & offsets.
 					view.revalidate();
 				}
 			}
 		});
-		home.setLayout(null);
-		//home.setLayout(null);
-
-		// home.setBounds(0,0,screenSize.width , screenSize.height);
-		home.setBounds(bounds);
 
         enableActions(false);
         pack();
@@ -160,6 +169,168 @@ public class AstroSoft extends javax.swing.JFrame implements
         setVisible(true);
 		viewManager = new ViewManager(new AstrosoftViewContainer());
 
+	}
+
+	private void initNotes() {
+		chartNotesPanel = new ChartNotesPanel(new ChartNotesPanel.NotesListener() {
+			@Override
+			public void onFold() {
+				foldNotes();
+			}
+
+			@Override
+			public void onTogglePopOut(boolean isPopOut) {
+				if (isPopOut) {
+					undockNotes();
+				} else {
+					dockNotes();
+				}
+			}
+
+			@Override
+			public void onNotesModified() {
+				actionMgr.enableAction(Command.SAVE, true);
+			}
+		});
+
+		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, home, new JPanel());
+		mainSplitPane.getRightComponent().setVisible(false);
+		mainSplitPane.setResizeWeight(1.0);
+		mainSplitPane.setContinuousLayout(true);
+		mainSplitPane.setOneTouchExpandable(false);
+		mainSplitPane.setBorder(null);
+
+		// Start folded
+		mainSplitPane.setDividerSize(0);
+
+		home.addComponentListener(new java.awt.event.ComponentAdapter() {
+			@Override
+			public void componentResized(java.awt.event.ComponentEvent e) {
+				if (home.getComponentCount() > 0) {
+					java.awt.Component view = home.getComponent(0);
+					if (view.getClass().getName().contains("MyMuhurtaView")
+							|| isChartView(view)
+							|| view.getClass().getName().contains("MarriageMatchView")) {
+						view.setBounds(0, 0, home.getWidth(), home.getHeight());
+					}
+					view.revalidate();
+				}
+			}
+		});
+	}
+
+	public void toggleNotes() {
+		if (floatingNotesDialog != null && floatingNotesDialog.isVisible()) {
+			floatingNotesDialog.toFront();
+			floatingNotesDialog.requestFocus();
+			return;
+		}
+
+		if (isNotesFolded) {
+			unfoldNotes();
+		} else {
+			foldNotes();
+		}
+	}
+
+	public void foldNotes() {
+		if (chartNotesPanel.isVisible() && mainSplitPane.getDividerLocation() > 0) {
+			lastNotesDividerLocation = mainSplitPane.getDividerLocation();
+		}
+		isNotesFolded = true;
+		if (mbar != null) {
+			mbar.setNotesSelected(false);
+		}
+		mainSplitPane.setDividerSize(0);
+		mainSplitPane.setRightComponent(new JPanel());
+		mainSplitPane.getRightComponent().setVisible(false);
+		mainSplitPane.setDividerLocation(1.0);
+		mainSplitPane.revalidate();
+		mainSplitPane.repaint();
+		if (home.getComponentCount() > 0) {
+			java.awt.Component view = home.getComponent(0);
+			if (view.getClass().getName().contains("MyMuhurtaView")
+					|| isChartView(view)
+					|| view.getClass().getName().contains("MarriageMatchView")) {
+				view.setBounds(0, 0, home.getWidth(), home.getHeight());
+				view.revalidate();
+			}
+		}
+	}
+
+	public void unfoldNotes() {
+		isNotesFolded = false;
+		if (mbar != null) {
+			mbar.setNotesSelected(true);
+		}
+		mainSplitPane.setRightComponent(chartNotesPanel);
+		chartNotesPanel.setVisible(true);
+		mainSplitPane.setDividerSize(6);
+		javax.swing.SwingUtilities.invokeLater(() -> {
+			int w = mainSplitPane.getWidth();
+			if (w <= 0) {
+				w = getContentPane().getWidth();
+			}
+			int divLoc = (lastNotesDividerLocation > 0 && lastNotesDividerLocation < w - 50)
+					? lastNotesDividerLocation
+					: Math.max(200, w - 340);
+			mainSplitPane.setDividerLocation(divLoc);
+			mainSplitPane.revalidate();
+			mainSplitPane.repaint();
+			if (home.getComponentCount() > 0) {
+				java.awt.Component view = home.getComponent(0);
+				if (view.getClass().getName().contains("MyMuhurtaView")
+						|| isChartView(view)
+						|| view.getClass().getName().contains("MarriageMatchView")) {
+					view.setBounds(0, 0, home.getWidth(), home.getHeight());
+					view.revalidate();
+				}
+			}
+			chartNotesPanel.getEditor().requestFocusInWindow();
+		});
+	}
+
+	public void undockNotes() {
+		if (chartNotesPanel.isVisible()) {
+			lastNotesDividerLocation = mainSplitPane.getDividerLocation();
+		}
+		isNotesFolded = true;
+		if (mbar != null) {
+			mbar.setNotesSelected(true);
+		}
+		chartNotesPanel.setVisible(true);
+		chartNotesPanel.setDocked(false);
+		mainSplitPane.setRightComponent(new JPanel());
+		mainSplitPane.getRightComponent().setVisible(false);
+		mainSplitPane.setDividerSize(0);
+		mainSplitPane.setDividerLocation(1.0);
+
+		if (floatingNotesDialog == null) {
+			floatingNotesDialog = new JDialog(this, "Chart Notes", false);
+			floatingNotesDialog.setSize(380, 520);
+			floatingNotesDialog.setLocationRelativeTo(this);
+			floatingNotesDialog.setAlwaysOnTop(true);
+			floatingNotesDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+				@Override
+				public void windowClosing(java.awt.event.WindowEvent e) {
+					dockNotes();
+				}
+			});
+		}
+		floatingNotesDialog.getContentPane().removeAll();
+		floatingNotesDialog.getContentPane().add(chartNotesPanel);
+		floatingNotesDialog.setVisible(true);
+		mainSplitPane.revalidate();
+	}
+
+	public void dockNotes() {
+		if (floatingNotesDialog != null) {
+			floatingNotesDialog.setVisible(false);
+			floatingNotesDialog.getContentPane().removeAll();
+		}
+		chartNotesPanel.setDocked(true);
+		mainSplitPane.setRightComponent(chartNotesPanel);
+		unfoldNotes();
 	}
 
 	private AstroSoft(String[] args){
@@ -297,6 +468,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	public void computeHoroscope(BirthData birthData){
 		h = new Horoscope(birthData);
+		if (chartNotesPanel != null) {
+			chartNotesPanel.setHoroscope(h);
+		}
+		enableActions(true);
 		viewManager.showView(View.CHART_VIEW);
 	}
 
@@ -568,6 +743,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 		h = Horoscope.createFromFile(horoscopeFile);
 
 		if (h != null) {
+			if (chartNotesPanel != null) {
+				chartNotesPanel.setHoroscope(h);
+			}
 			enableActions(true);
 
 		} else {
@@ -741,9 +919,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 				Command.CHART_VIEW, Command.PLANET_POS_VIEW,
 				Command.BHAVA_POS_VIEW, Command.DIV_CHART_VIEW,
 				Command.ASHTAVARGA_VIEW, Command.SHADBALA_VIEW,
-				Command.YOGA_COMBINATIONS_VIEW, Command.DASAS_VIEW);
+				Command.YOGA_COMBINATIONS_VIEW, Command.DASAS_VIEW,
+				Command.NOTES);
 
 		actionMgr.enableActions(actions, enable);
+		if (!enable && mbar != null) {
+			mbar.setNotesSelected(false);
+		}
 	}
 
 
@@ -778,10 +960,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		getContentPane( ).removeAll( );
 
-		//getContentPane().remove(home);
 		getContentPane().add(toolbar, BorderLayout.PAGE_START);
 
-		getContentPane().add(home, BorderLayout.CENTER);
+		if (mainSplitPane != null) {
+			getContentPane().add(mainSplitPane, BorderLayout.CENTER);
+		} else {
+			getContentPane().add(home, BorderLayout.CENTER);
+		}
 		this.repaint();
 
 		this.setVisible(true);
@@ -836,12 +1021,15 @@ public class AstroSoft extends javax.swing.JFrame implements
 			home.add(view);
 			
 			if (view.getClass().getName().contains("MyMuhurtaView") || isChartView(view) || view.getClass().getName().contains("MarriageMatchView")) {
-			    java.awt.Dimension size = getContentPane().getSize();
-			    if (size.width == 0) size = bounds.getSize(); // fallback if not yet laid out
-			    int tbHeight = (toolbar != null && toolbar.isVisible()) ? toolbar.getHeight() : 0;
-			    int viewW = size.width;
-			    int viewH = Math.max(0, size.height - tbHeight);
-			    home.setBounds(0, tbHeight, viewW, viewH);
+			    int viewW = home.getWidth();
+			    int viewH = home.getHeight();
+			    if (viewW <= 0) {
+			        java.awt.Dimension size = getContentPane().getSize();
+			        if (size.width == 0) size = bounds.getSize(); // fallback if not yet laid out
+			        int tbHeight = (toolbar != null && toolbar.isVisible()) ? toolbar.getHeight() : 0;
+			        viewW = size.width;
+			        viewH = Math.max(0, size.height - tbHeight);
+			    }
 			    view.setBounds(0, 0, viewW, viewH);
 			}
 			

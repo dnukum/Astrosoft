@@ -99,6 +99,38 @@ build.date=${tstamp.default}
 				<attribute name="Built-By" value="${user.name}" />
 			</manifest>
 		</jar>
+
+		<!-- Automatically sync to installed macOS application if present and touch bundle -->
+		<available file="/Applications/Astrosoft20.app" type="dir" property="system.app.exists" />
+		<antcall target="sync-system-app" />
+		<available file="${user.home}/Applications/Astrosoft20.app" type="dir" property="user.app.exists" />
+		<antcall target="sync-user-app" />
+	</target>
+
+	<target name="sync-system-app" if="system.app.exists">
+		<echo message="[AstroSoft] Syncing updated build to /Applications/Astrosoft20.app..." />
+		<copy file="${bin_dir}/AstroSoft.jar" tofile="/Applications/Astrosoft20.app/Contents/Resources/bin/AstroSoft.jar" overwrite="true" force="true" failonerror="false" />
+		<copy todir="/Applications/Astrosoft20.app/Contents/Resources/lib" overwrite="true" force="true" failonerror="false">
+			<fileset dir="${lib_dir}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		<exec executable="touch" failonerror="false">
+			<arg value="/Applications/Astrosoft20.app" />
+		</exec>
+	</target>
+
+	<target name="sync-user-app" if="user.app.exists">
+		<echo message="[AstroSoft] Syncing updated build to ${user.home}/Applications/Astrosoft20.app..." />
+		<copy file="${bin_dir}/AstroSoft.jar" tofile="${user.home}/Applications/Astrosoft20.app/Contents/Resources/bin/AstroSoft.jar" overwrite="true" force="true" failonerror="false" />
+		<copy todir="${user.home}/Applications/Astrosoft20.app/Contents/Resources/lib" overwrite="true" force="true" failonerror="false">
+			<fileset dir="${lib_dir}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		<exec executable="touch" failonerror="false">
+			<arg value="${user.home}/Applications/Astrosoft20.app" />
+		</exec>
 	</target>
 
 	<target name="deploy-run" description="Deploys and Runs Astrosoft Application" depends="deploy">
@@ -148,6 +180,13 @@ build.date=${tstamp.default}
 
 	<target name="startdb" description="Start HSQLDB Server">
 		<java classname="org.hsqldb.Server" fork="true" classpath="${lib_dir}/hsqldb.jar">
+		</java>
+	</target>
+
+	<target name="test" description="Runs JUnit tests" depends="build">
+		<java fork="true" classname="org.junit.runner.JUnitCore">
+			<classpath refid="classpath" />
+			<arg value="${testcase}" />
 		</java>
 	</target>
 

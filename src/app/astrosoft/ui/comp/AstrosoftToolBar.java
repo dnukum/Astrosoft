@@ -49,14 +49,6 @@ public class AstrosoftToolBar extends JToolBar
         	if (cmd.equals(Command.PRINT) || cmd.equals(Command.SHADBALA_VIEW)  || cmd.equals(Command.PANCHANG_VIEW)){
         		//addSeparator();
         		JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
-        		
-        		// FIXME size of separator
-            	//separator.setPreferredSize(new Dimension(1,20));
-            	/*separator.setSize(new Dimension(100,100));
-            	separator.setMaximumSize(new Dimension(100,100));
-            	separator.setMinimumSize(new Dimension(100,100));
-            	separator.setVisible(true);
-            	separator.setBounds(0,0,20,20);*/
                 add(separator);
         		
         	}

@@ -65,7 +65,8 @@ public enum Command {
 	EXPORT_HOROSCOPE_TO_PDF(DisplayStrings.EXPORT_HOROSCOPE_TO_PDF_STR),
 	EXPORT_COMPACTIBILITY_TO_PDF(DisplayStrings.EXPORT_COMPACTIBILITY_TO_PDF_STR),
 
-	ABOUT("About AstroSoft", KeyEvent.VK_A)
+	ABOUT("About AstroSoft", KeyEvent.VK_A),
+	NOTES("Notes", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK))
 	;
 
 	private String action;
@@ -158,6 +159,6 @@ public enum Command {
 				Command.SHADBALA_VIEW ,
 				Command.EPHEMERIS_VIEW ,
 				Command.PANCHANG_VIEW ,
-				Command.COMPACTIBILITY_VIEW);
+				Command.NOTES);
 	}
 }

@@ -14,6 +14,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -40,6 +41,7 @@ public class AstrosoftMenuBar extends JMenuBar
 	JMenuItem[] optionMenuItems;
 	JRadioButtonMenuItem[] ayaMenuItems;
     JRadioButtonMenuItem[] langMenuItems;
+    private JCheckBoxMenuItem notesMenuItem;
  	
     AstrosoftActionManager actionMgr;
    
@@ -99,6 +101,11 @@ public class AstrosoftMenuBar extends JMenuBar
         viewMenuItems[9] = new JMenuItem( actionMgr.getAction( Command.PANCHANG_VIEW ) );
         viewMenuItems[10] = new JMenuItem( actionMgr.getAction( Command.MY_MUHURTA_VIEW ) );
         addMenuItems(menu,viewMenuItems,8,10 );
+        menu.add(new JSeparator(SwingConstants.HORIZONTAL));
+        
+        notesMenuItem = new JCheckBoxMenuItem(actionMgr.getAction(Command.NOTES));
+        notesMenuItem.setIcon(null);
+        menu.add(notesMenuItem);
         
         menus.add(menu);
         
@@ -249,5 +256,15 @@ public class AstrosoftMenuBar extends JMenuBar
     	menus.add(menu);
 		
 	}
+
+    public void setNotesSelected(boolean selected) {
+        if (notesMenuItem != null) {
+            notesMenuItem.setSelected(selected);
+        }
+    }
+
+    public boolean isNotesSelected() {
+        return notesMenuItem != null && notesMenuItem.isSelected();
+    }
 
 }

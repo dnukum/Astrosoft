@@ -173,18 +173,6 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 		return h;
 	}
 
-	/*public static Horoscope valueOfXMLNode(Node horoscopeNode){
-
-		return new Horoscope(BirthData.valueOfXMLNode(horoscopeNode.getChildNodes().item(0)));
-	}*/
-
-	/*public Element toXMLElement(Document doc, String elementName){
-
-		Element horElement = doc.createElement(elementName);
-		horElement.appendChild(birthData.toXMLElement(doc));
-		return horElement;
-	}*/
-
 	public void saveToFile(String fileName) {
 
 		Document doc = XMLHelper.createDOM();
@@ -193,8 +181,21 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 		doc.appendChild(birthData.toXMLElement(doc));
 
 		XMLHelper.saveXML(doc, fileName);
+	}
 
+	public String getNotes() {
+		return birthData != null ? birthData.getNotes() : null;
+	}
+
+	public void setNotes(String notes) {
+		if (birthData != null) {
+			birthData.setNotes(notes);
 		}
+	}
+
+	public boolean hasNotes() {
+		return birthData != null && birthData.getNotes() != null && !birthData.getNotes().trim().isEmpty();
+	}
 
 	public void calculate() {
 

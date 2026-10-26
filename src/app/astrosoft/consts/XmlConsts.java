@@ -27,6 +27,8 @@ public interface XmlConsts {
 	public static final String Nakshathra = "Nakshathra";
 	public static final String hasHoroscope = "hasHoroscope";
 	public static final String BirthData = "BirthData";
+	public static final String Notes = "Notes";
+	public static final String Updated = "updated";
 	public static final String Name = "Name";
 	public static final String BoyData = "BoyData";
 	public static final String GirlData = "GirlData";

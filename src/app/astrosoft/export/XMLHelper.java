@@ -65,6 +65,17 @@ public class XMLHelper {
 		return element;
 	}
 
+	public static Element addCDATAElement(Document doc, Element parent, Object name,
+			String value) {
+
+		Element element = doc.createElement(name.toString());
+		parent.appendChild(element);
+		if (value != null) {
+			element.appendChild(doc.createCDATASection(value));
+		}
+		return element;
+	}
+
 	public static Element addElement(Document doc, Element parent, Object name){
 		return addElement(doc, parent, name, null);
 	}

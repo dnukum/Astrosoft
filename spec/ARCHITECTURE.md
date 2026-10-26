@@ -34,7 +34,9 @@ The presentation layer is built exclusively with Java Swing.
   - `PanchangView`: Daily Panchang table and charts.
   - `EphemerisView`: Planetary daily/monthly ephemeris tables.
   - `AshtavargaView`, `ShadBalaView`, `BhavaView`, `FindNameView`.
-- **Components & Renderers:** Custom table models (`AstrosoftTableModel`), cell renderers (`LocalizedCellRenderer`, `ColoredCellRenderer`, `PlanetCellRenderer`), and specialized panels (`BalamCalendarPanel`, `BirthDataPanel`, `PlaceChooser`).
+- **Components & Renderers:** Custom table models (`AstrosoftTableModel`), cell renderers (`LocalizedCellRenderer`, `ColoredCellRenderer`, `PlanetCellRenderer`), and specialized panels:
+  - `ChartNotesPanel`: Dockable, resizable split-panel editor for taking persistent notes attached to chart metadata. Features WYSIWYG rich text controls (bold, italics, underline, timestamp stamp), Mac/Windows clipboard shortcuts, right-click context menu, and a pop-out floating tool window.
+  - `BalamCalendarPanel`, `BirthDataPanel`, `PlaceChooser`.
 - **Dialogs:** Modal dialogs for user workflows:
   - `MuhurtaConfigDialog`: In-place date, time, and location adjustment for Muhurta events.
   - `MuhurtaProfileDialog`: Quick entry or file selection for Person 1 / Person 2 in Muhurta evaluation.
@@ -77,7 +79,7 @@ The `core` package contains the primary astrological orchestrators encapsulating
   - `Planet`, `Rasi`, `Nakshathra`, `Tara`, `AmirthathiYoga`, `Thithi`, `Paksha`, `Karana`, `Yoga`, `WeekDay`, `ChandraHouse`, `BalamRank`.
 
 ### 2.5 Persistence & State
-- **File Storage:** Horoscopes serialized to XML files (`.ash`) via `XMLHelper`.
+- **File Storage:** Horoscopes serialized to XML files (`.ash`) via `XMLHelper`. Chart notes metadata is serialized inside `<BirthData>` as a `<Notes>` CDATA block with non-validating DOM backward compatibility for older files.
 - **User Preferences:** Stored persistently via `java.util.prefs.Preferences` (`AstrosoftPref`), capturing default location, Ayanamsa, language, and window placement (`WindowPlacement`).
 
 ### 2.6 Build & Versioning Pipeline

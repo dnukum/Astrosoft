@@ -9,14 +9,38 @@ echo "========================================================"
 SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SOURCE_DIR"
 
+# Parse command line options
+TERMINAL_DEBUG=false
+INSTALL_DIR=""
+
+for arg in "$@"; do
+    case "$arg" in
+        -T|--terminal|-t)
+            TERMINAL_DEBUG=true
+            ;;
+        -h|--help)
+            echo "Usage: $0 [-T] [target_applications_dir]"
+            echo "Options:"
+            echo "  -T, --terminal  Enable Terminal Debug Mode: launches Astrosoft with a live Terminal window"
+            echo "                  spewing all logs and errors for easy troubleshooting."
+            exit 0
+            ;;
+        *)
+            if [ -z "$INSTALL_DIR" ]; then
+                INSTALL_DIR="$arg"
+            fi
+            ;;
+    esac
+done
+
 # Determine target Applications directory
-if [ -n "$1" ]; then
-    INSTALL_DIR="$1"
-elif [ -w "/Applications" ]; then
-    INSTALL_DIR="/Applications"
-else
-    INSTALL_DIR="$HOME/Applications"
-    mkdir -p "$INSTALL_DIR"
+if [ -z "$INSTALL_DIR" ]; then
+    if [ -w "/Applications" ]; then
+        INSTALL_DIR="/Applications"
+    else
+        INSTALL_DIR="$HOME/Applications"
+        mkdir -p "$INSTALL_DIR"
+    fi
 fi
 
 APP_NAME="Astrosoft20"
@@ -26,6 +50,10 @@ MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 
 echo "Installing to: $APP_BUNDLE"
+if [ "$TERMINAL_DEBUG" = "true" ]; then
+    echo "  [Terminal Debug Mode: ENABLED (-T)]"
+    echo "  -> App will launch with a visible Terminal window streaming all logs & errors."
+fi
 
 # Ensure standard user log directory exists (if permitted)
 mkdir -p "$HOME/Library/Logs/Astrosoft20" 2>/dev/null || true
@@ -134,28 +162,51 @@ cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
 EOF
 
 # 4. Create Contents/MacOS/Astrosoft20 executable launcher
-cat > "$MACOS_DIR/Astrosoft20" << 'EOF'
+cat > "$MACOS_DIR/Astrosoft20" << EOF
 #!/bin/bash
 
-RESOURCES_DIR="$(cd "$(dirname "$0")/../Resources" && pwd)"
-cd "$RESOURCES_DIR"
+RESOURCES_DIR="\$(cd "\$(dirname "\$0")/../Resources" && pwd)"
+cd "\$RESOURCES_DIR"
+
+# Check if terminal debug mode is enabled by install default ($TERMINAL_DEBUG) or runtime argument (-T)
+TERMINAL_MODE="${TERMINAL_DEBUG}"
+FILTERED_ARGS=()
+for a in "\$@"; do
+    if [ "\$a" = "-T" ] || [ "\$a" = "--terminal" ]; then
+        TERMINAL_MODE=true
+    else
+        FILTERED_ARGS+=("\$a")
+    fi
+done
+
+# If Terminal mode is active and not running in a terminal (e.g. launched from Finder/Dock),
+# launch inside a visible macOS Terminal window to spew all output & errors live!
+if [ "\$TERMINAL_MODE" = "true" ] && [ ! -t 1 ]; then
+    osascript << APPLESCRIPT
+tell application "Terminal"
+    activate
+    do script "cd '\$RESOURCES_DIR' && ./RunAstroSoft20.sh \${FILTERED_ARGS[*]}"
+end tell
+APPLESCRIPT
+    exit 0
+fi
 
 # Ensure log directory exists
-mkdir -p "$HOME/Library/Logs/Astrosoft20"
+mkdir -p "\$HOME/Library/Logs/Astrosoft20"
 
 # Locate Java 21
 if [ -d "/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home" ]; then
     export JAVA_HOME="/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home"
-    export PATH="$JAVA_HOME/bin:$PATH"
+    export PATH="\$JAVA_HOME/bin:\$PATH"
 elif /usr/libexec/java_home -v 21 >/dev/null 2>&1; then
-    export JAVA_HOME=$(/usr/libexec/java_home -v 21)
-    export PATH="$JAVA_HOME/bin:$PATH"
+    export JAVA_HOME=\$(/usr/libexec/java_home -v 21)
+    export PATH="\$JAVA_HOME/bin:\$PATH"
 elif [ -d "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home" ]; then
     export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
-    export PATH="$JAVA_HOME/bin:$PATH"
+    export PATH="\$JAVA_HOME/bin:\$PATH"
 elif [ -d "/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home" ]; then
     export JAVA_HOME="/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
-    export PATH="$JAVA_HOME/bin:$PATH"
+    export PATH="\$JAVA_HOME/bin:\$PATH"
 fi
 
 if ! command -v java >/dev/null 2>&1; then
@@ -163,7 +214,7 @@ if ! command -v java >/dev/null 2>&1; then
     exit 1
 fi
 
-exec ./RunAstroSoft20.sh "$@"
+exec ./RunAstroSoft20.sh "\${FILTERED_ARGS[@]}"
 EOF
 
 chmod +x "$MACOS_DIR/Astrosoft20"
@@ -177,8 +228,18 @@ echo "✅ Successfully installed Astrosoft20 to: $APP_BUNDLE"
 echo "👉 You can now launch Astrosoft20 from Applications or drag it to your Dock!"
 echo ""
 
-# Reveal the installed application in Finder
-if command -v open >/dev/null 2>&1; then
-    open -R "$APP_BUNDLE" 2>/dev/null || true
+if [ "$TERMINAL_DEBUG" = "true" ]; then
+    echo "🚀 Launching Astrosoft20 in a new Terminal window with live debugging..."
+    osascript << APPLESCRIPT
+tell application "Terminal"
+    activate
+    do script "cd '$RESOURCES_DIR' && ./RunAstroSoft20.sh"
+end tell
+APPLESCRIPT
+else
+    # Reveal the installed application in Finder
+    if command -v open >/dev/null 2>&1; then
+        open -R "$APP_BUNDLE" 2>/dev/null || true
+    fi
 fi
 

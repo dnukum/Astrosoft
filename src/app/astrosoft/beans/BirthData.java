@@ -43,6 +43,7 @@ public class BirthData {
 	private double birthGMT;
 	private Calendar birthDay;
 	private WeekDay birthWeekDay;
+	private String notes;
 	
 	public boolean isDstActive() {
 		try {
@@ -190,6 +191,18 @@ public class BirthData {
 	public Sex sex(){
 		return sex;
 	}
+
+	public String notes() {
+		return notes;
+	}
+
+	public String getNotes() {
+		return notes;
+	}
+
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
 	
 	public Element toXMLElement(Document doc, String elementName){
 		
@@ -204,6 +217,10 @@ public class BirthData {
 		XMLHelper.addElement(doc, bdElement, XmlConsts.DateTime, AstroUtil.formatDateTime(birthYear, birthMonth, birthDate, birthHour, birthMinutes, birthSeconds));
 		
 		bdElement.appendChild(birthPlace.toXMLElement(doc));
+
+		if (this.notes != null && !this.notes.trim().isEmpty()) {
+			XMLHelper.addCDATAElement(doc, bdElement, XmlConsts.Notes, this.notes);
+		}
 		
 		return bdElement;
 	}
@@ -219,6 +236,7 @@ public class BirthData {
 		Calendar birthDay = null;
 		Place place = null;
 		Sex sex = null;
+		String notes = null;
 		
 		NodeList children = bdNode.getChildNodes();
 		
@@ -238,9 +256,14 @@ public class BirthData {
 			else if(child.getNodeName().equals(XmlConsts.Place)){
 				place = Place.valueOfXMLNode(child);
 			}
+			else if (child.getNodeName().equals(XmlConsts.Notes)){
+				notes = child.getTextContent();
+			}
 			
 		}
 		
-		return new BirthData(name, sex, birthDay, place);
+		BirthData bd = new BirthData(name, sex, birthDay, place);
+		bd.setNotes(notes);
+		return bd;
 	}
 }
