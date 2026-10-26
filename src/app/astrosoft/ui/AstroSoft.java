@@ -264,6 +264,14 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (mbar != null) {
 			mbar.setNotesSelected(true);
 		}
+
+		java.awt.Dimension screen = AstroSoft.getScreenSize();
+		int currentW = getWidth();
+		int desiredW = Math.min(screen.width - 40, currentW + 340);
+		if (currentW < 1360 && desiredW > currentW) {
+			setSize(desiredW, getHeight());
+		}
+
 		mainSplitPane.setRightComponent(chartNotesPanel);
 		chartNotesPanel.setVisible(true);
 		mainSplitPane.setDividerSize(6);
@@ -575,6 +583,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		final JPanel contentWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
 		contentWrapper.setOpaque(false);
+		contentWrapper.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 25));
 		contentWrapper.add(contentPanel);
 
 		final javax.swing.JScrollPane mainScrollPane = new javax.swing.JScrollPane(contentWrapper,

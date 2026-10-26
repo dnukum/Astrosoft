@@ -83,7 +83,7 @@ public class ChartNotesPanel extends JPanel {
 
     private void initUI() {
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, UIConsts.DARK_PEARL_GREEN));
+        setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, new Color(165, 165, 165)));
         setPreferredSize(new Dimension(340, 400));
         setMinimumSize(new Dimension(200, 200));
 
@@ -91,7 +91,7 @@ public class ChartNotesPanel extends JPanel {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(UIConsts.PEARL_GREEN);
         headerPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, UIConsts.DARK_PEARL_GREEN),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(165, 165, 165)),
                 BorderFactory.createEmptyBorder(5, 12, 5, 6)
         ));
 
