@@ -8,7 +8,9 @@
 package app.astrosoft.consts;
 
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.EnumSet;
 
@@ -16,17 +18,30 @@ import javax.swing.KeyStroke;
 
 import app.astrosoft.ui.view.ViewManager.View;
 
+class KeyMaskHelper {
+	static final int MENU_MASK;
+	static final int SHIFT_MASK = InputEvent.SHIFT_DOWN_MASK;
+	static {
+		int mask;
+		try {
+			mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+		} catch (Throwable t) {
+			mask = ActionEvent.CTRL_MASK;
+		}
+		MENU_MASK = mask;
+	}
+}
 
 public enum Command {
 
-	NEW ("New",KeyEvent.VK_N, KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)),
-	OPEN ("Open",KeyEvent.VK_O, KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK )),
-	OPEN_COMPACTIBILITY ("Open Compactibility", KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK)),
-	SAVE ("Save",KeyEvent.VK_S,KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)),
-	SAVE_AS ("Save As...", KeyEvent.VK_A),
-	SAVE_COMPACTIBILITY("Save Compactibility", KeyEvent.VK_C,KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK)),
-	PRINT ("Print",KeyEvent.VK_P,KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK)),
-	EXIT ("Exit",KeyEvent.VK_X,KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK)),
+	NEW ("New",KeyEvent.VK_N, KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyMaskHelper.MENU_MASK)),
+	OPEN ("Open",KeyEvent.VK_O, KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyMaskHelper.MENU_MASK )),
+	OPEN_COMPACTIBILITY ("Open Compactibility", KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyMaskHelper.MENU_MASK | KeyMaskHelper.SHIFT_MASK)),
+	SAVE ("Save",KeyEvent.VK_S,KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyMaskHelper.MENU_MASK)),
+	SAVE_AS ("Save As...", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyMaskHelper.MENU_MASK | KeyMaskHelper.SHIFT_MASK)),
+	SAVE_COMPACTIBILITY("Save Compactibility", KeyEvent.VK_C,KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyMaskHelper.MENU_MASK | KeyMaskHelper.SHIFT_MASK)),
+	PRINT ("Print",KeyEvent.VK_P,KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyMaskHelper.MENU_MASK)),
+	EXIT ("Exit",KeyEvent.VK_Q,KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyMaskHelper.MENU_MASK)),
 
 	EDIT_CHART ("Chart Data",KeyEvent.VK_C),
 	EDIT_COMPACTIBILITY ("Compactibility",KeyEvent.VK_M),
@@ -67,7 +82,7 @@ public enum Command {
 	EXPORT_COMPACTIBILITY_TO_PDF(DisplayStrings.EXPORT_COMPACTIBILITY_TO_PDF_STR),
 
 	ABOUT("About AstroSoft", KeyEvent.VK_A),
-	NOTES("Notes", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK))
+	NOTES("Notes", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyMaskHelper.MENU_MASK))
 	;
 
 	private String action;

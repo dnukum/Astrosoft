@@ -411,6 +411,34 @@ public class ChartNotesXmlTest {
         Assert.assertEquals("Notes must be preserved across BirthDataPanel get/set", "Important consultation notes", editedBd.getNotes());
     }
 
+    @Test
+    public void testCrossPlatformCommandShortcutsAndCollisions() {
+        int menuMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        
+        // 1. Verify Save accelerator matches platform menu mask (Cmd on Mac, Ctrl on Windows)
+        javax.swing.KeyStroke saveKey = app.astrosoft.consts.Command.SAVE.key();
+        Assert.assertNotNull(saveKey);
+        Assert.assertEquals(java.awt.event.KeyEvent.VK_S, saveKey.getKeyCode());
+        Assert.assertEquals(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, menuMask), saveKey);
+
+        // 2. Verify Save As accelerator is Cmd/Ctrl + Shift + S
+        javax.swing.KeyStroke saveAsKey = app.astrosoft.consts.Command.SAVE_AS.key();
+        Assert.assertNotNull(saveAsKey);
+        Assert.assertEquals(java.awt.event.KeyEvent.VK_S, saveAsKey.getKeyCode());
+        Assert.assertEquals(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, menuMask | java.awt.event.InputEvent.SHIFT_DOWN_MASK), saveAsKey);
+
+        // 3. Verify Save Compactibility does not collide with Save As
+        javax.swing.KeyStroke saveCompKey = app.astrosoft.consts.Command.SAVE_COMPACTIBILITY.key();
+        Assert.assertNotNull(saveCompKey);
+        Assert.assertEquals(java.awt.event.KeyEvent.VK_C, saveCompKey.getKeyCode());
+        Assert.assertFalse("Save As and Save Compactibility must not share the same shortcut", saveAsKey.equals(saveCompKey));
+
+        // 4. Verify Exit does not collide with Cut (VK_X)
+        javax.swing.KeyStroke exitKey = app.astrosoft.consts.Command.EXIT.key();
+        Assert.assertNotNull(exitKey);
+        Assert.assertEquals("Exit should be Q, not Cut (X)", java.awt.event.KeyEvent.VK_Q, exitKey.getKeyCode());
+    }
+
     private javax.swing.JTextPane getEditor(app.astrosoft.ui.comp.ChartNotesPanel panel) {
         for (java.awt.Component c : panel.getComponents()) {
             if (c instanceof javax.swing.JScrollPane) {

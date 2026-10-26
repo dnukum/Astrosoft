@@ -18,9 +18,11 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.undo.UndoManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -197,11 +199,25 @@ public class ChartNotesPanel extends JPanel {
         // Smart Paste Action for proper plain-text / rich-text handling
         Action smartPasteAction = createSmartPasteAction();
 
-        // Mac & Windows shortcut bindings
-        setupKeyBindings(boldAction, italicAction, underlineAction, smartPasteAction);
+        final UndoManager undoManager = new UndoManager();
+        editor.getDocument().addUndoableEditListener(undoManager);
 
-        // Context Popup Menu (Cut, Copy, Paste, Select All)
-        setupContextMenu(smartPasteAction);
+        Action undoAction = new AbstractAction("Undo") {
+            public void actionPerformed(ActionEvent e) {
+                if (undoManager.canUndo()) undoManager.undo();
+            }
+        };
+        Action redoAction = new AbstractAction("Redo") {
+            public void actionPerformed(ActionEvent e) {
+                if (undoManager.canRedo()) undoManager.redo();
+            }
+        };
+
+        // Mac & Windows shortcut bindings
+        setupKeyBindings(boldAction, italicAction, underlineAction, smartPasteAction, undoAction, redoAction);
+
+        // Context Popup Menu (Undo, Redo, Cut, Copy, Paste, Select All)
+        setupContextMenu(smartPasteAction, undoAction, redoAction);
 
         // Auto-save sync to Horoscope
         editor.getDocument().addDocumentListener(new DocumentListener() {
@@ -387,7 +403,7 @@ public class ChartNotesPanel extends JPanel {
         };
     }
 
-    private void setupKeyBindings(Action boldAction, Action italicAction, Action underlineAction, Action smartPasteAction) {
+    private void setupKeyBindings(Action boldAction, Action italicAction, Action underlineAction, Action smartPasteAction, Action undoAction, Action redoAction) {
         InputMap im = editor.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap am = editor.getActionMap();
 
@@ -396,23 +412,39 @@ public class ChartNotesPanel extends JPanel {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_I, meta), "font-italic");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, meta), "font-underline");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, meta), "smart-paste");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, meta), DefaultEditorKit.copyAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, meta), DefaultEditorKit.cutAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, meta), DefaultEditorKit.selectAllAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, meta), "undo");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, meta | InputEvent.SHIFT_DOWN_MASK), "redo");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, meta), "redo");
 
         // Windows Ctrl fallback
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_DOWN_MASK), "font-bold");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK), "font-italic");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK), "font-underline");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "smart-paste");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.copyAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.cutAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.selectAllAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK), "undo");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "redo");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK), "redo");
 
         am.put("font-bold", boldAction);
         am.put("font-italic", italicAction);
         am.put("font-underline", underlineAction);
         am.put("smart-paste", smartPasteAction);
         am.put(DefaultEditorKit.pasteAction, smartPasteAction);
+        am.put("undo", undoAction);
+        am.put("redo", redoAction);
     }
 
-    private void setupContextMenu(Action smartPasteAction) {
+    private void setupContextMenu(Action smartPasteAction, Action undoAction, Action redoAction) {
         JPopupMenu popup = new JPopupMenu();
 
+        JMenuItem undoItem = new JMenuItem(undoAction);
+        JMenuItem redoItem = new JMenuItem(redoAction);
         JMenuItem cutItem = new JMenuItem(new DefaultEditorKit.CutAction());
         cutItem.setText("Cut");
         JMenuItem copyItem = new JMenuItem(new DefaultEditorKit.CopyAction());
@@ -422,6 +454,9 @@ public class ChartNotesPanel extends JPanel {
         JMenuItem selectAllItem = new JMenuItem("Select All");
         selectAllItem.addActionListener(e -> editor.selectAll());
 
+        popup.add(undoItem);
+        popup.add(redoItem);
+        popup.addSeparator();
         popup.add(cutItem);
         popup.add(copyItem);
         popup.add(pasteItem);

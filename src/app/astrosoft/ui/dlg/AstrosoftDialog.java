@@ -54,6 +54,12 @@ public abstract class AstrosoftDialog extends javax.swing.JDialog {
             ( screenSize.width - size.width ) / 2, ( screenSize.height - size.height ) / 2, size.width,
             size.height );    
         this.setResizable(false);
+
+        getRootPane().registerKeyboardAction(
+            closeListener,
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0),
+            javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
     }
     
     public void setBackground(Color bgColor){
