@@ -111,6 +111,56 @@ public class ChartNotesPanel extends JPanel {
         }
     }
 
+    private static class PopOutIcon implements javax.swing.Icon {
+        public int getIconWidth() { return 11; }
+        public int getIconHeight() { return 11; }
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(c != null ? c.getForeground() : Color.DARK_GRAY);
+            g2.setStroke(new java.awt.BasicStroke(1.2f));
+            // Window box
+            g2.drawRect(x + 1, y + 3, 6, 6);
+            // Arrow pointing out (top-right)
+            g2.drawLine(x + 5, y + 5, x + 10, y);
+            g2.drawLine(x + 7, y, x + 10, y);
+            g2.drawLine(x + 10, y, x + 10, y + 3);
+            g2.dispose();
+        }
+    }
+
+    private static class DockIcon implements javax.swing.Icon {
+        public int getIconWidth() { return 11; }
+        public int getIconHeight() { return 11; }
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(c != null ? c.getForeground() : Color.DARK_GRAY);
+            g2.setStroke(new java.awt.BasicStroke(1.2f));
+            // Window box
+            g2.drawRect(x + 1, y + 3, 6, 6);
+            // Arrow pointing in (down-left)
+            g2.drawLine(x + 10, y, x + 5, y + 5);
+            g2.drawLine(x + 8, y + 5, x + 5, y + 5);
+            g2.drawLine(x + 5, y + 2, x + 5, y + 5);
+            g2.dispose();
+        }
+    }
+
+    private static class FoldIcon implements javax.swing.Icon {
+        public int getIconWidth() { return 9; }
+        public int getIconHeight() { return 9; }
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(c != null ? c.getForeground() : Color.DARK_GRAY);
+            int[] xp = {x + 1, x + 7, x + 1};
+            int[] yp = {y + 1, y + 5, y + 9};
+            g2.fillPolygon(xp, yp, 3);
+            g2.dispose();
+        }
+    }
+
     public ChartNotesPanel(NotesListener listener) {
         this.listener = listener;
         initUI();
@@ -138,9 +188,9 @@ public class ChartNotesPanel extends JPanel {
         JPanel headerControls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
         headerControls.setOpaque(false);
 
-        popOutBtn = new JButton("↗");
+        popOutBtn = new JButton(new PopOutIcon());
         popOutBtn.setToolTipText("Pop out to floating window");
-        popOutBtn.setMargin(new Insets(2, 6, 2, 6));
+        popOutBtn.setMargin(new Insets(2, 5, 2, 5));
         popOutBtn.setFocusable(false);
         popOutBtn.addActionListener(e -> {
             if (listener != null) {
@@ -148,9 +198,9 @@ public class ChartNotesPanel extends JPanel {
             }
         });
 
-        foldBtn = new JButton("▶");
+        foldBtn = new JButton(new FoldIcon());
         foldBtn.setToolTipText("Fold / Close Notes");
-        foldBtn.setMargin(new Insets(2, 6, 2, 6));
+        foldBtn.setMargin(new Insets(2, 5, 2, 5));
         foldBtn.setFocusable(false);
         foldBtn.addActionListener(e -> {
             if (listener != null) {
@@ -826,11 +876,11 @@ public class ChartNotesPanel extends JPanel {
     public void setDocked(boolean docked) {
         this.isDocked = docked;
         if (docked) {
-            popOutBtn.setText("↗");
+            popOutBtn.setIcon(new PopOutIcon());
             popOutBtn.setToolTipText("Pop out to floating window");
             foldBtn.setVisible(true);
         } else {
-            popOutBtn.setText("↙");
+            popOutBtn.setIcon(new DockIcon());
             popOutBtn.setToolTipText("Dock back to sidebar");
             foldBtn.setVisible(false);
         }

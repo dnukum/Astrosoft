@@ -235,45 +235,98 @@ public class BalamCalendarDialog extends JDialog {
 
     /**
      * Renders Tara and Chandra cells as "N (stars)" using Muthu's thumb rules.
-     * Tara:    2/6/9 = 2 green, 7 = 1 red, others = 1 yellow.
+     * Tara:    2/6/9 = 2 green, 4/8 = 1 green, 7 = 1 red, others = 1 yellow.
      * Chandra: 3/6/10/11 = 3 green, 1/7 = 2 green, 8 = 1 red, others = 1 green.
+     * Draws vector stars directly to guarantee crisp rendering across all OSes
+     * without relying on system fonts or missing Unicode glyphs.
      */
     private static class BalamStarRenderer extends javax.swing.table.DefaultTableCellRenderer {
-        private static final String STAR = "\u2605";
-        private static final String GREEN = "#1E9E3A";
-        private static final String RED = "#D32F2F";
-        private static final String YELLOW = "#E0A800";
+        private static final Color GREEN = new Color(0x1E, 0x9E, 0x3A);
+        private static final Color RED = new Color(0xD3, 0x2F, 0x2F);
+        private static final Color YELLOW = new Color(0xE0, 0xA8, 0x00);
+
+        private int number = 0;
+        private int starCount = 0;
+        private Color starColor = null;
 
         @Override
         public Component getTableCellRendererComponent(JTable t, Object value, boolean isSelected,
                                                        boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, column);
+            setText("");
             if (value instanceof TaraBalamResult) {
                 app.astrosoft.consts.Tara tara = ((TaraBalamResult) value).getTara();
                 switch (tara.getThumbRuleGrade()) {
-                    case BEST:  setStars(tara.getNumber(), 2, GREEN);  break;
-                    case AVOID: setStars(tara.getNumber(), 1, RED);    break;
-                    default:    setStars(tara.getNumber(), 1, YELLOW); break;
+                    case BEST:  setStarData(tara.getNumber(), 2, GREEN);  break;
+                    case GOOD:  setStarData(tara.getNumber(), 1, GREEN);  break;
+                    case AVOID: setStarData(tara.getNumber(), 1, RED);    break;
+                    default:    setStarData(tara.getNumber(), 1, YELLOW); break;
                 }
             } else if (value instanceof ChandraBalamResult) {
                 app.astrosoft.consts.ChandraHouse house = ((ChandraBalamResult) value).getHouse();
                 switch (house.getThumbRuleGrade()) {
-                    case BEST:  setStars(house.getHouseNumber(), 3, GREEN); break;
-                    case GOOD:  setStars(house.getHouseNumber(), 2, GREEN); break;
-                    case AVOID: setStars(house.getHouseNumber(), 1, RED);   break;
-                    default:    setStars(house.getHouseNumber(), 1, GREEN); break;
+                    case BEST:  setStarData(house.getHouseNumber(), 3, GREEN); break;
+                    case GOOD:  setStarData(house.getHouseNumber(), 2, GREEN); break;
+                    case AVOID: setStarData(house.getHouseNumber(), 1, RED);   break;
+                    default:    setStarData(house.getHouseNumber(), 1, GREEN); break;
                 }
+            } else {
+                number = 0;
+                starCount = 0;
+                starColor = null;
+                setText(value != null ? value.toString() : "-");
             }
             return this;
         }
 
-        private void setStars(int number, int count, String color) {
-            StringBuilder stars = new StringBuilder();
-            for (int i = 0; i < count; i++) {
-                if (i > 0) stars.append(' ');
-                stars.append(STAR);
+        private void setStarData(int num, int count, Color col) {
+            this.number = num;
+            this.starCount = count;
+            this.starColor = col;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (starCount <= 0 || starColor == null) return;
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setFont(getFont());
+            FontMetrics fm = g2.getFontMetrics();
+
+            String prefix = number + " (";
+            String suffix = ")";
+            int textY = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+
+            int x = 6;
+            g2.setColor(getForeground());
+            g2.drawString(prefix, x, textY);
+            x += fm.stringWidth(prefix);
+
+            int starY = getHeight() / 2;
+            for (int i = 0; i < starCount; i++) {
+                drawStar(g2, x + 5, starY, 5, 2, starColor);
+                x += 12;
             }
-            setText("<html>" + number + " (<font color='" + color + "'>" + stars + "</font>)</html>");
+
+            g2.setColor(getForeground());
+            g2.drawString(suffix, x - 1, textY);
+            g2.dispose();
+        }
+
+        private void drawStar(Graphics2D g2, int cx, int cy, int outerR, int innerR, Color color) {
+            int[] x = new int[10];
+            int[] y = new int[10];
+            for (int i = 0; i < 10; i++) {
+                double r = (i % 2 == 0) ? outerR : innerR;
+                double angle = i * Math.PI / 5 - Math.PI / 2;
+                x[i] = (int) (cx + r * Math.cos(angle));
+                y[i] = (int) (cy + r * Math.sin(angle));
+            }
+            g2.setColor(color);
+            g2.fillPolygon(x, y, 10);
         }
     }
 }
