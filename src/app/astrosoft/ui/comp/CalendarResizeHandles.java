@@ -22,6 +22,9 @@ public final class CalendarResizeHandles {
     }
 
     public static void install(final JPanel panel) {
+        if (!Boolean.TRUE.equals(panel.getClientProperty("balam.legacyResizeGrips"))) {
+            return;
+        }
         panel.add(handle(panel, true, false, Cursor.E_RESIZE_CURSOR), BorderLayout.EAST);
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.add(handle(panel, false, true, Cursor.S_RESIZE_CURSOR), BorderLayout.CENTER);

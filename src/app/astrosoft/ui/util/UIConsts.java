@@ -116,6 +116,8 @@ public class UIConsts {
 		UIProps.put("Tree.selectionBorderColor", LEAF_GREEN);
 		
 		UIProps.put("SplitPane.background", Color.WHITE);
+		UIProps.put("SplitPane.continuousLayout", Boolean.TRUE);
+		UIProps.put("SplitPaneDivider.draggingColor", new Color(176, 196, 222));
 		
 		UIProps.put("List.selectionBackground", LEAF_GREEN);
 		UIProps.put("List.selectionBorderColor", LEAF_GREEN);

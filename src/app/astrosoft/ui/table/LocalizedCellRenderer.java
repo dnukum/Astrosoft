@@ -36,7 +36,11 @@ public class LocalizedCellRenderer implements TableCellRenderer {
 				value, isSelected, hasFocus, row, column);
 		
 		if (! (value instanceof Number || value instanceof Roman) ){
-			c.setFont(UIUtil.getFont(font.getFontName(), font.getStyle(), font.getSize(), 14));
+			Font resolved = UIUtil.getFont(font.getFontName(), font.getStyle(), font.getSize(), 14);
+			if (value != null && resolved.canDisplayUpTo(value.toString()) != -1) {
+				resolved = new Font(Font.SANS_SERIF, resolved.getStyle(), resolved.getSize());
+			}
+			c.setFont(resolved);
 		}
 		
 		return c;

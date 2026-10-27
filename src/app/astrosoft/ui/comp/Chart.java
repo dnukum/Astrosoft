@@ -80,9 +80,13 @@ public class Chart extends JPanel{
 		
 		houseSize = new Dimension(chartSize.width / 4, chartSize.height / 4);
 		
-		tableSize = new Dimension((int)(houseSize.width * 0.82), (int)(houseSize.height * 0.80));
+		if (houseSize.width < 85 || houseSize.height < 72) {
+			tableSize = new Dimension(Math.max(1, houseSize.width - 6), Math.max(3, houseSize.height - 4));
+		} else {
+			tableSize = new Dimension((int)(houseSize.width * 0.82), (int)(houseSize.height * 0.80));
+		}
 		
-		rowHeight = tableSize.height / 3;
+		rowHeight = Math.max(14, tableSize.height / 3);
 		
 		//Thirteen-th fills center
 		housePanel = new ArrayList<JPanel>();
@@ -121,11 +125,13 @@ public class Chart extends JPanel{
 		toolTipManager.setDismissDelay(15000);
 		Rasi ascendant = chartData.getAscendant();
 		
+		int vGap = Math.max(1, (houseSize.height - (rowHeight * 3) - 2) / 2);
+		int hGap = Math.max(1, (houseSize.width - tableSize.width - 2) / 2);
 		for(Rasi house : Rasi.values()){
 			
 			houseNo = house.ordinal();
 			
-			JPanel panel = new JPanel();
+			JPanel panel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, hGap, vGap));
 			
 			if (chartData instanceof app.astrosoft.beans.AshtaVargaChartData) {
 				app.astrosoft.beans.AshtaVargaChartData avData = (app.astrosoft.beans.AshtaVargaChartData) chartData;
@@ -220,6 +226,10 @@ public class Chart extends JPanel{
 				panel.add(houseTable, getConstrains(houseNo));
 
 				//houseTable.setDefaultRenderer(Planet.class, new PlanetCellRenderer());
+				if (houseSize.height < 68) {
+					houseTable.setFont(new Font("Verdana", Font.PLAIN, 10));
+					houseTable.setRowMargin(1);
+				}
 				houseTable.setRowHeight(rowHeight);
 				houseTable.setPreferredSize(tableSize);
 				houseTable.setBackground(UIConsts.getChartBackground());
@@ -257,6 +267,7 @@ public class Chart extends JPanel{
 		// Add ChartName and optional Subtitle at Center - Vertically and Horizontally Centered in Middle
 		houseNo = 12;
 		JPanel panel = new JPanel(new GridBagLayout());
+		panel.setBackground(UIConsts.getChartBackground());
 		Dimension centerSize = new Dimension(houseSize.width * 2, houseSize.height * 2);
 		panel.setPreferredSize(centerSize);
 		panel.setMinimumSize(centerSize);

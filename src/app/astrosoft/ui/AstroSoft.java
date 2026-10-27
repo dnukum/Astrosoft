@@ -144,12 +144,15 @@ public class AstroSoft extends javax.swing.JFrame implements
 		formMenuAndToolBar();
 		home = new JPanel();
 		home.setLayout(null);
+		home.setBorder(javax.swing.BorderFactory.createEmptyBorder());
 		home.setBounds(bounds);
 
 		initNotes();
+		getContentPane().add(mainSplitPane, BorderLayout.CENTER);
 
 		this.addComponentListener(new java.awt.event.ComponentAdapter() {
 			public void componentResized(java.awt.event.ComponentEvent e) {
+				getContentPane().validate();
 				if (home.getComponentCount() > 0) {
 				    java.awt.Component view = home.getComponent(0);
 				    if (view.getClass().getName().contains("MyMuhurtaView")
@@ -194,12 +197,23 @@ public class AstroSoft extends javax.swing.JFrame implements
 			}
 		});
 
-		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, home, new JPanel());
+		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, home, new JPanel());
+		mainSplitPane.setUI(new javax.swing.plaf.basic.BasicSplitPaneUI() {
+			@Override
+			protected java.awt.Component createDefaultNonContinuousLayoutDivider() {
+				JPanel p = new JPanel();
+				p.setOpaque(false);
+				return p;
+			}
+			@Override
+			public void finishedPaintingChildren(JSplitPane jc, java.awt.Graphics g) {
+			}
+		});
 		mainSplitPane.getRightComponent().setVisible(false);
 		mainSplitPane.setResizeWeight(1.0);
 		mainSplitPane.setContinuousLayout(true);
 		mainSplitPane.setOneTouchExpandable(false);
-		mainSplitPane.setBorder(null);
+		mainSplitPane.setBorder(javax.swing.BorderFactory.createEmptyBorder());
 
 		// Start folded
 		mainSplitPane.setDividerSize(0);
@@ -393,6 +407,15 @@ public class AstroSoft extends javax.swing.JFrame implements
         System.exit(0);
 
 	} // GEN-LAST:event_exitForm
+
+	static {
+		if (System.getProperty("awt.useSystemAAFontSettings") == null) {
+			System.setProperty("awt.useSystemAAFontSettings", "lcd");
+		}
+		if (System.getProperty("swing.aatext") == null) {
+			System.setProperty("swing.aatext", "true");
+		}
+	}
 
 	/**
 	 * @param args
@@ -1087,10 +1110,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 			home.removeAll();
 			home.add(view);
 			
+			refreshUI();
+			getContentPane().validate();
+			
 			if (view.getClass().getName().contains("MyMuhurtaView") || isChartView(view) || view.getClass().getName().contains("MarriageMatchView")) {
 			    int viewW = home.getWidth();
 			    int viewH = home.getHeight();
-			    if (viewW <= 0) {
+			    if (viewW <= 0 || viewH <= 0) {
 			        java.awt.Dimension size = getContentPane().getSize();
 			        if (size.width == 0) size = bounds.getSize(); // fallback if not yet laid out
 			        int tbHeight = (toolbar != null && toolbar.isVisible()) ? toolbar.getHeight() : 0;
@@ -1098,9 +1124,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 			        viewH = Math.max(0, size.height - tbHeight);
 			    }
 			    view.setBounds(0, 0, viewW, viewH);
+			    view.revalidate();
+			    view.validate();
 			}
-			
-			refreshUI();
+			home.repaint();
 		}
 
 		public JPanel createView(View view) {

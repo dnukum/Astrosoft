@@ -131,15 +131,45 @@ public class BalamCalendarPanel extends JPanel {
         return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
+    private static final Color HEADER_BG = new Color(245, 247, 250);
+    private static final Color PANEL_BORDER_CLR = new Color(176, 196, 222);
+    private static final Color SUB_BORDER_CLR = new Color(208, 219, 229);
+    private static final Color TBL_HEADER_BG = new Color(226, 234, 245);
+    private static final Color TBL_ALT_ROW_BG = new Color(248, 250, 253);
+    private static final Color TBL_SEL_BG = new Color(217, 235, 255);
+    private static final Color NAVY_TEXT = new Color(26, 59, 92);
+    private static final Color BTN_BG = new Color(238, 242, 247);
+    private static final Color BTN_BORDER = new Color(173, 192, 214);
+
+    private static void styleActionBtn(JButton btn) {
+        btn.setBackground(BTN_BG);
+        btn.setForeground(NAVY_TEXT);
+        btn.setFocusPainted(false);
+        btn.setMargin(new Insets(2, 6, 2, 6));
+        btn.setFont(new Font("SansSerif", Font.BOLD, 11));
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BTN_BORDER, 1),
+            BorderFactory.createEmptyBorder(3, 8, 3, 8)
+        ));
+    }
+
     private void initComponents() {
         setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
+        setBorder(BorderFactory.createLineBorder(PANEL_BORDER_CLR, 1));
         
-        JPanel topPanel = new JPanel(new BorderLayout(20, 0));
-        JPanel navigationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 6));
+        JPanel topPanel = new JPanel(new BorderLayout(12, 0));
+        topPanel.setBackground(HEADER_BG);
+        topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, SUB_BORDER_CLR));
+        JPanel navigationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 4));
+        navigationPanel.setOpaque(false);
         JButton prevBtn = new JButton("< Prev Month");
         JButton nextBtn = new JButton("Next Month >");
+        styleActionBtn(prevBtn);
+        styleActionBtn(nextBtn);
         monthLabel = new JLabel("");
         monthLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        monthLabel.setForeground(NAVY_TEXT);
         monthLabel.setPreferredSize(new Dimension(150, 30));
         monthLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
@@ -176,6 +206,7 @@ public class BalamCalendarPanel extends JPanel {
         navigationPanel.add(nextBtn);
         topPanel.add(navigationPanel, BorderLayout.CENTER);
         filterButton = new JButton("Filter");
+        styleActionBtn(filterButton);
         filterButton.setFocusable(false);
         filterButton.setToolTipText("Filter out rows with inauspicious Tara or Chandra Balam");
         filterButton.addActionListener(e -> {
@@ -183,15 +214,18 @@ public class BalamCalendarPanel extends JPanel {
             filterButton.setText(isFiltered ? "Show All" : "Filter");
             updateTable();
         });
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 4));
+        filterPanel.setOpaque(false);
         filterPanel.add(filterButton);
         topPanel.add(filterPanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
         
         scrollPane = new JScrollPane();
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, SUB_BORDER_CLR));
+        scrollPane.getViewport().setBackground(Color.WHITE);
 
-        Font detailFont = new Font("SansSerif", Font.PLAIN, 13);
+        Font detailFont = new Font("SansSerif", Font.PLAIN, 11);
 
         leftDetailsPane = new JEditorPane("text/html", EMPTY_DETAILS) {
             @Override
@@ -204,27 +238,30 @@ public class BalamCalendarPanel extends JPanel {
         leftDetailsPane.setFont(detailFont);
         leftDetailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 
-        JPanel rightPanel = new JPanel();
-        rightPanel.setBackground(Color.WHITE);
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        JPanel rightContainer = new JPanel(new BorderLayout(0, 0));
+        rightContainer.setBackground(Color.WHITE);
 
-        JPanel horaControlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        horaControlPanel.setBackground(Color.WHITE);
-        horaControlPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JPanel horaControlPanel = new JPanel(new BorderLayout(6, 0));
+        horaControlPanel.setBackground(HEADER_BG);
+        horaControlPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, SUB_BORDER_CLR),
+            BorderFactory.createEmptyBorder(3, 6, 3, 6)
+        ));
 
         JLabel horaLabel = new JLabel("Subha Hora:");
-        horaLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        horaLabel.setFont(new Font("SansSerif", Font.BOLD, 11));
+        horaLabel.setForeground(NAVY_TEXT);
 
         horaCombo = new JComboBox<HoraItem>();
-        horaCombo.setPrototypeDisplayValue(new HoraItem("Window Start (00:00 - 00:00)", 0L));
+        horaCombo.setPrototypeDisplayValue(new HoraItem("00:00 AM - 00:00 AM", 0L));
         horaCombo.setFont(detailFont);
-        horaCombo.setPreferredSize(new Dimension(230, 28));
+        horaCombo.setPreferredSize(new Dimension(145, 24));
         horaCombo.setFocusable(false);
         horaCombo.setEnabled(false);
 
         updateButton = new JButton("Update");
-        updateButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-        updateButton.setPreferredSize(new Dimension(85, 28));
+        styleActionBtn(updateButton);
+        updateButton.setPreferredSize(new Dimension(64, 24));
         updateButton.setEnabled(false);
         updateButton.setFocusable(false);
         updateButton.setToolTipText("Apply the selected window Subha Hora / start date/time to Muhurta");
@@ -248,9 +285,9 @@ public class BalamCalendarPanel extends JPanel {
             }
         });
 
-        horaControlPanel.add(horaLabel);
-        horaControlPanel.add(horaCombo);
-        horaControlPanel.add(updateButton);
+        horaControlPanel.add(horaLabel, BorderLayout.WEST);
+        horaControlPanel.add(horaCombo, BorderLayout.CENTER);
+        horaControlPanel.add(updateButton, BorderLayout.EAST);
 
         rightDetailsPane = new JEditorPane("text/html", "") {
             @Override
@@ -264,27 +301,29 @@ public class BalamCalendarPanel extends JPanel {
         rightDetailsPane.setAlignmentX(Component.LEFT_ALIGNMENT);
         rightDetailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 
-        rightPanel.add(horaControlPanel);
-        rightPanel.add(Box.createVerticalStrut(4));
-        rightPanel.add(rightDetailsPane);
-
         JScrollPane leftScroll = new JScrollPane(leftDetailsPane);
-        leftScroll.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+        leftScroll.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
         leftScroll.setBackground(Color.WHITE);
         leftScroll.getViewport().setBackground(Color.WHITE);
         leftScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         leftScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         leftScroll.setMinimumSize(new Dimension(150, 50));
 
-        JScrollPane rightScroll = new JScrollPane(rightPanel);
-        rightScroll.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+        JScrollPane rightScroll = new JScrollPane(rightDetailsPane);
+        rightScroll.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
         rightScroll.setBackground(Color.WHITE);
         rightScroll.getViewport().setBackground(Color.WHITE);
         rightScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         rightScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         rightScroll.setMinimumSize(new Dimension(150, 50));
 
-        JSplitPane bottomSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftScroll, rightScroll);
+        rightContainer.add(horaControlPanel, BorderLayout.NORTH);
+        rightContainer.add(rightScroll, BorderLayout.CENTER);
+        rightContainer.setBorder(BorderFactory.createEmptyBorder());
+        rightContainer.setMinimumSize(new Dimension(150, 50));
+
+        JSplitPane bottomSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, leftScroll, rightContainer);
+        styleSplitPane(bottomSplit, false);
         bottomSplit.setResizeWeight(0.5);
         bottomSplit.setDividerSize(5);
         bottomSplit.setContinuousLayout(true);
@@ -293,12 +332,50 @@ public class BalamCalendarPanel extends JPanel {
 
         detailsPane = leftDetailsPane;
 
-        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPane, bottomSplit);
-        splitPane.setResizeWeight(0.5);
-        splitPane.setDividerLocation(170);
-        splitPane.setOneTouchExpandable(true);
+        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, scrollPane, bottomSplit);
+        styleSplitPane(splitPane, true);
+        splitPane.setResizeWeight(0.42);
+        splitPane.setDividerLocation(132);
+        splitPane.setDividerSize(6);
+        splitPane.setContinuousLayout(true);
+        splitPane.setBorder(BorderFactory.createEmptyBorder());
+        splitPane.setOneTouchExpandable(false);
         add(splitPane, BorderLayout.CENTER);
         CalendarResizeHandles.install(this);
+    }
+
+    private static void styleSplitPane(final JSplitPane sp, final boolean vertical) {
+        sp.setContinuousLayout(true);
+        sp.setUI(new javax.swing.plaf.basic.BasicSplitPaneUI() {
+            @Override
+            protected Component createDefaultNonContinuousLayoutDivider() {
+                JPanel p = new JPanel();
+                p.setOpaque(false);
+                return p;
+            }
+            @Override
+            public void finishedPaintingChildren(JSplitPane jc, Graphics g) {
+                // Never paint the dark non-continuous ghost divider bar
+            }
+            @Override
+            public javax.swing.plaf.basic.BasicSplitPaneDivider createDefaultDivider() {
+                return new javax.swing.plaf.basic.BasicSplitPaneDivider(this) {
+                    @Override
+                    public void paint(Graphics g) {
+                        g.setColor(HEADER_BG);
+                        g.fillRect(0, 0, getWidth(), getHeight());
+                        g.setColor(SUB_BORDER_CLR);
+                        if (vertical) {
+                            g.drawLine(0, 0, getWidth(), 0);
+                            g.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
+                        } else {
+                            g.drawLine(0, 0, 0, getHeight());
+                            g.drawLine(getWidth() - 1, 0, getWidth() - 1, getHeight());
+                        }
+                    }
+                };
+            }
+        });
     }
     
     /** Synchronize controls without triggering recursive table regeneration.
@@ -348,6 +425,19 @@ public class BalamCalendarPanel extends JPanel {
         
         table = new AstrosoftTable(tableModel, app.astrosoft.consts.TableStyle.GRID) {
             @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : TBL_ALT_ROW_BG);
+                    c.setForeground(new Color(17, 17, 17));
+                } else {
+                    c.setBackground(TBL_SEL_BG);
+                    c.setForeground(NAVY_TEXT);
+                }
+                return c;
+            }
+
+            @Override
             public String getToolTipText(java.awt.event.MouseEvent e) {
                 java.awt.Point p = e.getPoint();
                 int row = rowAtPoint(p);
@@ -369,12 +459,19 @@ public class BalamCalendarPanel extends JPanel {
         };
         
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.setGridColor(SUB_BORDER_CLR);
+        table.setRowHeight(21);
+        if (table.getTableHeader() != null) {
+            table.getTableHeader().setBackground(TBL_HEADER_BG);
+            table.getTableHeader().setForeground(NAVY_TEXT);
+            table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 11));
+        }
 
         // GRID style disables selection rendering; re-enable it so the clicked row is highlighted.
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setSelectionBackground(new Color(198, 222, 255));
-        table.setSelectionForeground(Color.BLACK);
+        table.setSelectionBackground(TBL_SEL_BG);
+        table.setSelectionForeground(NAVY_TEXT);
         
         BalamStarRenderer starRenderer = new BalamStarRenderer();
         table.setCellRenderer(starRenderer, app.astrosoft.consts.AstrosoftTableColumn.TaraBalam);
@@ -673,27 +770,27 @@ public class BalamCalendarPanel extends JPanel {
 
     private static String buildLeftDetailsHtml(app.astrosoft.beans.BalamWindowDetails details,
             app.astrosoft.consts.Nakshathra nak, app.astrosoft.consts.Rasi rasi) {
-        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; font-size:13px; line-height:1.45; padding:6px 8px;'>");
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; color:#1f2933; padding:2px 6px;'>");
         java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a z", java.util.Locale.ENGLISH);
         dateFormat.setTimeZone(details.getTimeZone());
-        sb.append("<div style='margin-bottom:8px;'><b>Start:</b> ")
+        sb.append("<div style='margin-bottom:3px;'><b style='color:#0a3d62;'>Start:</b> ")
           .append(htmlEscape(dateFormat.format(details.getStart())))
-          .append("<br><b>End:</b> ").append(htmlEscape(dateFormat.format(details.getEnd())));
+          .append("<br><b style='color:#0a3d62;'>End:</b> ").append(htmlEscape(dateFormat.format(details.getEnd())));
         if (details.getSunrises() != null && !details.getSunrises().isEmpty()) {
             java.text.SimpleDateFormat sunriseDayFormat = new java.text.SimpleDateFormat("MMM d", java.util.Locale.ENGLISH);
             sunriseDayFormat.setTimeZone(details.getTimeZone());
             java.text.SimpleDateFormat sunriseTimeFormat = new java.text.SimpleDateFormat("hh:mm a z", java.util.Locale.ENGLISH);
             sunriseTimeFormat.setTimeZone(details.getTimeZone());
             for (java.util.Date sunrise : details.getSunrises()) {
-                sb.append("<br><b>Sunrise on ").append(sunriseDayFormat.format(sunrise)).append(":</b> ")
+                sb.append("<br><b style='color:#0a3d62;'>Sunrise on ").append(sunriseDayFormat.format(sunrise)).append(":</b> ")
                   .append(htmlEscape(sunriseTimeFormat.format(sunrise)));
             }
         }
         sb.append("</div>");
         for (app.astrosoft.beans.BalamWindowDetails.Suitability item : details.getSuitabilities()) {
-            sb.append("<div style='margin-bottom:6px;'><b>").append(htmlEscape(item.getStar().toString())).append(":</b> ");
+            sb.append("<div style='margin-bottom:3px;'><b style='color:#0a3d62;'>").append(htmlEscape(item.getStar().toString())).append(":</b> ");
             java.util.EnumSet<app.astrosoft.consts.MuhurtaEvent> events = item.getEvents();
-            if (events.isEmpty()) sb.append("<font color='red'>Not recommended</font>");
+            if (events.isEmpty()) sb.append("<font color='#c0392b'><b>Not recommended</b></font>");
             else {
                 boolean first = true;
                 for (app.astrosoft.consts.MuhurtaEvent event : events) {
@@ -704,9 +801,8 @@ public class BalamCalendarPanel extends JPanel {
             }
             sb.append("</div>");
         }
-        if (!details.getSuitabilities().isEmpty()) sb.append("<div style='height:4px;'></div>");
-        sb.append("<div style='margin-bottom:8px;'><b>Transit Moon:</b> ").append(nak.toString()).append(" in ").append(rasi.toString())
-          .append("  (").append(nak.getLord().toString()).append(")</div>");
+        sb.append("<div style='margin-bottom:3px;'><b style='color:#0a3d62;'>Transit Moon:</b> <b>").append(nak.toString()).append(" in ").append(rasi.toString())
+          .append("</b> (").append(nak.getLord().toString()).append(")</div>");
         StringBuilder thithis = new StringBuilder();
         StringBuilder varams = new StringBuilder();
         StringBuilder amirthathiYogas = new StringBuilder();
@@ -724,9 +820,9 @@ public class BalamCalendarPanel extends JPanel {
             if (amirthathiYoga != null && amirthathiYoga != previousAmirthathiYoga) {
                 if (amirthathiYogas.length() > 0) amirthathiYogas.append(" &rarr; (").append(htmlEscape(transitionFormat.format(entry.getStart()))).append(") ");
                 boolean isMarana = (amirthathiYoga == app.astrosoft.consts.AmirthathiYoga.Marana);
-                if (isMarana) amirthathiYogas.append("<font color='red'>");
+                if (isMarana) amirthathiYogas.append("<font color='#c0392b'><b>");
                 amirthathiYogas.append(htmlEscape(amirthathiYoga.toString()));
-                if (isMarana) amirthathiYogas.append("</font>");
+                if (isMarana) amirthathiYogas.append("</b></font>");
                 previousAmirthathiYoga = amirthathiYoga;
             }
             if (entry.getYoga() != null && entry.getYoga() != previousYoga) {
@@ -745,7 +841,7 @@ public class BalamCalendarPanel extends JPanel {
                     || entry.getThithi() == app.astrosoft.consts.Thithi.Prathamai
                     || entry.getThithi() == app.astrosoft.consts.Thithi.Ashtami
                     || entry.getThithi() == app.astrosoft.consts.Thithi.Navami;
-                if (isWarningThithi) thithis.append("<font color='red'>");
+                if (isWarningThithi) thithis.append("<font color='#c0392b'>");
                 thithis.append(thithi);
                 if (isWarningThithi) thithis.append("</font>");
                 previousThithi = thithi;
@@ -753,49 +849,50 @@ public class BalamCalendarPanel extends JPanel {
             if (entry.getWeekday() != previousVaram) {
                 if (varams.length() > 0) varams.append(" &rarr; ");
                 boolean isRedVara = (entry.getWeekday() == java.util.Calendar.TUESDAY || entry.getWeekday() == java.util.Calendar.SATURDAY);
-                if (isRedVara) varams.append("<font color='red'>");
+                if (isRedVara) varams.append("<font color='#c0392b'><b>");
                 varams.append(htmlEscape(weekdays[entry.getWeekday()]));
-                if (isRedVara) varams.append("</font>");
+                if (isRedVara) varams.append("</b></font>");
                 previousVaram = entry.getWeekday();
             }
         }
-        sb.append("<div style='line-height:1.5;'>");
-        sb.append("<b>Thithi:</b> ").append(thithis).append("<br>")
-          .append("<b>Varam:</b> ").append(varams).append("<br>");
+        sb.append("<div style='line-height:1.38;'>");
+        sb.append("<b style='color:#0a3d62;'>Thithi:</b> ").append(thithis).append("<br>")
+          .append("<b style='color:#0a3d62;'>Varam:</b> ").append(varams).append("<br>");
         if (amirthathiYogas.length() > 0)
-            sb.append("<b>Amirthathi Yoga:</b> ").append(amirthathiYogas).append("<br>");
-        if (yogas.length() > 0) sb.append("<b>Yoga (Nitya Yoga):</b> ").append(yogas).append("<br>");
-        if (karanas.length() > 0) sb.append("<b>Karana:</b> ").append(karanas).append("<br>");
+            sb.append("<b style='color:#0a3d62;'>Amirthathi Yoga:</b> ").append(amirthathiYogas).append("<br>");
+        if (yogas.length() > 0) sb.append("<b style='color:#0a3d62;'>Yoga (Nitya Yoga):</b> ").append(yogas).append("<br>");
+        if (karanas.length() > 0) sb.append("<b style='color:#0a3d62;'>Karana:</b> ").append(karanas).append("<br>");
         sb.append("</div>");
         sb.append("</body></html>");
         return sb.toString();
     }
 
     private static String buildRightDetailsHtml(app.astrosoft.beans.BalamWindowDetails details) {
-        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; font-size:13px; line-height:1.45; padding:6px 8px;'>");
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; color:#1f2933; padding:2px 6px;'>");
         java.util.List<app.astrosoft.core.MuhurtaWindowsCalculator.Window> subhaHoras = new java.util.ArrayList<>();
         for (app.astrosoft.core.MuhurtaWindowsCalculator.Window window : details.getTimingWindows()) {
             if ("Subha Hora".equals(window.kind)) subhaHoras.add(window);
         }
         if (!subhaHoras.isEmpty()) {
-            sb.append("<div style='margin-bottom:10px;'><b>Available:</b><br>");
+            sb.append("<div style='margin-bottom:3px;'><b style='color:#0a3d62;'>Available Subha Hora Windows:</b><br>");
             for (app.astrosoft.core.MuhurtaWindowsCalculator.Window w : subhaHoras) {
                 sb.append("• ").append(htmlEscape(app.astrosoft.core.MuhurtaWindowsCalculator.format(w, details.getTimeZone()))).append("<br>");
             }
             sb.append("</div>");
         } else {
-            sb.append("<div style='margin-bottom:10px;'><b>Available:</b><br>Not Applicable</div>");
+            sb.append("<div style='margin-bottom:3px;'><b style='color:#0a3d62;'>Available Subha Hora Windows:</b><br>Not Applicable</div>");
         }
         for (String kind : new String[]{"Abhijit Muhurta", "Brahma Muhurta"}) {
-            sb.append("<div style='margin-bottom:10px;'><b>").append(kind).append(":</b><br>");
+            sb.append("<div style='margin-bottom:3px;'><b style='color:#0a3d62;'>").append(kind).append(":</b> ");
             boolean found = false;
             for (app.astrosoft.core.MuhurtaWindowsCalculator.Window window : details.getTimingWindows()) {
                 if (window.kind.equals(kind)) {
-                    sb.append(htmlEscape(app.astrosoft.core.MuhurtaWindowsCalculator.format(window, details.getTimeZone()))).append("<br>");
+                    if (found) sb.append(", ");
+                    sb.append(htmlEscape(app.astrosoft.core.MuhurtaWindowsCalculator.format(window, details.getTimeZone())));
                     found = true;
                 }
             }
-            if (!found) sb.append("Not Applicable<br>");
+            if (!found) sb.append("<span style='color:#555555;'>Not Applicable</span>");
             sb.append("</div>");
         }
         sb.append("</body></html>");
@@ -905,12 +1002,25 @@ public class BalamCalendarPanel extends JPanel {
             this.number = num;
             this.starCount = count;
             this.starColor = col;
+            String hex = col == RED ? "#D32F2F" : col == GREEN ? "#1E9E3A" : "#E0A800";
+            StringBuilder stars = new StringBuilder();
+            for (int i = 0; i < count; i++) {
+                if (i > 0) stars.append(" ");
+                stars.append("\u2605");
+            }
+            setText("<html>" + num + " (<font color='" + hex + "'>" + stars + "</font>)</html>");
         }
 
         @Override
         protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (starCount <= 0 || starColor == null) return;
+            if (starCount <= 0 || starColor == null) {
+                super.paintComponent(g);
+                return;
+            }
+            if (isOpaque()) {
+                g.setColor(getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
 
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
