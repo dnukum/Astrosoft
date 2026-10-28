@@ -75,8 +75,12 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
 	private Varga varga;
 	
 	public PlanetChartData(Varga varga, PlanetaryInfo planetaryInfo) {
-		
+		this(varga.toString(), varga, planetaryInfo);
+	}
+
+	public PlanetChartData(String chartName, Varga varga, PlanetaryInfo planetaryInfo) {
 		this(varga, planetaryInfo.getDivChart(varga), planetaryInfo.getPlanetDirection());
+		this.chartName = chartName;
         if (planetaryInfo.getPlanetPosition() != null) planetLongitudes.putAll(planetaryInfo.getPlanetPosition());
         if (planetaryInfo.getPlanetNakshathra() != null) {
             for (Map.Entry<Planet, NakshathraPada> entry : planetaryInfo.getPlanetNakshathra().entrySet()) {

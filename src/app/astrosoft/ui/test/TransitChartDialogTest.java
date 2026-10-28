@@ -20,6 +20,10 @@ public class TransitChartDialogTest extends TestCase {
         Place place = AstroSoft.getPreferences().getPlace();
         TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new StubTransitChartComputation());
         assertNotNull(dialog);
+        assertTrue("Dialog should be resizable", dialog.isResizable());
+        assertEquals("Transit (D1)", TransitChartDialog.CHART_TITLE);
+        assertNotNull("Chart should be initialized", dialog.getChart());
+        assertEquals(place, dialog.getCurrentPlace());
         dialog.dispose();
         frame.dispose();
     }
@@ -29,6 +33,8 @@ public class TransitChartDialogTest extends TestCase {
         Place place = AstroSoft.getPreferences().getPlace();
         TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new DefaultTransitChartComputation());
         assertNotNull(dialog);
+        assertTrue("Dialog should be resizable", dialog.isResizable());
+        assertNotNull(dialog.getChart());
         dialog.dispose();
         frame.dispose();
     }
@@ -39,6 +45,7 @@ public class TransitChartDialogTest extends TestCase {
                 .actionPerformed(new java.awt.event.ActionEvent(this, 1, app.astrosoft.consts.Command.TRANSIT_CHART.name()));
         assertNotNull(frame.getTransitChartDialog());
         assertTrue(frame.getTransitChartDialog().isVisible());
+        assertTrue("Opened dialog should be resizable", frame.getTransitChartDialog().isResizable());
         frame.getTransitChartDialog().dispose();
         frame.dispose();
     }
