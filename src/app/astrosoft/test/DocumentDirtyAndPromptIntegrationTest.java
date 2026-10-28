@@ -433,6 +433,21 @@ public class DocumentDirtyAndPromptIntegrationTest {
     }
 
     @Test
+    public void testMarriageMatchToMyMuhurtaTitleTransition() {
+        app.displayMarriageMatch("MukundS", "RadhikaMukund", Rasi.Mesha, Rasi.Vrishabha,
+                Nakshathra.Ashwini, Nakshathra.Rohini);
+        Assert.assertTrue("Title must show Marriage Match: " + app.getTitle(),
+                app.getTitle().contains("Marriage Match (MukundS & RadhikaMukund)"));
+
+        // Switch to My Muhurta
+        app.onSwitchToMuhurtaView();
+        Assert.assertTrue("Title must switch to My Muhurta: " + app.getTitle(),
+                app.getTitle().contains("My Muhurta"));
+        Assert.assertFalse("Title must not retain Marriage Match: " + app.getTitle(),
+                app.getTitle().contains("Marriage Match"));
+    }
+
+    @Test
     public void testDirtyHoroscopeOpenCompactibilityPromptCancel() throws Exception {
         app.openHoroscope(fileA.getAbsolutePath());
         Horoscope currentH = app.getHoroscope();
@@ -718,6 +733,8 @@ public class DocumentDirtyAndPromptIntegrationTest {
                             app.getMyMuhurtaView().getDocument());
                     Assert.assertTrue("Notes must be rebound to Muhurta doc on MY_MUHURTA_VIEW",
                             app.getChartNotesPanel().getEditor().getText().contains("Original Muhurta Notes"));
+                    Assert.assertTrue("Title must show My Muhurta on MY_MUHURTA_VIEW when coming from " + source + ": " + app.getTitle(),
+                            app.getTitle().contains("My Muhurta"));
                 }
             }
         }

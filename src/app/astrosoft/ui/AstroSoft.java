@@ -1015,13 +1015,12 @@ public class AstroSoft extends javax.swing.JFrame implements
 		MuhurtaDocument doc = MuhurtaDocument.createFromFile(file);
 		if (doc != null) {
 			doc.setFilePath(file);
-			setTitle("Astrosoft 2.0 - " + new File(file).getName() + " [Muhurta]");
 			try {
 				getPreferences().setAstrosoftFilesDir(new File(file).getParent() + File.separator);
 			} catch (Exception e) {}
+			getMyMuhurtaView().loadDocument(doc);
 			onSwitchToMuhurtaView();
 			viewManager.showView(View.MY_MUHURTA_VIEW);
-			getMyMuhurtaView().loadDocument(doc);
 			if (chartNotesPanel != null) {
 				chartNotesPanel.bindNotesOwner(doc);
 			}
@@ -1189,7 +1188,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		String currentFile = doc.getFilePath();
 		if (currentFile != null && !currentFile.trim().isEmpty()) {
 			doc.saveToFile(currentFile);
-			setTitle("Astrosoft 2.0 - " + new File(currentFile).getName() + " [Muhurta]");
+			updateMuhurtaTitle();
 			log.info("Saved Muhurta directly to: " + currentFile);
 			return true;
 		} else {
@@ -1208,7 +1207,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.MUHURTA_EXTN);
 		if (selectedFile != null) {
 			doc.saveToFile(selectedFile);
-			setTitle("Astrosoft 2.0 - " + new File(selectedFile).getName() + " [Muhurta]");
+			updateMuhurtaTitle();
 			return true;
 		}
 		return false;
@@ -1461,6 +1460,31 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return myMuhurtaView;
 	}
 
+	public void updateMuhurtaTitle() {
+		MuhurtaDocument doc = (myMuhurtaView != null) ? myMuhurtaView.getDocument() : null;
+		if (doc != null) {
+			if (doc.getFilePath() != null) {
+				setTitle("Astrosoft 2.0 - " + new File(doc.getFilePath()).getName() + " [My Muhurta]");
+			} else {
+				String p1Name = (doc.getPerson1() != null && doc.getPerson1().getName() != null && !doc.getPerson1().getName().trim().isEmpty())
+						? doc.getPerson1().getName() : null;
+				String p2Name = (doc.getPerson2() != null && doc.getPerson2().getName() != null && !doc.getPerson2().getName().trim().isEmpty())
+						? doc.getPerson2().getName() : null;
+				if (p1Name != null && p2Name != null) {
+					setTitle("Astrosoft 2.0 - My Muhurta (" + p1Name + " & " + p2Name + ")");
+				} else if (p1Name != null) {
+					setTitle("Astrosoft 2.0 - My Muhurta (" + p1Name + ")");
+				} else if (doc.getName() != null && !doc.getName().trim().isEmpty() && !doc.getName().equalsIgnoreCase("Muhurta")) {
+					setTitle("Astrosoft 2.0 - My Muhurta (" + doc.getName() + ")");
+				} else {
+					setTitle("Astrosoft 2.0 - My Muhurta");
+				}
+			}
+		} else {
+			setTitle("Astrosoft 2.0 - My Muhurta");
+		}
+	}
+
 	public void onSwitchToMuhurtaView() {
 		currentView = View.MY_MUHURTA_VIEW;
 		if (chartNotesPanel != null) {
@@ -1471,10 +1495,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		actionMgr.enableAction(Command.SAVE, true);
 		actionMgr.enableAction(Command.SAVE_AS, true);
 		actionMgr.enableAction(Command.PRINT, true);
-		MuhurtaDocument doc = getMyMuhurtaView().getDocument();
-		if (doc != null && doc.getFilePath() != null) {
-			setTitle("Astrosoft 2.0 - " + new File(doc.getFilePath()).getName() + " [Muhurta]");
-		}
+		updateMuhurtaTitle();
 	}
 
 	public void onSwitchToHoroscopeView() {
@@ -1514,6 +1535,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 			if (compatibility != null) {
 				compatibility.setModified(true);
 			}
+		} else if (currentView == View.MY_MUHURTA_VIEW) {
+			updateMuhurtaTitle();
 		}
 		actionMgr.enableAction(Command.SAVE, true);
 		actionMgr.enableAction(Command.SAVE_AS, true);
