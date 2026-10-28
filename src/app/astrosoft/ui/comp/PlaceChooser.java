@@ -298,20 +298,13 @@ public class PlaceChooser extends JPanel {
 		
 		//t.print("AT 2.2.3.6");
 		
-		new Thread(new Runnable(){
-
+		final AstrosoftTimeZone tz = p.astrosoftTimeZone();
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				timeZoneCombo.setSelectedItem(p.astrosoftTimeZone());
-				
-				javax.swing.SwingUtilities.invokeLater(new Runnable() {
-				    public void run() {
-				        notifyPlaceListeners();
-				    }
-				});
+				timeZoneCombo.setSelectedItem(tz);
+				notifyPlaceListeners();
 			}
-			
-		}).start();
-		
+		});
 		
 		//t.print("AT 2.2.3.7");
 	}
@@ -323,6 +316,9 @@ public class PlaceChooser extends JPanel {
 	}
 
 	public void addPlaces(List<Place> places){
+		if (places == null || places.isEmpty()) {
+			return;
+		}
 		placeCombo.removeAllItems();
 		
 		//t.print("AT 2.2.2");
@@ -338,14 +334,49 @@ public class PlaceChooser extends JPanel {
 	}
 	
 	private void searchClicked() {
-		
-		Object query = placeCombo.getSelectedItem();
-		
-		//System.out.println("query->" + query);
-		if (query != null) {
-			List<Place> result = PlaceFinder.findPlace(query.toString()); 
-			addPlaces(result);
-			placeCombo.showPopup();
+		String queryText = null;
+		Object editorItem = placeCombo.getEditor().getItem();
+		if (editorItem != null) {
+			queryText = editorItem.toString().trim();
+		}
+		if (queryText == null || queryText.isEmpty()) {
+			java.awt.Component editorComp = placeCombo.getEditor().getEditorComponent();
+			if (editorComp instanceof JTextField) {
+				queryText = ((JTextField) editorComp).getText().trim();
+			}
+		}
+		if (queryText == null || queryText.isEmpty()) {
+			Object sel = placeCombo.getSelectedItem();
+			if (sel != null) {
+				queryText = sel.toString().trim();
+			}
+		}
+
+		if (queryText != null && !queryText.isEmpty()) {
+			final String finalQuery = queryText;
+			searchButton.setEnabled(false);
+			new javax.swing.SwingWorker<List<Place>, Void>() {
+				@Override
+				protected List<Place> doInBackground() {
+					return PlaceFinder.findPlace(finalQuery);
+				}
+
+				@Override
+				protected void done() {
+					searchButton.setEnabled(true);
+					try {
+						List<Place> result = get();
+						if (result != null && !result.isEmpty()) {
+							addPlaces(result);
+							if (placeCombo.isShowing()) {
+								placeCombo.showPopup();
+							}
+						}
+					} catch (Exception e) {
+						// ignore
+					}
+				}
+			}.execute();
 		}
 	}
 }

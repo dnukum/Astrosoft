@@ -82,6 +82,22 @@ public class TransitChartDialog extends AstrosoftDialog {
         chartHolder.setMaximumSize(new Dimension(Integer.MAX_VALUE, 318));
         contentPanel.add(chartHolder);
 
+        // Control buttons bar: [Edit...] and [More...] / [Less...] placed between chart and table
+        JPanel buttonBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 18, 6));
+        buttonBar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        buttonBar.setBackground(UIConsts.THEME_CLR);
+        buttonBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
+        editButton = new JButton("Edit...");
+        editButton.addActionListener(e -> openEditDialog());
+        buttonBar.add(editButton);
+
+        moreButton = new JButton("More...");
+        moreButton.addActionListener(e -> toggleMore());
+        buttonBar.add(moreButton);
+
+        contentPanel.add(buttonBar);
+
         // Expandable table with 3 columns: Planet, Sign Change, Date Change
         String[] columnNames = {"Planet", "Sign Change", "Date Change"};
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -113,27 +129,13 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsScrollPane.setMinimumSize(new Dimension(280, 100));
         detailsScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         detailsScrollPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(12, 10, 4, 10),
+                BorderFactory.createEmptyBorder(4, 10, 8, 10),
                 BorderFactory.createLineBorder(new java.awt.Color(190, 185, 170), 1)
         ));
         detailsScrollPane.setVisible(false);
         contentPanel.add(detailsScrollPane);
 
         dlgPanel.add(contentPanel, BorderLayout.CENTER);
-
-        // Bottom bar: [Edit...] and [More...] buttons with visually pleasing spacing
-        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 18, 6));
-        bottomBar.setBackground(UIConsts.THEME_CLR);
-
-        editButton = new JButton("Edit...");
-        editButton.addActionListener(e -> openEditDialog());
-        bottomBar.add(editButton);
-
-        moreButton = new JButton("More...");
-        moreButton.addActionListener(e -> toggleMore());
-        bottomBar.add(moreButton);
-
-        dlgPanel.add(bottomBar, BorderLayout.SOUTH);
 
         add(dlgPanel);
         setBackground(UIConsts.THEME_CLR);
@@ -154,8 +156,8 @@ public class TransitChartDialog extends AstrosoftDialog {
         moreButton.setText(isExpanded ? "Less..." : "More...");
         detailsScrollPane.setVisible(isExpanded);
         if (isExpanded) {
-            setMinimumSize(new Dimension(320, 520));
-            setSize(new Dimension(Math.max(getWidth(), 360), 595));
+            setMinimumSize(new Dimension(320, 540));
+            setSize(new Dimension(Math.max(getWidth(), 360), 615));
         } else {
             setMinimumSize(MIN_DLG_SIZE);
             setSize(new Dimension(getWidth(), 395));

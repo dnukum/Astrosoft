@@ -109,7 +109,8 @@ public class PlaceFinder {
 			return placeList;
 		}
 		
-		String expression = "//world/country/state/city[name='" + place + "']";
+		String cityName = place.contains(",") ? place.split(",")[0].trim() : place.trim();
+		String expression = "//world/country/state/city[name='" + cityName + "']";
 		InputSource inputSource = new InputSource(PlaceFinder.class.getResourceAsStream(XML_SOURCE));
 		Node node = null;
 		try {

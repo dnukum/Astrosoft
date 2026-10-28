@@ -171,7 +171,7 @@ public class TransitChartDialogTest extends TestCase {
         frame.dispose();
     }
 
-    public void testGapBetweenChartAndTableIsAbout20Pixels() {
+    public void testButtonsAreBetweenChartAndTable() {
         AstroSoft frame = new AstroSoft();
         Place place = AstroSoft.getPreferences().getPlace();
         TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new StubTransitChartComputation());
@@ -184,13 +184,20 @@ public class TransitChartDialogTest extends TestCase {
                 dialog.getChart().getParent(), dialog.getChart().getBounds(), dialog.getContentPane());
         int chartBottomY = chartBounds.y + chartBounds.height;
 
+        java.awt.Rectangle buttonBounds = javax.swing.SwingUtilities.convertRectangle(
+                dialog.getEditButton().getParent(), dialog.getEditButton().getBounds(), dialog.getContentPane());
+        int buttonTopY = buttonBounds.y;
+        int buttonBottomY = buttonBounds.y + buttonBounds.height;
+
         javax.swing.JScrollPane scroll = (javax.swing.JScrollPane) dialog.getDetailsTable().getParent().getParent();
         java.awt.Rectangle scrollBounds = javax.swing.SwingUtilities.convertRectangle(
                 scroll.getParent(), scroll.getBounds(), dialog.getContentPane());
-        int tableHeaderY = scrollBounds.y + 12 + 1; // 12px top margin + 1px border
+        int tableTopY = scrollBounds.y;
 
-        int gap = tableHeaderY - chartBottomY;
-        assertTrue("Gap should be around 20px (was " + gap + ")", gap >= 18 && gap <= 22);
+        assertTrue("Buttons must be below chart: chartBottom=" + chartBottomY + ", buttonTop=" + buttonTopY,
+                buttonTopY >= chartBottomY);
+        assertTrue("Table must be below buttons: buttonBottom=" + buttonBottomY + ", tableTop=" + tableTopY,
+                tableTopY >= buttonBottomY);
 
         dialog.dispose();
         frame.dispose();
@@ -239,6 +246,20 @@ public class TransitChartDialogTest extends TestCase {
 
         dialog.dispose();
         frame.dispose();
+    }
+
+    public void testPlaceChooserSearchHardening() throws Exception {
+        app.astrosoft.ui.comp.PlaceChooser chooser = new app.astrosoft.ui.comp.PlaceChooser(new java.awt.Dimension(400, 140), false);
+        java.lang.reflect.Field f = app.astrosoft.ui.comp.PlaceChooser.class.getDeclaredField("placeCombo");
+        f.setAccessible(true);
+        javax.swing.JComboBox combo = (javax.swing.JComboBox) f.get(chooser);
+        javax.swing.JTextField editor = (javax.swing.JTextField) combo.getEditor().getEditorComponent();
+
+        editor.setText("Erode, Tamil Nadu, India");
+        java.util.List<Place> places = app.astrosoft.util.PlaceFinder.findPlace(editor.getText());
+        assertNotNull(places);
+        assertFalse("Search with full place text should find city in XML fallback", places.isEmpty());
+        assertEquals("Erode", places.get(0).city());
     }
 
     public void testDefaultTransitChartComputationComputesSignChanges() {
