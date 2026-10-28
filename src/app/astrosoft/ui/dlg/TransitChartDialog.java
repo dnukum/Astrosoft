@@ -110,7 +110,8 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsScrollPane = new JScrollPane(detailsTable);
         detailsScrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
         detailsScrollPane.setPreferredSize(new Dimension(320, 206));
-        detailsScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 206));
+        detailsScrollPane.setMinimumSize(new Dimension(280, 100));
+        detailsScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         detailsScrollPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(12, 10, 4, 10),
                 BorderFactory.createLineBorder(new java.awt.Color(190, 185, 170), 1)

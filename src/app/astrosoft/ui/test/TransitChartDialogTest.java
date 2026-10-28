@@ -196,6 +196,30 @@ public class TransitChartDialogTest extends TestCase {
         frame.dispose();
     }
 
+    public void testTableResizesVerticallyWhenDialogStretched() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new StubTransitChartComputation());
+        dialog.setExpanded(true);
+        dialog.pack();
+        dialog.setSize(360, 595);
+        dialog.validate();
+
+        javax.swing.JScrollPane scroll = (javax.swing.JScrollPane) dialog.getDetailsTable().getParent().getParent();
+        int initialHeight = scroll.getHeight();
+
+        // Stretch dialog vertically to 750
+        dialog.setSize(360, 750);
+        dialog.validate();
+
+        int stretchedHeight = scroll.getHeight();
+        assertTrue("Table scroll pane should expand vertically when dialog is stretched (initial: "
+                + initialHeight + ", stretched: " + stretchedHeight + ")", stretchedHeight > initialHeight);
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
     public void testDetailsTableColumnsAndRows() {
         AstroSoft frame = new AstroSoft();
         Place place = AstroSoft.getPreferences().getPlace();
