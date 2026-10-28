@@ -83,7 +83,7 @@ public class AstrosoftMenuBar extends JMenuBar
         menu = new JMenu( "View" );
         viewSubMenus = new JMenu[1];
         
-        viewMenuItems = new JMenuItem[12];
+        viewMenuItems = new JMenuItem[11];
         
         viewMenuItems[0] = new JMenuItem( actionMgr.getAction( Command.CHART_VIEW));
         addMenuItems(menu,viewMenuItems,0,0);
@@ -100,8 +100,7 @@ public class AstrosoftMenuBar extends JMenuBar
         viewMenuItems[8] = new JMenuItem( actionMgr.getAction( Command.EPHEMERIS_VIEW ) );
         viewMenuItems[9] = new JMenuItem( actionMgr.getAction( Command.PANCHANG_VIEW ) );
         viewMenuItems[10] = new JMenuItem( actionMgr.getAction( Command.MY_MUHURTA_VIEW ) );
-        viewMenuItems[11] = new JMenuItem( actionMgr.getAction( Command.TRANSIT_CHART ) );
-        addMenuItems(menu,viewMenuItems,8,11 );
+        addMenuItems(menu,viewMenuItems,8,10 );
         menu.add(new JSeparator(SwingConstants.HORIZONTAL));
         
         notesMenuItem = new JCheckBoxMenuItem(actionMgr.getAction(Command.NOTES));

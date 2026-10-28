@@ -54,20 +54,17 @@ public class CalendarSpinner extends CalendarChooser {
 	}
 	
 	public JPanel getChooser(){
-		if (spinner == null) {
-			createSpinner();
-		}
-		if (chooserPanel == null) {
-			chooserPanel = new JPanel(new BorderLayout());
-			chooserPanel.add(spinner, BorderLayout.CENTER);
-		}
+		
+		createSpinner();
+		chooserPanel = new JPanel(new BorderLayout());
+		chooserPanel.add(spinner, BorderLayout.CENTER);
+		
 		return chooserPanel;
 	}
 	
 	public JPanel getChooser(String label){
-		if (spinner == null) {
-			createSpinner();
-		}
+		createSpinner();
+		
 		chooserPanel = new JPanel(new SpringLayout());
 		
 		JLabel l = new JLabel(label);
@@ -105,9 +102,6 @@ public class CalendarSpinner extends CalendarChooser {
 	
 	@Override
 	public void setSelectedDate(Date date){
-		if (spinner == null) {
-			createSpinner();
-		}
 		spinner.setValue(date);
 	}
 	
@@ -139,9 +133,7 @@ public class CalendarSpinner extends CalendarChooser {
 
 	@Override
 	public Date getSelectedDate() {
-		if (spinner == null) {
-			createSpinner();
-		}
+		
 		return (Date) spinner.getValue();
 	}
 }
