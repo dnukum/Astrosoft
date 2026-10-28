@@ -56,6 +56,7 @@ public enum Command {
 	EPHEMERIS_VIEW (View.EPHEMERIS_VIEW.displayVal(),KeyEvent.VK_E),
 	PANCHANG_VIEW (View.PANCHANG_VIEW.displayVal(),KeyEvent.VK_G),
 		MY_MUHURTA_VIEW (View.MY_MUHURTA_VIEW.displayVal(),KeyEvent.VK_M),
+	TRANSIT_CHART ("Transit Chart", KeyEvent.VK_T),
 	COMPATIBILITY_VIEW (View.COMPATIBILITY_VIEW.displayVal(),KeyEvent.VK_M),
 	MARRIAGE_MATCH_VIEW (View.MARRIAGE_MATCH_VIEW.displayVal(),KeyEvent.VK_R),
 	MUHURTHA_VIEW (View.MUHURTHA_VIEW.displayVal()),

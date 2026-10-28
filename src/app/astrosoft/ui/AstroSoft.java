@@ -66,6 +66,7 @@ import app.astrosoft.ui.dlg.OptionDialog;
 import app.astrosoft.ui.dlg.PlaceOptionDialog;
 import app.astrosoft.ui.dlg.PrintDialog;
 import app.astrosoft.ui.dlg.TimeInputDialog;
+import app.astrosoft.ui.dlg.TransitChartDialog;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.ui.view.AshtavargaView;
 import app.astrosoft.ui.view.BhavaView;
@@ -118,6 +119,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	private JSplitPane mainSplitPane;
 
 	private JDialog floatingNotesDialog;
+	private TransitChartDialog transitChartDialog;
 
 	private boolean isNotesFolded = true;
 
