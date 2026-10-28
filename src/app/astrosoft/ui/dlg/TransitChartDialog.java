@@ -78,15 +78,20 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     private void openEditDialog() {
         new MuhurtaConfigDialog(parent, getSelectedInstant(), getSelectedInstant(), currentPlace, (date, time, place) -> {
-            if (place != null) {
-                currentPlace = place;
-            }
-            if (date != null && time != null) {
-                selectedInstant = app.astrosoft.util.MuhurtaDateTime.fromChooserValues(
-                        date, time, currentPlace.astrosoftTimeZone().getTimeZone());
-            }
-            updateChart();
+            applyConfigUpdate(date, time, place);
         }).showDialog();
+    }
+
+    public void applyConfigUpdate(Date date, Date time, Place place) {
+        if (place != null) {
+            currentPlace = place;
+        }
+        if (date != null) {
+            selectedInstant = date;
+        } else if (time != null) {
+            selectedInstant = time;
+        }
+        updateChart();
     }
 
     private void updateChart() {

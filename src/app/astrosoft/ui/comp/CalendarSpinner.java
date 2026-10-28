@@ -142,6 +142,11 @@ public class CalendarSpinner extends CalendarChooser {
 		if (spinner == null) {
 			createSpinner();
 		}
+		try {
+			spinner.commitEdit();
+		} catch (java.text.ParseException e) {
+			// Keep current valid model value if text cannot be parsed
+		}
 		return (Date) spinner.getValue();
 	}
 }

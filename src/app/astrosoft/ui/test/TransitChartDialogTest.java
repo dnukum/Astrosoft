@@ -5,6 +5,8 @@ import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.beans.HousePosition;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.ui.AstroSoft;
+import app.astrosoft.ui.comp.CalendarChooser;
+import app.astrosoft.ui.comp.CalendarSpinner;
 import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.dlg.DefaultTransitChartComputation;
 import app.astrosoft.ui.dlg.TransitChartComputation;
@@ -12,8 +14,11 @@ import app.astrosoft.ui.dlg.TransitChartDialog;
 import junit.framework.TestCase;
 
 import javax.swing.JPanel;
+import javax.swing.JFormattedTextField;
 import java.awt.Component;
 import java.awt.Container;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumMap;
 
@@ -79,6 +84,63 @@ public class TransitChartDialogTest extends TestCase {
 
         dialog.dispose();
         frame.dispose();
+    }
+
+    public void testApplyConfigUpdateChangesChartTime() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        java.util.TimeZone tz = place.astrosoftTimeZone() != null ? place.astrosoftTimeZone().getTimeZone() : java.util.TimeZone.getDefault();
+        Calendar cal = Calendar.getInstance(tz);
+        cal.set(2026, Calendar.OCTOBER, 28, 21, 0, 0); // 9:00 PM in place's timezone
+        Date initialTime = cal.getTime();
+
+        TransitChartDialog dialog = new TransitChartDialog(frame, initialTime, place, new StubTransitChartComputation());
+        assertTrue("Initial subtitle should show 9:00 PM: " + dialog.getChart().getSubtitle(),
+                dialog.getChart().getSubtitle().contains("9:00") || dialog.getChart().getSubtitle().contains("09:00"));
+
+        // Simulate changing time to 11:00 PM
+        cal.set(2026, Calendar.OCTOBER, 28, 23, 0, 0); // 11:00 PM in place's timezone
+        Date updatedTime = cal.getTime();
+
+        dialog.applyConfigUpdate(updatedTime, updatedTime, place);
+
+        assertEquals(updatedTime, dialog.getSelectedInstant());
+        assertTrue("Updated subtitle should show 11:00 PM: " + dialog.getChart().getSubtitle(),
+                dialog.getChart().getSubtitle().contains("11:00"));
+        assertFalse("Updated subtitle should no longer show 9:00 PM",
+                dialog.getChart().getSubtitle().contains("9:00 PM") || dialog.getChart().getSubtitle().contains("09:00 PM"));
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testCalendarSpinnerCommitsTyping() throws Exception {
+        CalendarSpinner timeSpinner = CalendarChooser.getTimeChooser();
+        timeSpinner.getChooser(); // ensures spinner is created
+        SimpleDateFormat sdf = new SimpleDateFormat(CalendarSpinner.FMT_TIME);
+        Date d9 = sdf.parse("09 : 00 : 00 PM");
+        timeSpinner.setSelectedDate(d9);
+
+        // Find the JFormattedTextField inside chooserPanel
+        JFormattedTextField textField = null;
+        for (Component c : timeSpinner.getChooser().getComponents()) {
+            if (c instanceof javax.swing.JSpinner) {
+                javax.swing.JSpinner js = (javax.swing.JSpinner) c;
+                if (js.getEditor() instanceof javax.swing.JSpinner.DefaultEditor) {
+                    textField = ((javax.swing.JSpinner.DefaultEditor) js.getEditor()).getTextField();
+                }
+            }
+        }
+        assertNotNull("Spinner text field should be found", textField);
+
+        // Simulate user typing "11 : 00 : 00 PM"
+        textField.setText("11 : 00 : 00 PM");
+
+        // getSelectedDate() must commit the edit and return 11 PM, not 9 PM
+        Date selected = timeSpinner.getSelectedDate();
+        assertNotNull(selected);
+        String formatted = sdf.format(selected);
+        assertTrue("getSelectedDate() should commit typed text 11 PM: was " + formatted, formatted.contains("11 : 00 : 00 PM"));
     }
 
     private static class StubTransitChartComputation implements TransitChartComputation {
