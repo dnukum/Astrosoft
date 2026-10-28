@@ -150,7 +150,7 @@ public enum Command {
 	}
 
 	public static EnumSet<Command> viewMenuItems(){
-		return EnumSet.range(CHART_VIEW, MY_MUHURTA_VIEW);
+		return EnumSet.range(CHART_VIEW, TRANSIT_CHART);
 	}
 
 	public static EnumSet<Command> computeMenuItems(){

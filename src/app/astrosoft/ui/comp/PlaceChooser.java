@@ -213,9 +213,11 @@ public class PlaceChooser extends JPanel {
 		placeCombo.addItemListener(new ItemListener(){
 
 			public void itemStateChanged(ItemEvent e) {
-				Object item = e.getItem();
-				if (item instanceof Place){
-					setSelectedPlace((Place)item);
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					Object item = e.getItem();
+					if (item instanceof Place){
+						setSelectedPlace((Place)item);
+					}
 				}
 			}
 		});

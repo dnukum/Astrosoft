@@ -76,7 +76,18 @@ public class Place {
 		}
 		
 		public Location(String deg, String min, Direction dir) {
-			this(Integer.parseInt(deg), Integer.parseInt(min), dir);
+			this(parseIntSafe(deg), parseIntSafe(min), dir);
+		}
+
+		private static int parseIntSafe(String val) {
+			if (val == null || val.trim().isEmpty()) {
+				return 0;
+			}
+			try {
+				return Integer.parseInt(val.trim());
+			} catch (NumberFormatException e) {
+				return 0;
+			}
 		}
 		
 		public Location(double value, LocationType type) {

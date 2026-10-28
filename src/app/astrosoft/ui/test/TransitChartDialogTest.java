@@ -33,6 +33,16 @@ public class TransitChartDialogTest extends TestCase {
         frame.dispose();
     }
 
+    public void testActionOpensTransitChartDialog() {
+        AstroSoft frame = new AstroSoft();
+        frame.getActionManager().getAction(app.astrosoft.consts.Command.TRANSIT_CHART)
+                .actionPerformed(new java.awt.event.ActionEvent(this, 1, app.astrosoft.consts.Command.TRANSIT_CHART.name()));
+        assertNotNull(frame.getTransitChartDialog());
+        assertTrue(frame.getTransitChartDialog().isVisible());
+        frame.getTransitChartDialog().dispose();
+        frame.dispose();
+    }
+
     private static class StubTransitChartComputation implements TransitChartComputation {
         public PlanetaryInfo compute(Date instant, Place place) {
             EnumMap<Planet, Double> positions = new EnumMap<Planet, Double>(Planet.class);

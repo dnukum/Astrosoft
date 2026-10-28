@@ -1374,6 +1374,26 @@ public class AstroSoft extends javax.swing.JFrame implements
 	public void showAbout(){
 		new AboutDialog(this).setVisible(true);
 	}
+
+	@Override
+	public void showTransitChart() {
+		if (transitChartDialog == null || !transitChartDialog.isDisplayable()) {
+			transitChartDialog = new TransitChartDialog(this, new Date(), getPreferences().getPlace());
+			transitChartDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+				@Override
+				public void windowClosed(java.awt.event.WindowEvent e) {
+					transitChartDialog = null;
+				}
+			});
+		}
+		transitChartDialog.setVisible(true);
+		transitChartDialog.toFront();
+		transitChartDialog.requestFocus();
+	}
+
+	public TransitChartDialog getTransitChartDialog() {
+		return transitChartDialog;
+	}
 	
 	private void optionAyanamsaChanged(Ayanamsa ayanamsa) {
 
