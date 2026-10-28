@@ -3,19 +3,29 @@ package app.astrosoft.ui.dlg;
 import app.astrosoft.beans.Place;
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.beans.PlanetChartData;
+import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Varga;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.util.UIConsts;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,12 +39,17 @@ public class TransitChartDialog extends AstrosoftDialog {
     private static final Dimension CHART_SIZE = new Dimension(300, 300);
 
     private final JButton editButton;
+    private final JButton moreButton;
     private final JPanel chartHolder;
+    private final JScrollPane detailsScrollPane;
+    private final JTable detailsTable;
+    private final DefaultTableModel tableModel;
     private final TransitChartComputation computation;
 
     private Place currentPlace;
     private Date selectedInstant;
     private Chart chart;
+    private boolean isExpanded = false;
 
     public TransitChartDialog(AstroSoft parent, Date initInstant, Place initPlace) {
         this(parent, initInstant, initPlace, new DefaultTransitChartComputation());
@@ -51,20 +66,70 @@ public class TransitChartDialog extends AstrosoftDialog {
 
         dlgPanel.setLayout(new BorderLayout(0, 0));
 
-        // Top bar: Only [Edit...] button aligned on the right (no text labels above the chart)
-        JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 4));
-        editButton = new JButton("Edit...");
-        editButton.addActionListener(e -> openEditDialog());
-        topBar.add(editButton);
-        dlgPanel.add(topBar, BorderLayout.NORTH);
+        // Center: vertical container for the chart and the expandable table
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(UIConsts.THEME_CLR);
 
-        // Center: Clean bounding border box around the chart (no text label on the border line)
+        // Clean bounding border box around the chart (no text label on the border line)
         chartHolder = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 4));
+        chartHolder.setAlignmentX(Component.CENTER_ALIGNMENT);
         chartHolder.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(0, 8, 8, 8),
+                BorderFactory.createEmptyBorder(6, 8, 6, 8),
                 BorderFactory.createLineBorder(new java.awt.Color(190, 185, 170), 1)
         ));
-        dlgPanel.add(chartHolder, BorderLayout.CENTER);
+        contentPanel.add(chartHolder);
+
+        // Expandable table with 3 columns: Planet, Current Orb, Sign Change
+        String[] columnNames = {"Planet", "Current Orb", "Sign Change"};
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        detailsTable = new JTable(tableModel);
+        detailsTable.setRowHeight(20);
+        detailsTable.setFont(new Font("Verdana", Font.PLAIN, 11));
+        detailsTable.getTableHeader().setFont(new Font("Verdana", Font.BOLD, 11));
+        detailsTable.getTableHeader().setReorderingAllowed(false);
+        detailsTable.setRowSelectionAllowed(false);
+        detailsTable.setFocusable(false);
+
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        detailsTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+
+        detailsTable.getColumnModel().getColumn(0).setPreferredWidth(75);
+        detailsTable.getColumnModel().getColumn(1).setPreferredWidth(95);
+        detailsTable.getColumnModel().getColumn(2).setPreferredWidth(150);
+
+        detailsScrollPane = new JScrollPane(detailsTable);
+        detailsScrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
+        detailsScrollPane.setPreferredSize(new Dimension(320, 206));
+        detailsScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 206));
+        detailsScrollPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(2, 10, 4, 10),
+                BorderFactory.createLineBorder(new java.awt.Color(190, 185, 170), 1)
+        ));
+        detailsScrollPane.setVisible(false);
+        contentPanel.add(detailsScrollPane);
+
+        dlgPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Bottom bar: [Edit...] and [More...] buttons with visually pleasing spacing
+        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 18, 6));
+        bottomBar.setBackground(UIConsts.THEME_CLR);
+
+        editButton = new JButton("Edit...");
+        editButton.addActionListener(e -> openEditDialog());
+        bottomBar.add(editButton);
+
+        moreButton = new JButton("More...");
+        moreButton.addActionListener(e -> toggleMore());
+        bottomBar.add(moreButton);
+
+        dlgPanel.add(bottomBar, BorderLayout.SOUTH);
 
         add(dlgPanel);
         setBackground(UIConsts.THEME_CLR);
@@ -74,6 +139,25 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     public void showDialog() {
         setVisible(true);
+    }
+
+    public void toggleMore() {
+        setExpanded(!isExpanded);
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.isExpanded = expanded;
+        moreButton.setText(isExpanded ? "Less..." : "More...");
+        detailsScrollPane.setVisible(isExpanded);
+        if (isExpanded) {
+            setMinimumSize(new Dimension(320, 520));
+            setSize(new Dimension(Math.max(getWidth(), 360), 620));
+        } else {
+            setMinimumSize(MIN_DLG_SIZE);
+            setSize(new Dimension(getWidth(), 395));
+        }
+        dlgPanel.revalidate();
+        dlgPanel.repaint();
     }
 
     private void openEditDialog() {
@@ -110,10 +194,46 @@ public class TransitChartDialog extends AstrosoftDialog {
             } else {
                 chart.updateChartData(chartData, subtitle);
             }
+
+            updateTable(planetaryInfo);
+
             chartHolder.revalidate();
             chartHolder.repaint();
         } catch (IllegalArgumentException ex) {
             log.log(Level.WARNING, "Invalid transit input: " + ex.getMessage());
+        }
+    }
+
+    private void updateTable(PlanetaryInfo planetaryInfo) {
+        if (tableModel == null) {
+            return;
+        }
+        tableModel.setRowCount(0);
+        Map<Planet, Date> signChanges = computation.computeSignChanges(getSelectedInstant(), currentPlace, planetaryInfo);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy, h:mm a");
+        if (currentPlace != null && currentPlace.astrosoftTimeZone() != null) {
+            sdf.setTimeZone(currentPlace.astrosoftTimeZone().getTimeZone());
+        }
+
+        for (Planet p : Planet.allPlanets()) {
+            Double pos = planetaryInfo != null ? planetaryInfo.getPlanetPosition(p) : null;
+            Boolean isRet = (planetaryInfo != null && planetaryInfo.getPlanetDirection() != null)
+                    ? planetaryInfo.getPlanetDirection().get(p)
+                    : Boolean.FALSE;
+
+            String orbStr = "—";
+            if (pos != null) {
+                orbStr = Chart.formatAbsoluteLongitude(pos);
+                if (Boolean.TRUE.equals(isRet) && !Planet.isNode(p)) {
+                    orbStr = orbStr + " (R)";
+                }
+            }
+
+            Date changeDate = signChanges != null ? signChanges.get(p) : null;
+            String changeStr = changeDate != null ? sdf.format(changeDate) : "—";
+
+            tableModel.addRow(new Object[]{p.toString(), orbStr, changeStr});
         }
     }
 
@@ -152,5 +272,17 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     public JButton getEditButton() {
         return editButton;
+    }
+
+    public JButton getMoreButton() {
+        return moreButton;
+    }
+
+    public JTable getDetailsTable() {
+        return detailsTable;
+    }
+
+    public boolean isExpanded() {
+        return isExpanded;
     }
 }

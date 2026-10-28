@@ -143,6 +143,71 @@ public class TransitChartDialogTest extends TestCase {
         assertTrue("getSelectedDate() should commit typed text 11 PM: was " + formatted, formatted.contains("11 : 00 : 00 PM"));
     }
 
+    public void testMoreButtonExpandsAndCollapses() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new StubTransitChartComputation());
+
+        assertNotNull(dialog.getEditButton());
+        assertNotNull(dialog.getMoreButton());
+        assertEquals("More...", dialog.getMoreButton().getText());
+        assertFalse(dialog.isExpanded());
+        int initialHeight = dialog.getHeight();
+
+        // Click More... to expand
+        dialog.getMoreButton().doClick();
+        assertTrue(dialog.isExpanded());
+        assertEquals("Less...", dialog.getMoreButton().getText());
+        assertTrue(dialog.getHeight() > initialHeight);
+        assertTrue("Expanded height should be >= 500", dialog.getHeight() >= 500);
+
+        // Click Less... to collapse
+        dialog.getMoreButton().doClick();
+        assertFalse(dialog.isExpanded());
+        assertEquals("More...", dialog.getMoreButton().getText());
+        assertEquals(395, dialog.getHeight());
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testDetailsTableColumnsAndRows() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new StubTransitChartComputation());
+
+        javax.swing.JTable table = dialog.getDetailsTable();
+        assertNotNull(table);
+        assertEquals(3, table.getColumnCount());
+        assertEquals("Planet", table.getColumnName(0));
+        assertEquals("Current Orb", table.getColumnName(1));
+        assertEquals("Sign Change", table.getColumnName(2));
+
+        assertEquals(9, table.getRowCount()); // 9 grahas
+        assertEquals("Sun", table.getValueAt(0, 0));
+        assertNotNull(table.getValueAt(0, 1));
+        assertNotNull(table.getValueAt(0, 2));
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testDefaultTransitChartComputationComputesSignChanges() {
+        Place place = AstroSoft.getPreferences().getPlace();
+        Date now = new Date();
+        DefaultTransitChartComputation comp = new DefaultTransitChartComputation();
+        PlanetaryInfo info = comp.compute(now, place);
+        assertNotNull(info);
+        java.util.Map<Planet, Date> changes = comp.computeSignChanges(now, place, info);
+        assertNotNull(changes);
+        assertEquals(9, changes.size());
+        for (Planet p : Planet.allPlanets()) {
+            Date change = changes.get(p);
+            assertNotNull("Sign change date must be computed for " + p, change);
+            assertTrue("Sign change date must be in future for " + p, change.after(now));
+        }
+    }
+
     private static class StubTransitChartComputation implements TransitChartComputation {
         public PlanetaryInfo compute(Date instant, Place place) {
             EnumMap<Planet, Double> positions = new EnumMap<Planet, Double>(Planet.class);
@@ -157,6 +222,15 @@ public class TransitChartDialogTest extends TestCase {
                 directions.put(p, Boolean.TRUE);
             }
             return new PlanetaryInfo(positions, directions, houses);
+        }
+
+        @Override
+        public java.util.Map<Planet, Date> computeSignChanges(Date instant, Place place, PlanetaryInfo planetaryInfo) {
+            java.util.Map<Planet, Date> map = new java.util.EnumMap<Planet, Date>(Planet.class);
+            for (Planet p : Planet.allPlanets()) {
+                map.put(p, new Date(instant.getTime() + 86400000L));
+            }
+            return map;
         }
     }
 }
