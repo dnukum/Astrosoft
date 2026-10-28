@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.concurrent.FutureTask;
 
 import junit.framework.TestCase;
+import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.PanchangList;
 import app.astrosoft.export.AstrosoftExporter;
@@ -117,5 +118,22 @@ public class AstrosoftMultiFormatExportTest extends TestCase {
         assertFalse("PDF file should not exist when not selected", pdf.exists());
         assertTrue("MD file should exist", md.exists() && md.length() > 0);
         assertTrue("XML file should exist", xml.exists() && xml.length() > 0);
+    }
+
+    public void testCompatibilityMultiFormatExport() throws Exception {
+        String base = new File(tempDir, "test_compatibility_export").getAbsolutePath();
+        Compatibility comp = new Compatibility(horoscope, horoscope);
+        FutureTask<Object> task = AstrosoftExporter.export(Type.Compatibility, comp, base, true, true, true);
+        task.get();
+
+        File pdf = new File(base + ".pdf");
+        File md = new File(base + ".md");
+        File xml = new File(base + ".xml");
+
+        assertTrue("XML file should exist", xml.exists() && xml.length() > 0);
+        assertTrue("MD file should exist", md.exists() && md.length() > 0);
+        assertTrue("PDF file should exist", pdf.exists());
+        // Verify PDF is a full document, not a damaged 15-byte file!
+        assertTrue("PDF must be a complete generated document (> 1000 bytes), was " + pdf.length(), pdf.length() > 1000);
     }
 }

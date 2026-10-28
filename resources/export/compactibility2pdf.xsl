@@ -16,7 +16,7 @@ xmlns:fo="http://www.w3.org/1999/XSL/Format" exclude-result-prefixes="fo">
 
 	<xsl:output method="xml" version="1.0" omit-xml-declaration="no" indent="yes"/>
 	
-	<xsl:template match="Compactibility">
+	<xsl:template match="Compatibility | Compactibility">
 
 		<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
 
