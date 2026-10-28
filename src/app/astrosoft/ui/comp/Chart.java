@@ -68,15 +68,20 @@ public class Chart extends JPanel{
 	
 	private JLabel title;
 	private String subtitle;
+	private boolean showHouseNumber = true;
 	
 	public Chart(ChartData chartData, Dimension chartSize) {
-		this(chartData, chartSize, null);
+		this(chartData, chartSize, null, true);
 	}
 
 	public Chart(ChartData chartData, Dimension chartSize, String subtitle) {
-		
+		this(chartData, chartSize, subtitle, true);
+	}
+
+	public Chart(ChartData chartData, Dimension chartSize, String subtitle, boolean showHouseNumber) {
 		this.chartData = chartData;
 		this.subtitle = subtitle;
+		this.showHouseNumber = showHouseNumber;
 		
 		houseSize = new Dimension(chartSize.width / 4, chartSize.height / 4);
 		
@@ -237,8 +242,9 @@ public class Chart extends JPanel{
 				if (isPlanetChart){
 					decoratePlanetChart(table, houseTable);
 					int startDeg = house.ordinal() * 30;
-				int endDeg = startDeg + 30;
-				toolTip = "<html><b>" + house.toString(Language.ENGLISH) + "</b> (" + startDeg + "&deg; - " + endDeg + "&deg;) <br>House: " + house.bhava(ascendant) + "</html>";
+					int endDeg = startDeg + 30;
+					String houseNumStr = (showHouseNumber && ascendant != null) ? " <br>House: " + house.bhava(ascendant) : "";
+					toolTip = "<html><b>" + house.toString(Language.ENGLISH) + "</b> (" + startDeg + "&deg; - " + endDeg + "&deg;)" + houseNumStr + "</html>";
 					houseTable.setToolTipText(toolTip);
 					toolTipManager.registerComponent(houseTable);
 				}
@@ -254,7 +260,8 @@ public class Chart extends JPanel{
 			if (isPlanetChart){
 				int startDeg = house.ordinal() * 30;
 				int endDeg = startDeg + 30;
-				toolTip = "<html><b>" + house.toString(Language.ENGLISH) + "</b> (" + startDeg + "&deg; - " + endDeg + "&deg;) <br>House: " + house.bhava(ascendant) + "</html>";
+				String houseNumStr = (showHouseNumber && ascendant != null) ? " <br>House: " + house.bhava(ascendant) : "";
+				toolTip = "<html><b>" + house.toString(Language.ENGLISH) + "</b> (" + startDeg + "&deg; - " + endDeg + "&deg;)" + houseNumStr + "</html>";
 				panel.setToolTipText(toolTip);
 				toolTipManager.registerComponent(panel);
 			}
@@ -476,7 +483,11 @@ public class Chart extends JPanel{
 	}
 
 	public void updateChartData(ChartData chartData){
-		
+		updateChartData(chartData, this.subtitle);
+	}
+
+	public void updateChartData(ChartData chartData, String subtitle){
+		this.subtitle = subtitle;
 		this.chartData = chartData;
 		String name = chartData.getChartName();
 		if ("Navamsa".equalsIgnoreCase(name)) {
@@ -485,6 +496,5 @@ public class Chart extends JPanel{
 		title.setText(name);
 		this.removeAll();
 		addHouseTables();
-		
 	}
 }
