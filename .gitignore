@@ -22,6 +22,7 @@ samples\
 out/
 .classpath
 *.log
+*.lck
 
 *.class
 .DS_Store

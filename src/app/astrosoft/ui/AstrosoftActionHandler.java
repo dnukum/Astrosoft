@@ -57,4 +57,6 @@ public interface AstrosoftActionHandler
     public void showAbout();
 
     public void toggleNotes();
+
+    public void exitApplication();
 }

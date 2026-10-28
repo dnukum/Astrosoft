@@ -77,8 +77,22 @@ public class BalamCalendarPanel extends JPanel {
 
     @Override
     public void removeNotify() {
-        cancelDetailsRequest();
+        java.awt.Window w = SwingUtilities.getWindowAncestor(this);
+        if (w == null || !w.isDisplayable()) {
+            cancelDetailsRequest();
+        }
         super.removeNotify();
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (table != null) {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow >= 0) {
+                requestDetails(selectedRow);
+            }
+        }
     }
 
 

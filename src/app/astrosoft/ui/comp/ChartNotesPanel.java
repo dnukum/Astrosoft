@@ -56,8 +56,17 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
+import app.astrosoft.beans.NotesOwner;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.ui.util.UIConsts;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 
 public class ChartNotesPanel extends JPanel {
 
@@ -67,6 +76,7 @@ public class ChartNotesPanel extends JPanel {
         void onNotesModified();
     }
 
+    private NotesOwner notesOwner;
     private Horoscope horoscope;
     private JTextPane editor;
     private JButton popOutBtn;
@@ -306,6 +316,9 @@ public class ChartNotesPanel extends JPanel {
         styleSheet.addRule("u { text-decoration: underline; }");
         styleSheet.addRule("ul, ol { margin-top: 2px; margin-bottom: 8px; padding-left: 20px; }");
         styleSheet.addRule("li { margin-bottom: 4px; }");
+        styleSheet.addRule("table { border-collapse: collapse; margin-top: 4px; margin-bottom: 8px; }");
+        styleSheet.addRule("th { background-color: #f0f4f8; font-weight: bold; padding: 4px 8px; text-align: left; }");
+        styleSheet.addRule("td { padding: 4px 8px; vertical-align: top; }");
         editor.setEditorKit(kit);
 
         // Smart Paste Action for proper plain-text / rich-text handling
@@ -467,6 +480,152 @@ public class ChartNotesPanel extends JPanel {
         }
     }
 
+    public static boolean isTabDelimitedTable(String text) {
+        if (text == null || text.trim().isEmpty()) return false;
+        String[] lines = text.split("\r?\n");
+        int rowsWithTabs = 0;
+        int nonBlankRows = 0;
+        int expectedTabs = -1;
+        boolean consistentTabs = true;
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) continue;
+            nonBlankRows++;
+            int tabs = 0;
+            for (int i = 0; i < line.length(); i++) {
+                if (line.charAt(i) == '\t') tabs++;
+            }
+            if (tabs > 0) {
+                rowsWithTabs++;
+                if (expectedTabs == -1) {
+                    expectedTabs = tabs;
+                } else if (Math.abs(tabs - expectedTabs) > 1) {
+                    consistentTabs = false;
+                }
+            }
+        }
+        return nonBlankRows >= 2 && rowsWithTabs >= 2 && consistentTabs;
+    }
+
+    public static String convertTabDelimitedToHtmlTable(String text) {
+        if (text == null || text.trim().isEmpty()) return "";
+        String[] lines = text.split("\r?\n");
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table border=\"1\" cellpadding=\"4\" cellspacing=\"0\" style=\"border-collapse: collapse; margin-top: 4px; margin-bottom: 6px;\">");
+        boolean isHeader = true;
+        for (String line : lines) {
+            if (line.trim().isEmpty()) continue;
+            String[] cells = line.split("\t", -1);
+            sb.append("<tr>");
+            for (String cell : cells) {
+                String cleanCell = cleanAndSanitizeText(cell).trim();
+                String escaped = cleanCell.replace("&", "&amp;")
+                                          .replace("<", "&lt;")
+                                          .replace(">", "&gt;");
+                if (escaped.isEmpty()) {
+                    escaped = "&nbsp;";
+                }
+                if (isHeader) {
+                    sb.append("<th bgcolor=\"#f2f2f2\" align=\"left\"><b>").append(escaped).append("</b></th>");
+                } else {
+                    sb.append("<td>").append(escaped).append("</td>");
+                }
+            }
+            sb.append("</tr>");
+            isHeader = false;
+        }
+        sb.append("</table>");
+        return sb.toString();
+    }
+
+    public static String sanitizeHtmlContentWithTables(String html) {
+        if (html == null || html.trim().isEmpty()) return "";
+        try {
+            org.jsoup.nodes.Document doc = Jsoup.parse(html);
+            // Remove style, script, xml, meta, link tags
+            doc.select("style, script, xml, meta, link, o\\:p").remove();
+
+            org.jsoup.select.Elements tables = doc.select("table");
+            if (tables.isEmpty()) {
+                return null;
+            }
+
+            for (org.jsoup.nodes.Element table : tables) {
+                table.removeAttr("class");
+                table.removeAttr("id");
+                table.removeAttr("style");
+                table.attr("border", "1");
+                table.attr("cellpadding", "4");
+                table.attr("cellspacing", "0");
+                table.attr("style", "border-collapse: collapse; margin-top: 4px; margin-bottom: 6px;");
+
+                org.jsoup.select.Elements rows = table.select("tr");
+                boolean firstRow = true;
+                for (org.jsoup.nodes.Element tr : rows) {
+                    tr.removeAttr("class");
+                    tr.removeAttr("id");
+                    tr.removeAttr("style");
+
+                    org.jsoup.select.Elements cells = tr.children();
+                    for (org.jsoup.nodes.Element cell : cells) {
+                        String tagName = cell.tagName().toLowerCase();
+                        if (!tagName.equals("td") && !tagName.equals("th")) {
+                            continue;
+                        }
+                        cell.removeAttr("class");
+                        cell.removeAttr("id");
+                        cell.removeAttr("style");
+
+                        // Unwrap non-formatting tags inside cells
+                        org.jsoup.select.Elements nonFormatting = cell.select("*:not(td, th, b, strong, i, em, u, br)");
+                        for (org.jsoup.nodes.Element el : nonFormatting) {
+                            el.unwrap();
+                        }
+
+                        String cellText = cell.text().trim();
+                        if (cellText.isEmpty()) {
+                            cell.html("&nbsp;");
+                        } else if (tagName.equals("th") || (firstRow && rows.size() > 1)) {
+                            cell.attr("bgcolor", "#f2f2f2");
+                            String inner = cell.html().trim();
+                            if (!inner.startsWith("<b>") && !inner.startsWith("<strong>")) {
+                                cell.html("<b>" + inner + "</b>");
+                            }
+                        }
+                    }
+                    firstRow = false;
+                }
+            }
+
+            return doc.body().html();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public void insertHtmlTableAtCaret(String tableHtml) {
+        if (!editor.isEnabled() || !editor.isEditable()) return;
+        try {
+            int pos = editor.getCaretPosition();
+            editor.replaceSelection("");
+            pos = editor.getCaretPosition();
+            HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
+            HTMLDocument doc = (HTMLDocument) editor.getDocument();
+            if (doc.getLength() == 0 || editor.getText().replaceAll("<[^>]*>", "").trim().isEmpty()) {
+                editor.setText("<html><head></head><body>" + tableHtml + "<p><br></p></body></html>");
+            } else {
+                try {
+                    kit.insertHTML(doc, pos, tableHtml, 0, 0, HTML.Tag.TABLE);
+                } catch (Exception ex) {
+                    kit.insertHTML(doc, doc.getLength(), "<p><br></p>" + tableHtml + "<p><br></p>", 0, 0, HTML.Tag.TABLE);
+                }
+            }
+        } catch (Exception ex) {
+            editor.replaceSelection("\n" + tableHtml + "\n");
+        }
+    }
+
     private Action createSmartPasteAction() {
         return new AbstractAction("Paste") {
             @Override
@@ -474,16 +633,16 @@ public class ChartNotesPanel extends JPanel {
                 if (!editor.isEnabled() || !editor.isEditable()) return;
                 try {
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    String htmlData = null;
                     String rawText = null;
 
-                    if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-                        rawText = (String) clipboard.getData(DataFlavor.stringFlavor);
-                    } else {
-                        for (DataFlavor df : clipboard.getAvailableDataFlavors()) {
-                            if (df.getMimeType().toLowerCase().startsWith("text/html")) {
+                    // 1. Inspect text/html flavor first (for Excel, Google Sheets, rich web tables)
+                    for (DataFlavor df : clipboard.getAvailableDataFlavors()) {
+                        if (df.getMimeType().toLowerCase().startsWith("text/html")) {
+                            try {
                                 Object data = clipboard.getData(df);
                                 if (data instanceof String) {
-                                    rawText = (String) data;
+                                    htmlData = (String) data;
                                 } else if (data instanceof java.io.Reader) {
                                     java.io.Reader r = (java.io.Reader) data;
                                     StringBuilder sb = new StringBuilder();
@@ -492,17 +651,61 @@ public class ChartNotesPanel extends JPanel {
                                     while ((n = r.read(buf)) != -1) {
                                         sb.append(buf, 0, n);
                                     }
-                                    rawText = sb.toString();
+                                    htmlData = sb.toString();
                                 }
-                                break;
-                            }
+                            } catch (Throwable ignored) {}
+                            if (htmlData != null) break;
                         }
                     }
 
+                    // 2. Inspect plain text flavor
+                    if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+                        try {
+                            rawText = (String) clipboard.getData(DataFlavor.stringFlavor);
+                        } catch (Throwable ignored) {}
+                    }
+
+                    // 3. If HTML contains a table, sanitize and insert it
+                    if (htmlData != null && htmlData.toLowerCase().contains("<table")) {
+                        String sanitizedTable = sanitizeHtmlContentWithTables(htmlData);
+                        if (sanitizedTable != null && !sanitizedTable.trim().isEmpty()) {
+                            insertHtmlTableAtCaret(sanitizedTable);
+                            return;
+                        }
+                    }
+
+                    // 4. If plain text is tab-delimited tabular data (e.g. copied from Excel/Sheets as TSV)
+                    if (rawText != null && isTabDelimitedTable(rawText)) {
+                        String tableHtml = convertTabDelimitedToHtmlTable(rawText);
+                        if (tableHtml != null && !tableHtml.trim().isEmpty()) {
+                            insertHtmlTableAtCaret(tableHtml);
+                            return;
+                        }
+                    }
+
+                    // 5. Standard plain text / rich text paste
                     if (rawText != null && !rawText.isEmpty()) {
                         String cleaned = cleanAndSanitizeText(rawText);
                         if (!cleaned.isEmpty()) {
-                            editor.replaceSelection(cleaned);
+                            if (!cleaned.contains("\n")) {
+                                editor.replaceSelection(cleaned);
+                            } else {
+                                insertFormattedTextAtCaret(cleaned);
+                            }
+                            return;
+                        }
+                    }
+
+                    // 6. If plain text was empty but HTML is available (without table)
+                    if (htmlData != null && !htmlData.trim().isEmpty()) {
+                        String extracted = extractTextFromHtml(htmlData);
+                        String cleaned = cleanAndSanitizeText(extracted);
+                        if (!cleaned.isEmpty()) {
+                            if (!cleaned.contains("\n")) {
+                                editor.replaceSelection(cleaned);
+                            } else {
+                                insertFormattedTextAtCaret(cleaned);
+                            }
                             return;
                         }
                     }
@@ -781,17 +984,24 @@ public class ChartNotesPanel extends JPanel {
         }
     }
 
-    public void flushToHoroscope() {
-        if (horoscope == null) return;
+    public void flushToOwner() {
+        if (notesOwner == null) return;
+        boolean wasModified = notesOwner.isModified();
         String content = getNotesContent();
-        horoscope.setNotes(content);
+        notesOwner.setNotes(content);
+        notesOwner.setModified(wasModified);
+    }
+
+    public void flushToHoroscope() {
+        flushToOwner();
     }
 
     private void syncToHoroscope() {
-        if (isUpdating || horoscope == null) return;
+        if (isUpdating || notesOwner == null) return;
 
         String content = getNotesContent();
-        horoscope.setNotes(content);
+        notesOwner.setNotes(content);
+        notesOwner.setModified(true);
 
         if (listener != null) {
             listener.onNotesModified();
@@ -815,15 +1025,20 @@ public class ChartNotesPanel extends JPanel {
     }
 
     public void setHoroscope(Horoscope h) {
-        this.horoscope = h;
+        bindNotesOwner(h);
+    }
+
+    public void bindNotesOwner(NotesOwner owner) {
+        this.notesOwner = owner;
+        this.horoscope = (owner instanceof Horoscope) ? (Horoscope) owner : null;
         isUpdating = true;
         try {
-            // Keep title concise as "Notes"
             titleLabel.setText("Notes");
-            if (h != null) {
-                titleLabel.setToolTipText("Notes for " + (h.getTitle() != null ? h.getTitle() : ""));
+            if (owner != null) {
+                String ownerTitle = owner.getNotesOwnerTitle();
+                titleLabel.setToolTipText("Notes for " + (ownerTitle != null ? ownerTitle : ""));
                 setEnabledState(true);
-                String notes = h.getNotes();
+                String notes = owner.getNotes();
                 setNotesContent(notes);
             } else {
                 titleLabel.setToolTipText("Notes");
@@ -836,6 +1051,10 @@ public class ChartNotesPanel extends JPanel {
         } finally {
             isUpdating = false;
         }
+    }
+
+    public NotesOwner getNotesOwner() {
+        return notesOwner;
     }
 
     private void setNotesContent(String content) {
@@ -866,10 +1085,88 @@ public class ChartNotesPanel extends JPanel {
             sb.append("</body></html>");
             editor.setText(sb.toString());
         } else {
-            editor.setText(content);
+            editor.setText(normalizeHtmlContent(content));
         }
         if (undoManager != null) {
             undoManager.discardAllEdits();
+        }
+    }
+
+    private void insertFormattedTextAtCaret(String cleaned) {
+        String escaped = cleaned.replace("&", "&amp;")
+                                .replace("<", "&lt;")
+                                .replace(">", "&gt;");
+        String[] paras = escaped.split("\n\n+");
+        StringBuilder html = new StringBuilder();
+        for (String p : paras) {
+            String trimmed = p.trim();
+            if (!trimmed.isEmpty()) {
+                String withBr = trimmed.replace("\n", "<br>");
+                html.append("<p style=\"margin-top: 0\">").append(withBr).append("</p>");
+            }
+        }
+
+        try {
+            int pos = editor.getCaretPosition();
+            editor.replaceSelection("");
+            pos = editor.getCaretPosition();
+            HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
+            HTMLDocument doc = (HTMLDocument) editor.getDocument();
+            if (doc.getLength() == 0 || editor.getText().replaceAll("<[^>]*>", "").trim().isEmpty()) {
+                editor.setText("<html><head></head><body>" + html.toString() + "</body></html>");
+            } else {
+                kit.insertHTML(doc, pos, html.toString(), 0, 0, HTML.Tag.P);
+            }
+        } catch (Exception ex) {
+            editor.replaceSelection(cleaned);
+        }
+    }
+
+    public static String normalizeHtmlContent(String html) {
+        if (html == null || !html.trim().toLowerCase().startsWith("<html>")) {
+            return html;
+        }
+        try {
+            org.jsoup.nodes.Document doc = Jsoup.parse(html);
+            doc.outputSettings().prettyPrint(false);
+
+            boolean hasUnwrappedText = false;
+            for (Node child : doc.body().childNodes()) {
+                if (child instanceof TextNode) {
+                    if (!((TextNode) child).getWholeText().trim().isEmpty()) {
+                        hasUnwrappedText = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasUnwrappedText) {
+                return html;
+            }
+
+            StringBuilder out = new StringBuilder("<html><head></head><body>");
+            for (Node child : doc.body().childNodes()) {
+                if (child instanceof TextNode) {
+                    String text = ((TextNode) child).getWholeText();
+                    String[] paras = text.split("\n\n+");
+                    for (String para : paras) {
+                        String p = para.trim();
+                        if (!p.isEmpty()) {
+                            String withBr = p.replace("&", "&amp;")
+                                             .replace("<", "&lt;")
+                                             .replace(">", "&gt;")
+                                             .replace("\n", "<br>");
+                            out.append("<p style=\"margin-top: 0\">").append(withBr).append("</p>");
+                        }
+                    }
+                } else if (child instanceof Element) {
+                    out.append(((Element) child).outerHtml());
+                }
+            }
+            out.append("</body></html>");
+            return out.toString();
+        } catch (Exception e) {
+            return html;
         }
     }
 

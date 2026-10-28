@@ -10,7 +10,16 @@ import javax.swing.filechooser.FileFilter;
 
 public class AstrosoftFileFilter extends FileFilter {
 
+	public static final AstrosoftFileFilter ALL_ASTROSOFT = new AstrosoftFileFilter(
+		new String[]{".ash", ".asm", ".asc"},
+		"All AstroSoft Files (*.ash, *.asm, *.asc)"
+	);
+
 	public static final AstrosoftFileFilter HOROSCOPE_EXTN = new AstrosoftFileFilter(".ash", "AstroSoft Horoscopes (*.ash)");
+
+	public static final AstrosoftFileFilter MUHURTA_EXTN = new AstrosoftFileFilter(".asm", "AstroSoft Muhurtas (*.asm)");
+
+	public static final AstrosoftFileFilter COMPACTIBILITY_EXTN = new AstrosoftFileFilter(".asc", "AstroSoft Compactibility (*.asc)");
 
 	public static final AstrosoftFileFilter PDF_EXTN = new AstrosoftFileFilter(".pdf", "PDF Documents (*.pdf)");
 
@@ -18,11 +27,11 @@ public class AstrosoftFileFilter extends FileFilter {
 
 	public static final AstrosoftFileFilter XML_EXTN = new AstrosoftFileFilter(".xml", "XML Documents (*.xml)");
 
-	public static final AstrosoftFileFilter COMPACTIBILITY_EXTN = new AstrosoftFileFilter(".asc", "AstroSoft Compactibility (*.asc)");
-
 	public static final AstrosoftFileFilter ALL_FILES = new AstrosoftFileFilter("*", "All Files (*.*)");
 
 	private String extension;
+
+	private String[] extensions;
 
 	private String desc;
 
@@ -31,14 +40,28 @@ public class AstrosoftFileFilter extends FileFilter {
     	this.desc = desc;
     }
 
+    public AstrosoftFileFilter(String[] extensions, String desc) {
+    	this.extensions = extensions;
+    	this.extension = (extensions != null && extensions.length > 0) ? extensions[0] : "*";
+    	this.desc = desc;
+    }
+
     public boolean accept( java.io.File file ) {
 
         if ( file.isDirectory() || extension.equals("*") ) {
 
             return true;
+        } else if (extensions != null) {
+            String name = file.getName().toLowerCase();
+            for (String ext : extensions) {
+                if (name.endsWith(ext.toLowerCase())) {
+                    return true;
+                }
+            }
+            return false;
         } else {
 
-            return ( file.getName(  ) ).endsWith( extension );
+            return ( file.getName(  ) ).toLowerCase().endsWith( extension.toLowerCase() );
         }
 
     }

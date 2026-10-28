@@ -23,6 +23,7 @@ import app.astrosoft.consts.TableStyle;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.Panchang;
 import app.astrosoft.core.MyMuhurta;
+import app.astrosoft.core.MuhurtaDocument;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.comp.CalendarChooser;
 import app.astrosoft.ui.comp.CalendarSpinner;
@@ -78,6 +79,7 @@ public class MyMuhurtaView extends AstrosoftView {
     private app.astrosoft.beans.Place selectedPlace = app.astrosoft.ui.AstroSoft.getPreferences().getPlace();
     private MuhurtaProfile person1Profile;
     private MuhurtaProfile person2Profile;
+    private MuhurtaDocument document = new MuhurtaDocument();
     private javax.swing.JButton person1Btn, person2Btn;
     private javax.swing.JScrollPane chartScrollPane;
     private Dimension currentChartDim = chartSize;
@@ -303,13 +305,58 @@ public class MyMuhurtaView extends AstrosoftView {
         return lastMuhurta;
     }
 
-    private app.astrosoft.core.MyMuhurta getOrCreateMuhurta() {
+    public app.astrosoft.core.MyMuhurta getOrCreateMuhurta() {
         return lastMuhurta != null ? lastMuhurta : createMuhurta();
+    }
+
+    public MuhurtaDocument getDocument() {
+        syncToDocument();
+        return document;
+    }
+
+    public void loadDocument(MuhurtaDocument doc) {
+        if (doc == null) return;
+        this.document = doc;
+        if (doc.getDate() != null) {
+            this.selectedDate = doc.getDate();
+        }
+        if (doc.getTime() != null) {
+            this.selectedTime = doc.getTime();
+        }
+        if (doc.getPlace() != null) {
+            this.selectedPlace = doc.getPlace();
+        }
+        this.person1Profile = doc.getPerson1();
+        this.person2Profile = doc.getPerson2();
+        updateView();
+    }
+
+    private void syncToDocument() {
+        if (document == null) {
+            document = new MuhurtaDocument();
+        }
+        document.setDate(selectedDate);
+        document.setTime(selectedTime);
+        document.setPlace(selectedPlace);
+        document.setPerson1(person1Profile);
+        document.setPerson2(person2Profile);
+    }
+
+    private void notifyDocumentModified() {
+        syncToDocument();
+        if (document != null) {
+            document.setModified(true);
+        }
+        AstroSoft as = AstroSoft.getInstance();
+        if (as != null) {
+            as.onDocumentModified();
+        }
     }
 
     private void applyCalendarDate(java.util.Date chosenInstant, java.util.Date endInstant) {
         selectedDate = new java.util.Date(chosenInstant.getTime());
         selectedTime = selectedDate;
+        notifyDocumentModified();
         updateView(true);
     }
 
@@ -515,6 +562,7 @@ public class MyMuhurtaView extends AstrosoftView {
             } else {
                 person2Profile = dlg.getSelectedProfile();
             }
+            notifyDocumentModified();
             updateView();
         }
     }
@@ -662,6 +710,7 @@ public class MyMuhurtaView extends AstrosoftView {
                             selectedDate = date;
                             selectedTime = time;
                             selectedPlace = place;
+                            notifyDocumentModified();
                             updateView();
                         }
                     }

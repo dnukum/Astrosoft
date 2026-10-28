@@ -132,7 +132,7 @@ public class FileOps {
             String fileExtn = ((AstrosoftFileFilter) currentFilter).getExtension();
             if (!fileExtn.equals("*")) {
                 String lower = selectedFile.toLowerCase();
-                if (lower.endsWith(".pdf") || lower.endsWith(".md") || lower.endsWith(".xml") || lower.endsWith(".ash") || lower.endsWith(".asc")) {
+                if (lower.endsWith(".pdf") || lower.endsWith(".md") || lower.endsWith(".xml") || lower.endsWith(".ash") || lower.endsWith(".asc") || lower.endsWith(".asm")) {
                     // Keep user-specified supported extension
                 } else if (!selectedFile.endsWith(fileExtn)) {
                     selectedFile = selectedFile + fileExtn;

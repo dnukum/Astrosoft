@@ -41,10 +41,15 @@ import javax.swing.SpringLayout;
 import javax.swing.border.EtchedBorder;
 import javax.swing.plaf.basic.BasicArrowButton;
 
+import app.astrosoft.beans.MuhurtaProfile;
+import app.astrosoft.core.Horoscope;
+import app.astrosoft.core.MuhurtaDocument;
+import app.astrosoft.core.MyMuhurta;
 import app.astrosoft.core.PanchangList;
 import app.astrosoft.core.Ephemeris.Mode;
 import app.astrosoft.exception.AstrosoftException;
 import app.astrosoft.export.AstrosoftExporter;
+import app.astrosoft.export.FOPTransformer;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.comp.CalendarSpinner;
 import app.astrosoft.ui.comp.DateListener;
@@ -54,6 +59,8 @@ import app.astrosoft.ui.comp.ProgressListener;
 import app.astrosoft.ui.util.SpringUtilities;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.ui.util.UIUtil;
+import app.astrosoft.ui.view.MyMuhurtaView;
+import app.astrosoft.ui.view.ViewManager.View;
 import app.astrosoft.util.AstroUtil;
 import app.astrosoft.util.AstrosoftFileFilter;
 import app.astrosoft.util.FileOps;
@@ -235,7 +242,9 @@ public class PrintDialog extends AstrosoftDialog {
 		
 		FutureTask<Object> printTask = null;
 		
-		if (type.equals(AstrosoftExporter.Type.Horosocope)){
+		if (type.equals(AstrosoftExporter.Type.Muhurta)){
+			printTask = exportMuhurta(outputFile, chkPdf.isSelected(), chkMd.isSelected(), chkXml.isSelected());
+		}else if (type.equals(AstrosoftExporter.Type.Horosocope)){
 			printTask = AstrosoftExporter.export(AstrosoftExporter.Type.Horosocope, parent.getHoroscope(), outputFile, chkPdf.isSelected(), chkMd.isSelected(), chkXml.isSelected());
 		}else if (type.equals(AstrosoftExporter.Type.Compactibility)){
 			printTask = AstrosoftExporter.export(AstrosoftExporter.Type.Compactibility, parent.getCompactibility(), outputFile, chkPdf.isSelected(), chkMd.isSelected(), chkXml.isSelected());
@@ -361,6 +370,10 @@ public class PrintDialog extends AstrosoftDialog {
 			
 		});
 		
+		if (parent.getCurrentView() == View.MY_MUHURTA_VIEW || parent.getMyMuhurtaView() != null) {
+			printTypes.addItem(AstrosoftExporter.Type.Muhurta);
+		}
+		
 		if (parent.getHoroscope() != null){
 			printTypes.addItem(AstrosoftExporter.Type.Horosocope);
 		}
@@ -370,6 +383,10 @@ public class PrintDialog extends AstrosoftDialog {
 		}
 		
 		printTypes.addItem(AstrosoftExporter.Type.Panchang);
+
+		if (parent.getCurrentView() == View.MY_MUHURTA_VIEW) {
+			printTypes.setSelectedItem(AstrosoftExporter.Type.Muhurta);
+		}
 		
 		arrow.addActionListener(new ActionListener(){
 
@@ -479,7 +496,9 @@ public class PrintDialog extends AstrosoftDialog {
 	    app.astrosoft.export.AstrosoftExporter.Type type = (app.astrosoft.export.AstrosoftExporter.Type)printTypes.getSelectedItem();
 		String file = null;
 		if (type != null) {
-			if (type.equals(AstrosoftExporter.Type.Horosocope)){
+			if (type.equals(AstrosoftExporter.Type.Muhurta)){
+				file = getMuhurtaOutputFile();
+			}else if (type.equals(AstrosoftExporter.Type.Horosocope)){
 				file = parent.getHoroscope().createDocumentName();
 			}else if (type.equals(AstrosoftExporter.Type.Compactibility)){
 				file = parent.getCompactibility().createDocumentName();
@@ -493,6 +512,85 @@ public class PrintDialog extends AstrosoftDialog {
 		}
 		
 		return file;
+	}
+
+	private String getMuhurtaOutputFile() {
+		String baseDir = AstroSoft.getPreferences().getAstrosoftFilesDir();
+		if (parent.getMyMuhurtaView() != null) {
+			MuhurtaDocument doc = parent.getMyMuhurtaView().getDocument();
+			if (doc != null) {
+				if (doc.getFilePath() != null) {
+					String name = new File(doc.getFilePath()).getName().replaceAll("(?i)\\.(asm|ash|xml)$", "");
+					return baseDir + name + "_Muhurta.pdf";
+				} else if (doc.getName() != null && !doc.getName().trim().isEmpty()) {
+					return baseDir + doc.getName().trim().replaceAll("\\s+", "_") + "_Muhurta.pdf";
+				}
+			}
+		}
+		return baseDir + "Muhurta.pdf";
+	}
+
+	private FutureTask<Object> exportMuhurta(final String outputFile, final boolean exportPdf, final boolean exportMd, final boolean exportXml) {
+		Runnable r = new Runnable() {
+			public void run() {
+				try {
+					MyMuhurtaView view = parent.getMyMuhurtaView();
+					MuhurtaDocument doc = (view != null) ? view.getDocument() : null;
+					MyMuhurta muhurta = (view != null) ? view.getOrCreateMuhurta() : null;
+
+					String baseName = outputFile.replaceAll("(?i)\\.(pdf|md|xml)$", "");
+					String pdfFile = baseName + ".pdf";
+					String mdFile = baseName + ".md";
+					String xmlFile = baseName + ".xml";
+
+					if (exportXml && doc != null) {
+						doc.saveToFile(xmlFile);
+						log.info("Saved Muhurta XML to: " + xmlFile);
+					}
+
+					if (exportMd && muhurta != null) {
+						StringBuilder sb = new StringBuilder();
+						String titleName = (doc != null && doc.getName() != null) ? doc.getName() : "Muhurta";
+						sb.append("# Muhurta Analysis: ").append(titleName).append("\n\n");
+						MuhurtaProfile p1 = doc != null ? doc.getPerson1() : null;
+						MuhurtaProfile p2 = doc != null ? doc.getPerson2() : null;
+						sb.append(muhurta.getSummaryText(p1, p2));
+						if (doc != null && doc.getNotes() != null && !doc.getNotes().trim().isEmpty()) {
+							sb.append("\n\n## Notes\n\n");
+							String cleanNotes = doc.getNotes().replaceAll("<[^>]*>", "\n").replaceAll("&nbsp;", " ").trim();
+							sb.append(cleanNotes).append("\n");
+						}
+						try (java.io.Writer w = new java.io.BufferedWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(mdFile), java.nio.charset.StandardCharsets.UTF_8))) {
+							w.write(sb.toString());
+						}
+						log.info("Saved Muhurta Markdown to: " + mdFile);
+					}
+
+					if (exportPdf && muhurta != null) {
+						Horoscope eventH = muhurta.getEventHoroscope();
+						if (doc != null && doc.getNotes() != null) {
+							eventH.setNotes(doc.getNotes());
+						}
+						File tempXml = File.createTempFile("muhurta_export_", ".xml");
+						tempXml.deleteOnExit();
+						try {
+							AstrosoftExporter.export2Xml(AstrosoftExporter.Type.Horosocope, eventH, tempXml.getAbsolutePath());
+							FOPTransformer.exportToPDF(tempXml.getAbsolutePath(), AstrosoftExporter.Type.Horosocope.getTemplate(), pdfFile);
+							log.info("Exported Muhurta PDF to: " + pdfFile);
+						} finally {
+							if (tempXml.exists()) tempXml.delete();
+						}
+					}
+				} catch (Exception e) {
+					log.log(java.util.logging.Level.SEVERE, "Muhurta export failed", e);
+					throw new RuntimeException(e);
+				}
+			}
+		};
+
+		FutureTask<Object> task = new FutureTask<Object>(r, null);
+		new Thread(task).start();
+		return task;
 	}
 	
 	private Window createPanchangInputWindow(){

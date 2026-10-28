@@ -23,6 +23,7 @@ import swisseph.SweDate;
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.HousePosition;
 import app.astrosoft.beans.NakshathraPada;
+import app.astrosoft.beans.NotesOwner;
 import app.astrosoft.beans.Place;
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.AstrosoftTableColumn;
@@ -52,12 +53,13 @@ import app.astrosoft.util.SwissHelper;
 import app.astrosoft.xps.yoga.YogaFinder;
 import app.astrosoft.xps.yoga.YogaResults;
 
-public class Horoscope implements  PreferenceChangeListener , Exportable {
+public class Horoscope implements PreferenceChangeListener, Exportable, NotesOwner {
 
 	private static final Logger log = Logger.getLogger(Horoscope.class.getName());
 
 	private BirthData birthData;
 	private String filePath;
+	private boolean modified;
 
 	private SwissHelper swissHelper;
 
@@ -134,6 +136,7 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 		}
 		if (h != null){
 			h.setFilePath(file);
+			h.setModified(false);
 			return h;
 		}
 
@@ -187,6 +190,7 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 
 		XMLHelper.saveXML(doc, fileName);
 		this.setFilePath(fileName);
+		this.modified = false;
 	}
 
 	public String getFilePath() {
@@ -209,6 +213,21 @@ public class Horoscope implements  PreferenceChangeListener , Exportable {
 
 	public boolean hasNotes() {
 		return birthData != null && birthData.getNotes() != null && !birthData.getNotes().trim().isEmpty();
+	}
+
+	@Override
+	public String getNotesOwnerTitle() {
+		return (getPersonName() != null && !getPersonName().trim().isEmpty()) ? getPersonName() : ((getTitle() != null && !getTitle().trim().isEmpty()) ? getTitle() : "Horoscope");
+	}
+
+	@Override
+	public boolean isModified() {
+		return modified;
+	}
+
+	@Override
+	public void setModified(boolean modified) {
+		this.modified = modified;
 	}
 
 	public void calculate() {

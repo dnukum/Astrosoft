@@ -152,11 +152,21 @@ public class XMLHelper {
     // This method writes a DOM document to a file
     public static void saveXML(Document doc, String fileName) {
         try {
-            // Prepare the DOM document for writing
-            Source source = new DOMSource(doc);
-
             // Prepare the output file
             File file = new File(fileName);
+
+            // Automatically preserve previous version as .bak before overwriting
+            if (file.exists() && file.isFile() && file.length() > 0) {
+                try {
+                    File bakFile = new File(fileName + ".bak");
+                    java.nio.file.Files.copy(file.toPath(), bakFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                } catch (Exception be) {
+                    log.log(Level.WARNING, "Failed to create backup file for " + fileName, be);
+                }
+            }
+
+            // Prepare the DOM document for writing
+            Source source = new DOMSource(doc);
             Result result = new StreamResult(file);
 
             // Write the DOM document to the file

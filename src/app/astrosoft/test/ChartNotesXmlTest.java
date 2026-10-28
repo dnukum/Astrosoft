@@ -500,6 +500,275 @@ public class ChartNotesXmlTest {
         Assert.assertFalse("Trailing 2. should be removed on exit", doc.getText(0, doc.getLength()).trim().endsWith("2."));
     }
 
+    @Test
+    public void testMultiSourcePasteAndRoundTripPreservesParagraphs() throws Exception {
+        Place place = new Place("Delhi", 28.61, 77.20, 5.5);
+        BirthData bd = new BirthData("Test User", Sex.Male, 10, 5, 1985, 14, 30, 0, place);
+        Horoscope h = new Horoscope(bd);
+        app.astrosoft.ui.comp.ChartNotesPanel panel = new app.astrosoft.ui.comp.ChartNotesPanel(null);
+        panel.setHoroscope(h);
+
+        // 1. WhatsApp Multi-Paragraph Message
+        String waMessage = "[10:30 AM, 24/10/2026] +91 98400 12345: Query regarding job relocation abroad.\n\n" +
+                           "D1 chart: 10th HL Mercury in 9th house.\n\n" +
+                           "Mars-Moon dasa chidra turbulence.\n\n" +
+                           "[Bangaru Venkatesh]\n" +
+                           "Very strong chart overall.";
+
+        String cleanedWa = app.astrosoft.ui.comp.ChartNotesPanel.cleanAndSanitizeText(waMessage);
+        h.setNotes(cleanedWa);
+        panel.setHoroscope(h);
+
+        String editorHtmlWa = panel.getEditor().getText();
+        int pCountWa = editorHtmlWa.split("<p").length - 1;
+        Assert.assertTrue("WhatsApp notes must have multiple paragraphs in editor (found " + pCountWa + ")", pCountWa >= 4);
+
+        // Save and reload round-trip
+        File tempFile = File.createTempFile("test_wa_roundtrip_", ".ash");
+        tempFile.deleteOnExit();
+        h.saveToFile(tempFile.getAbsolutePath());
+
+        Horoscope reloadedH = Horoscope.createFromFile(tempFile.getAbsolutePath());
+        panel.setHoroscope(reloadedH);
+        String reloadedHtmlWa = panel.getEditor().getText();
+        int reloadedPCountWa = reloadedHtmlWa.split("<p").length - 1;
+        Assert.assertTrue("WhatsApp notes must preserve multiple paragraphs after save/reload round-trip (found " + reloadedPCountWa + ")", reloadedPCountWa >= 4);
+
+        // 2. Google Docs / Workspace Multi-Paragraph Content
+        String gDocsContent = "“Analysis Summary”\n\n" +
+                              "• Point 1: Career growth in Q3\n\n" +
+                              "• Point 2: Saturn-Rahu conjunction";
+        String cleanedGDocs = app.astrosoft.ui.comp.ChartNotesPanel.cleanAndSanitizeText(gDocsContent);
+        h.setNotes(cleanedGDocs);
+        panel.setHoroscope(h);
+        int pCountDocs = panel.getEditor().getText().split("<p").length - 1;
+        Assert.assertTrue("Google Docs notes must have multiple paragraphs (found " + pCountDocs + ")", pCountDocs >= 3);
+
+        // 3. Microsoft Word Multi-Paragraph Content
+        String wordContent = "'Case Study Notes': Native's career transition\n\n" +
+                             "• Dasa analysis shows favorable period\n\n" +
+                             "• Transit Saturn moving into 10th house";
+        String cleanedWord = app.astrosoft.ui.comp.ChartNotesPanel.cleanAndSanitizeText(wordContent);
+        h.setNotes(cleanedWord);
+        panel.setHoroscope(h);
+        int pCountWord = panel.getEditor().getText().split("<p").length - 1;
+        Assert.assertTrue("Word notes must have multiple paragraphs (found " + pCountWord + ")", pCountWord >= 3);
+    }
+
+    @Test
+    public void testExcelHtmlTablePasteAndXmlRoundTrip() throws Exception {
+        Place place = new Place("Delhi", 28.61, 77.20, 5.5);
+        BirthData bd = new BirthData("Excel Test", Sex.Male, 12, 6, 1990, 10, 15, 0, place);
+        Horoscope h = new Horoscope(bd);
+        app.astrosoft.ui.comp.ChartNotesPanel panel = new app.astrosoft.ui.comp.ChartNotesPanel(null);
+        panel.setHoroscope(h);
+
+        // Typical HTML clipboard snippet produced when copying from Microsoft Excel
+        String excelHtml = "<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\">\n" +
+                           "<head><style>.xl65{mso-number-format:General;text-align:left;}</style></head>\n" +
+                           "<body>\n" +
+                           "<!--StartFragment-->\n" +
+                           "<table class=\"MsoNormalTable\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%\">\n" +
+                           " <tr style=\"height:15pt\">\n" +
+                           "  <td class=\"xl65\" style=\"font-weight:bold;\">Planet</td>\n" +
+                           "  <td class=\"xl65\" style=\"font-weight:bold;\">Rasi</td>\n" +
+                           "  <td class=\"xl65\" style=\"font-weight:bold;\">Degree</td>\n" +
+                           " </tr>\n" +
+                           " <tr style=\"height:15pt\">\n" +
+                           "  <td class=\"xl65\">Jupiter</td>\n" +
+                           "  <td class=\"xl65\">Cancer</td>\n" +
+                           "  <td class=\"xl65\">15° 24'</td>\n" +
+                           " </tr>\n" +
+                           " <tr style=\"height:15pt\">\n" +
+                           "  <td class=\"xl65\">Saturn</td>\n" +
+                           "  <td class=\"xl65\">Aquarius</td>\n" +
+                           "  <td class=\"xl65\">22° 10'</td>\n" +
+                           " </tr>\n" +
+                           "</table>\n" +
+                           "<!--EndFragment-->\n" +
+                           "</body></html>";
+
+        // Sanitize and insert into panel
+        String sanitizedTable = app.astrosoft.ui.comp.ChartNotesPanel.sanitizeHtmlContentWithTables(excelHtml);
+        Assert.assertNotNull("Sanitized table should not be null", sanitizedTable);
+        Assert.assertTrue("Sanitized table must contain table tag", sanitizedTable.contains("<table"));
+        Assert.assertTrue("Sanitized table must have border attribute", sanitizedTable.contains("border=\"1\""));
+
+        panel.insertHtmlTableAtCaret(sanitizedTable);
+        String editorText = panel.getEditor().getText();
+        Assert.assertTrue("Editor should contain table", editorText.contains("<table"));
+        Assert.assertTrue("Editor should contain Jupiter cell", editorText.contains("Jupiter"));
+        Assert.assertTrue("Editor should contain Saturn cell", editorText.contains("Saturn"));
+        Assert.assertTrue("Editor should contain Cancer cell", editorText.contains("Cancer"));
+
+        // Save to .ash XML file and reload
+        File tempFile = File.createTempFile("test_excel_table_", ".ash");
+        tempFile.deleteOnExit();
+        h.setNotes(panel.getNotesContent());
+        h.saveToFile(tempFile.getAbsolutePath());
+
+        Horoscope reloaded = Horoscope.createFromFile(tempFile.getAbsolutePath());
+        panel.setHoroscope(reloaded);
+        String reloadedText = panel.getEditor().getText();
+
+        Assert.assertTrue("Reloaded notes must preserve table structure", reloadedText.contains("<table"));
+        Assert.assertTrue("Reloaded notes must preserve Jupiter", reloadedText.contains("Jupiter"));
+        Assert.assertTrue("Reloaded notes must preserve Saturn", reloadedText.contains("Saturn"));
+        Assert.assertTrue("Reloaded notes must preserve Degree", reloadedText.contains("15") && (reloadedText.contains("15°") || reloadedText.contains("15&#176;")));
+        String docText = panel.getEditor().getDocument().getText(0, panel.getEditor().getDocument().getLength());
+        Assert.assertTrue("Rendered document text must preserve 15° 24'", docText.contains("15° 24'"));
+    }
+
+    @Test
+    public void testGoogleSheetsHtmlTablePasteAndXmlRoundTrip() throws Exception {
+        Place place = new Place("Bangalore", 12.97, 77.59, 5.5);
+        BirthData bd = new BirthData("Sheets Test", Sex.Female, 20, 8, 1995, 18, 45, 0, place);
+        Horoscope h = new Horoscope(bd);
+        app.astrosoft.ui.comp.ChartNotesPanel panel = new app.astrosoft.ui.comp.ChartNotesPanel(null);
+        panel.setHoroscope(h);
+
+        // Typical HTML clipboard snippet produced when copying from Google Sheets
+        String googleSheetsHtml = "<google-sheets-html-origin><style type=\"text/css\">td {padding: 0px 3px;}</style>\n" +
+                                  "<table xmlns=\"http://www.w3.org/1999/xhtml\" cellspacing=\"0\" cellpadding=\"0\" dir=\"ltr\" border=\"1\">\n" +
+                                  " <tbody>\n" +
+                                  "  <tr style=\"height: 21px;\">\n" +
+                                  "   <td dir=\"ltr\" style=\"font-weight:bold; background-color:#f3f3f3;\">Dasa</td>\n" +
+                                  "   <td dir=\"ltr\" style=\"font-weight:bold; background-color:#f3f3f3;\">Start Date</td>\n" +
+                                  "   <td dir=\"ltr\" style=\"font-weight:bold; background-color:#f3f3f3;\">End Date</td>\n" +
+                                  "  </tr>\n" +
+                                  "  <tr style=\"height: 21px;\">\n" +
+                                  "   <td dir=\"ltr\">Jupiter-Venus</td>\n" +
+                                  "   <td dir=\"ltr\">2024-05-10</td>\n" +
+                                  "   <td dir=\"ltr\">2027-01-09</td>\n" +
+                                  "  </tr>\n" +
+                                  "  <tr style=\"height: 21px;\">\n" +
+                                  "   <td dir=\"ltr\">Jupiter-Sun</td>\n" +
+                                  "   <td dir=\"ltr\">2027-01-09</td>\n" +
+                                  "   <td dir=\"ltr\">2027-10-28</td>\n" +
+                                  "  </tr>\n" +
+                                  " </tbody>\n" +
+                                  "</table>\n" +
+                                  "</google-sheets-html-origin>";
+
+        String sanitizedTable = app.astrosoft.ui.comp.ChartNotesPanel.sanitizeHtmlContentWithTables(googleSheetsHtml);
+        Assert.assertNotNull("Sanitized Google Sheets table should not be null", sanitizedTable);
+        Assert.assertTrue("Sanitized table must have table tag", sanitizedTable.contains("<table"));
+
+        panel.insertHtmlTableAtCaret(sanitizedTable);
+        String editorText = panel.getEditor().getText();
+        Assert.assertTrue("Editor should contain table", editorText.contains("<table"));
+        Assert.assertTrue("Editor should contain Jupiter-Venus", editorText.contains("Jupiter-Venus"));
+        Assert.assertTrue("Editor should contain 2024-05-10", editorText.contains("2024-05-10"));
+
+        // Save and reload round-trip
+        File tempFile = File.createTempFile("test_sheets_table_", ".ash");
+        tempFile.deleteOnExit();
+        h.setNotes(panel.getNotesContent());
+        h.saveToFile(tempFile.getAbsolutePath());
+
+        Horoscope reloaded = Horoscope.createFromFile(tempFile.getAbsolutePath());
+        panel.setHoroscope(reloaded);
+        String reloadedText = panel.getEditor().getText();
+
+        Assert.assertTrue("Reloaded notes must preserve table structure", reloadedText.contains("<table"));
+        Assert.assertTrue("Reloaded notes must contain Jupiter-Venus", reloadedText.contains("Jupiter-Venus"));
+        Assert.assertTrue("Reloaded notes must contain Jupiter-Sun", reloadedText.contains("Jupiter-Sun"));
+    }
+
+    @Test
+    public void testTabDelimitedPlainTextSpreadsheetTableConversion() throws Exception {
+        String tsvData = "House\tSign\tLord\n" +
+                         "1st\tAries\tMars\n" +
+                         "2nd\tTaurus\tVenus\n" +
+                         "3rd\tGemini\tMercury";
+
+        // Verify table detection
+        Assert.assertTrue("TSV spreadsheet data must be recognized as table",
+                app.astrosoft.ui.comp.ChartNotesPanel.isTabDelimitedTable(tsvData));
+
+        // Verify non-table text is rejected
+        String normalTextWithOneTab = "First line with no tab\n" +
+                                      "\tIndented bullet line\n" +
+                                      "Third line without tab";
+        Assert.assertFalse("Normal indented text must not be recognized as table",
+                app.astrosoft.ui.comp.ChartNotesPanel.isTabDelimitedTable(normalTextWithOneTab));
+
+        // Convert TSV to HTML Table
+        String tableHtml = app.astrosoft.ui.comp.ChartNotesPanel.convertTabDelimitedToHtmlTable(tsvData);
+        Assert.assertTrue("Generated HTML must contain <table>", tableHtml.contains("<table"));
+        Assert.assertTrue("Header row should use <th>", tableHtml.contains("<th"));
+        Assert.assertTrue("Header should contain House", tableHtml.contains("House"));
+        Assert.assertTrue("Data rows should use <td>", tableHtml.contains("<td>Mars</td>"));
+
+        // Test insertion in ChartNotesPanel
+        Place place = new Place("Mumbai", 19.07, 72.87, 5.5);
+        BirthData bd = new BirthData("TSV Test", Sex.Male, 5, 3, 1988, 8, 30, 0, place);
+        Horoscope h = new Horoscope(bd);
+        app.astrosoft.ui.comp.ChartNotesPanel panel = new app.astrosoft.ui.comp.ChartNotesPanel(null);
+        panel.setHoroscope(h);
+
+        panel.insertHtmlTableAtCaret(tableHtml);
+        String editorText = panel.getEditor().getText();
+        Assert.assertTrue("Editor should render converted TSV table", editorText.contains("<table"));
+        Assert.assertTrue("Editor should contain Aries", editorText.contains("Aries"));
+        Assert.assertTrue("Editor should contain Mars", editorText.contains("Mars"));
+
+        // Save and reload round-trip
+        File tempFile = File.createTempFile("test_tsv_table_", ".ash");
+        tempFile.deleteOnExit();
+        h.setNotes(panel.getNotesContent());
+        h.saveToFile(tempFile.getAbsolutePath());
+
+        Horoscope reloaded = Horoscope.createFromFile(tempFile.getAbsolutePath());
+        panel.setHoroscope(reloaded);
+        String reloadedText = panel.getEditor().getText();
+        Assert.assertTrue("Reloaded notes must preserve converted TSV table", reloadedText.contains("<table"));
+        Assert.assertTrue("Reloaded notes must contain Taurus", reloadedText.contains("Taurus"));
+    }
+
+    @Test
+    public void testMixedNotesWithParagraphsAndSpreadsheetTables() throws Exception {
+        Place place = new Place("Chennai", 13.08, 80.27, 5.5);
+        BirthData bd = new BirthData("Mixed Test", Sex.Female, 15, 11, 1992, 14, 20, 0, place);
+        Horoscope h = new Horoscope(bd);
+        app.astrosoft.ui.comp.ChartNotesPanel panel = new app.astrosoft.ui.comp.ChartNotesPanel(null);
+        panel.setHoroscope(h);
+
+        String mixedContent = "<html><body>\n" +
+                              "<p>Initial consultation observation: Native's 10th lord is well placed in 9th house.</p>\n" +
+                              "<table border=\"1\" cellpadding=\"4\" cellspacing=\"0\">\n" +
+                              " <tr><th>Planet</th><th>Strength</th></tr>\n" +
+                              " <tr><td>Sun</td><td>6.5 Rupas</td></tr>\n" +
+                              " <tr><td>Moon</td><td>7.2 Rupas</td></tr>\n" +
+                              "</table>\n" +
+                              "<p>Remedial recommendation: Wear Yellow Sapphire during Jupiter Mahadasha.</p>\n" +
+                              "</body></html>";
+
+        panel.setHoroscope(h);
+        h.setNotes(mixedContent);
+        panel.setHoroscope(h);
+
+        String editorText = panel.getEditor().getText();
+        Assert.assertTrue("Editor must preserve leading paragraph", editorText.contains("Initial consultation observation"));
+        Assert.assertTrue("Editor must preserve table", editorText.contains("<table"));
+        Assert.assertTrue("Editor must preserve table data", editorText.contains("6.5 Rupas"));
+        Assert.assertTrue("Editor must preserve trailing paragraph", editorText.contains("Remedial recommendation"));
+
+        // Save to XML and reload
+        File tempFile = File.createTempFile("test_mixed_table_", ".ash");
+        tempFile.deleteOnExit();
+        h.saveToFile(tempFile.getAbsolutePath());
+
+        Horoscope reloaded = Horoscope.createFromFile(tempFile.getAbsolutePath());
+        panel.setHoroscope(reloaded);
+        String reloadedText = panel.getEditor().getText();
+
+        Assert.assertTrue("Reloaded mixed notes must preserve paragraph 1", reloadedText.contains("Initial consultation observation"));
+        Assert.assertTrue("Reloaded mixed notes must preserve table", reloadedText.contains("<table"));
+        Assert.assertTrue("Reloaded mixed notes must preserve table contents", reloadedText.contains("7.2 Rupas"));
+        Assert.assertTrue("Reloaded mixed notes must preserve paragraph 2", reloadedText.contains("Remedial recommendation"));
+    }
+
     private javax.swing.JTextPane getEditor(app.astrosoft.ui.comp.ChartNotesPanel panel) {
         for (java.awt.Component c : panel.getComponents()) {
             if (c instanceof javax.swing.JScrollPane) {

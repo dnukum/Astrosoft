@@ -200,3 +200,59 @@ When the user invokes `File -> Open` (or clicks the Open toolbar icon) and selec
    - `Astrosoft 2.0 - Nikhil.ash`
    - `Astrosoft 2.0 - HouseWarming.ash [Muhurta]`
    - `Astrosoft 2.0 - Rohit-Priya.ash [Marriage Match]`
+
+---
+
+## 8. Dirty-State Tracking & Prompt Lifecycle
+
+To protect user work, every document implementing `NotesOwner` tracks its in-memory modification state (`isModified()`).
+
+### 8.1 Mutation Triggers
+- **Notes Edits**: When the user edits content in `ChartNotesPanel`, `setNotes(...)` detects text changes and marks `modified = true`.
+- **Document Edits**: In `MyMuhurtaView`, changing date, time, place, or profile invokes `document.setModified(true)`. Creating or editing a chart via `computeHoroscope` marks `h.setModified(true)`.
+- **Save Reset**: Whenever a document is loaded from disk (`createFromFile`) or successfully written to disk (`saveToFile`), `modified` is reset to `false`.
+
+### 8.2 Guarded Transitions
+Before replacing or closing an active document with unsaved changes, `promptSaveIfModified(NotesOwner)` is triggered during:
+1. **File $\rightarrow$ Open**: Opening another `.ash` horoscope or `.asm` Muhurta profile.
+2. **File $\rightarrow$ New Horoscope**: Creating a new chart.
+3. **Application Exit**: Window close button ('x'), `Cmd+Q` / macOS QuitHandler, or File $\rightarrow$ Exit.
+
+### 8.3 Dialog Action Matrix
+```
+"Do you want to save changes to '<Document Name>'?"
+[ Save ]  [ Don't Save ]  [ Cancel ]
+```
+| Selection | Action | Result |
+| :--- | :--- | :--- |
+| **`Save`** | Saves directly if `filePath` exists; prompts Save As file chooser if new. | If save succeeds $\rightarrow$ proceeds with open/exit. If user cancels file picker $\rightarrow$ aborts. |
+| **`Don't Save`** | Discards unsaved in-memory changes (`setModified(false)`). | Proceeds immediately with opening the new document or closing the app. |
+| **`Cancel` / Close [X]** | Aborts the requested operation entirely. | Window stays open; new file is not opened; editor and in-memory chart remain intact. |
+
+---
+
+## 9. Spreadsheet & Table Preservation Architecture
+
+### 9.1 Supported Ingestion Formats
+1. **Microsoft Excel (`text/html`)**:
+   - Sanitizes Excel Office markup (`MsoNormalTable`, XML namespaces, Office styles) into standard HTML `<table>`.
+   - Normalizes cells to `<table border="1" cellpadding="4" cellspacing="0" style="border-collapse: collapse; margin-top: 4px; margin-bottom: 6px;">`.
+   - Shades header rows (`#f2f2f2` / `#f0f4f8`) and formats column titles with bold tags (`<b>`).
+2. **Google Sheets (`text/html`)**:
+   - Strips `<google-sheets-html-origin>` wrappers while preserving table structure, cell values, and column dimensions.
+3. **Tab-Delimited TSV (`text/plain`)**:
+   - `isTabDelimitedTable(rawText)` automatically detects multi-line spreadsheet pastes with consistent tab count ($\ge 2$ rows with tabs).
+   - `convertTabDelimitedToHtmlTable(rawText)` generates structured HTML tables dynamically from plain-text clipboard data.
+4. **Mixed Text & Tables**:
+   - Preserves introductory paragraphs, embedded tables, and conclusion paragraphs seamlessly in document order.
+
+### 9.2 XML Serialization & Reload
+- All table markup (`<table>`, `<tr>`, `<th>`, `<td>`) is wrapped in `<Notes><![CDATA[...]]></Notes>`.
+- `normalizeHtmlContent()` preserves table structures intact on reload without paragraph flattening.
+- Comprehensive automated test suite in `ChartNotesXmlTest.java`:
+  - `testExcelHtmlTablePasteAndXmlRoundTrip()`
+  - `testGoogleSheetsHtmlTablePasteAndXmlRoundTrip()`
+  - `testTabDelimitedPlainTextSpreadsheetTableConversion()`
+  - `testMixedNotesWithParagraphsAndSpreadsheetTables()`
+
+

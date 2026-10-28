@@ -82,6 +82,9 @@ import app.astrosoft.ui.view.ViewContainer;
 import app.astrosoft.ui.view.ViewManager;
 import app.astrosoft.ui.view.VimDasaView;
 import app.astrosoft.ui.view.YogaCombinationsView;
+import app.astrosoft.beans.MuhurtaProfile;
+import app.astrosoft.core.MuhurtaDocument;
+import app.astrosoft.export.XMLHelper;
 import app.astrosoft.ui.view.ViewManager.View;
 import app.astrosoft.util.AstroUtil;
 import app.astrosoft.util.AstrosoftFileFilter;
@@ -91,6 +94,12 @@ public class AstroSoft extends javax.swing.JFrame implements
 		AstrosoftActionHandler {
 
 	private static final Logger log = Logger.getLogger(AstroSoft.class.getName());
+
+	private static AstroSoft instance;
+
+	private View currentView = View.CHART_VIEW;
+
+	private app.astrosoft.ui.view.MyMuhurtaView myMuhurtaView;
 
 	private Horoscope h;
 
@@ -132,8 +141,45 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	private static Rectangle bounds = new Rectangle(0,0, getScreenSize().width, getScreenSize().height);
 
-	private AstroSoft() {
+	public static AstroSoft getInstance() {
+		return instance;
+	}
 
+	public interface SavePromptDelegate {
+		int askSave(String title, java.awt.Component parent);
+	}
+
+	public interface ExitHandler {
+		void exit(int status);
+	}
+
+	private static SavePromptDelegate savePromptDelegate = (title, parent) -> {
+		Object[] options = new Object[] { "Save", "Don't Save", "Cancel" };
+		return JOptionPane.showOptionDialog(
+				parent,
+				"Do you want to save changes to \"" + title + "\"?",
+				"Astrosoft 2.0",
+				JOptionPane.YES_NO_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE,
+				null,
+				options,
+				options[0]
+		);
+	};
+
+	private static ExitHandler exitHandler = status -> System.exit(status);
+
+	public static void setSavePromptDelegate(SavePromptDelegate delegate) {
+		savePromptDelegate = delegate;
+	}
+
+	public static void setExitHandler(ExitHandler handler) {
+		exitHandler = handler;
+	}
+
+	public AstroSoft() {
+
+		instance = this;
 		initComponents();
 
         // WindowPlacement controls outer startup bounds, not the display dimensions.
@@ -246,6 +292,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 		} else {
 			foldNotes();
 		}
+	}
+
+	public boolean isNotesFolded() {
+		return isNotesFolded;
 	}
 
 	public void foldNotes() {
@@ -389,6 +439,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	private void initComponents() { // GEN-BEGIN:initComponents
 		setTitle("Astrosoft 2.0");
 		setName("AstroSoft");
+		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new java.awt.event.WindowAdapter() {
 
 			public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -399,12 +450,64 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		});
 
+		try {
+			if (java.awt.Desktop.isDesktopSupported()) {
+				java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+				if (desktop.isSupported(java.awt.Desktop.Action.APP_QUIT_HANDLER)) {
+					desktop.setQuitHandler((e, response) -> {
+						log.info("Desktop.setQuitHandler triggered by macOS!");
+						if (canExit()) {
+							WindowPlacement.saveNow(AstroSoft.this);
+							response.performQuit();
+						} else {
+							response.cancelQuit();
+						}
+					});
+				}
+			}
+		} catch (Exception ignored) {}
+
 	} // GEN-END:initComponents
+
+	public boolean canExit() {
+		log.info("canExit() invoked!");
+		if (currentView == View.MY_MUHURTA_VIEW) {
+			if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
+				return false;
+			}
+			if (h != null && !promptSaveIfModified(h)) {
+				return false;
+			}
+		} else {
+			if (h != null && !promptSaveIfModified(h)) {
+				return false;
+			}
+			if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public void exitApplication() {
+		log.info("exitApplication() invoked!");
+		exitForm(null);
+	}
 
 	/** Exit the Application */
 	private void exitForm(java.awt.event.WindowEvent evt) { // GEN-FIRST:event_exitForm
+		log.info("exitForm invoked with evt=" + evt);
+		if (!canExit()) {
+			log.info("exitForm cancelled by canExit()");
+			return;
+		}
+		log.info("exitForm proceeding to exit!");
         WindowPlacement.saveNow(this);
-        System.exit(0);
+        if (exitHandler != null) {
+            exitHandler.exit(0);
+        } else {
+            System.exit(0);
+        }
 
 	} // GEN-LAST:event_exitForm
 
@@ -517,6 +620,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (chartNotesPanel != null) {
 			chartNotesPanel.setHoroscope(h);
 		}
+		h.setModified(true);
 		enableActions(true);
 		viewManager.showView(View.CHART_VIEW);
 	}
@@ -729,40 +833,58 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void displayCompactibility(Horoscope boy, Horoscope girl) {
-
+		currentView = View.COMPACTIBILITY_VIEW;
+		onSwitchToUtilityView();
 		compactibility = new Compactibility(boy, girl);
 		actionMgr.enableAction(Command.PRINT, true);
+		String bName = (boy != null && boy.getPersonName() != null && !boy.getPersonName().trim().isEmpty()) ? boy.getPersonName() : "Boy";
+		String gName = (girl != null && girl.getPersonName() != null && !girl.getPersonName().trim().isEmpty()) ? girl.getPersonName() : "Girl";
+		setTitle("Astrosoft 2.0 - Marriage Compatibility (" + bName + " & " + gName + ")");
 		viewManager.showView(View.COMPACTIBILITY_VIEW);
 	}
 
 	public void displayCompactibility(String bName, String gName, Rasi bRasi,
 			Rasi gRasi, Nakshathra bNak, Nakshathra gNak) {
-
+		currentView = View.COMPACTIBILITY_VIEW;
+		onSwitchToUtilityView();
 		compactibility = new Compactibility(bName, gName, bNak,
 				gNak, bRasi, gRasi);
 		actionMgr.enableAction(Command.PRINT, true);
+		String boyTitle = (bName != null && !bName.trim().isEmpty()) ? bName : "Boy";
+		String girlTitle = (gName != null && !gName.trim().isEmpty()) ? gName : "Girl";
+		setTitle("Astrosoft 2.0 - Marriage Compatibility (" + boyTitle + " & " + girlTitle + ")");
 		viewManager.showView(View.COMPACTIBILITY_VIEW);
 	}
 
 	public void displayMarriageMatch(Horoscope boy, Horoscope girl) {
-
+		currentView = View.MARRIAGE_MATCH_VIEW;
+		onSwitchToUtilityView();
 		compactibility = new Compactibility(boy, girl);
 		actionMgr.enableAction(Command.PRINT, true);
+		String bName = (boy != null && boy.getPersonName() != null && !boy.getPersonName().trim().isEmpty()) ? boy.getPersonName() : "Boy";
+		String gName = (girl != null && girl.getPersonName() != null && !girl.getPersonName().trim().isEmpty()) ? girl.getPersonName() : "Girl";
+		setTitle("Astrosoft 2.0 - Marriage Match (" + bName + " & " + gName + ")");
 		viewManager.showView(View.MARRIAGE_MATCH_VIEW);
 	}
 
 	public void displayMarriageMatch(String bName, String gName, Rasi bRasi,
 			Rasi gRasi, Nakshathra bNak, Nakshathra gNak) {
-
+		currentView = View.MARRIAGE_MATCH_VIEW;
+		onSwitchToUtilityView();
 		compactibility = new Compactibility(bName, gName, bNak,
 				gNak, bRasi, gRasi);
 		actionMgr.enableAction(Command.PRINT, true);
+		String boyTitle = (bName != null && !bName.trim().isEmpty()) ? bName : "Boy";
+		String girlTitle = (gName != null && !gName.trim().isEmpty()) ? gName : "Girl";
+		setTitle("Astrosoft 2.0 - Marriage Match (" + boyTitle + " & " + girlTitle + ")");
 		viewManager.showView(View.MARRIAGE_MATCH_VIEW);
 	}
 
 	public void displayMuhurtha(Muhurtha m) {
-
+		currentView = View.MUHURTHA_VIEW;
+		onSwitchToUtilityView();
 		muhurtha = m;
+		setTitle("Astrosoft 2.0 - Muhurtha");
 		viewManager.showView(View.MUHURTHA_VIEW);
 		// Muhurtha m = new Muhurtha(today, Rasi.Mesha, Nakshathra.Mrigasira,
 		// false, false, 1);
@@ -770,31 +892,108 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 
 	public void newHoroscope() {
-
+		if (currentView == View.MY_MUHURTA_VIEW && myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
+			return;
+		}
+		if (!promptSaveIfModified(h)) {
+			return;
+		}
 		new BirthInputDialog(this);
 	}
 
 	public void openHoroscope() {
-
-		String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.OPEN, AstrosoftFileFilter.HOROSCOPE_EXTN);
+		log.info("openHoroscope() invoked - launching open file dialog");
+		String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.OPEN,
+				AstrosoftFileFilter.ALL_ASTROSOFT,
+				AstrosoftFileFilter.HOROSCOPE_EXTN,
+				AstrosoftFileFilter.MUHURTA_EXTN,
+				AstrosoftFileFilter.COMPACTIBILITY_EXTN);
 		
+		log.info("File selected from open dialog: " + selectedFile);
 		if (selectedFile != null) {
-			openHoroscope(selectedFile);
+			openDocument(selectedFile);
+		}
+	}
+
+	public void openDocument(String file) {
+		log.info("openDocument() invoked for: " + file);
+		if (file == null) return;
+		String lower = file.toLowerCase();
+		if (lower.endsWith(".asm")) {
+			openMuhurta(file);
+		} else if (lower.endsWith(".asc")) {
+			openCompactibility(file);
+		} else {
+			// Inspect root XML tag for .ash or any file format
+			try {
+				org.w3c.dom.Document doc = XMLHelper.parseXML(file);
+				if (doc != null && doc.getDocumentElement() != null) {
+					String rootName = doc.getDocumentElement().getNodeName();
+					if ("Muhurta".equalsIgnoreCase(rootName)) {
+						openMuhurta(file);
+						return;
+					} else if ("Compactibility".equalsIgnoreCase(rootName)) {
+						openCompactibility(file);
+						return;
+					}
+				}
+			} catch (Exception ignored) {}
+			openHoroscope(file);
+		}
+	}
+
+	public void openMuhurta(String file) {
+		log.info("openMuhurta() invoked for: " + file);
+		if (currentView != View.MY_MUHURTA_VIEW && h != null && !promptSaveIfModified(h)) {
+			log.info("openMuhurta() cancelled by promptSaveIfModified on Horoscope document");
+			return;
+		}
+		if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
+			log.info("openMuhurta() cancelled by promptSaveIfModified on Muhurta document");
+			return;
+		}
+		MuhurtaDocument doc = MuhurtaDocument.createFromFile(file);
+		if (doc != null) {
+			doc.setFilePath(file);
+			setTitle("Astrosoft 2.0 - " + new File(file).getName() + " [Muhurta]");
+			try {
+				getPreferences().setAstrosoftFilesDir(new File(file).getParent() + File.separator);
+			} catch (Exception e) {}
+			onSwitchToMuhurtaView();
+			viewManager.showView(View.MY_MUHURTA_VIEW);
+			getMyMuhurtaView().loadDocument(doc);
+			if (chartNotesPanel != null) {
+				chartNotesPanel.bindNotesOwner(doc);
+			}
+		} else {
+			OptionDialog.showDialog(" Invalid Muhurta File ", JOptionPane.ERROR_MESSAGE);
+			this.repaint();
+			this.setVisible(true);
 		}
 	}
 
 	public void openHoroscope(String horoscopeFile) {
+		log.info("openHoroscope(file) invoked for: " + horoscopeFile);
+		if (currentView == View.MY_MUHURTA_VIEW && myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
+			log.info("openHoroscope(file) cancelled by promptSaveIfModified on Muhurta document");
+			return;
+		}
+		if (!promptSaveIfModified(h)) {
+			log.info("openHoroscope(file) cancelled by promptSaveIfModified on Horoscope");
+			return;
+		}
 
 		h = Horoscope.createFromFile(horoscopeFile);
 
 		if (h != null) {
 			h.setFilePath(horoscopeFile);
+			h.setModified(false);
 			setTitle("Astrosoft 2.0 - " + new File(horoscopeFile).getName());
 			try {
 				getPreferences().setAstrosoftFilesDir(new File(horoscopeFile).getParent() + File.separator);
 			} catch (Exception e) {}
 			if (chartNotesPanel != null) {
-				chartNotesPanel.setHoroscope(h);
+				chartNotesPanel.bindNotesOwner(h);
 			}
 			enableActions(true);
 
@@ -804,54 +1003,180 @@ public class AstroSoft extends javax.swing.JFrame implements
 			this.setVisible(true);
 			return;
 		}
+		currentView = View.CHART_VIEW;
 		viewManager.showView(View.CHART_VIEW);
 	}
 
+	public boolean promptSaveIfModified(app.astrosoft.beans.NotesOwner owner) {
+		if (owner == null) {
+			return true;
+		}
+
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+		}
+
+		log.info("promptSaveIfModified for " + owner.getNotesOwnerTitle() + ", isModified=" + owner.isModified());
+
+		if (!owner.isModified()) {
+			return true;
+		}
+
+		String title = owner.getNotesOwnerTitle();
+		if (title == null || title.trim().isEmpty()) {
+			title = (owner instanceof Horoscope) ? "Horoscope" : "Muhurta";
+		}
+
+		int choice = (savePromptDelegate != null) ?
+				savePromptDelegate.askSave(title, this) :
+				JOptionPane.showOptionDialog(
+						this,
+						"Do you want to save changes to \"" + title + "\"?",
+						"Astrosoft 2.0",
+						JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.WARNING_MESSAGE,
+						null,
+						new Object[] { "Save", "Don't Save", "Cancel" },
+						"Save"
+				);
+
+		if (choice == 0) { // Save
+			if (owner instanceof Horoscope) {
+				return saveHoroscopeDirect();
+			} else if (owner instanceof MuhurtaDocument) {
+				return saveMuhurtaDirect();
+			}
+			return true;
+		} else if (choice == 1) { // Don't Save
+			owner.setModified(false);
+			return true;
+		} else { // Cancel or Closed (-1)
+			return false;
+		}
+	}
+
 	public void saveHoroscope() {
-
-		if (h != null){
-			if (chartNotesPanel != null) {
-				chartNotesPanel.flushToHoroscope();
-			}
-
-			String currentFile = h.getFilePath();
-			if (currentFile != null && !currentFile.trim().isEmpty()) {
-				h.saveToFile(currentFile);
-				setTitle("Astrosoft 2.0 - " + new File(currentFile).getName());
-				log.info("Saved horoscope directly to: " + currentFile);
-			} else {
-				saveAsHoroscope();
-			}
+		if (currentView == View.MY_MUHURTA_VIEW) {
+			saveMuhurtaDirect();
+		} else if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPACTIBILITY_VIEW) {
+			saveCompactibility();
+		} else if (h != null){
+			saveHoroscopeDirect();
 		}
 	}
 
 	public void saveAsHoroscope() {
-
-		if (h != null){
-			if (chartNotesPanel != null) {
-				chartNotesPanel.flushToHoroscope();
-			}
-
-			String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.HOROSCOPE_EXTN);
-			if (selectedFile != null) {
-				h.saveToFile(selectedFile);
-				setTitle("Astrosoft 2.0 - " + new File(selectedFile).getName());
-			}
+		if (currentView == View.MY_MUHURTA_VIEW) {
+			saveAsMuhurtaDirect();
+		} else if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPACTIBILITY_VIEW) {
+			saveAsCompactibility();
+		} else if (h != null){
+			saveAsHoroscopeDirect();
 		}
+	}
+
+	public void saveMuhurta() {
+		saveMuhurtaDirect();
+	}
+
+	public void saveAsMuhurta() {
+		saveAsMuhurtaDirect();
+	}
+
+	public boolean saveHoroscopeDirect() {
+		if (h == null) return true;
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+		}
+
+		String currentFile = h.getFilePath();
+		if (currentFile != null && !currentFile.trim().isEmpty()) {
+			h.saveToFile(currentFile);
+			setTitle("Astrosoft 2.0 - " + new File(currentFile).getName());
+			log.info("Saved horoscope directly to: " + currentFile);
+			return true;
+		} else {
+			return saveAsHoroscopeDirect();
+		}
+	}
+
+	public boolean saveAsHoroscopeDirect() {
+		if (h == null) return true;
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+		}
+
+		String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.HOROSCOPE_EXTN);
+		if (selectedFile != null) {
+			h.saveToFile(selectedFile);
+			setTitle("Astrosoft 2.0 - " + new File(selectedFile).getName());
+			return true;
+		}
+		return false;
+	}
+
+	public boolean saveMuhurtaDirect() {
+		if (myMuhurtaView == null) return true;
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+		}
+		MuhurtaDocument doc = myMuhurtaView.getDocument();
+		if (doc == null) return true;
+
+		String currentFile = doc.getFilePath();
+		if (currentFile != null && !currentFile.trim().isEmpty()) {
+			doc.saveToFile(currentFile);
+			setTitle("Astrosoft 2.0 - " + new File(currentFile).getName() + " [Muhurta]");
+			log.info("Saved Muhurta directly to: " + currentFile);
+			return true;
+		} else {
+			return saveAsMuhurtaDirect();
+		}
+	}
+
+	public boolean saveAsMuhurtaDirect() {
+		if (myMuhurtaView == null) return true;
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+		}
+		MuhurtaDocument doc = myMuhurtaView.getDocument();
+		if (doc == null) return true;
+
+		String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.MUHURTA_EXTN);
+		if (selectedFile != null) {
+			doc.saveToFile(selectedFile);
+			setTitle("Astrosoft 2.0 - " + new File(selectedFile).getName() + " [Muhurta]");
+			return true;
+		}
+		return false;
 	}
 
 	public void openCompactibility(){
 		String fileName = FileOps.openFileDialog(this, FileOps.FileDialogMode.OPEN, AstrosoftFileFilter.COMPACTIBILITY_EXTN);
-		
 		if (fileName != null) {
+			openCompactibility(fileName);
+		}
+	}
+
+	public void openCompactibility(String fileName){
+		if (fileName != null) {
+			if (currentView == View.MY_MUHURTA_VIEW && myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
+				return;
+			}
+			if (h != null && !promptSaveIfModified(h)) {
+				return;
+			}
 			compactibility = Compactibility.createFromXML(fileName);
 		
 			if (compactibility != null){
+				currentView = View.COMPACTIBILITY_VIEW;
+				onSwitchToUtilityView();
 				compactibility.setFilePath(fileName);
 				try {
 					getPreferences().setAstrosoftFilesDir(new File(fileName).getParent() + File.separator);
 				} catch (Exception e) {}
 				actionMgr.enableAction(Command.PRINT, true);
+				setTitle("Astrosoft 2.0 - " + new File(fileName).getName());
 				viewManager.showView(View.COMPACTIBILITY_VIEW);
 			}
 		}
@@ -885,6 +1210,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 				saveAsCompactibility();
 			}
 		}
+	}
+
+	public app.astrosoft.ui.comp.ChartNotesPanel getChartNotesPanel() {
+		return chartNotesPanel;
 	}
 
 	public void saveAsCompactibility(){
@@ -1019,30 +1348,111 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 
+	public app.astrosoft.ui.view.MyMuhurtaView getMyMuhurtaView() {
+		if (myMuhurtaView == null) {
+			myMuhurtaView = new app.astrosoft.ui.view.MyMuhurtaView(new Point(30, 20), h);
+		}
+		return myMuhurtaView;
+	}
+
+	public void onSwitchToMuhurtaView() {
+		currentView = View.MY_MUHURTA_VIEW;
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+			chartNotesPanel.bindNotesOwner(getMyMuhurtaView().getDocument());
+		}
+		actionMgr.enableAction(Command.NOTES, true);
+		actionMgr.enableAction(Command.SAVE, true);
+		actionMgr.enableAction(Command.SAVE_AS, true);
+		actionMgr.enableAction(Command.PRINT, true);
+		MuhurtaDocument doc = getMyMuhurtaView().getDocument();
+		if (doc != null && doc.getFilePath() != null) {
+			setTitle("Astrosoft 2.0 - " + new File(doc.getFilePath()).getName() + " [Muhurta]");
+		}
+	}
+
+	public void onSwitchToHoroscopeView() {
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+			if (h != null) {
+				chartNotesPanel.bindNotesOwner(h);
+			}
+		}
+		if (h != null) {
+			enableActions(true);
+			if (h.getFilePath() != null) {
+				setTitle("Astrosoft 2.0 - " + new File(h.getFilePath()).getName());
+			} else {
+				setTitle("Astrosoft 2.0 - " + (h.getPersonName() != null ? h.getPersonName() : "Horoscope") + " (Unsaved)");
+			}
+		} else {
+			enableActions(false);
+			setTitle("Astrosoft 2.0");
+		}
+	}
+
+	public void onSwitchToUtilityView() {
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+			chartNotesPanel.bindNotesOwner(null);
+		}
+		foldNotes();
+		if (floatingNotesDialog != null && floatingNotesDialog.isVisible()) {
+			floatingNotesDialog.setVisible(false);
+		}
+		actionMgr.enableAction(Command.NOTES, false);
+	}
+
+	public void onDocumentModified() {
+		actionMgr.enableAction(Command.SAVE, true);
+		actionMgr.enableAction(Command.SAVE_AS, true);
+	}
+
 	public void viewChanged(View view) {
 
+		currentView = view;
 		switch(view){
 
-			case EPHEMERIS_VIEW: eph = new Ephemeris(AstroUtil.getCalendar(), Mode.Daily);
-								 viewManager.showView(view);
-								 break;
+			case EPHEMERIS_VIEW:
+				onSwitchToUtilityView();
+				setTitle("Astrosoft 2.0 - Ephemeris");
+				eph = new Ephemeris(AstroUtil.getCalendar(), Mode.Daily);
+				viewManager.showView(view);
+				break;
 
-			case PANCHANG_VIEW: pan = new Panchang(today);
-			                    viewManager.showView(view);
-								break;
+			case PANCHANG_VIEW:
+				onSwitchToUtilityView();
+				setTitle("Astrosoft 2.0 - Panchang");
+				pan = new Panchang(today);
+				viewManager.showView(view);
+				break;
 			case MY_MUHURTA_VIEW:
-			                    viewManager.showView(view);
-								break;
+				onSwitchToMuhurtaView();
+				viewManager.showView(view);
+				break;
 
-			case COMPACTIBILITY_VIEW: new CompactibilityInputDialog(this);
-								break;
-			case MARRIAGE_MATCH_VIEW: new CompactibilityInputDialog(this, true);
-								break;
-			case MUHURTHA_VIEW: new MuhurthaInput(this);
-								break;
-								
-			
-			default: viewManager.showView(view);
+			case COMPACTIBILITY_VIEW:
+				onSwitchToUtilityView();
+				new CompactibilityInputDialog(this);
+				break;
+			case MARRIAGE_MATCH_VIEW:
+				onSwitchToUtilityView();
+				new CompactibilityInputDialog(this, true);
+				break;
+			case MUHURTHA_VIEW:
+				onSwitchToUtilityView();
+				setTitle("Astrosoft 2.0 - Muhurtha");
+				new MuhurthaInput(this);
+				break;
+			case FIND_NAME_VIEW:
+				onSwitchToUtilityView();
+				setTitle("Astrosoft 2.0 - Find Name");
+				viewManager.showView(view);
+				break;
+
+			default:
+				onSwitchToHoroscopeView();
+				viewManager.showView(view);
 		}
 	}
 
@@ -1083,10 +1493,27 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return preferences;
 	}
 
+	public View getCurrentView() {
+		return currentView;
+	}
+
    /**
 	 * @return Returns the horoscope.
 	 */
 	public Horoscope getHoroscope() {
+		if (currentView == View.MY_MUHURTA_VIEW && myMuhurtaView != null) {
+			MuhurtaProfile p1 = myMuhurtaView.getDocument().getPerson1();
+			if (p1 != null && p1.hasHoroscope()) {
+				return p1.getHoroscope();
+			}
+			MuhurtaProfile p2 = myMuhurtaView.getDocument().getPerson2();
+			if (p2 != null && p2.hasHoroscope()) {
+				return p2.getHoroscope();
+			}
+			if (myMuhurtaView.getOrCreateMuhurta() != null) {
+				return myMuhurtaView.getOrCreateMuhurta().getEventHoroscope();
+			}
+		}
 		return h;
 	}
 	
@@ -1150,7 +1577,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 				case PANCHANG_VIEW:
 					return new PanchangView(pan, new Point(30,20));
 				case MY_MUHURTA_VIEW:
-					return new app.astrosoft.ui.view.MyMuhurtaView(new Point(30,20), h);
+					return getMyMuhurtaView();
 				case EPHEMERIS_VIEW:
 					return new EphemerisView(eph, new Point(10,2));
 
@@ -1169,7 +1596,12 @@ public class AstroSoft extends javax.swing.JFrame implements
 					return new FindNameView();
 					
 				case YOGA_COMBINATIONS_VIEW: 
-					return new YogaCombinationsView(h.getTitle(),h.getYogaCombinations(),h.getPlanetaryInfo());
+					try {
+						return new YogaCombinationsView(h.getTitle(),h.getYogaCombinations(),h.getPlanetaryInfo());
+					} catch (Throwable t) {
+						log.log(java.util.logging.Level.WARNING, "Unable to compute Yoga combinations", t);
+						return new JPanel();
+					}
 				 
 			}
 			return null;

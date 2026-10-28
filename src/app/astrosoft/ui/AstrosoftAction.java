@@ -54,6 +54,7 @@ public class AstrosoftAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 
 		Command cmd = Command.valueOf(e.getActionCommand());
+		log.info("Action performed: " + cmd);
 
 		if (cmd.equals(Command.NEW)) {
 			handler.newHoroscope();
@@ -75,7 +76,7 @@ public class AstrosoftAction extends AbstractAction {
 		} else if (cmd.equals(Command.PRINT)) {
 			handler.printHoroscope();
 		} else if (cmd.equals(Command.EXIT)) {
-			System.exit(0);
+			handler.exitApplication();
 		} else if (cmd.equals(Command.EDIT_CHART)) {
 			handler.editHoroscope();
 		} else if (cmd.equals(Command.EDIT_COMPACTIBILITY)) {

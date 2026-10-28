@@ -54,6 +54,17 @@ public class AstrosoftExporter {
 
 				return Type.class.getResource("/resources/export/panchang2pdf.xsl").toString();
 			}
+		},
+		Muhurta {
+			@Override
+			public Exporter getExporter(String xmlFile) {
+				return new HoroscopeExporter(xmlFile);
+			}
+
+			@Override
+			public String getTemplate() {
+				return Type.class.getResource("/resources/export/horoscope2pdf.xsl").toString();
+			}
 		};
 
 		public abstract Exporter getExporter(String xmlFile);
