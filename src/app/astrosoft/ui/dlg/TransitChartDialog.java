@@ -82,8 +82,8 @@ public class TransitChartDialog extends AstrosoftDialog {
         chartHolder.setMaximumSize(new Dimension(Integer.MAX_VALUE, 318));
         contentPanel.add(chartHolder);
 
-        // Expandable table with 3 columns: Planet, Current Orb, Sign Change
-        String[] columnNames = {"Planet", "Current Orb", "Sign Change"};
+        // Expandable table with 3 columns: Planet, Sign Change, Date Change
+        String[] columnNames = {"Planet", "Sign Change", "Date Change"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -101,10 +101,11 @@ public class TransitChartDialog extends AstrosoftDialog {
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         detailsTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+        detailsTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
 
-        detailsTable.getColumnModel().getColumn(0).setPreferredWidth(75);
-        detailsTable.getColumnModel().getColumn(1).setPreferredWidth(95);
-        detailsTable.getColumnModel().getColumn(2).setPreferredWidth(150);
+        detailsTable.getColumnModel().getColumn(0).setPreferredWidth(65);
+        detailsTable.getColumnModel().getColumn(1).setPreferredWidth(140);
+        detailsTable.getColumnModel().getColumn(2).setPreferredWidth(145);
 
         detailsScrollPane = new JScrollPane(detailsTable);
         detailsScrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -211,7 +212,8 @@ public class TransitChartDialog extends AstrosoftDialog {
             return;
         }
         tableModel.setRowCount(0);
-        Map<Planet, Date> signChanges = computation.computeSignChanges(getSelectedInstant(), currentPlace, planetaryInfo);
+        Map<Planet, TransitChartComputation.SignTransition> transitions =
+                computation.computeSignTransitions(getSelectedInstant(), currentPlace, planetaryInfo);
 
         SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy, h:mm a");
         if (currentPlace != null && currentPlace.astrosoftTimeZone() != null) {
@@ -219,23 +221,13 @@ public class TransitChartDialog extends AstrosoftDialog {
         }
 
         for (Planet p : Planet.allPlanets()) {
-            Double pos = planetaryInfo != null ? planetaryInfo.getPlanetPosition(p) : null;
-            Boolean isRet = (planetaryInfo != null && planetaryInfo.getPlanetDirection() != null)
-                    ? planetaryInfo.getPlanetDirection().get(p)
-                    : Boolean.FALSE;
+            TransitChartComputation.SignTransition trans = transitions != null ? transitions.get(p) : null;
+            String signChangeStr = trans != null ? trans.getTransitionString() : "—";
+            String dateChangeStr = (trans != null && trans.getTransitionDate() != null)
+                    ? sdf.format(trans.getTransitionDate())
+                    : "—";
 
-            String orbStr = "—";
-            if (pos != null) {
-                orbStr = Chart.formatAbsoluteLongitude(pos);
-                if (Boolean.TRUE.equals(isRet) && !Planet.isNode(p)) {
-                    orbStr = orbStr + " (R)";
-                }
-            }
-
-            Date changeDate = signChanges != null ? signChanges.get(p) : null;
-            String changeStr = changeDate != null ? sdf.format(changeDate) : "—";
-
-            tableModel.addRow(new Object[]{p.toString(), orbStr, changeStr});
+            tableModel.addRow(new Object[]{p.toString(), signChangeStr, dateChangeStr});
         }
     }
 

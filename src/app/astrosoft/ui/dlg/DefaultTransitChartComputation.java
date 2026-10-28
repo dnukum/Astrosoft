@@ -36,6 +36,18 @@ public class DefaultTransitChartComputation implements TransitChartComputation {
 
     @Override
     public Map<Planet, Date> computeSignChanges(Date instant, Place place, PlanetaryInfo planetaryInfo) {
+        Map<Planet, SignTransition> transitions = computeSignTransitions(instant, place, planetaryInfo);
+        Map<Planet, Date> changes = new EnumMap<Planet, Date>(Planet.class);
+        for (Map.Entry<Planet, SignTransition> entry : transitions.entrySet()) {
+            if (entry.getValue() != null && entry.getValue().getTransitionDate() != null) {
+                changes.put(entry.getKey(), entry.getValue().getTransitionDate());
+            }
+        }
+        return changes;
+    }
+
+    @Override
+    public Map<Planet, SignTransition> computeSignTransitions(Date instant, Place place, PlanetaryInfo planetaryInfo) {
         if (instant == null || place == null) {
             return Collections.emptyMap();
         }
@@ -45,24 +57,33 @@ public class DefaultTransitChartComputation implements TransitChartComputation {
                 ? planetaryInfo.getPlanetPosition()
                 : sh.getPlanetaryPosition();
 
-        Map<Planet, Date> changes = new EnumMap<Planet, Date>(Planet.class);
+        Map<Planet, SignTransition> transitions = new EnumMap<Planet, SignTransition>(Planet.class);
         for (Planet p : Planet.allPlanets()) {
             Double pos = positions.get(p);
             if (pos != null) {
-                Date changeDate = getSignChangeDate(sh, p, pos, jdNow);
-                if (changeDate != null) {
-                    changes.put(p, changeDate);
+                SignTransition trans = getSignTransition(sh, p, pos, jdNow);
+                if (trans != null) {
+                    transitions.put(p, trans);
                 }
             }
         }
-        return changes;
+        return transitions;
     }
 
-    private Date getSignChangeDate(SwissHelper sh, Planet p, double pos, double jdNow) {
+    private SignTransition getSignTransition(SwissHelper sh, Planet p, double pos, double jdNow) {
         if (p == Planet.Ketu) {
             double rahuPos = (pos + 180.0) % 360.0;
-            return getSignChangeDate(sh, Planet.Rahu, rahuPos, jdNow);
+            SignTransition rahuTrans = getSignTransition(sh, Planet.Rahu, rahuPos, jdNow);
+            if (rahuTrans != null) {
+                Rasi ketuFrom = Rasi.ofDeg(pos);
+                Rasi ketuTo = rahuTrans.getToRasi().equals(rahuTrans.getFromRasi().previous())
+                        ? ketuFrom.previous()
+                        : ketuFrom.next();
+                return new SignTransition(ketuFrom, ketuTo, rahuTrans.getTransitionDate());
+            }
+            return null;
         }
+
         Rasi currentRasi = Rasi.ofDeg(pos);
         double nextForward = ((currentRasi.ordinal() + 1) * 30.0) % 360.0;
         double nextBackward = (currentRasi.ordinal() * 30.0) % 360.0;
@@ -73,16 +94,25 @@ public class DefaultTransitChartComputation implements TransitChartComputation {
         double tBwd = th.getTransit(nextBackward, searchJd);
 
         double targetJd = -1;
+        Rasi targetRasi = null;
         if (tFwd > jdNow && tBwd > jdNow) {
-            targetJd = Math.min(tFwd, tBwd);
+            if (tFwd < tBwd) {
+                targetJd = tFwd;
+                targetRasi = currentRasi.next();
+            } else {
+                targetJd = tBwd;
+                targetRasi = currentRasi.previous();
+            }
         } else if (tFwd > jdNow) {
             targetJd = tFwd;
+            targetRasi = currentRasi.next();
         } else if (tBwd > jdNow) {
             targetJd = tBwd;
+            targetRasi = currentRasi.previous();
         }
 
-        if (targetJd > 0) {
-            return SweDate.getDate(targetJd);
+        if (targetJd > 0 && targetRasi != null) {
+            return new SignTransition(currentRasi, targetRasi, SweDate.getDate(targetJd));
         }
         return null;
     }

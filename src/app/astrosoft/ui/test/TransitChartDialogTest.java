@@ -205,12 +205,12 @@ public class TransitChartDialogTest extends TestCase {
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals("Planet", table.getColumnName(0));
-        assertEquals("Current Orb", table.getColumnName(1));
-        assertEquals("Sign Change", table.getColumnName(2));
+        assertEquals("Sign Change", table.getColumnName(1));
+        assertEquals("Date Change", table.getColumnName(2));
 
         assertEquals(9, table.getRowCount()); // 9 grahas
         assertEquals("Sun", table.getValueAt(0, 0));
-        assertNotNull(table.getValueAt(0, 1));
+        assertEquals("Mesha -> Vrishabha", table.getValueAt(0, 1));
         assertNotNull(table.getValueAt(0, 2));
 
         dialog.dispose();
@@ -230,6 +230,19 @@ public class TransitChartDialogTest extends TestCase {
             Date change = changes.get(p);
             assertNotNull("Sign change date must be computed for " + p, change);
             assertTrue("Sign change date must be in future for " + p, change.after(now));
+        }
+
+        java.util.Map<Planet, TransitChartComputation.SignTransition> transitions = comp.computeSignTransitions(now, place, info);
+        assertNotNull(transitions);
+        assertEquals(9, transitions.size());
+        for (Planet p : Planet.allPlanets()) {
+            TransitChartComputation.SignTransition trans = transitions.get(p);
+            assertNotNull("SignTransition must be computed for " + p, trans);
+            assertNotNull("fromRasi must not be null for " + p, trans.getFromRasi());
+            assertNotNull("toRasi must not be null for " + p, trans.getToRasi());
+            assertTrue("Transition string should contain '->'", trans.getTransitionString().contains(" -> "));
+            assertNotNull("Transition date must not be null for " + p, trans.getTransitionDate());
+            assertTrue("Transition date must be in future for " + p, trans.getTransitionDate().after(now));
         }
     }
 
@@ -254,6 +267,20 @@ public class TransitChartDialogTest extends TestCase {
             java.util.Map<Planet, Date> map = new java.util.EnumMap<Planet, Date>(Planet.class);
             for (Planet p : Planet.allPlanets()) {
                 map.put(p, new Date(instant.getTime() + 86400000L));
+            }
+            return map;
+        }
+
+        @Override
+        public java.util.Map<Planet, TransitChartComputation.SignTransition> computeSignTransitions(
+                Date instant, Place place, PlanetaryInfo planetaryInfo) {
+            java.util.Map<Planet, TransitChartComputation.SignTransition> map =
+                    new java.util.EnumMap<Planet, TransitChartComputation.SignTransition>(Planet.class);
+            for (Planet p : Planet.allPlanets()) {
+                map.put(p, new TransitChartComputation.SignTransition(
+                        app.astrosoft.consts.Rasi.Mesha,
+                        app.astrosoft.consts.Rasi.Vrishabha,
+                        new Date(instant.getTime() + 86400000L)));
             }
             return map;
         }
