@@ -64,9 +64,30 @@ public class CompatibilityExporter extends AbstractExporter {
 			}
 
 			if (compatibility.getNotes() != null && !compatibility.getNotes().trim().isEmpty()) {
+				String rawNotes = compatibility.getNotes();
 				xmlWriter.add(xmlef.createStartElement(new javax.xml.namespace.QName(XmlConsts.XML_NS, XmlConsts.Notes), null, null));
-				xmlWriter.add(xmlef.createCData(compatibility.getNotes()));
+				xmlWriter.add(xmlef.createCData(rawNotes));
 				xmlWriter.add(xmlef.createEndElement(new javax.xml.namespace.QName(XmlConsts.XML_NS, XmlConsts.Notes), null));
+
+				String plainNotes = rawNotes.replaceAll("(?i)<br\\s*/?>", "\n")
+						.replaceAll("(?i)</p>\\s*<p[^>]*>", "\n")
+						.replaceAll("(?i)</?(p|div|tr|li)[^>]*>", "\n")
+						.replaceAll("<[^>]+>", "")
+						.replaceAll("&nbsp;", " ")
+						.replaceAll("&amp;", "&")
+						.replaceAll("&lt;", "<")
+						.replaceAll("&gt;", ">")
+						.replaceAll("&quot;", "\"");
+
+				String[] lines = plainNotes.split("\n");
+				for (String line : lines) {
+					String trimmed = line.trim();
+					if (!trimmed.isEmpty()) {
+						xmlWriter.add(xmlef.createStartElement(new javax.xml.namespace.QName(XmlConsts.XML_NS, "Note-Line"), null, null));
+						xmlWriter.add(xmlef.createCharacters(trimmed));
+						xmlWriter.add(xmlef.createEndElement(new javax.xml.namespace.QName(XmlConsts.XML_NS, "Note-Line"), null));
+					}
+				}
 			}
 
 			xmlWriter.add(xmlef.createEndElement(XmlConsts.COMPATIBILITY_TAG, null));

@@ -1751,8 +1751,14 @@ public class Compatibility implements Exportable, NotesOwner {
 	}
 
 	public String createDocumentName() {
+		String suffix = hasHoroscope() ? "MarriageMatch" : "MarriageCompatibility";
+		return createDocumentName(suffix);
+	}
 
-		return AstroSoft.getPreferences().getAstrosoftFilesDir() + boyName + "_" + girlName + "_" + "_Compatibility.pdf";
+	public String createDocumentName(String suffix) {
+		String b = (boyName != null && !boyName.trim().isEmpty()) ? boyName.trim() : "Boy";
+		String g = (girlName != null && !girlName.trim().isEmpty()) ? girlName.trim() : "Girl";
+		return AstroSoft.getPreferences().getAstrosoftFilesDir() + b + "_" + g + "__" + suffix + ".pdf";
 	}
 
 	public static void main(String[] args) {

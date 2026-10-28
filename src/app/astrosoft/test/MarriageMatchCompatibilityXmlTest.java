@@ -10,8 +10,11 @@ import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Horoscope;
+import app.astrosoft.export.AstrosoftExporter;
+import app.astrosoft.export.AstrosoftExporter.Type;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.view.ViewManager.View;
+import java.util.concurrent.FutureTask;
 
 public class MarriageMatchCompatibilityXmlTest {
 
@@ -242,5 +245,70 @@ public class MarriageMatchCompatibilityXmlTest {
         app.openDocument(starFile.getAbsolutePath());
         Assert.assertEquals("Star-only compatibility must route to COMPATIBILITY_VIEW",
                 View.COMPATIBILITY_VIEW, app.getCurrentView());
+    }
+
+    @Test
+    public void testPrintDialogTypeSeparationAndNaming() {
+        // MarriageMatch must be distinct and display "Marriage Match"
+        Assert.assertEquals("Marriage Match", Type.MarriageMatch.toString());
+        // Compatibility must display "Marriage Compatibility"
+        Assert.assertEquals("Marriage Compatibility", Type.Compatibility.toString());
+    }
+
+    @Test
+    public void testMarriageMatchPdfExportIncludesNotes() throws Exception {
+        Horoscope boy = createBoyHoroscope();
+        Horoscope girl = createGirlHoroscope();
+        Compatibility comp = new Compatibility(boy, girl);
+        comp.setNotes("Auspicious match. Excellent planetary alignment for prosperity and harmony.");
+
+        File tempDir = new File(System.getProperty("java.io.tmpdir"), "mm_export_test_" + System.currentTimeMillis());
+        tempDir.mkdirs();
+        try {
+            String base = new File(tempDir, "Rohit_Priya__MarriageMatch").getAbsolutePath();
+            FutureTask<Object> task = AstrosoftExporter.export(Type.MarriageMatch, comp, base, true, false, true);
+            task.get();
+
+            File xml = new File(base + ".xml");
+            File pdf = new File(base + ".pdf");
+
+            Assert.assertTrue("Exported XML must exist", xml.exists() && xml.length() > 0);
+            String xmlContent = new String(java.nio.file.Files.readAllBytes(xml.toPath()), "UTF-8");
+            Assert.assertTrue("XML must contain Notes CDATA", xmlContent.contains("<Notes><![CDATA["));
+            Assert.assertTrue("XML must contain Note-Line text", xmlContent.contains("<Note-Line>"));
+
+            Assert.assertTrue("PDF must exist", pdf.exists());
+            Assert.assertTrue("PDF must be a complete generated document (> 10 KB), was " + pdf.length(), pdf.length() > 10000);
+        } finally {
+            for (File f : tempDir.listFiles()) {
+                f.delete();
+            }
+            tempDir.delete();
+        }
+    }
+
+    @Test
+    public void testStarCompatibilityPdfExportWithoutNotes() throws Exception {
+        Compatibility starComp = new Compatibility("BoyStar", "GirlStar", Nakshathra.Ashwini, Nakshathra.Rohini, Rasi.Mesha, Rasi.Vrishabha);
+
+        File tempDir = new File(System.getProperty("java.io.tmpdir"), "star_export_test_" + System.currentTimeMillis());
+        tempDir.mkdirs();
+        try {
+            String base = new File(tempDir, "BoyStar_GirlStar__MarriageCompatibility").getAbsolutePath();
+            FutureTask<Object> task = AstrosoftExporter.export(Type.Compatibility, starComp, base, true, false, true);
+            task.get();
+
+            File xml = new File(base + ".xml");
+            File pdf = new File(base + ".pdf");
+
+            Assert.assertTrue("Exported XML must exist", xml.exists() && xml.length() > 0);
+            Assert.assertTrue("PDF must exist", pdf.exists());
+            Assert.assertTrue("PDF must be a complete generated document (> 5 KB), was " + pdf.length(), pdf.length() > 5000);
+        } finally {
+            for (File f : tempDir.listFiles()) {
+                f.delete();
+            }
+            tempDir.delete();
+        }
     }
 }

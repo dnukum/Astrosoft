@@ -28,6 +28,11 @@ public class AstrosoftExporter {
 
 				return Type.class.getResource("/resources/export/horoscope2pdf.xsl").toString();
 			}
+
+			@Override
+			public String toString() {
+				return "Horoscope";
+			}
 		},
 		Compatibility{
 			@Override
@@ -40,6 +45,29 @@ public class AstrosoftExporter {
 			public String getTemplate() {
 
 				return Type.class.getResource("/resources/export/compactibility2pdf.xsl").toString();
+			}
+
+			@Override
+			public String toString() {
+				return "Marriage Compatibility";
+			}
+		},
+		MarriageMatch{
+			@Override
+			public Exporter getExporter(String xmlFile) {
+
+				return new CompatibilityExporter(xmlFile);
+			}
+
+			@Override
+			public String getTemplate() {
+
+				return Type.class.getResource("/resources/export/compactibility2pdf.xsl").toString();
+			}
+
+			@Override
+			public String toString() {
+				return "Marriage Match";
 			}
 		},
 		Panchang {
@@ -54,6 +82,11 @@ public class AstrosoftExporter {
 
 				return Type.class.getResource("/resources/export/panchang2pdf.xsl").toString();
 			}
+
+			@Override
+			public String toString() {
+				return "Panchang";
+			}
 		},
 		Muhurta {
 			@Override
@@ -65,9 +98,15 @@ public class AstrosoftExporter {
 			public String getTemplate() {
 				return Type.class.getResource("/resources/export/horoscope2pdf.xsl").toString();
 			}
+
+			@Override
+			public String toString() {
+				return "Muhurta";
+			}
 		};
 
 		public static final Type Compactibility = Compatibility;
+		public static final Type MarriageCompatibility = Compatibility;
 
 		public abstract Exporter getExporter(String xmlFile);
 

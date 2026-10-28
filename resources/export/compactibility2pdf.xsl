@@ -97,6 +97,22 @@ xmlns:fo="http://www.w3.org/1999/XSL/Format" exclude-result-prefixes="fo">
 						
 			</xsl:if>
 
+			<xsl:if test="Note-Line">
+				<fo:page-sequence master-reference="SimplePage">
+					<xsl:call-template name="header-footer" />
+					<fo:flow flow-name="xsl-region-body">
+						<fo:block font-size="14pt" font-family="Helvetica" font-weight="bold" space-before="10pt" space-after="12pt" color="#000080" border-bottom="1pt solid #000080" padding-bottom="4pt">
+							Notes &amp; Observations
+						</fo:block>
+						<xsl:for-each select="Note-Line">
+							<fo:block font-size="10pt" font-family="Helvetica" line-height="15pt" space-after="8pt">
+								<xsl:value-of select="." />
+							</fo:block>
+						</xsl:for-each>
+					</fo:flow>
+				</fo:page-sequence>
+			</xsl:if>
+
 		</fo:root>
 	</xsl:template>
  
