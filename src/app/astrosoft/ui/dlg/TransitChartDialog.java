@@ -75,9 +75,11 @@ public class TransitChartDialog extends AstrosoftDialog {
         chartHolder = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 4));
         chartHolder.setAlignmentX(Component.CENTER_ALIGNMENT);
         chartHolder.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(6, 8, 6, 8),
+                BorderFactory.createEmptyBorder(6, 8, 4, 8),
                 BorderFactory.createLineBorder(new java.awt.Color(190, 185, 170), 1)
         ));
+        chartHolder.setPreferredSize(new Dimension(318, 318));
+        chartHolder.setMaximumSize(new Dimension(Integer.MAX_VALUE, 318));
         contentPanel.add(chartHolder);
 
         // Expandable table with 3 columns: Planet, Current Orb, Sign Change
@@ -109,7 +111,7 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsScrollPane.setPreferredSize(new Dimension(320, 206));
         detailsScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 206));
         detailsScrollPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(2, 10, 4, 10),
+                BorderFactory.createEmptyBorder(12, 10, 4, 10),
                 BorderFactory.createLineBorder(new java.awt.Color(190, 185, 170), 1)
         ));
         detailsScrollPane.setVisible(false);
@@ -151,7 +153,7 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsScrollPane.setVisible(isExpanded);
         if (isExpanded) {
             setMinimumSize(new Dimension(320, 520));
-            setSize(new Dimension(Math.max(getWidth(), 360), 620));
+            setSize(new Dimension(Math.max(getWidth(), 360), 595));
         } else {
             setMinimumSize(MIN_DLG_SIZE);
             setSize(new Dimension(getWidth(), 395));

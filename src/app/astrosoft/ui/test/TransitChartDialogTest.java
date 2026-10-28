@@ -171,6 +171,31 @@ public class TransitChartDialogTest extends TestCase {
         frame.dispose();
     }
 
+    public void testGapBetweenChartAndTableIsAbout20Pixels() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new StubTransitChartComputation());
+        dialog.setExpanded(true);
+        dialog.pack();
+        dialog.setSize(360, 595);
+        dialog.validate();
+
+        java.awt.Rectangle chartBounds = javax.swing.SwingUtilities.convertRectangle(
+                dialog.getChart().getParent(), dialog.getChart().getBounds(), dialog.getContentPane());
+        int chartBottomY = chartBounds.y + chartBounds.height;
+
+        javax.swing.JScrollPane scroll = (javax.swing.JScrollPane) dialog.getDetailsTable().getParent().getParent();
+        java.awt.Rectangle scrollBounds = javax.swing.SwingUtilities.convertRectangle(
+                scroll.getParent(), scroll.getBounds(), dialog.getContentPane());
+        int tableHeaderY = scrollBounds.y + 12 + 1; // 12px top margin + 1px border
+
+        int gap = tableHeaderY - chartBottomY;
+        assertTrue("Gap should be around 20px (was " + gap + ")", gap >= 18 && gap <= 22);
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
     public void testDetailsTableColumnsAndRows() {
         AstroSoft frame = new AstroSoft();
         Place place = AstroSoft.getPreferences().getPlace();
