@@ -118,6 +118,14 @@ public class Chart extends JPanel{
         return String.format(java.util.Locale.ROOT, "%03d:%02d", totalMinutes / 60, totalMinutes % 60);
     }
 
+    /** Format sign-relative degrees and whole arcminutes (00:00 to 29:59) as offset from start of rasi. */
+    public static String formatSignRelativeOrb(Double longitude) {
+        if (longitude == null || !Double.isFinite(longitude)) return null;
+        double signOffset = ((longitude % 30) + 30) % 30;
+        int totalMinutes = (int) Math.floor(signOffset * 60);
+        return String.format(java.util.Locale.ROOT, "%02d:%02d", totalMinutes / 60, totalMinutes % 60);
+    }
+
 	private void addHouseTables() {
 		
 		Set<Rasi> dataHouses = chartData.getHouses();
@@ -207,14 +215,19 @@ public class Chart extends JPanel{
                                 Planet planet = (Planet) value;
                                 PlanetChartData planetData = (PlanetChartData) chartData;
                                 app.astrosoft.consts.Nakshathra nak = planetData.getPlanetNakshathra(planet);
-                                String longitude = formatAbsoluteLongitude(planetData.getPlanetLongitude(planet));
-                                String orb = formatAbsoluteLongitude(planetData.getPlanetOrb(planet));
-                                StringBuilder text = new StringBuilder();
-                                if (orb != null) {
-                                    text.append("Orb ").append(orb);
+                                Double rawLong = planetData.getPlanetLongitude(planet);
+                                Double rawOrb = planetData.getPlanetOrb(planet);
+                                if (rawOrb == null) {
+                                    rawOrb = rawLong;
                                 }
-                                if (longitude != null) {
-                                    if (text.length() > 0) text.append(", ");
+                                String orb = formatSignRelativeOrb(rawOrb);
+                                String longitude = formatAbsoluteLongitude(rawLong);
+                                StringBuilder text = new StringBuilder();
+                                if (orb != null && longitude != null) {
+                                    text.append(orb).append(" (").append(longitude).append(")");
+                                } else if (orb != null) {
+                                    text.append(orb);
+                                } else if (longitude != null) {
                                     text.append(longitude);
                                 }
                                 if (nak != null) {

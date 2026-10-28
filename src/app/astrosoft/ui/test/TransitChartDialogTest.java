@@ -86,6 +86,11 @@ public class TransitChartDialogTest extends TestCase {
         frame.dispose();
     }
 
+    public void testTransitChartPlanetTooltipFormat() {
+        assertEquals("11:19", Chart.formatSignRelativeOrb(191.32));
+        assertEquals("191:19", Chart.formatAbsoluteLongitude(191.32));
+    }
+
     public void testApplyConfigUpdateChangesChartTime() {
         AstroSoft frame = new AstroSoft();
         Place place = AstroSoft.getPreferences().getPlace();

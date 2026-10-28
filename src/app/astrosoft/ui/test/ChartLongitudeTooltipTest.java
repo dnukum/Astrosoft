@@ -16,6 +16,8 @@ public class ChartLongitudeTooltipTest {
  public static void main(String[] args)throws Exception {
   SwingUtilities.invokeAndWait(()->{
    check("123:45".equals(Chart.formatAbsoluteLongitude(123.75)),"Absolute not sign-relative");
+   check("03:45".equals(Chart.formatSignRelativeOrb(123.75)),"Sign-relative orb offset");
+   check("11:19".equals(Chart.formatSignRelativeOrb(191.32)),"Sign-relative orb offset 191.32");
    check("000:00".equals(Chart.formatAbsoluteLongitude(360.0)),"Wrap");
    check("359:59".equals(Chart.formatAbsoluteLongitude(-0.001)),"Negative wrap and floor minutes");
    check("012:59".equals(Chart.formatAbsoluteLongitude(12.999)),"Truncate seconds, no carry");
@@ -26,7 +28,7 @@ public class ChartLongitudeTooltipTest {
    EnumMap<Planet,Double> longs=new EnumMap<>(Planet.class);longs.put(Planet.Sun,123.75);
    PlanetChartData data=new PlanetChartData(Varga.Rasi,positions,directions,stars,longs);
    longs.put(Planet.Sun,0.0);check(data.getPlanetLongitude(Planet.Sun)==123.75,"Snapshot");
-   check(hover(new Chart(data,new Dimension(360,320)),"Orb 123:45, 123:45, "+Nakshathra.Magam),"Sun hover found");
+   check(hover(new Chart(data,new Dimension(360,320)),"03:45 (123:45), "+Nakshathra.Magam),"Sun hover found");
    check(hover(new Chart(new PlanetChartData(Varga.Rasi,positions,directions,stars),new Dimension(360,320)),Nakshathra.Magam.toString()),"Legacy star-only");
   });
   System.out.println("ChartLongitudeTooltipTest: real hover, absolute minutes, wrap, truncation, missing data and snapshot passed");

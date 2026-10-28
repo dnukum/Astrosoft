@@ -15,8 +15,8 @@ public class ChartPlanetDetailsTooltipTest {
    check(text!=null,"Sun hover exists");
    check(text.contains(Nakshathra.Magam.toString()),"Nakshathra present: "+text);
    check(text.contains("123:45"),"Absolute longitude present: "+text);
-   check(text.toLowerCase(Locale.ENGLISH).contains("orb"),"Orb present: "+text);
-   check(text.toLowerCase(Locale.ENGLISH).contains("orb"),"Orb present: "+text);
+   check(text.contains("03:45"),"Sign offset present: "+text);
+   check(("03:45 (123:45), " + Nakshathra.Magam).equals(text),"Tooltip matches expected format: "+text);
   });
   System.out.println("ChartPlanetDetailsTooltipTest passed");
  }
