@@ -22,7 +22,8 @@ public interface XmlConsts {
 	public static final String Latitude = "Latitude";
 	public static final String TimeZone = "TimeZone";
 	public static final String dir = "dir";
-	public static final String Compactibility = "Compactibility";
+	public static final String Compatibility = "Compatibility";
+	public static final String Compactibility = "Compactibility"; // Legacy typo maintained for backward compatibility
 	public static final String Rasi = "Rasi";
 	public static final String Nakshathra = "Nakshathra";
 	public static final String hasHoroscope = "hasHoroscope";
@@ -76,6 +77,7 @@ public interface XmlConsts {
 	public static final QName SUB_DASA_TAG = new QName(XML_NS, "Sub-Dasa");
 	public static final QName ANTHARA_DASA_TAG = new QName(XML_NS, "Anthara-Dasa");
 	public static final QName DASA_TAG = new QName(XML_NS, "Dasa");
+	public static final QName COMPATIBILITY_TAG = new QName(XML_NS, Compatibility);
 	public static final QName COMPACTIBILITY_TAG = new QName(XML_NS, Compactibility);
 	public static final QName BOY_TAG = new QName(XML_NS, "Boy");
 	public static final QName GIRL_TAG = new QName(XML_NS, "Girl");

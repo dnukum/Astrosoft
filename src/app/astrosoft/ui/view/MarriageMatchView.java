@@ -66,7 +66,7 @@ import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.TableStyle;
 import app.astrosoft.consts.Varga;
-import app.astrosoft.core.Compactibility;
+import app.astrosoft.core.Compatibility;
 import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.comp.TitledTable;
 import app.astrosoft.ui.table.AstrosoftTable;
@@ -104,7 +104,7 @@ public class MarriageMatchView extends AstrosoftView {
 	private static final DecimalFormat DOSHA_FMT = new DecimalFormat("0.00");
 	private static final DecimalFormat PCT_FMT = new DecimalFormat("0.0'%'");
 
-	private final Compactibility c;
+	private final Compatibility c;
 	private ViewMode currentMode = ViewMode.DASHBOARD;
 	private Varga currentVarga = Varga.Rasi;
 
@@ -118,7 +118,7 @@ public class MarriageMatchView extends AstrosoftView {
 	private JPanel rightColPanel;
 	private JScrollPane dashboardScroll;
 
-	public MarriageMatchView(Compactibility c, Point loc) {
+	public MarriageMatchView(Compatibility c, Point loc) {
 		super(VIEW_SIZE, loc);
 		this.c = c;
 		initUI();
@@ -420,7 +420,7 @@ public class MarriageMatchView extends AstrosoftView {
 		card.add(Box.createVerticalStrut(6));
 
 		// 2. Kuta Table (12 Kutas + Total)
-		SortableTableModel kutaModel = new SortableTableModel(c.getKutaTableData(), Compactibility.getKutaTableColumnMetaData());
+		SortableTableModel kutaModel = new SortableTableModel(c.getKutaTableData(), Compatibility.getKutaTableColumnMetaData());
 		SortableTable kutaTable = new SortableTable(kutaModel, TableStyle.SCROLL);
 		int gainedIdx = kutaModel.getColumnIndex(AstrosoftTableColumn.KutaGained);
 		if (gainedIdx >= 0) {
@@ -458,7 +458,7 @@ public class MarriageMatchView extends AstrosoftView {
 		card.setBorder(createCardBorder("Dosha"));
 
 		final AstrosoftTable doshaTable = new AstrosoftTable(
-				new AstrosoftTableModel(c.getDoshaTableData(), Compactibility.getDoshaTableColumnMetaData()),
+				new AstrosoftTableModel(c.getDoshaTableData(), Compatibility.getDoshaTableColumnMetaData()),
 				TableStyle.STANDARD);
 		doshaTable.setRowColor(5, Color.RED);
 		doshaTable.setColumnNumberFormat(AstrosoftTableColumn.Boy, new java.text.DecimalFormat("00.00"));

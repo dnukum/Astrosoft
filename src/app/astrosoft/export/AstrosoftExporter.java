@@ -29,11 +29,11 @@ public class AstrosoftExporter {
 				return Type.class.getResource("/resources/export/horoscope2pdf.xsl").toString();
 			}
 		},
-		Compactibility{
+		Compatibility{
 			@Override
 			public Exporter getExporter(String xmlFile) {
 
-				return new CompactibilityExporter(xmlFile);
+				return new CompatibilityExporter(xmlFile);
 			}
 
 			@Override
@@ -66,6 +66,8 @@ public class AstrosoftExporter {
 				return Type.class.getResource("/resources/export/horoscope2pdf.xsl").toString();
 			}
 		};
+
+		public static final Type Compactibility = Compatibility;
 
 		public abstract Exporter getExporter(String xmlFile);
 

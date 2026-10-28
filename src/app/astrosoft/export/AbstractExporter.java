@@ -31,7 +31,7 @@ import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.consts.XmlConsts;
 import app.astrosoft.core.Ashtavarga;
-import app.astrosoft.core.Compactibility;
+import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.PanchangList;
 import app.astrosoft.core.ShadBala;
@@ -263,8 +263,8 @@ public abstract class AbstractExporter implements Exporter{
 		throw new UnsupportedOperationException("Operation export(horoscope) is not supported");
 	}
 
-	public void export(Compactibility compactibility) {
-		throw new UnsupportedOperationException("Operation export(compactibility) is not supported");
+	public void export(Compatibility compatibility) {
+		throw new UnsupportedOperationException("Operation export(compatibility) is not supported");
 
 	}
 	

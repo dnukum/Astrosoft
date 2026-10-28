@@ -11,7 +11,7 @@ import app.astrosoft.beans.HousePosition;
 import app.astrosoft.beans.PlanetChartData;
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.core.Ashtavarga;
-import app.astrosoft.core.Compactibility;
+import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.PanchangList;
 import app.astrosoft.core.ShadBala;
@@ -40,7 +40,7 @@ public interface Exporter {
 
 	public void export(Horoscope horoscope);
 
-	public void export(Compactibility compactibility);
+	public void export(Compatibility compatibility);
 	
 	public void export(PanchangList panchangList);
 

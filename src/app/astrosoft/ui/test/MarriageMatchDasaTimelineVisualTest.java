@@ -8,7 +8,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-import app.astrosoft.core.Compactibility;
+import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.ui.view.MarriageMatchView;
 
@@ -20,7 +20,7 @@ public class MarriageMatchDasaTimelineVisualTest {
 		Horoscope girl = new Horoscope("Mani", 10, 8, 1960, 5, 30,
 				77 + (44.00 / 60.00), 11 + (22.00 / 60.00), 5.5, "Erode, Tamil Nadu, India");
 
-		Compactibility c = new Compactibility(boy, girl);
+		Compatibility c = new Compatibility(boy, girl);
 
 		MarriageMatchView view = new MarriageMatchView(c, new Point(0, 0));
 		view.setTimelineVisible(true);

@@ -23,7 +23,7 @@ import app.astrosoft.consts.Kuta;
 import app.astrosoft.consts.Nadi;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Rasi;
-import app.astrosoft.core.Compactibility;
+import app.astrosoft.core.Compatibility;
 
 public class NadiKutaTest extends TestCase {
 
@@ -207,8 +207,8 @@ public class NadiKutaTest extends TestCase {
 							}
 						}
 
-						// Calculate using Compactibility
-						Compactibility comp = new Compactibility("Boy", "Girl",
+						// Calculate using Compatibility
+						Compatibility comp = new Compatibility("Boy", "Girl",
 								Nakshathra.ofIndex(bNak), bPada,
 								Nakshathra.ofIndex(gNak), gPada,
 								Rasi.Mesha, Rasi.Mesha);
@@ -249,7 +249,7 @@ public class NadiKutaTest extends TestCase {
 
 				int expectedScore = (bMacro != gMacro) ? 8 : 0;
 
-				Compactibility comp = new Compactibility("Boy", "Girl",
+				Compatibility comp = new Compatibility("Boy", "Girl",
 						Nakshathra.ofIndex(bNak), Nakshathra.ofIndex(gNak),
 						Rasi.Mesha, Rasi.Mesha);
 
@@ -272,7 +272,7 @@ public class NadiKutaTest extends TestCase {
 		// Mrigasira (4) is Madhya (Pitta). Mrigasira~2 is Vata!
 		// Even though Bharani~1 (Pitta) and Mrigasira~2 (Vata) have DIFFERENT Pada Nadis,
 		// because both stars are Madhya Nadi, score MUST be 0.
-		Compactibility comp = new Compactibility("Boy", "Girl",
+		Compatibility comp = new Compatibility("Boy", "Girl",
 				Nakshathra.Bharani, 1,
 				Nakshathra.Mrigasira, 2,
 				Rasi.Mesha, Rasi.Vrishabha);
@@ -287,7 +287,7 @@ public class NadiKutaTest extends TestCase {
 		// Both Aswini (0) and Punarvasu (6) are Vata (Adi).
 		// Aswini~1 is Vata. Punarvasu~2 is Pitta.
 		// Different Pada Nadis -> 4 points!
-		Compactibility comp = new Compactibility("Boy", "Girl",
+		Compatibility comp = new Compatibility("Boy", "Girl",
 				Nakshathra.Ashwini, 1,
 				Nakshathra.Punarpoosam, 2,
 				Rasi.Mesha, Rasi.Mithuna);
@@ -302,7 +302,7 @@ public class NadiKutaTest extends TestCase {
 		// Both Krittika (2) and Rohini (3) are Sleshma (Antya).
 		// Krittika~1 is Sleshma. Rohini~2 is Pitta.
 		// Different Pada Nadis -> 4 points!
-		Compactibility comp = new Compactibility("Boy", "Girl",
+		Compatibility comp = new Compatibility("Boy", "Girl",
 				Nakshathra.Krithika, 1,
 				Nakshathra.Rohini, 2,
 				Rasi.Mesha, Rasi.Vrishabha);

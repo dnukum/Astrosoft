@@ -36,15 +36,15 @@ public enum Command {
 
 	NEW ("New",KeyEvent.VK_N, KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyMaskHelper.MENU_MASK)),
 	OPEN ("Open",KeyEvent.VK_O, KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyMaskHelper.MENU_MASK )),
-	OPEN_COMPACTIBILITY ("Open Compactibility", KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyMaskHelper.MENU_MASK | KeyMaskHelper.SHIFT_MASK)),
+	OPEN_COMPATIBILITY ("Open Compatibility", KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyMaskHelper.MENU_MASK | KeyMaskHelper.SHIFT_MASK)),
 	SAVE ("Save",KeyEvent.VK_S,KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyMaskHelper.MENU_MASK)),
 	SAVE_AS ("Save As...", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyMaskHelper.MENU_MASK | KeyMaskHelper.SHIFT_MASK)),
-	SAVE_COMPACTIBILITY("Save Compactibility", KeyEvent.VK_C,KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyMaskHelper.MENU_MASK | KeyMaskHelper.SHIFT_MASK)),
+	SAVE_COMPATIBILITY("Save Compatibility", KeyEvent.VK_C,KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyMaskHelper.MENU_MASK | KeyMaskHelper.SHIFT_MASK)),
 	PRINT ("Print",KeyEvent.VK_P,KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyMaskHelper.MENU_MASK)),
 	EXIT ("Exit",KeyEvent.VK_Q,KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyMaskHelper.MENU_MASK)),
 
 	EDIT_CHART ("Chart Data",KeyEvent.VK_C),
-	EDIT_COMPACTIBILITY ("Compactibility",KeyEvent.VK_M),
+	EDIT_COMPATIBILITY ("Compatibility",KeyEvent.VK_M),
 	CHART_VIEW (View.CHART_VIEW.displayVal(),KeyEvent.VK_C),
 	DASAS_VIEW (View.DASAS_VIEW.displayVal(),KeyEvent.VK_D),
 	PLANET_POS_VIEW (View.PLANET_POS_VIEW.displayVal(),KeyEvent.VK_P),
@@ -56,11 +56,11 @@ public enum Command {
 	EPHEMERIS_VIEW (View.EPHEMERIS_VIEW.displayVal(),KeyEvent.VK_E),
 	PANCHANG_VIEW (View.PANCHANG_VIEW.displayVal(),KeyEvent.VK_G),
 		MY_MUHURTA_VIEW (View.MY_MUHURTA_VIEW.displayVal(),KeyEvent.VK_M),
-	COMPACTIBILITY_VIEW (View.COMPACTIBILITY_VIEW.displayVal(),KeyEvent.VK_M),
+	COMPATIBILITY_VIEW (View.COMPATIBILITY_VIEW.displayVal(),KeyEvent.VK_M),
 	MARRIAGE_MATCH_VIEW (View.MARRIAGE_MATCH_VIEW.displayVal(),KeyEvent.VK_R),
 	MUHURTHA_VIEW (View.MUHURTHA_VIEW.displayVal()),
 	//
-	//CMP_COMP ("Marriage Compactibility",KeyEvent.VK_M),
+	//CMP_COMP ("Marriage Compatibility",KeyEvent.VK_M),
 	//CMP_MUHURTHA ("Muhurtha"),
 
 	AY_LAH (Ayanamsa.LAHARI.ayaName()),
@@ -79,11 +79,18 @@ public enum Command {
 	IMPORT_NAME_DB(DisplayStrings.IMPORT_NAME_DB_STR),
 	IMPORT_NAME(DisplayStrings.IMPORT_NAME_STR),
 	EXPORT_HOROSCOPE_TO_PDF(DisplayStrings.EXPORT_HOROSCOPE_TO_PDF_STR),
-	EXPORT_COMPACTIBILITY_TO_PDF(DisplayStrings.EXPORT_COMPACTIBILITY_TO_PDF_STR),
+	EXPORT_COMPATIBILITY_TO_PDF(DisplayStrings.EXPORT_COMPATIBILITY_TO_PDF_STR),
 
 	ABOUT("About AstroSoft", KeyEvent.VK_A),
 	NOTES("Notes", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyMaskHelper.MENU_MASK))
 	;
+
+	// Backward compatibility aliases
+	public static final Command OPEN_COMPACTIBILITY = OPEN_COMPATIBILITY;
+	public static final Command SAVE_COMPACTIBILITY = SAVE_COMPATIBILITY;
+	public static final Command EDIT_COMPACTIBILITY = EDIT_COMPATIBILITY;
+	public static final Command COMPACTIBILITY_VIEW = COMPATIBILITY_VIEW;
+	public static final Command EXPORT_COMPACTIBILITY_TO_PDF = EXPORT_COMPATIBILITY_TO_PDF;
 
 	private String action;
 	private int mnemonic = -1;
@@ -138,7 +145,7 @@ public enum Command {
 	}
 
 	public static EnumSet<Command> editMenuItems(){
-		return EnumSet.range(EDIT_CHART, EDIT_COMPACTIBILITY);
+		return EnumSet.range(EDIT_CHART, EDIT_COMPATIBILITY);
 	}
 
 	public static EnumSet<Command> viewMenuItems(){
@@ -146,7 +153,7 @@ public enum Command {
 	}
 
 	public static EnumSet<Command> computeMenuItems(){
-		return EnumSet.range(COMPACTIBILITY_VIEW, MUHURTHA_VIEW);
+		return EnumSet.range(COMPATIBILITY_VIEW, MUHURTHA_VIEW);
 	}
 
 	public static EnumSet<Command> optionMenuItems(){
@@ -158,7 +165,7 @@ public enum Command {
 	}
 
 	public static EnumSet<Command> exportMenuItems(){
-		return EnumSet.range(EXPORT_HOROSCOPE_TO_PDF, EXPORT_COMPACTIBILITY_TO_PDF);
+		return EnumSet.range(EXPORT_HOROSCOPE_TO_PDF, EXPORT_COMPATIBILITY_TO_PDF);
 	}
 
 	public static EnumSet<Command> toolBarItems(){

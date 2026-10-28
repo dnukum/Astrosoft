@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
-import app.astrosoft.core.Compactibility;
+import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.ShadBala;
 import app.astrosoft.ui.view.MarriageMatchView;
@@ -24,15 +24,15 @@ public class MarriageMatchTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		// Test charts: Elango (Boy) & Mani (Girl) from Compactibility.main
+		// Test charts: Elango (Boy) & Mani (Girl) from Compatibility.main
 		boyHoroscope = new Horoscope("Elango", 17, 4, 1957, 7, 10,
 				77 + (44.00 / 60.00), 11 + (22.00 / 60.00), 5.5, "Erode");
 		girlHoroscope = new Horoscope("Mani", 10, 8, 1960, 5, 30,
 				77 + (44.00 / 60.00), 11 + (22.00 / 60.00), 5.5, "Erode");
 	}
 
-	public void testCompactibilityHoroscopeAccessors() {
-		Compactibility c = new Compactibility(boyHoroscope, girlHoroscope);
+	public void testCompatibilityHoroscopeAccessors() {
+		Compatibility c = new Compatibility(boyHoroscope, girlHoroscope);
 
 		assertTrue("Should have horoscope flag set to true", c.hasHoroscope());
 		assertNotNull("Boy horoscope must not be null", c.getBoyHoroscope());
@@ -57,7 +57,7 @@ public class MarriageMatchTest extends TestCase {
 	}
 
 	public void testDualShadBalaExtraction() {
-		Compactibility c = new Compactibility(boyHoroscope, girlHoroscope);
+		Compatibility c = new Compatibility(boyHoroscope, girlHoroscope);
 
 		ShadBala boyShadBala = c.getBoyHoroscope().getShadBala();
 		ShadBala girlShadBala = c.getGirlHoroscope().getShadBala();
@@ -96,7 +96,7 @@ public class MarriageMatchTest extends TestCase {
 	}
 
 	public void testMarriageMatchViewCreationAndModeSwitching() {
-		Compactibility c = new Compactibility(boyHoroscope, girlHoroscope);
+		Compatibility c = new Compatibility(boyHoroscope, girlHoroscope);
 		MarriageMatchView view = new MarriageMatchView(c, new Point(0, 0));
 
 		assertNotNull("MarriageMatchView instance should be created", view);
@@ -186,7 +186,7 @@ public class MarriageMatchTest extends TestCase {
 	}
 
 	public void testMarriageMatchViewWithQuickStarEntry() {
-		Compactibility quickComp = new Compactibility("Arun", "Divya",
+		Compatibility quickComp = new Compatibility("Arun", "Divya",
 				Nakshathra.Ashwini, Nakshathra.Bharani, Rasi.Mesha, Rasi.Mesha);
 
 		assertFalse("Quick entry should not have horoscope", quickComp.hasHoroscope());

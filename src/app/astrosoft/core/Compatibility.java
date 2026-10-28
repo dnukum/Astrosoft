@@ -42,8 +42,10 @@ import app.astrosoft.ui.table.TableData;
 import app.astrosoft.ui.table.TableDataFactory;
 import app.astrosoft.ui.table.TableRowData;
 import app.astrosoft.util.FileOps;
+import app.astrosoft.beans.NotesOwner;
+import org.w3c.dom.NodeList;
 
-public class Compactibility implements Exportable {
+public class Compatibility implements Exportable, NotesOwner {
 
 	private static enum KutaFile {
 		RasiKuta,
@@ -125,18 +127,22 @@ public class Compactibility implements Exportable {
 
 	private boolean hasHoroscope = false;
 
+	private String notes = "";
+
+	private boolean isModified = false;
+
 	/**
-	 * Creates a new instance of Compactibility with Star Quick Entry (Option A: Padas unspecified).
+	 * Creates a new instance of Compatibility with Star Quick Entry (Option A: Padas unspecified).
 	 */
-	public Compactibility(String boyName, String girlName, Nakshathra boyNak,
+	public Compatibility(String boyName, String girlName, Nakshathra boyNak,
 			Nakshathra girlNak, Rasi boyRasi, Rasi girlRasi) {
 		this(boyName, girlName, boyNak, 0, girlNak, 0, boyRasi, girlRasi);
 	}
 
 	/**
-	 * Creates a new instance of Compactibility with explicit Nakshatra Padas (1 to 4, or 0 if unspecified).
+	 * Creates a new instance of Compatibility with explicit Nakshatra Padas (1 to 4, or 0 if unspecified).
 	 */
-	public Compactibility(String boyName, String girlName, Nakshathra boyNak,
+	public Compatibility(String boyName, String girlName, Nakshathra boyNak,
 			int boyPada, Nakshathra girlNak, int girlPada, Rasi boyRasi, Rasi girlRasi) {
 
 		this.boyName = boyName;
@@ -159,7 +165,7 @@ public class Compactibility implements Exportable {
 		constructColumnMetaData();
 	}
 
-	public Compactibility(Horoscope b, Horoscope g) {
+	public Compatibility(Horoscope b, Horoscope g) {
 		this(b.getBirthData().name(), g.getBirthData().name(),
 				b.getNakshathra().getNak(), b.getNakshathra().getPada(),
 				g.getNakshathra().getNak(), g.getNakshathra().getPada(),
@@ -181,31 +187,50 @@ public class Compactibility implements Exportable {
 		hasHoroscope = true;
 	}
 
+	public String getNotes() {
+		return notes != null ? notes : "";
+	}
+
+	public void setNotes(String notes) {
+		this.notes = (notes != null) ? notes : "";
+		this.isModified = true;
+	}
+
+	public boolean isModified() {
+		return isModified;
+	}
+
+	public void setModified(boolean modified) {
+		this.isModified = modified;
+	}
+
+	public String getNotesOwnerTitle() {
+		String b = (boyName != null && !boyName.trim().isEmpty()) ? boyName : "Boy";
+		String g = (girlName != null && !girlName.trim().isEmpty()) ? girlName : "Girl";
+		return "Notes — " + b + " & " + g;
+	}
+
 	public void saveToXML(String fileName){
 
 		Document doc = XMLHelper.createDOM();
-		Element compElement = XMLHelper.addRootElement(doc, XmlConsts.Compactibility);
-		XMLHelper.addAttribute(compElement, XmlConsts.hasHoroscope, "true");
+		Element compElement = XMLHelper.addRootElement(doc, XmlConsts.Compatibility);
+		XMLHelper.addAttribute(compElement, XmlConsts.hasHoroscope, String.valueOf(hasHoroscope));
 
 		if (hasHoroscope){
 
 			compElement.appendChild(boyBirthData.toXMLElement(doc, XmlConsts.BoyData));
 			compElement.appendChild(girlBirthData.toXMLElement(doc, XmlConsts.GirlData));
-			XMLHelper.addAttribute(compElement, XmlConsts.hasHoroscope, "true");
 
 		}else{
-
-			XMLHelper.addAttribute(compElement, XmlConsts.hasHoroscope, "false");
 
 			Element boyElement = doc.createElement(XmlConsts.BoyData);
 			Element girlElement = doc.createElement(XmlConsts.GirlData);
 
 			XMLHelper.addElement(doc, boyElement, XmlConsts.Name, boyName);
-			XMLHelper.addElement(doc, boyElement, XmlConsts.Name, girlName);
-
 			XMLHelper.addElement(doc, boyElement, XmlConsts.Rasi, boyRasi().name());
 			XMLHelper.addElement(doc, boyElement, XmlConsts.Nakshathra, boyNak().name());
 
+			XMLHelper.addElement(doc, girlElement, XmlConsts.Name, girlName);
 			XMLHelper.addElement(doc, girlElement, XmlConsts.Rasi, girlRasi().name());
 			XMLHelper.addElement(doc, girlElement, XmlConsts.Nakshathra, girlNak().name());
 
@@ -213,8 +238,15 @@ public class Compactibility implements Exportable {
 			compElement.appendChild(girlElement);
 		}
 
+		if (notes != null && !notes.trim().isEmpty()) {
+			Element notesElement = doc.createElement(XmlConsts.Notes);
+			notesElement.appendChild(doc.createCDATASection(notes));
+			compElement.appendChild(notesElement);
+		}
+
 		XMLHelper.saveXML(doc, fileName);
 		this.setFilePath(fileName);
+		this.isModified = false;
 	}
 
 	public String getFilePath() {
@@ -225,29 +257,33 @@ public class Compactibility implements Exportable {
 		this.filePath = (filePath != null) ? new File(filePath).getAbsolutePath() : null;
 	}
 
-	public static Compactibility createFromXML(String fileName){
+	public static Compatibility createFromXML(String fileName){
 
 		Document doc = XMLHelper.parseXML(fileName);
+		if (doc == null || doc.getDocumentElement() == null) {
+			return null;
+		}
 
-		Element compElement = (Element) doc.getChildNodes().item(0);
+		Element compElement = doc.getDocumentElement();
 		boolean hasHorosocope = Boolean.valueOf(compElement.getAttribute(XmlConsts.hasHoroscope));
 
-		Node boy = compElement.getChildNodes().item(0);
+		NodeList boyNodes = compElement.getElementsByTagName(XmlConsts.BoyData);
+		NodeList girlNodes = compElement.getElementsByTagName(XmlConsts.GirlData);
+		Node boy = (boyNodes != null && boyNodes.getLength() > 0) ? boyNodes.item(0) : compElement.getChildNodes().item(0);
+		Node girl = (girlNodes != null && girlNodes.getLength() > 0) ? girlNodes.item(0) : compElement.getChildNodes().item(1);
 
-		Node girl = compElement.getChildNodes().item(1);
-
-		Compactibility c;
+		Compatibility c;
 
 		if (hasHorosocope){
 
-			c = new Compactibility(new Horoscope(BirthData.valueOfXMLNode(boy)), new Horoscope(BirthData.valueOfXMLNode(girl)));
+			c = new Compatibility(new Horoscope(BirthData.valueOfXMLNode(boy)), new Horoscope(BirthData.valueOfXMLNode(girl)));
 
 		}else{
 
 			Map<String, String> boyElements = XMLHelper.getChildElements(boy);
 			Map<String, String> girlElements = XMLHelper.getChildElements(girl);
 
-			c = new Compactibility(
+			c = new Compatibility(
 					boyElements.get(XmlConsts.Name),
 					girlElements.get(XmlConsts.Name),
 					Nakshathra.valueOf(boyElements.get(XmlConsts.Nakshathra)),
@@ -255,10 +291,15 @@ public class Compactibility implements Exportable {
 					Rasi.valueOf(boyElements.get(XmlConsts.Rasi)),
 					Rasi.valueOf(girlElements.get(XmlConsts.Rasi))
 					);
-			}
+		}
 
 		if (c != null) {
+			NodeList notesNodes = compElement.getElementsByTagName(XmlConsts.Notes);
+			if (notesNodes != null && notesNodes.getLength() > 0) {
+				c.notes = notesNodes.item(0).getTextContent();
+			}
 			c.setFilePath(fileName);
+			c.isModified = false;
 		}
 		return c;
 	}
@@ -1706,12 +1747,12 @@ public class Compactibility implements Exportable {
 	}
 
 	public String getTitle(){
-		return "Compactibility Report of " + boyName + " and " + girlName;
+		return "Compatibility Report of " + boyName + " and " + girlName;
 	}
 
 	public String createDocumentName() {
 
-		return AstroSoft.getPreferences().getAstrosoftFilesDir() + boyName + "_" + girlName + "_" + "_Compactibility.pdf";
+		return AstroSoft.getPreferences().getAstrosoftFilesDir() + boyName + "_" + girlName + "_" + "_Compatibility.pdf";
 	}
 
 	public static void main(String[] args) {
@@ -1730,7 +1771,7 @@ public class Compactibility implements Exportable {
 		Horoscope g = new Horoscope("Mani", 10, 8, 1960, 5, 30,
 				77 + (44.00 / 60.00), 11 + (22.00 / 60.00), 5.5, "Erode");
 
-		Compactibility c = new Compactibility(b, g);
+		Compatibility c = new Compatibility(b, g);
 
 		for (Kuta k : Kuta.values()) {
 
@@ -1769,7 +1810,7 @@ public class Compactibility implements Exportable {
 
 						// System.out.println(cnt++ + " - [ " + r1 + " , " + c1
 						// + " ] [ " + r2 + " , " + c2 + " ]");
-						Compactibility c = new Compactibility(null, null, Nakshathra
+						Compatibility c = new Compatibility(null, null, Nakshathra
 								.ofIndex(c1), Nakshathra.ofIndex(c2), Rasi
 								.ofIndex(r1), Rasi.ofIndex(r2));
 

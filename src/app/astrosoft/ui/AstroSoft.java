@@ -42,7 +42,7 @@ import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.consts.Varga;
-import app.astrosoft.core.Compactibility;
+import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Ephemeris;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.Muhurtha;
@@ -58,7 +58,7 @@ import app.astrosoft.ui.comp.DateListener;
 import app.astrosoft.ui.dlg.AboutDialog;
 import app.astrosoft.ui.dlg.BirthInputDialog;
 import app.astrosoft.util.Version;
-import app.astrosoft.ui.dlg.CompactibilityInputDialog;
+import app.astrosoft.ui.dlg.CompatibilityInputDialog;
 import app.astrosoft.ui.dlg.ExportDialog;
 import app.astrosoft.ui.dlg.MuhurthaInput;
 import app.astrosoft.ui.dlg.ComputeNumberDialog;
@@ -69,7 +69,7 @@ import app.astrosoft.ui.dlg.TimeInputDialog;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.ui.view.AshtavargaView;
 import app.astrosoft.ui.view.BhavaView;
-import app.astrosoft.ui.view.CompactibilityView;
+import app.astrosoft.ui.view.CompatibilityView;
 import app.astrosoft.ui.view.EphemerisView;
 import app.astrosoft.ui.view.FindNameView;
 import app.astrosoft.ui.view.InfoView;
@@ -127,7 +127,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	private ViewManager viewManager;
 
-	private Compactibility compactibility;
+	private Compatibility compatibility;
 
 	private Muhurtha muhurtha;
 
@@ -471,6 +471,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	public boolean canExit() {
 		log.info("canExit() invoked!");
+		if (compatibility != null && !promptSaveIfModified(compatibility)) {
+			return false;
+		}
 		if (currentView == View.MY_MUHURTA_VIEW) {
 			if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
 				return false;
@@ -832,52 +835,109 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	}
 
-	public void displayCompactibility(Horoscope boy, Horoscope girl) {
-		currentView = View.COMPACTIBILITY_VIEW;
-		onSwitchToUtilityView();
-		compactibility = new Compactibility(boy, girl);
+	public void onSwitchToMarriageMatchView() {
+		currentView = View.MARRIAGE_MATCH_VIEW;
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+			chartNotesPanel.bindNotesOwner(compatibility);
+		}
+		actionMgr.enableAction(Command.NOTES, true);
+		actionMgr.enableAction(Command.SAVE, true);
+		actionMgr.enableAction(Command.SAVE_AS, true);
 		actionMgr.enableAction(Command.PRINT, true);
-		String bName = (boy != null && boy.getPersonName() != null && !boy.getPersonName().trim().isEmpty()) ? boy.getPersonName() : "Boy";
-		String gName = (girl != null && girl.getPersonName() != null && !girl.getPersonName().trim().isEmpty()) ? girl.getPersonName() : "Girl";
-		setTitle("Astrosoft 2.0 - Marriage Compatibility (" + bName + " & " + gName + ")");
-		viewManager.showView(View.COMPACTIBILITY_VIEW);
+		updateMarriageMatchTitle();
 	}
 
-	public void displayCompactibility(String bName, String gName, Rasi bRasi,
-			Rasi gRasi, Nakshathra bNak, Nakshathra gNak) {
-		currentView = View.COMPACTIBILITY_VIEW;
-		onSwitchToUtilityView();
-		compactibility = new Compactibility(bName, gName, bNak,
-				gNak, bRasi, gRasi);
+	public void onSwitchToCompatibilityView() {
+		currentView = View.COMPATIBILITY_VIEW;
+		if (chartNotesPanel != null) {
+			chartNotesPanel.flushToOwner();
+			chartNotesPanel.bindNotesOwner(compatibility);
+		}
+		actionMgr.enableAction(Command.NOTES, true);
+		actionMgr.enableAction(Command.SAVE, true);
+		actionMgr.enableAction(Command.SAVE_AS, true);
 		actionMgr.enableAction(Command.PRINT, true);
-		String boyTitle = (bName != null && !bName.trim().isEmpty()) ? bName : "Boy";
-		String girlTitle = (gName != null && !gName.trim().isEmpty()) ? gName : "Girl";
-		setTitle("Astrosoft 2.0 - Marriage Compatibility (" + boyTitle + " & " + girlTitle + ")");
-		viewManager.showView(View.COMPACTIBILITY_VIEW);
+		updateCompatibilityTitle();
+	}
+
+	public void updateMarriageMatchTitle() {
+		if (compatibility != null) {
+			String bName = (compatibility.getBoyName() != null && !compatibility.getBoyName().trim().isEmpty()) ? compatibility.getBoyName() : "Boy";
+			String gName = (compatibility.getGirlName() != null && !compatibility.getGirlName().trim().isEmpty()) ? compatibility.getGirlName() : "Girl";
+			if (compatibility.getFilePath() != null) {
+				setTitle("Astrosoft 2.0 - " + new File(compatibility.getFilePath()).getName() + " [Marriage Match]");
+			} else {
+				setTitle("Astrosoft 2.0 - Marriage Match (" + bName + " & " + gName + ")");
+			}
+		}
+	}
+
+	public void updateCompatibilityTitle() {
+		if (compatibility != null) {
+			String bName = (compatibility.getBoyName() != null && !compatibility.getBoyName().trim().isEmpty()) ? compatibility.getBoyName() : "Boy";
+			String gName = (compatibility.getGirlName() != null && !compatibility.getGirlName().trim().isEmpty()) ? compatibility.getGirlName() : "Girl";
+			if (compatibility.getFilePath() != null) {
+				setTitle("Astrosoft 2.0 - " + new File(compatibility.getFilePath()).getName() + " [Compatibility]");
+			} else {
+				setTitle("Astrosoft 2.0 - Marriage Compatibility (" + bName + " & " + gName + ")");
+			}
+		}
+	}
+
+	public void displayCompatibility(Horoscope boy, Horoscope girl) {
+		if (h != null && !promptSaveIfModified(h)) return;
+		if (compatibility != null && !promptSaveIfModified(compatibility)) return;
+		if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) return;
+
+		compatibility = new Compatibility(boy, girl);
+		compatibility.setModified(false);
+		onSwitchToCompatibilityView();
+		viewManager.showView(View.COMPATIBILITY_VIEW);
+	}
+
+	public void displayCompatibility(String bName, String gName, Rasi bRasi,
+			Rasi gRasi, Nakshathra bNak, Nakshathra gNak) {
+		if (h != null && !promptSaveIfModified(h)) return;
+		if (compatibility != null && !promptSaveIfModified(compatibility)) return;
+		if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) return;
+
+		compatibility = new Compatibility(bName, gName, bNak, gNak, bRasi, gRasi);
+		compatibility.setModified(false);
+		onSwitchToCompatibilityView();
+		viewManager.showView(View.COMPATIBILITY_VIEW);
 	}
 
 	public void displayMarriageMatch(Horoscope boy, Horoscope girl) {
-		currentView = View.MARRIAGE_MATCH_VIEW;
-		onSwitchToUtilityView();
-		compactibility = new Compactibility(boy, girl);
-		actionMgr.enableAction(Command.PRINT, true);
-		String bName = (boy != null && boy.getPersonName() != null && !boy.getPersonName().trim().isEmpty()) ? boy.getPersonName() : "Boy";
-		String gName = (girl != null && girl.getPersonName() != null && !girl.getPersonName().trim().isEmpty()) ? girl.getPersonName() : "Girl";
-		setTitle("Astrosoft 2.0 - Marriage Match (" + bName + " & " + gName + ")");
+		if (h != null && !promptSaveIfModified(h)) return;
+		if (compatibility != null && !promptSaveIfModified(compatibility)) return;
+		if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) return;
+
+		compatibility = new Compatibility(boy, girl);
+		compatibility.setModified(false);
+		onSwitchToMarriageMatchView();
 		viewManager.showView(View.MARRIAGE_MATCH_VIEW);
 	}
 
 	public void displayMarriageMatch(String bName, String gName, Rasi bRasi,
 			Rasi gRasi, Nakshathra bNak, Nakshathra gNak) {
-		currentView = View.MARRIAGE_MATCH_VIEW;
-		onSwitchToUtilityView();
-		compactibility = new Compactibility(bName, gName, bNak,
-				gNak, bRasi, gRasi);
-		actionMgr.enableAction(Command.PRINT, true);
-		String boyTitle = (bName != null && !bName.trim().isEmpty()) ? bName : "Boy";
-		String girlTitle = (gName != null && !gName.trim().isEmpty()) ? gName : "Girl";
-		setTitle("Astrosoft 2.0 - Marriage Match (" + boyTitle + " & " + girlTitle + ")");
+		if (h != null && !promptSaveIfModified(h)) return;
+		if (compatibility != null && !promptSaveIfModified(compatibility)) return;
+		if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) return;
+
+		compatibility = new Compatibility(bName, gName, bNak, gNak, bRasi, gRasi);
+		compatibility.setModified(false);
+		onSwitchToMarriageMatchView();
 		viewManager.showView(View.MARRIAGE_MATCH_VIEW);
+	}
+
+	public void displayCompactibility(Horoscope boy, Horoscope girl) {
+		displayCompatibility(boy, girl);
+	}
+
+	public void displayCompactibility(String bName, String gName, Rasi bRasi,
+			Rasi gRasi, Nakshathra bNak, Nakshathra gNak) {
+		displayCompatibility(bName, gName, bRasi, gRasi, bNak, gNak);
 	}
 
 	public void displayMuhurtha(Muhurtha m) {
@@ -922,7 +982,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (lower.endsWith(".asm")) {
 			openMuhurta(file);
 		} else if (lower.endsWith(".asc")) {
-			openCompactibility(file);
+			openCompatibility(file);
 		} else {
 			// Inspect root XML tag for .ash or any file format
 			try {
@@ -932,8 +992,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 					if ("Muhurta".equalsIgnoreCase(rootName)) {
 						openMuhurta(file);
 						return;
-					} else if ("Compactibility".equalsIgnoreCase(rootName)) {
-						openCompactibility(file);
+					} else if ("Compatibility".equalsIgnoreCase(rootName) || "Compactibility".equalsIgnoreCase(rootName)) {
+						openCompatibility(file);
 						return;
 					}
 				}
@@ -1045,6 +1105,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 				return saveHoroscopeDirect();
 			} else if (owner instanceof MuhurtaDocument) {
 				return saveMuhurtaDirect();
+			} else if (owner instanceof Compatibility) {
+				saveCompatibility();
+				return !owner.isModified();
 			}
 			return true;
 		} else if (choice == 1) { // Don't Save
@@ -1058,8 +1121,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 	public void saveHoroscope() {
 		if (currentView == View.MY_MUHURTA_VIEW) {
 			saveMuhurtaDirect();
-		} else if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPACTIBILITY_VIEW) {
-			saveCompactibility();
+		} else if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPATIBILITY_VIEW) {
+			saveCompatibility();
 		} else if (h != null){
 			saveHoroscopeDirect();
 		}
@@ -1068,8 +1131,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 	public void saveAsHoroscope() {
 		if (currentView == View.MY_MUHURTA_VIEW) {
 			saveAsMuhurtaDirect();
-		} else if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPACTIBILITY_VIEW) {
-			saveAsCompactibility();
+		} else if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPATIBILITY_VIEW) {
+			saveAsCompatibility();
 		} else if (h != null){
 			saveAsHoroscopeDirect();
 		}
@@ -1151,14 +1214,18 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return false;
 	}
 
-	public void openCompactibility(){
-		String fileName = FileOps.openFileDialog(this, FileOps.FileDialogMode.OPEN, AstrosoftFileFilter.COMPACTIBILITY_EXTN);
+	public void openCompatibility(){
+		String fileName = FileOps.openFileDialog(this, FileOps.FileDialogMode.OPEN, AstrosoftFileFilter.COMPATIBILITY_EXTN);
 		if (fileName != null) {
-			openCompactibility(fileName);
+			openCompatibility(fileName);
 		}
 	}
 
-	public void openCompactibility(String fileName){
+	public void openCompactibility(){
+		openCompatibility();
+	}
+
+	public void openCompatibility(String fileName){
 		if (fileName != null) {
 			if (currentView == View.MY_MUHURTA_VIEW && myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
 				return;
@@ -1166,66 +1233,101 @@ public class AstroSoft extends javax.swing.JFrame implements
 			if (h != null && !promptSaveIfModified(h)) {
 				return;
 			}
-			compactibility = Compactibility.createFromXML(fileName);
+			if (compatibility != null && !promptSaveIfModified(compatibility)) {
+				return;
+			}
+			compatibility = Compatibility.createFromXML(fileName);
 		
-			if (compactibility != null){
-				currentView = View.COMPACTIBILITY_VIEW;
-				onSwitchToUtilityView();
-				compactibility.setFilePath(fileName);
+			if (compatibility != null){
+				compatibility.setFilePath(fileName);
 				try {
 					getPreferences().setAstrosoftFilesDir(new File(fileName).getParent() + File.separator);
 				} catch (Exception e) {}
-				actionMgr.enableAction(Command.PRINT, true);
-				setTitle("Astrosoft 2.0 - " + new File(fileName).getName());
-				viewManager.showView(View.COMPACTIBILITY_VIEW);
+				if (compatibility.hasHoroscope()) {
+					onSwitchToMarriageMatchView();
+					viewManager.showView(View.MARRIAGE_MATCH_VIEW);
+				} else {
+					onSwitchToCompatibilityView();
+					viewManager.showView(View.COMPATIBILITY_VIEW);
+				}
+			}
+		}
+	}
+
+	public void openCompactibility(String fileName){
+		openCompatibility(fileName);
+	}
+
+	public void editCompatibility(){
+		if (compatibility != null){
+			if (compatibility.hasHoroscope()){
+				new CompatibilityInputDialog(this, compatibility.getBoyBirthData(), compatibility.getGirlBirthData());
+			}else{
+				new CompatibilityInputDialog(this,
+						compatibility.getBoyName(),
+						compatibility.getGirlName(),
+						compatibility.getBoyRasi(),
+						compatibility.getGirlRasi(),
+						compatibility.getBoyNak(),
+						compatibility.getGirlNak());
 			}
 		}
 	}
 
 	public void editCompactibility(){
+		editCompatibility();
+	}
 
-		if (compactibility != null){
-			if (compactibility.hasHoroscope()){
-				new CompactibilityInputDialog(this, compactibility.getBoyBirthData(), compactibility.getGirlBirthData());
-			}else{
-				new CompactibilityInputDialog(this,
-						compactibility.getBoyName(),
-						compactibility.getGirlName(),
-						compactibility.getBoyRasi(),
-						compactibility.getGirlRasi(),
-						compactibility.getBoyNak(),
-						compactibility.getGirlNak());
+	public void saveCompatibility(){
+		if (compatibility != null){
+			if (chartNotesPanel != null) {
+				chartNotesPanel.flushToOwner();
+			}
+			String currentFile = compatibility.getFilePath();
+			if (currentFile != null && !currentFile.trim().isEmpty()) {
+				compatibility.saveToXML(currentFile);
+				log.info("Saved compatibility directly to: " + currentFile);
+				if (currentView == View.MARRIAGE_MATCH_VIEW) {
+					updateMarriageMatchTitle();
+				} else {
+					updateCompatibilityTitle();
+				}
+			} else {
+				saveAsCompatibility();
 			}
 		}
 	}
 
 	public void saveCompactibility(){
-
-		if (compactibility != null){
-			String currentFile = compactibility.getFilePath();
-			if (currentFile != null && !currentFile.trim().isEmpty()) {
-				compactibility.saveToXML(currentFile);
-				log.info("Saved compactibility directly to: " + currentFile);
-			} else {
-				saveAsCompactibility();
-			}
-		}
+		saveCompatibility();
 	}
 
 	public app.astrosoft.ui.comp.ChartNotesPanel getChartNotesPanel() {
 		return chartNotesPanel;
 	}
 
-	public void saveAsCompactibility(){
-
-		if (compactibility != null){
-			String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.COMPACTIBILITY_EXTN);
+	public void saveAsCompatibility(){
+		if (compatibility != null){
+			if (chartNotesPanel != null) {
+				chartNotesPanel.flushToOwner();
+			}
+			String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.COMPATIBILITY_EXTN);
 			
 			if (selectedFile != null) {
-				compactibility.saveToXML(selectedFile);
+				compatibility.saveToXML(selectedFile);
+				if (currentView == View.MARRIAGE_MATCH_VIEW) {
+					updateMarriageMatchTitle();
+				} else {
+					updateCompatibilityTitle();
+				}
 			}
 		}
 	}
+
+	public void saveAsCompactibility(){
+		saveAsCompatibility();
+	}
+
 	public void editHoroscope() {
 
 		new BirthInputDialog(this, h.getBirthData());
@@ -1243,13 +1345,17 @@ public class AstroSoft extends javax.swing.JFrame implements
 		}
 	}
 
-	public void exportCompactibility2Pdf(){
+	public void exportCompatibility2Pdf(){
 
-		if (compactibility != null){
+		if (compatibility != null){
 
 			String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.SAVE, AstrosoftFileFilter.PDF_EXTN);
-			AstrosoftExporter.export2Pdf(AstrosoftExporter.Type.Compactibility, compactibility, selectedFile);
+			AstrosoftExporter.export2Pdf(AstrosoftExporter.Type.Compatibility, compatibility, selectedFile);
 		}
+	}
+
+	public void exportCompactibility2Pdf(){
+		exportCompatibility2Pdf();
 	}
 
 	public void setWaitCursor(){
@@ -1332,8 +1438,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 	public void enableActions(boolean enable) {
 
-		EnumSet<Command> actions = EnumSet.of(Command.SAVE, Command.SAVE_AS, Command.SAVE_COMPACTIBILITY,
-				Command.EDIT_COMPACTIBILITY,
+		EnumSet<Command> actions = EnumSet.of(Command.SAVE, Command.SAVE_AS, Command.SAVE_COMPATIBILITY,
+				Command.EDIT_COMPATIBILITY,
 				Command.EDIT_CHART,
 				Command.CHART_VIEW, Command.PLANET_POS_VIEW,
 				Command.BHAVA_POS_VIEW, Command.DIV_CHART_VIEW,
@@ -1404,6 +1510,11 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void onDocumentModified() {
+		if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPATIBILITY_VIEW) {
+			if (compatibility != null) {
+				compatibility.setModified(true);
+			}
+		}
 		actionMgr.enableAction(Command.SAVE, true);
 		actionMgr.enableAction(Command.SAVE_AS, true);
 	}
@@ -1431,13 +1542,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 				viewManager.showView(view);
 				break;
 
-			case COMPACTIBILITY_VIEW:
+			case COMPATIBILITY_VIEW:
 				onSwitchToUtilityView();
-				new CompactibilityInputDialog(this);
+				new CompatibilityInputDialog(this);
 				break;
 			case MARRIAGE_MATCH_VIEW:
 				onSwitchToUtilityView();
-				new CompactibilityInputDialog(this, true);
+				new CompatibilityInputDialog(this, true);
 				break;
 			case MUHURTHA_VIEW:
 				onSwitchToUtilityView();
@@ -1517,8 +1628,16 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return h;
 	}
 	
-	public Compactibility getCompactibility() {
-		return compactibility;
+	public AstrosoftActionManager getActionManager() {
+		return actionMgr;
+	}
+
+	public Compatibility getCompatibility() {
+		return compatibility;
+	}
+
+	public Compatibility getCompactibility() {
+		return compatibility;
 	}
 
 	public static Dimension getScreenSize(){
@@ -1581,13 +1700,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 				case EPHEMERIS_VIEW:
 					return new EphemerisView(eph, new Point(10,2));
 
-				case COMPACTIBILITY_VIEW:
-					actionMgr.enableActions(EnumSet.of(Command.SAVE_COMPACTIBILITY), true);
-					return new CompactibilityView(DisplayStrings.MRAG_COMP_STR.toString(Language.ENGLISH), compactibility, new Point(30,20));
+				case COMPATIBILITY_VIEW:
+					actionMgr.enableActions(EnumSet.of(Command.SAVE_COMPATIBILITY), true);
+					return new CompatibilityView(DisplayStrings.MRAG_COMP_STR.toString(Language.ENGLISH), compatibility, new Point(30,20));
 
 				case MARRIAGE_MATCH_VIEW:
-					actionMgr.enableActions(EnumSet.of(Command.SAVE_COMPACTIBILITY), true);
-					return new app.astrosoft.ui.view.MarriageMatchView(compactibility, new Point(10, 10));
+					actionMgr.enableActions(EnumSet.of(Command.SAVE_COMPATIBILITY), true);
+					return new app.astrosoft.ui.view.MarriageMatchView(compatibility, new Point(10, 10));
 
 				case MUHURTHA_VIEW:
 					return new MuhurthaPanel(muhurtha, AstroSoft.this);

@@ -60,9 +60,12 @@ public class AstrosoftMarkdownExporter {
                     return;
                 }
 
-                Element compElem = findElement(root, "Compactibility");
+                Element compElem = findElement(root, "Compatibility");
+                if (compElem == null) {
+                    compElem = findElement(root, "Compactibility");
+                }
                 if (compElem != null) {
-                    exportCompactibility(compElem, writer);
+                    exportCompatibility(compElem, writer);
                     return;
                 }
 
@@ -240,13 +243,13 @@ public class AstrosoftMarkdownExporter {
     }
 
     // ==========================================
-    // 2. COMPACTIBILITY EXPORT
+    // 2. COMPATIBILITY EXPORT
     // ==========================================
 
-    private static void exportCompactibility(Element comp, Writer w) throws Exception {
+    private static void exportCompatibility(Element comp, Writer w) throws Exception {
         String title = comp.getAttribute("Title");
         if (title == null || title.trim().isEmpty()) {
-            title = "Compactibility Report";
+            title = "Compatibility Report";
         }
         w.write("# " + title.trim() + "\n\n");
 
@@ -295,6 +298,19 @@ public class AstrosoftMarkdownExporter {
                     w.write("| " + dosha + " | " + boyScore + " | " + girlScore + " |\n");
                 }
                 w.write("\n");
+            }
+        }
+
+        Element notes = findElement(comp, "Notes");
+        if (notes != null) {
+            String noteText = getText(notes);
+            if (noteText != null && !noteText.trim().isEmpty()) {
+                w.write("## Notes\n\n");
+                String plain = noteText.replaceAll("(?i)<br\\s*/?>", "\n")
+                                       .replaceAll("(?i)</p>\\s*<p[^>]*>", "\n\n")
+                                       .replaceAll("<[^>]+>", "")
+                                       .trim();
+                w.write(plain + "\n\n");
             }
         }
     }

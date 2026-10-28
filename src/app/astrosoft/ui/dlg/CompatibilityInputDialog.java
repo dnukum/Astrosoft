@@ -34,7 +34,7 @@ import app.astrosoft.ui.util.SpringUtilities;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.ui.util.UIUtil;
 
-public class CompactibilityInputDialog extends AstrosoftDialog {
+public class CompatibilityInputDialog extends AstrosoftDialog {
 
 	private static final Dimension dlgSize = new Dimension(740, 430);
 	private static final Dimension panelSize = new Dimension(dlgSize.width - 10 , dlgSize.height );
@@ -75,7 +75,7 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 	private BirthData girlBirthData;
 
 
-	private CompactibilityInputDialog(AstroSoft parent, boolean hasBirthData, boolean hasStarData){
+	private CompatibilityInputDialog(AstroSoft parent, boolean hasBirthData, boolean hasStarData){
 		super( parent, "Enter Birth Details", dlgSize );
 		this.hasBirthData= hasBirthData;
 		this.hasStarData = hasStarData;
@@ -85,19 +85,19 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 
 	}*/
 
-	public CompactibilityInputDialog(AstroSoft parent){
+	public CompatibilityInputDialog(AstroSoft parent){
 		this(parent, false);
 	}
 
-	public CompactibilityInputDialog(AstroSoft parent, boolean isMarriageMatch){
-		super( parent, isMarriageMatch ? "Enter Birth Details - Marriage Match" : "Enter Birth Details", dlgSize );
+	public CompatibilityInputDialog(AstroSoft parent, boolean isMarriageMatch){
+		super( parent, isMarriageMatch ? "Enter Birth Details - Marriage Match" : "Enter Birth Details - Marriage Compatibility", dlgSize );
 		this.isMarriageMatch = isMarriageMatch;
 		initComponents();
 		addComponents();
 		setVisible(true);
 	}
 
-	public CompactibilityInputDialog(AstroSoft parent, String boyName, String girlName, Rasi boyRasi, Rasi girlRasi, Nakshathra boyNak, Nakshathra girlNak){
+	public CompatibilityInputDialog(AstroSoft parent, String boyName, String girlName, Rasi boyRasi, Rasi girlRasi, Nakshathra boyNak, Nakshathra girlNak){
 		this(parent);
 
 		this.boyName.setText(boyName);
@@ -108,7 +108,7 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 		tabbedPane.setSelectedIndex(1);
 	}
 
-	public CompactibilityInputDialog(AstroSoft parent, BirthData boyBirthData, BirthData girlBirthData){
+	public CompatibilityInputDialog(AstroSoft parent, BirthData boyBirthData, BirthData girlBirthData){
 		this(parent);
 		boyDataPanel.setBirthData(boyBirthData);
 		girlDataPanel.setBirthData(girlBirthData);
@@ -129,7 +129,7 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 				if (isMarriageMatch) {
 					parent.displayMarriageMatch(boyHoroscope, girlHoroscope);
 				} else {
-					parent.displayCompactibility(boyHoroscope, girlHoroscope);
+					parent.displayCompatibility(boyHoroscope, girlHoroscope);
 				}
 				closeDialog();
 			}
@@ -149,7 +149,7 @@ public class CompactibilityInputDialog extends AstrosoftDialog {
 		        if (isMarriageMatch) {
 		        	parent.displayMarriageMatch(boyName.getText(), girlName.getText(), bRasi, gRasi, bNak, gNak);
 		        } else {
-		        	parent.displayCompactibility(boyName.getText(), girlName.getText(), bRasi, gRasi, bNak, gNak);
+		        	parent.displayCompatibility(boyName.getText(), girlName.getText(), bRasi, gRasi, bNak, gNak);
 		        }
 		        closeDialog();
 			}

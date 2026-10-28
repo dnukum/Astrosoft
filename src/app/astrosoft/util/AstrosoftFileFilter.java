@@ -19,7 +19,8 @@ public class AstrosoftFileFilter extends FileFilter {
 
 	public static final AstrosoftFileFilter MUHURTA_EXTN = new AstrosoftFileFilter(".asm", "AstroSoft Muhurtas (*.asm)");
 
-	public static final AstrosoftFileFilter COMPACTIBILITY_EXTN = new AstrosoftFileFilter(".asc", "AstroSoft Compactibility (*.asc)");
+	public static final AstrosoftFileFilter COMPATIBILITY_EXTN = new AstrosoftFileFilter(".asc", "AstroSoft Compatibility (*.asc)");
+	public static final AstrosoftFileFilter COMPACTIBILITY_EXTN = COMPATIBILITY_EXTN; // Backward compatibility alias
 
 	public static final AstrosoftFileFilter PDF_EXTN = new AstrosoftFileFilter(".pdf", "PDF Documents (*.pdf)");
 

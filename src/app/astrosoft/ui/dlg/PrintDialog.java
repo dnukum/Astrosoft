@@ -246,8 +246,8 @@ public class PrintDialog extends AstrosoftDialog {
 			printTask = exportMuhurta(outputFile, chkPdf.isSelected(), chkMd.isSelected(), chkXml.isSelected());
 		}else if (type.equals(AstrosoftExporter.Type.Horosocope)){
 			printTask = AstrosoftExporter.export(AstrosoftExporter.Type.Horosocope, parent.getHoroscope(), outputFile, chkPdf.isSelected(), chkMd.isSelected(), chkXml.isSelected());
-		}else if (type.equals(AstrosoftExporter.Type.Compactibility)){
-			printTask = AstrosoftExporter.export(AstrosoftExporter.Type.Compactibility, parent.getCompactibility(), outputFile, chkPdf.isSelected(), chkMd.isSelected(), chkXml.isSelected());
+		}else if (type.equals(AstrosoftExporter.Type.Compatibility) || type.equals(AstrosoftExporter.Type.Compactibility)){
+			printTask = AstrosoftExporter.export(AstrosoftExporter.Type.Compatibility, parent.getCompatibility(), outputFile, chkPdf.isSelected(), chkMd.isSelected(), chkXml.isSelected());
 		}else if (type.equals(AstrosoftExporter.Type.Panchang)){
 			
 			closePanInputWindow();
@@ -378,14 +378,16 @@ public class PrintDialog extends AstrosoftDialog {
 			printTypes.addItem(AstrosoftExporter.Type.Horosocope);
 		}
 		
-		if(parent.getCompactibility() != null) {
-			printTypes.addItem(AstrosoftExporter.Type.Compactibility);
+		if(parent.getCompatibility() != null) {
+			printTypes.addItem(AstrosoftExporter.Type.Compatibility);
 		}
 		
 		printTypes.addItem(AstrosoftExporter.Type.Panchang);
 
 		if (parent.getCurrentView() == View.MY_MUHURTA_VIEW) {
 			printTypes.setSelectedItem(AstrosoftExporter.Type.Muhurta);
+		} else if (parent.getCurrentView() == View.MARRIAGE_MATCH_VIEW || parent.getCurrentView() == View.COMPATIBILITY_VIEW) {
+			printTypes.setSelectedItem(AstrosoftExporter.Type.Compatibility);
 		}
 		
 		arrow.addActionListener(new ActionListener(){
@@ -500,8 +502,10 @@ public class PrintDialog extends AstrosoftDialog {
 				file = getMuhurtaOutputFile();
 			}else if (type.equals(AstrosoftExporter.Type.Horosocope)){
 				file = parent.getHoroscope().createDocumentName();
-			}else if (type.equals(AstrosoftExporter.Type.Compactibility)){
-				file = parent.getCompactibility().createDocumentName();
+			}else if (type.equals(AstrosoftExporter.Type.Compatibility) || type.equals(AstrosoftExporter.Type.Compactibility)){
+				if (parent.getCompatibility() != null) {
+					file = parent.getCompatibility().createDocumentName();
+				}
 			}else if (type.equals(AstrosoftExporter.Type.Panchang)) {
 				file = getPanchangOutputFile(null);
 			}

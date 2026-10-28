@@ -13,10 +13,11 @@ import org.junit.Test;
 
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.Place;
+import app.astrosoft.consts.Command;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.consts.Sex;
-import app.astrosoft.core.Compactibility;
+import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.MuhurtaDocument;
 import app.astrosoft.core.Muhurtha;
@@ -66,13 +67,15 @@ public class DocumentDirtyAndPromptIntegrationTest {
         fileMuhurta2.deleteOnExit();
         mDoc2.saveToFile(fileMuhurta2.getAbsolutePath());
 
-        // File Compactibility (.asc)
-        Compactibility comp = new Compactibility(hA, hB);
+        // File Compatibility (.asc)
+        Compatibility comp = new Compatibility(hA, hB);
         fileComp = File.createTempFile("test_comp_", ".asc");
         fileComp.deleteOnExit();
         comp.saveToXML(fileComp.getAbsolutePath());
 
         app = new AstroSoft();
+        // Default headless delegate to prevent UI modal blocking during automated tests
+        AstroSoft.setSavePromptDelegate((title, parent) -> 1);
     }
 
     @After
@@ -412,9 +415,9 @@ public class DocumentDirtyAndPromptIntegrationTest {
         app.displayMarriageMatch("Husband", "Wife", Rasi.Mesha, Rasi.Vrishabha,
                 Nakshathra.Ashwini, Nakshathra.Rohini);
 
-        // Notes must be folded
-        Assert.assertTrue("Notes must be folded when entering Marriage Match", app.isNotesFolded());
-        // Editor must be cleared / unbound
+        // Notes command must be enabled in Marriage Match
+        Assert.assertTrue("Notes action must be enabled in Marriage Match", app.getActionManager().getAction(Command.NOTES).isEnabled());
+        // Editor must be cleared / rebound to Compatibility
         Assert.assertFalse("Notes editor must not retain stale horoscope notes in Marriage Match",
                 app.getChartNotesPanel().getEditor().getText().contains("Original Notes A"));
         // Window title must reflect Marriage Match
@@ -542,15 +545,15 @@ public class DocumentDirtyAndPromptIntegrationTest {
         Assert.assertTrue(app.getChartNotesPanel().getNotesContent().trim().isEmpty());
         Assert.assertTrue(app.getTitle().contains("Muhurtha"));
 
-        // 5. Marriage Compatibility
-        app.displayCompactibility(app.getHoroscope(), app.getHoroscope());
-        Assert.assertTrue("Compatibility must fold notes", app.isNotesFolded());
+        // 5. Marriage Compatibility (supports Notes)
+        app.displayCompatibility(app.getHoroscope(), app.getHoroscope());
+        Assert.assertTrue("Compatibility must enable notes", app.getActionManager().getAction(Command.NOTES).isEnabled());
         Assert.assertTrue(app.getChartNotesPanel().getNotesContent().trim().isEmpty());
         Assert.assertTrue(app.getTitle().contains("Marriage Compatibility"));
 
-        // 6. Marriage Match
+        // 6. Marriage Match (supports Notes)
         app.displayMarriageMatch(app.getHoroscope(), app.getHoroscope());
-        Assert.assertTrue("Marriage Match must fold notes", app.isNotesFolded());
+        Assert.assertTrue("Marriage Match must enable notes", app.getActionManager().getAction(Command.NOTES).isEnabled());
         Assert.assertTrue(app.getChartNotesPanel().getNotesContent().trim().isEmpty());
         Assert.assertTrue(app.getTitle().contains("Marriage Match"));
 
@@ -595,7 +598,7 @@ public class DocumentDirtyAndPromptIntegrationTest {
 
         // Switch to Marriage Match
         app.displayMarriageMatch("B", "G", Rasi.Mesha, Rasi.Mesha, Nakshathra.Ashwini, Nakshathra.Ashwini);
-        Assert.assertTrue(app.isNotesFolded());
+        Assert.assertTrue(app.getActionManager().getAction(Command.NOTES).isEnabled());
         Assert.assertTrue(app.getChartNotesPanel().getNotesContent().trim().isEmpty());
 
         // Switch back to Muhurta
@@ -649,8 +652,8 @@ public class DocumentDirtyAndPromptIntegrationTest {
     private void switchToScreen(AstroSoft app, View v) {
         if (v == View.MARRIAGE_MATCH_VIEW) {
             app.displayMarriageMatch("Boy", "Girl", Rasi.Mesha, Rasi.Mesha, Nakshathra.Ashwini, Nakshathra.Ashwini);
-        } else if (v == View.COMPACTIBILITY_VIEW) {
-            app.displayCompactibility("Boy", "Girl", Rasi.Mesha, Rasi.Mesha, Nakshathra.Ashwini, Nakshathra.Ashwini);
+        } else if (v == View.COMPATIBILITY_VIEW || v == View.COMPACTIBILITY_VIEW) {
+            app.displayCompatibility("Boy", "Girl", Rasi.Mesha, Rasi.Mesha, Nakshathra.Ashwini, Nakshathra.Ashwini);
         } else if (v == View.MUHURTHA_VIEW) {
             Calendar cal = Calendar.getInstance();
             app.displayMuhurtha(new Muhurtha(cal, Rasi.Mesha, Nakshathra.Ashwini, false, false, 1));
@@ -667,7 +670,11 @@ public class DocumentDirtyAndPromptIntegrationTest {
 
     private boolean isUtilityView(View v) {
         return v == View.PANCHANG_VIEW || v == View.EPHEMERIS_VIEW || v == View.FIND_NAME_VIEW
-                || v == View.MUHURTHA_VIEW || v == View.COMPACTIBILITY_VIEW || v == View.MARRIAGE_MATCH_VIEW;
+                || v == View.MUHURTHA_VIEW;
+    }
+
+    private boolean isCompatibilityView(View v) {
+        return v == View.COMPATIBILITY_VIEW || v == View.MARRIAGE_MATCH_VIEW;
     }
 
     @Test
@@ -693,6 +700,11 @@ public class DocumentDirtyAndPromptIntegrationTest {
                     Assert.assertTrue("Notes must be folded on " + target + " when coming from " + source,
                             app.isNotesFolded());
                     Assert.assertTrue("Notes editor must be empty on " + target + " when coming from " + source,
+                            app.getChartNotesPanel().getNotesContent().trim().isEmpty());
+                } else if (isCompatibilityView(target)) {
+                    Assert.assertTrue("Notes must be enabled on " + target + " when coming from " + source,
+                            app.getActionManager().getAction(Command.NOTES).isEnabled());
+                    Assert.assertTrue("Notes editor must be empty on newly displayed " + target + " when coming from " + source,
                             app.getChartNotesPanel().getNotesContent().trim().isEmpty());
                 } else if (isHoroscopeView(target)) {
                     Assert.assertNotNull("Horoscope must not be null on " + target + " when coming from " + source,

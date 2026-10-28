@@ -61,8 +61,8 @@ public class AstrosoftAction extends AbstractAction {
 		} else if (cmd.equals(Command.OPEN)) {
 			handler.openHoroscope();
 		}
-	    else if (cmd.equals(Command.OPEN_COMPACTIBILITY)) {
-	    	handler.openCompactibility();
+	    else if (cmd.equals(Command.OPEN_COMPATIBILITY) || cmd.equals(Command.OPEN_COMPACTIBILITY)) {
+	    	handler.openCompatibility();
      	}
 		else if (cmd.equals(Command.SAVE)) {
 			handler.saveHoroscope();
@@ -71,16 +71,16 @@ public class AstrosoftAction extends AbstractAction {
 			handler.saveAsHoroscope();
 		}
 
-		else if (cmd.equals(Command.SAVE_COMPACTIBILITY)) {
-			handler.saveCompactibility();
+		else if (cmd.equals(Command.SAVE_COMPATIBILITY) || cmd.equals(Command.SAVE_COMPACTIBILITY)) {
+			handler.saveCompatibility();
 		} else if (cmd.equals(Command.PRINT)) {
 			handler.printHoroscope();
 		} else if (cmd.equals(Command.EXIT)) {
 			handler.exitApplication();
 		} else if (cmd.equals(Command.EDIT_CHART)) {
 			handler.editHoroscope();
-		} else if (cmd.equals(Command.EDIT_COMPACTIBILITY)) {
-			handler.editCompactibility();
+		} else if (cmd.equals(Command.EDIT_COMPATIBILITY) || cmd.equals(Command.EDIT_COMPACTIBILITY)) {
+			handler.editCompatibility();
 		}else if (View.commands().contains(cmd)){
 			handler.viewChanged(View.valueOf(cmd.name()));
 		}

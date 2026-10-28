@@ -24,6 +24,14 @@ public interface AstrosoftActionHandler
 
     public void saveAsHoroscope();
 
+    public void saveCompatibility();
+
+    public void saveAsCompatibility();
+
+    public void openCompatibility();
+
+    public void editCompatibility();
+
     public void saveCompactibility();
 
     public void saveAsCompactibility();
