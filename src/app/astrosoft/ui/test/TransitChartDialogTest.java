@@ -113,6 +113,17 @@ public class TransitChartDialogTest extends TestCase {
         // 1 minute after exact transition: must be in Vrichika
         PlanetaryInfo after = comp.compute(new Date(exact.getTime() + 60000L), place);
         assertEquals(app.astrosoft.consts.Rasi.Vrichika, app.astrosoft.consts.Rasi.ofDeg(after.getPlanetPosition().get(Planet.Sun)));
+
+        // Test rounding up to next minute (ceiling) so chart position matches displayed minute
+        Date rounded = TransitChartDialog.roundUpToMinute(exact);
+        long expectedRoundedTime = exact.getTime() + (60000L - (exact.getTime() % 60000L));
+        assertEquals(expectedRoundedTime, rounded.getTime());
+        // Exact minute boundary remains unchanged
+        assertEquals(rounded, TransitChartDialog.roundUpToMinute(rounded));
+
+        // At the rounded minute (e.g., 7:43 PM), planet is guaranteed to be in the new sign
+        PlanetaryInfo atRoundedMinute = comp.compute(rounded, place);
+        assertEquals(app.astrosoft.consts.Rasi.Vrichika, app.astrosoft.consts.Rasi.ofDeg(atRoundedMinute.getPlanetPosition().get(Planet.Sun)));
     }
 
     public void testApplyConfigUpdateChangesChartTime() {

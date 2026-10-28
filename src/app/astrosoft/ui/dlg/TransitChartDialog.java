@@ -227,11 +227,26 @@ public class TransitChartDialog extends AstrosoftDialog {
             TransitChartComputation.SignTransition trans = transitions != null ? transitions.get(p) : null;
             String signChangeStr = trans != null ? trans.getTransitionString() : "—";
             String dateChangeStr = (trans != null && trans.getTransitionDate() != null)
-                    ? sdf.format(trans.getTransitionDate())
+                    ? sdf.format(roundUpToMinute(trans.getTransitionDate()))
                     : "—";
 
             tableModel.addRow(new Object[]{p.toString(), signChangeStr, dateChangeStr});
         }
+    }
+
+    /**
+     * Rounds up a transition date to the next full minute (ceiling) if there are non-zero seconds or millis.
+     * This guarantees that when a user views or inputs this rounded minute into the chart, the planet
+     * will have already entered the destination sign and chart positions will match.
+     */
+    public static Date roundUpToMinute(Date date) {
+        if (date == null) return null;
+        long time = date.getTime();
+        long remainder = (time % 60000L + 60000L) % 60000L;
+        if (remainder > 0) {
+            return new Date(time + (60000L - remainder));
+        }
+        return date;
     }
 
     private String formatSubtitle(Date instant, Place place) {
