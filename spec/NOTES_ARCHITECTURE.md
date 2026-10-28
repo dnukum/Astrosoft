@@ -23,9 +23,9 @@ Notes are not ephemeral UI states; **notes are always bound to a specific docume
 | **Ashtavarga** | Horoscope | **ENABLED** | `Horoscope` (`h.getNotes()`) | `<BirthData><Notes>` in Horoscope `.ash` |
 | **Shadbala** | Horoscope | **ENABLED** | `Horoscope` (`h.getNotes()`) | `<BirthData><Notes>` in Horoscope `.ash` |
 | **Yoga Combinations** | Horoscope | **ENABLED** | `Horoscope` (`h.getNotes()`) | `<BirthData><Notes>` in Horoscope `.ash` |
-| **My Muhurta View** | Muhurta | **ENABLED** | `MyMuhurta` (`muhurta.getNotes()`) | `<Muhurta><Notes>` in Muhurta `.ash` |
-| **Marriage Match View** *(Future)* | Compatibility | **ENABLED** | `Compactibility` (`comp.getNotes()`) | `<Compactibility><Notes>` in Match `.ash` |
-| **Compatibility View** *(Future)* | Compatibility | **ENABLED** | `Compactibility` (`comp.getNotes()`) | `<Compactibility><Notes>` in Match `.ash` |
+| **My Muhurta View** | Muhurta | **ENABLED** | `MuhurtaDocument` (`doc.getNotes()`) | `<Muhurta><Notes>` in Muhurta `.muh` |
+| **Marriage Match View** | Compatibility | **ENABLED** | `Compatibility` (`comp.getNotes()`) | `<Compatibility><Notes>` in Match `.asc` |
+| **Compatibility View** | Compatibility | **ENABLED** | `Compatibility` (`comp.getNotes()`) | `<Compatibility><Notes>` in Match `.asc` |
 | **Daily Panchang** | Utility / Lookup | **DISABLED** | *None* | *None (Reference only)* |
 | **Ephemeris View** | Utility / Lookup | **DISABLED** | *None* | *None (Reference only)* |
 | **Find Baby Name** | Utility / Lookup | **DISABLED** | *None* | *None (Reference only)* |
@@ -62,13 +62,14 @@ public interface NotesOwner {
 ### 3.2 Implemented By:
 1. **`Horoscope` (via `BirthData`):**
    - Title: `h.getPersonName()` (e.g., `Notes — Nikhil`)
-   - Storage: `<BirthData><Notes><![CDATA[...]]></Notes></BirthData>`
-2. **`MyMuhurta`:**
-   - Title: `Event Name / Date` (e.g., `Notes — House Warming [27 Oct 2026]`)
-   - Storage: `<Muhurta><Notes><![CDATA[...]]></Notes></Muhurta>`
-3. **`Compactibility` (Marriage Match - Planned):**
+   - Storage: `<BirthData><Notes><![CDATA[...]]></Notes></BirthData>` in `.ash` files
+2. **`MuhurtaDocument` (`MyMuhurta`):**
+   - Title: `Event Name / Date` (e.g., `House Warming [27 Oct 2026]`)
+   - Storage: `<Muhurta><Notes><![CDATA[...]]></Notes></Muhurta>` in `.muh` files
+3. **`Compatibility` (Marriage Match & Marriage Compatibility):**
    - Title: `BoyName & GirlName` (e.g., `Notes — Rohit & Priya`)
-   - Storage: `<Compactibility><Notes><![CDATA[...]]></Notes></Compactibility>`
+   - Storage: `<Compatibility><Notes><![CDATA[...]]></Notes></Compatibility>` in `.asc` files
+   - Dual-Read Support: Reads both modern `<Compatibility>` and legacy `<Compactibility>` roots seamlessly.
 
 ---
 
@@ -88,19 +89,28 @@ stateDiagram-v2
     HoroscopeView --> MuhurtaView : Switch to My Muhurta
     note right of MuhurtaView
       1. Flush edits to Horoscope h
-      2. Bind NotesPanel to Muhurta session
+      2. Bind NotesPanel to MuhurtaDocument
       3. Update Header: Notes — [Muhurta Name]
     end note
     MuhurtaView : Notes Enabled
-    MuhurtaView : Bound to MyMuhurta
+    MuhurtaView : Bound to MuhurtaDocument
 
-    MuhurtaView --> UtilityView : View Panchang / Ephemeris
+    MuhurtaView --> CompatibilityView : Switch to Marriage Match
+    note right of CompatibilityView
+      1. Flush edits to MuhurtaDocument
+      2. Bind NotesPanel to Compatibility
+      3. Update Header: Notes — [Boy & Girl]
+    end note
+    CompatibilityView : Notes Enabled
+    CompatibilityView : Bound to Compatibility
+
+    CompatibilityView --> UtilityView : View Panchang / Ephemeris
     UtilityView : Notes Disabled (Icon disabled)
     UtilityView : Notes Panel folded or read-only
 
-    UtilityView --> MuhurtaView : Return to My Muhurta
-    MuhurtaView : Notes Re-enabled
-    MuhurtaView : Bound back to MyMuhurta
+    UtilityView --> CompatibilityView : Return to Marriage Match
+    CompatibilityView : Notes Re-enabled
+    CompatibilityView : Bound back to Compatibility
 ```
 
 ### Step-by-Step Context Switching Rules:
@@ -123,20 +133,21 @@ stateDiagram-v2
 1. **Typing Listener:**
    - When the user edits text in `ChartNotesPanel`, `NotesListener.onNotesModified()` fires.
    - This marks the active `NotesOwner` as modified and enables `Command.SAVE` and `Command.SAVE_AS` on the main toolbar.
-2. **Toolbar Save Trigger (`saveHoroscope()` / `saveDocument()`):**
+2. **Toolbar Direct Save vs. Save As:**
    - Clicking **Save**:
      - Flushes the editor to the active `NotesOwner`.
-     - Writes to the active document's `.ash` file:
-       - If active screen is a **Horoscope view**, saves the `Horoscope`.
-       - If active screen is **My Muhurta**, saves the `MyMuhurta` `.ash` file.
-       - If active screen is **Marriage Match**, saves the `Compactibility` `.ash` file.
-   - If the active document has no file path yet, triggers **Save As** with the `.ash` file chooser.
+     - Directly overwrites existing file without prompting if a file path is already associated:
+       - If active screen is a **Horoscope view**, saves via `saveHoroscopeDirect()`.
+       - If active screen is **My Muhurta**, saves via `saveMuhurtaDirect()`.
+       - If active screen is **Marriage Match**, saves via `saveCompatibility()`.
+     - Automatically creates a `.bak` backup copy prior to overwriting an existing file.
+   - If the active document has no file path yet, triggers **Save As** with the respective file chooser (`.ash` for Horoscope, `.muh` for Muhurta, `.asc` for Compatibility).
 
 ---
 
-## 6. XML Schema Specification (`.ash`)
+## 6. Document File Schemas & Extensions
 
-All persistent records share the `.ash` file extension. The root XML element dictates document identity and parser routing:
+Document types use dedicated extensions while sharing consistent `<Notes>` CDATA blocks:
 
 ### 6.1 Horoscope Document (`.ash`)
 ```xml
@@ -153,7 +164,7 @@ All persistent records share the `.ash` file extension. The root XML element dic
 </BirthData>
 ```
 
-### 6.2 My Muhurta Document (`.ash`)
+### 6.2 My Muhurta Document (`.muh`)
 ```xml
 <Muhurta version="2.0">
   <Event>
@@ -178,28 +189,31 @@ All persistent records share the `.ash` file extension. The root XML element dic
 </Muhurta>
 ```
 
-### 6.3 Marriage Compatibility Document (`.ash` / planned)
+### 6.3 Marriage Match & Compatibility Document (`.asc`)
 ```xml
-<Compactibility version="2.0" hasHoroscope="true">
-  <BoyData>...</BoyData>
-  <GirlData>...</GirlData>
-  <Notes><![CDATA[<html><body><p>Guna Milan score 28/36. Excellent match for marriage...</p></body></html>]]></Notes>
-</Compactibility>
+<Compatibility version="2.0" hasHoroscope="true">
+  <Boy>...</Boy>
+  <Girl>...</Girl>
+  <Notes><![CDATA[<html><body><p>Guna Milan score 28/36. Auspicious match...</p></body></html>]]></Notes>
+</Compatibility>
 ```
+*Backward Compatibility*: Legacy files with root `<Compactibility>` continue to load transparently.
 
 ---
 
 ## 7. Auto-Routing on `File -> Open`
 
-When the user invokes `File -> Open` (or clicks the Open toolbar icon) and selects any `.ash` file:
+When the user invokes `File -> Open` (or clicks the Open toolbar icon) and selects any supported file:
 1. `AstroSoft` reads the root element via `XMLHelper.parseXML(...)`:
    - Root is `<BirthData>`: Instantiates `Horoscope`, binds notes, routes to `CHART_VIEW`.
-   - Root is `<Muhurta>`: Instantiates `MyMuhurta`, binds notes, routes to `MY_MUHURTA_VIEW`.
-   - Root is `<Compactibility>`: Instantiates `Compactibility`, binds notes, routes to `MARRIAGE_MATCH_VIEW`.
-2. Title bar updates accordingly:
+   - Root is `<Muhurta>`: Instantiates `MuhurtaDocument`, binds notes, routes to `MY_MUHURTA_VIEW`.
+   - Root is `<Compatibility>` or legacy `<Compactibility>`: 
+     - If `hasHoroscope="true"`: routes to `MARRIAGE_MATCH_VIEW`.
+     - If `hasHoroscope="false"`: routes to `COMPATIBILITY_VIEW`.
+2. Title bar updates dynamically:
    - `Astrosoft 2.0 - Nikhil.ash`
-   - `Astrosoft 2.0 - HouseWarming.ash [Muhurta]`
-   - `Astrosoft 2.0 - Rohit-Priya.ash [Marriage Match]`
+   - `Astrosoft 2.0 - HouseWarming.muh [My Muhurta]`
+   - `Astrosoft 2.0 - Rohit_Priya.asc [Marriage Match]` (or `[Compatibility]`)
 
 ---
 
@@ -254,5 +268,63 @@ Before replacing or closing an active document with unsaved changes, `promptSave
   - `testGoogleSheetsHtmlTablePasteAndXmlRoundTrip()`
   - `testTabDelimitedPlainTextSpreadsheetTableConversion()`
   - `testMixedNotesWithParagraphsAndSpreadsheetTables()`
+
+---
+
+## 10. Rich Text & List Editing Subsystem
+
+### 10.1 Bulleted & Numbered Lists (`smartEnter`)
+- **Action Triggers**: Toolbar buttons for Bullets (`•`) and Numbers (`1.`).
+- **Smart Enter Behavior**:
+  - Pressing `Enter` on an active list item automatically creates the next list item (`• ` or `2. `, `3. `).
+  - Pressing `Enter` on an *empty* list item terminates list mode and returns to standard paragraph entry.
+- **Atomic Undo**: Handled by `NotesUndoManager` capturing compound operations (e.g. typing a word, inserting a list item, smart newline) into single undoable/redoable steps (`Cmd+Z` / `Cmd+Y`).
+
+---
+
+## 11. Multi-Format Notes Export (PDF & Print)
+
+### 11.1 Separate Exporter Types in Print Dialog
+The print engine differentiates between full horoscope matches and star-only matches:
+- **`Type.MarriageMatch`** (`"Marriage Match"`): Selected when `hasHoroscope=true`. Generates full four-page report including Info, Kutas, Side-by-Side Charts, Doshas, and Notes.
+- **`Type.Compatibility`** (`"Marriage Compatibility"`): Selected when `hasHoroscope=false`. Generates star-only compatibility report and Notes.
+
+### 11.2 XML Export Schema for XSL-FO
+In addition to the raw HTML `<Notes><![CDATA[...]]></Notes>`, `CompatibilityExporter` exports sanitized plain-text lines wrapped in `<Note-Line>` tags for Apache FOP processing:
+```xml
+<Notes><![CDATA[<p>Auspicious planetary alignment...</p>]]></Notes>
+<Note-Line>Auspicious planetary alignment...</Note-Line>
+```
+
+### 11.3 XSL-FO Notes Page Sequence (`compactibility2pdf.xsl`)
+- Uses Astrosoft's standard report section header format:
+  ```xml
+  <fo:table width="500pt" margin-top="40" table-layout="fixed">
+      <fo:table-body>
+          <fo:table-row>
+              <fo:table-cell padding-top="5" padding-after="5">
+                  <fo:block text-align="center">
+                      Notes
+                  </fo:block>
+              </fo:table-cell>
+          </fo:table-row>
+      </fo:table-body>
+  </fo:table>
+  ```
+- `margin-top="40"` guarantees proper vertical clearance beneath the running header line (`fo:region-before`), avoiding collisions.
+- Notes text is rendered in a matching `<fo:table width="500pt" margin-top="10" table-layout="fixed" padding-left="20pt">` for unified margins.
+
+---
+
+## 12. Window Title Synchronization
+
+When switching between views, the window title bar is synchronized to reflect the active document state:
+- **Horoscope**: `Astrosoft 2.0 - <fileName>.ash` (or `<PersonName> (Unsaved)`)
+- **My Muhurta**: `updateMuhurtaTitle()` ensures the title immediately displays:
+  - Saved: `Astrosoft 2.0 - <fileName>.muh [My Muhurta]`
+  - Unsaved with candidates: `Astrosoft 2.0 - My Muhurta (<Person1> & <Person2>)`
+  - Unsaved default: `Astrosoft 2.0 - My Muhurta`
+- **Marriage Match**: `Astrosoft 2.0 - <fileName>.asc [Marriage Match]` (or `Marriage Match (<Boy> & <Girl>)`)
+- **Marriage Compatibility**: `Astrosoft 2.0 - <fileName>.asc [Compatibility]` (or `Marriage Compatibility (<Boy> & <Girl>)`)
 
 

@@ -112,10 +112,38 @@ Example outputs:
 
 ---
 
-## 5. Verification & Test Suite
+## 5. Cross-Platform Keyboard Shortcuts & Accelerators (`KeyMaskHelper.java`)
+
+To ensure smooth operation across operating systems without colliding with platform conventions or text field operations:
+- **Menu Accelerators**: Resolves `Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()`. On macOS, maps to Command (`Meta`); on Windows and Linux, maps to `Ctrl`.
+- **Shortcut Collision Prevention**:
+  - `Command.NOTES` assigned to `Cmd+T` / `Ctrl+T` to prevent collisions with standard text field commands (`Cmd+N`, `Cmd+O`).
+  - Native clipboard operations (`Cmd+C`, `Cmd+V`, `Cmd+X`, `Cmd+A`) remain exclusively handled by text editor components.
+- **Escape Key Dialog Dismissal**: Base dialogs (`AstroSoftDialog`) bind `KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)` to trigger dialog closure/cancel without requiring manual button clicks.
+
+---
+
+## 6. High-DPI Cross-Platform Vector Graphics
+
+To resolve platform-specific font rendering issues (notably missing Unicode glyph square boxes `□` on Windows systems lacking full symbol fallback fonts):
+- **Vector Star Rendering (`StarIcon.java`)**: Custom Java2D vector icon rendering 5-pointed stars with anti-aliasing (`RenderingHints.KEY_ANTIALIASING`). Renders crisp green, amber, and red stars for Balam rankings in any resolution.
+- **Direction & Transition Arrows**: Standardized on ASCII transitions (`->`) or vector components rather than unsupported multi-byte Unicode arrows.
+
+---
+
+## 7. About AstroSoft Dialog Modernization (`AboutDialog.java`)
+
+- Features an authentic Vedic Astrology banner and updated subtitle.
+- Dynamically reflects build version from `version.properties` and the active Java runtime environment (Java 21 LTS).
+
+---
+
+## 8. Verification & Test Suite
 
 | Test Class | Component Verified |
 | :--- | :--- |
 | `WindowPlacementTest` | 9 geometry checks: multi-monitor scaling, external screen cap ($1400 \times 900$), laptop usable bounds ($1296 \times 752$), topology changes, and negative origins. |
 | `ChartLongitudeTooltipTest` | Absolute degree preservation (`123.75` $\to$ `123:45`), 360 wrap (`000:00`), negative wrap (`-0.001` $\to$ `359:59`), seconds truncation, and non-finite handling (`NaN` $\to$ `null`). |
 | `ChartPlanetDetailsTooltipTest` | Integration test verifying JTable cell hover tooltip assembly with longitude, orb, and Nakshatra. |
+| `DocumentDirtyAndPromptIntegrationTest` | 23 integration tests verifying 225 pairwise view transitions, dirty prompt lifecycle, notes binding, and dynamic window titles. |
+| `MarriageMatchCompatibilityXmlTest` | 11 tests verifying dual-read compatibility (`<Compatibility>` & `<Compactibility>`), distinct print exporter types, PDF XML structure, and standard XSL-FO clearance. |

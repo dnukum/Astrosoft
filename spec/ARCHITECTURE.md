@@ -27,8 +27,8 @@ The presentation layer is built exclusively with Java Swing.
 - **Main Shell:** `AstroSoft.java` acts as the primary application frame and orchestrator, managing the application lifecycle, menu bars, toolbars, and global view transitions.
 - **Views:** The application is modularized into specialized view panels implementing or managed by `ViewManager`:
   - `HoroscopeView`: Rasi, Navamsa, and divisional charts.
-  - `CompactibilityView`: Marriage compatibility analysis (legacy view).
-  - `MarriageMatchView`: Modern dual-mode marriage matching dashboard supporting fixed 2-Column Dashboard and 3-Column Widescreen layouts with side-by-side Rasi/Navamsha charts, Kuta scoring, Papa Samya Dosha analysis, and comparative Shadbala strength graphs.
+  - `CompatibilityView`: Marriage compatibility analysis based on star-only matching (`hasHoroscope=false`).
+  - `MarriageMatchView`: Modern dual-mode marriage matching dashboard supporting fixed 2-Column Dashboard and 3-Column Widescreen layouts with side-by-side Rasi/Navamsha charts, Kuta scoring, Papa Samya Dosha analysis, and comparative Shadbala strength graphs (`hasHoroscope=true`).
   - `MuhurthaView`: Classical electional astrology timings.
   - `MyMuhurtaView`: Personalized daily dashboard combining Muhurta Rasi, Person 1/2 natal charts, dynamic Panchang table, inline Balam Calendar flyout, and configuration/summary dialogs.
   - `PanchangView`: Daily Panchang table and charts.
@@ -55,7 +55,7 @@ The presentation layer is built exclusively with Java Swing.
 ### 2.2 Domain Business Logic
 The `core` package contains the primary astrological orchestrators encapsulating astrological computation and rules:
 - **`Horoscope`**: Generates birth charts, planetary longitudes, divisional charts (Vargas), and Vimshottari Dasa.
-- **`Compactibility`**: Calculates marriage matching (Kutas) and Doshas between two `BirthData` instances.
+- **`Compatibility`**: Calculates marriage matching (Kutas) and Doshas between two `BirthData` instances. Provides full dual-read backward compatibility with legacy `<Compactibility>` XML files.
 - **`Muhurtha`**: Computes auspicious timings based on Tara Balam, Chandra Balam, and planetary transits.
 - **`MyMuhurta`**: Orchestrator for personalized Muhurta evaluation. Computes Tara Balam (index, Paryaya, grade), Chandra Balam (house count and rank), dynamic Panchanga transitions, Amirthathi Yoga, and exports structured plain-text summaries (`getSummaryText`).
 - **`Panchang`**: Calculates daily Tithi, Nakshatra, Yoga, Karana, and time periods (Rahu Kalam, Yama Kandam).
@@ -79,7 +79,7 @@ The `core` package contains the primary astrological orchestrators encapsulating
   - `Planet`, `Rasi`, `Nakshathra`, `Tara`, `AmirthathiYoga`, `Thithi`, `Paksha`, `Karana`, `Yoga`, `WeekDay`, `ChandraHouse`, `BalamRank`.
 
 ### 2.5 Persistence & State
-- **File Storage:** Horoscopes serialized to XML files (`.ash`) via `XMLHelper`. Chart notes metadata is serialized inside `<BirthData>` as a `<Notes>` CDATA block with non-validating DOM backward compatibility for older files.
+- **File Storage:** Horoscopes serialized to `.ash` files, My Muhurta sessions to `.muh` files, and Marriage Match / Compatibility records to `.asc` files via `XMLHelper`. All documents implement `NotesOwner` and serialize rich-text notes metadata inside `<Notes>` CDATA blocks with auto-backup (`.bak`) generation on save.
 - **User Preferences:** Stored persistently via `java.util.prefs.Preferences` (`AstrosoftPref`), capturing default location, Ayanamsa, language, and window placement (`WindowPlacement`).
 
 ### 2.6 Build & Versioning Pipeline
