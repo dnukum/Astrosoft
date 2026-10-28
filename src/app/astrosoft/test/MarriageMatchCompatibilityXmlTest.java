@@ -279,6 +279,22 @@ public class MarriageMatchCompatibilityXmlTest {
 
             Assert.assertTrue("PDF must exist", pdf.exists());
             Assert.assertTrue("PDF must be a complete generated document (> 10 KB), was " + pdf.length(), pdf.length() > 10000);
+
+            // Verify XSL-FO output for Notes formatting
+            javax.xml.transform.TransformerFactory tf = javax.xml.transform.TransformerFactory.newInstance();
+            File xslFile = new File("resources/export/compactibility2pdf.xsl");
+            if (!xslFile.exists()) {
+                xslFile = new File("deploy/resources/export/compactibility2pdf.xsl");
+            }
+            javax.xml.transform.Transformer transformer = tf.newTransformer(new javax.xml.transform.stream.StreamSource(xslFile));
+            java.io.StringWriter foOut = new java.io.StringWriter();
+            transformer.transform(new javax.xml.transform.stream.StreamSource(xml), new javax.xml.transform.stream.StreamResult(foOut));
+            String foContent = foOut.toString();
+
+            // Notes header must follow the standard Astrosoft table header with margin-top="40"
+            Assert.assertTrue("FO must have Notes section table with margin-top='40'",
+                    foContent.contains("margin-top=\"40\"") && foContent.contains("Notes"));
+            Assert.assertFalse("FO must not have hardcoded dark blue styling", foContent.contains("#000080"));
         } finally {
             for (File f : tempDir.listFiles()) {
                 f.delete();
