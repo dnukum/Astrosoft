@@ -91,6 +91,30 @@ public class TransitChartDialogTest extends TestCase {
         assertEquals("191:19", Chart.formatAbsoluteLongitude(191.32));
     }
 
+    public void testSignTransitionCrossingBoundary() {
+        Place place = AstroSoft.getPreferences().getPlace();
+        Calendar cal = Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+        cal.set(2026, Calendar.NOVEMBER, 16, 19, 41, 0);
+        Date chartTime = cal.getTime();
+
+        DefaultTransitChartComputation comp = new DefaultTransitChartComputation();
+        PlanetaryInfo info = comp.compute(chartTime, place);
+        java.util.Map<Planet, TransitChartComputation.SignTransition> transitions = comp.computeSignTransitions(chartTime, place, info);
+        TransitChartComputation.SignTransition sunTrans = transitions.get(Planet.Sun);
+        assertNotNull(sunTrans);
+        assertEquals(app.astrosoft.consts.Rasi.Thula, sunTrans.getFromRasi());
+        assertEquals(app.astrosoft.consts.Rasi.Vrichika, sunTrans.getToRasi());
+
+        Date exact = sunTrans.getTransitionDate();
+        // 1 minute before exact transition: must be in Thula
+        PlanetaryInfo before = comp.compute(new Date(exact.getTime() - 60000L), place);
+        assertEquals(app.astrosoft.consts.Rasi.Thula, app.astrosoft.consts.Rasi.ofDeg(before.getPlanetPosition().get(Planet.Sun)));
+
+        // 1 minute after exact transition: must be in Vrichika
+        PlanetaryInfo after = comp.compute(new Date(exact.getTime() + 60000L), place);
+        assertEquals(app.astrosoft.consts.Rasi.Vrichika, app.astrosoft.consts.Rasi.ofDeg(after.getPlanetPosition().get(Planet.Sun)));
+    }
+
     public void testApplyConfigUpdateChangesChartTime() {
         AstroSoft frame = new AstroSoft();
         Place place = AstroSoft.getPreferences().getPlace();
