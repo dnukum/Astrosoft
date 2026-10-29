@@ -86,8 +86,8 @@ public class AshtavargaMultiGridTest {
         frame.getContentPane().add(panel);
         frame.pack();
 
-        assertTrue("Panel width should be around 740, got " + panel.getWidth(), panel.getWidth() >= 730 && panel.getWidth() <= 750);
-        assertTrue("Panel height should be around 340, got " + panel.getHeight(), panel.getHeight() >= 330 && panel.getHeight() <= 350);
+        assertEquals("Panel width", AshtavargaView.gridPanelSize.width, panel.getWidth());
+        assertEquals("Panel height", AshtavargaView.gridPanelSize.height, panel.getHeight());
 
         BufferedImage img = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();

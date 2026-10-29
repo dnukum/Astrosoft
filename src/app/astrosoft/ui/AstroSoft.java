@@ -646,12 +646,12 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi());
 
-		final JPanel ashtavargaWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		final JPanel ashtavargaWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		ashtavargaWrapper.setOpaque(false);
 		ashtavargaWrapper.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 		ashtavargaWrapper.setBorder(javax.swing.BorderFactory.createEmptyBorder(25, 0, 0, 0));
-		ashtavargaWrapper.setPreferredSize(new Dimension(740, ashtavargaPane.getPreferredSize().height + 25));
-		ashtavargaWrapper.setMaximumSize(new Dimension(740, ashtavargaPane.getPreferredSize().height + 25));
+		ashtavargaWrapper.setPreferredSize(new Dimension(ashtavargaPane.getPreferredSize().width, ashtavargaPane.getPreferredSize().height + 25));
+		ashtavargaWrapper.setMaximumSize(new Dimension(ashtavargaPane.getPreferredSize().width, ashtavargaPane.getPreferredSize().height + 25));
 		ashtavargaWrapper.add(ashtavargaPane);
 
 		final JPanel rightContainer = new JPanel();
@@ -787,7 +787,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 				rightContainer.add(rasiNavamsaPanel);
 				if (show) {
 					rightContainer.add(ashtavargaWrapper);
-					rightContainer.setPreferredSize(new Dimension(760, 320 + ashtavargaWrapper.getPreferredSize().height));
+					int rightW = Math.max(760, ashtavargaWrapper.getPreferredSize().width);
+					rightContainer.setPreferredSize(new Dimension(rightW, 320 + ashtavargaWrapper.getPreferredSize().height));
 				} else {
 					rightContainer.setPreferredSize(new Dimension(760, 320));
 				}

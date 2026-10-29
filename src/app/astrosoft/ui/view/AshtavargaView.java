@@ -208,8 +208,8 @@ public class AshtavargaView extends AstrosoftView {
 		return mainPanel;
 	}
 
-	private static final Dimension miniChartSize = new Dimension(176, 146);
-	public static final Dimension gridPanelSize = new Dimension(740, 340);
+	private static final Dimension miniChartSize = new Dimension(196, 162);
+	public static final Dimension gridPanelSize = new Dimension(858, 380);
 
 	public static JPanel createAshtavargaGridPanel(final Ashtavarga ashtavarga) {
 		return createAshtavargaGridPanel(ashtavarga, null, null);
@@ -239,7 +239,7 @@ public class AshtavargaView extends AstrosoftView {
 		};
 
 		final Chart[] charts = new Chart[items.length];
-		final Font titleFont = UIUtil.getFont(Font.BOLD, 12);
+		final Font titleFont = UIUtil.getFont(Font.BOLD, 13);
 		for (int i = 0; i < items.length; i++) {
 			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi), miniChartSize);
 			charts[i].setTitleFont(titleFont);
@@ -255,11 +255,14 @@ public class AshtavargaView extends AstrosoftView {
 		label.setForeground(UIConsts.DARK_BLUE);
 		headerPanel.add(label);
 
-		final int cardWidth = 740;
-		final int cardHeight = 340;
-		final Dimension panelSize = new Dimension(cardWidth, cardHeight);
+		final int cardWidth = gridPanelSize.width;
+		final int cardHeight = gridPanelSize.height;
+		final Dimension panelSize = gridPanelSize;
 
-		final JPanel gridContainer = new JPanel(new GridLayout(2, 4, 8, 6));
+		final int hgap = 14;
+		final int vgap = 12;
+
+		final JPanel gridContainer = new JPanel(new GridLayout(2, 4, hgap, vgap));
 		gridContainer.setOpaque(false);
 		for (Chart c : charts) {
 			gridContainer.add(c);
@@ -329,9 +332,9 @@ public class AshtavargaView extends AstrosoftView {
 		int headerX = (cardWidth - hd.width) / 2;
 		headerPanel.setBounds(headerX, 0, hd.width, 28);
 
-		int gridW = 4 * miniChartSize.width + 3 * 8; // 4 * 176 + 24 = 728
-		int gridH = 2 * miniChartSize.height + 6;     // 2 * 146 + 6 = 298
-		int gridX = (cardWidth - gridW) / 2;          // (740 - 728) / 2 = 6
+		int gridW = 4 * miniChartSize.width + 3 * hgap;
+		int gridH = 2 * miniChartSize.height + vgap;
+		int gridX = (cardWidth - gridW) / 2;
 		int gridY = 28;
 		gridContainer.setBounds(gridX, gridY, gridW, gridH);
 
