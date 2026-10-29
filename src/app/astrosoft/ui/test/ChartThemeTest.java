@@ -50,6 +50,7 @@ public class ChartThemeTest {
             assertNotNull(theme.getAscendantColor());
             assertNotNull(theme.getMoonColor());
             assertNotNull(theme.getScoreColor());
+            assertNotNull(theme.getLabelColor());
         }
     }
 
@@ -126,5 +127,14 @@ public class ChartThemeTest {
         // Restore default
         pref.setChartTheme(ChartTheme.WARM_IVORY);
         assertEquals(ChartTheme.WARM_IVORY, pref.getChartTheme());
+    }
+
+    @Test
+    public void testThemeLabelColors() {
+        UIConsts.setChartTheme(ChartTheme.CLASSIC);
+        assertEquals(new Color(0, 70, 140), UIConsts.getChartLabelColor());
+
+        UIConsts.setChartTheme(ChartTheme.WARM_IVORY);
+        assertEquals(new Color(100, 116, 139), UIConsts.getChartLabelColor());
     }
 }

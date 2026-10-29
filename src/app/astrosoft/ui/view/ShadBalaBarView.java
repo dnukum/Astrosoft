@@ -332,9 +332,11 @@ public class ShadBalaBarView extends JPanel {
 		int arc = 12;
 		int gap = 8;
 
-		// Clean white card background
-		g2.setColor(Color.WHITE);
+		// Theme card background
+		g2.setColor(UIConsts.getChartBackground());
 		g2.fillRoundRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop, arc, arc);
+
+		title.setForeground(UIConsts.getChartPlanetForeground());
 
 		FontMetrics fm = title.getFontMetrics(title.getFont());
 		int textW = fm.stringWidth(title.getText());
@@ -358,7 +360,7 @@ public class ShadBalaBarView extends JPanel {
 
 		p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
 
-		g2.setColor(UIConsts.ASHTAVARGA_DIVIDER_CLR); // Warm gold border matching Ashtakavarga & Offsets
+		g2.setColor(UIConsts.getChartBorderColor()); // Theme border matching charts
 		g2.setStroke(new BasicStroke(1.5f));
 		g2.draw(p);
 	}

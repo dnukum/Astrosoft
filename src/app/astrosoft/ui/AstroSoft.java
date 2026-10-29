@@ -648,10 +648,23 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (home.getComponentCount() > 0) {
 			java.awt.Component view = home.getComponent(0);
 			int count = rebuildChartsInComponent(view);
+			refreshViewsInComponent(view);
 			log.info("refreshActiveModernScreenCharts: rebuilt " + count + " Chart instances in active view " + (view != null ? view.getClass().getSimpleName() : "null") + " (fontOffset=" + Chart.getFontOffset() + ")");
 			home.repaint();
 		} else {
 			log.info("refreshActiveModernScreenCharts: home has no components");
+		}
+	}
+
+	private void refreshViewsInComponent(java.awt.Component comp) {
+		if (comp instanceof InfoView) {
+			((InfoView) comp).updateTheme();
+		} else if (comp instanceof javax.swing.JCheckBox) {
+			((javax.swing.JCheckBox) comp).setForeground(UIConsts.getChartPlanetForeground());
+		} else if (comp instanceof java.awt.Container) {
+			for (java.awt.Component child : ((java.awt.Container) comp).getComponents()) {
+				refreshViewsInComponent(child);
+			}
 		}
 	}
 
@@ -739,7 +752,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		planetOffsetsCheck.setOpaque(false);
 		planetOffsetsCheck.setFocusable(false);
 		planetOffsetsCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
-		planetOffsetsCheck.setForeground(UIConsts.TEXT_DARK_NAVY);
+		planetOffsetsCheck.setForeground(UIConsts.getChartPlanetForeground());
 		controlsPanel.add(planetOffsetsCheck);
 
 		final javax.swing.JCheckBox shadbalaCheck = new javax.swing.JCheckBox("Shadbala");
@@ -747,14 +760,14 @@ public class AstroSoft extends javax.swing.JFrame implements
 		shadbalaCheck.setOpaque(false);
 		shadbalaCheck.setFocusable(false);
 		shadbalaCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
-		shadbalaCheck.setForeground(UIConsts.TEXT_DARK_NAVY);
+		shadbalaCheck.setForeground(UIConsts.getChartPlanetForeground());
 		controlsPanel.add(shadbalaCheck);
 
 		final javax.swing.JCheckBox ashtaVargaCheck = new javax.swing.JCheckBox("AshtaVarga");
 		ashtaVargaCheck.setOpaque(false);
 		ashtaVargaCheck.setFocusable(false);
 		ashtaVargaCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
-		ashtaVargaCheck.setForeground(UIConsts.TEXT_DARK_NAVY);
+		ashtaVargaCheck.setForeground(UIConsts.getChartPlanetForeground());
 		controlsPanel.add(ashtaVargaCheck);
 
 		final JPanel contentWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
@@ -780,7 +793,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 				boolean showShadbala = shadbalaCheck.isSelected();
 				leftPanel.removeAll();
 				leftPanel.add(infoView);
-				leftPanel.add(javax.swing.Box.createVerticalStrut(50));
+				leftPanel.add(javax.swing.Box.createVerticalStrut(16));
 				javax.swing.JSeparator sep1 = new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL);
 				sep1.setForeground(new Color(226, 232, 240));
 				leftPanel.add(sep1);

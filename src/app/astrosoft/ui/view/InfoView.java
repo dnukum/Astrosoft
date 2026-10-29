@@ -33,6 +33,8 @@ import app.astrosoft.ui.util.UIConsts;
 
 public class InfoView extends AstrosoftView {
 
+	private List<AstrosoftTable> createdTables = new ArrayList<AstrosoftTable>();
+
 	public static String formatInfoValue(String key, String value) {
 		if (value == null || value.trim().isEmpty()) return "";
 		String s = value.trim();
@@ -153,7 +155,7 @@ public class InfoView extends AstrosoftView {
     	
     	JPanel infoPanel = new JPanel(new GridLayout(1, 2, 16, 0));
     	infoPanel.setOpaque(false);
-    	List<AstrosoftTable> createdTables = new ArrayList<AstrosoftTable>();
+    	createdTables.clear();
 
     	for(ListTableData<MapTableRow> data : splittedData){
     		final AstrosoftTable infoTable = new AstrosoftTable(new AstrosoftTableModel(data, infoColMetaData), TableStyle.NONE);
@@ -172,7 +174,7 @@ public class InfoView extends AstrosoftView {
     					boolean isSelected, boolean hasFocus, int row, int column) {
     				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     				c.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
-    				c.setForeground(UIConsts.LABEL_MUTED_COLOR);
+    				c.setForeground(UIConsts.getChartLabelColor());
     				if (c instanceof JLabel) {
     					((JLabel) c).setVerticalAlignment(SwingConstants.TOP);
     				}
@@ -187,7 +189,8 @@ public class InfoView extends AstrosoftView {
     					boolean isSelected, boolean hasFocus, int row, int column) {
     				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     				c.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
-    				c.setForeground(UIConsts.TEXT_DARK_NAVY);
+    				java.awt.Color fg = UIConsts.getChartPlanetForeground();
+    				c.setForeground(fg);
     				if (c instanceof JLabel) {
     					((JLabel) c).setVerticalAlignment(SwingConstants.TOP);
     				}
@@ -197,7 +200,8 @@ public class InfoView extends AstrosoftView {
     					String key = (keyVal != null) ? keyVal.toString() : "";
     					String formatted = formatInfoValue(key, value.toString());
     					if (formatted.startsWith("<html>")) {
-    						setText("<html><span style='color:#1E293B;'>" + formatted.substring(6, formatted.length() - 7) + "</span></html>");
+    						String hexColor = String.format("#%02x%02x%02x", fg.getRed(), fg.getGreen(), fg.getBlue());
+    						setText("<html><span style='color:" + hexColor + ";'>" + formatted.substring(6, formatted.length() - 7) + "</span></html>");
     					} else {
     						setText(formatted);
     					}
@@ -239,9 +243,26 @@ public class InfoView extends AstrosoftView {
     		if (h > maxTableH) maxTableH = h;
     	}
 
-    	Dimension exactSize = new Dimension(530, maxTableH);
+    	setOpaque(true);
+    	updateTheme();
+
+    	Dimension exactSize = new Dimension(530, maxTableH + 24);
     	setPreferredSize(exactSize);
     	setMinimumSize(exactSize);
     	setMaximumSize(exactSize);
+    }
+
+    public void updateTheme() {
+    	setBackground(UIConsts.getChartBackground());
+    	setBorder(javax.swing.BorderFactory.createCompoundBorder(
+    		UIConsts.getChartBorder(),
+    		javax.swing.BorderFactory.createEmptyBorder(10, 14, 10, 14)
+    	));
+    	if (createdTables != null) {
+    		for (AstrosoftTable tbl : createdTables) {
+    			tbl.repaint();
+    		}
+    	}
+    	repaint();
     }
 }

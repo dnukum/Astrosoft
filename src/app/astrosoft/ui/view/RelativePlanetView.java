@@ -186,9 +186,11 @@ public class RelativePlanetView extends JPanel {
 		int boxTop = 10;
 		int boxBottom = 180;
 
-		// Clean white card background
-		g2.setColor(Color.WHITE);
+		// Theme card background
+		g2.setColor(UIConsts.getChartBackground());
 		g2.fillRoundRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop, arc, arc);
+
+		title.setForeground(UIConsts.getChartPlanetForeground());
 
 		FontMetrics fm = title.getFontMetrics(title.getFont());
 		int textW = fm.stringWidth(title.getText());
@@ -224,7 +226,7 @@ public class RelativePlanetView extends JPanel {
 		// Top-left rounded corner
 		p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
 
-		g2.setColor(UIConsts.ASHTAVARGA_DIVIDER_CLR); // Warm gold border matching Ashtakavarga
+		g2.setColor(UIConsts.getChartBorderColor()); // Theme border matching charts
 		g2.setStroke(new BasicStroke(1.5f));
 		g2.draw(p);
 		g2.dispose();

@@ -156,7 +156,8 @@ public class UIConsts {
 			new Color(30, 41, 59),    // #1E293B
 			new Color(220, 38, 38),   // #DC2626
 			new Color(2, 132, 199),   // #0284C7
-			new Color(30, 41, 59)
+			new Color(30, 41, 59),    // Score
+			new Color(100, 116, 139)  // Label (#64748B)
 		),
 		SOFT_ALABASTER("Soft Alabaster", 
 			new Color(250, 250, 249), // #FAFAF9
@@ -164,7 +165,8 @@ public class UIConsts {
 			new Color(15, 23, 42),    // #0F172A
 			new Color(225, 29, 72),   // #E11D48
 			new Color(2, 132, 199),   // #0284C7
-			new Color(15, 23, 42)
+			new Color(15, 23, 42),
+			new Color(100, 116, 139)
 		),
 		PALE_GOLD_MIST("Pale Gold Mist", 
 			new Color(252, 249, 238), // #FCF9EE
@@ -172,7 +174,8 @@ public class UIConsts {
 			new Color(49, 46, 129),   // #312E81
 			new Color(220, 38, 38),   // #DC2626
 			new Color(2, 132, 199),   // #0284C7
-			new Color(49, 46, 129)
+			new Color(49, 46, 129),
+			new Color(110, 105, 135)
 		),
 		CALM_SAGE("Calm Sage", 
 			new Color(245, 246, 243), // #F5F6F3
@@ -180,7 +183,8 @@ public class UIConsts {
 			new Color(30, 41, 59),    // #1E293B
 			new Color(220, 38, 38),   // #DC2626
 			new Color(2, 132, 199),   // #0284C7
-			new Color(30, 41, 59)
+			new Color(30, 41, 59),
+			new Color(100, 116, 110)
 		),
 		CLASSIC("Classic (Original)", 
 			new Color(255, 255, 252), // #FFFFFC YELLOWISH_WHITE
@@ -188,7 +192,8 @@ public class UIConsts {
 			new Color(0, 0, 204),     // #0000CC LIGHT_BLUE
 			Color.RED,                // Red Asc
 			Color.MAGENTA,            // Magenta Moon
-			new Color(0, 0, 140)      // #00008C DARK_BLUE score
+			new Color(0, 0, 140),     // #00008C DARK_BLUE score
+			new Color(0, 70, 140)     // GREENISH_BLUE label
 		);
 
 		private final String displayName;
@@ -198,9 +203,10 @@ public class UIConsts {
 		private final Color ascendantColor;
 		private final Color moonColor;
 		private final Color scoreColor;
+		private final Color labelColor;
 
 		ChartTheme(String displayName, Color background, Color borderColor, 
-				   Color planetForeground, Color ascendantColor, Color moonColor, Color scoreColor) {
+				   Color planetForeground, Color ascendantColor, Color moonColor, Color scoreColor, Color labelColor) {
 			this.displayName = displayName;
 			this.background = background;
 			this.borderColor = borderColor;
@@ -208,6 +214,7 @@ public class UIConsts {
 			this.ascendantColor = ascendantColor;
 			this.moonColor = moonColor;
 			this.scoreColor = scoreColor;
+			this.labelColor = labelColor;
 		}
 
 		public String displayName() { return displayName; }
@@ -217,6 +224,7 @@ public class UIConsts {
 		public Color getAscendantColor() { return ascendantColor; }
 		public Color getMoonColor() { return moonColor; }
 		public Color getScoreColor() { return scoreColor; }
+		public Color getLabelColor() { return labelColor; }
 
 		public Border getBorder() {
 			if (this == CLASSIC) {
@@ -273,6 +281,10 @@ public class UIConsts {
 
 	public static Color getChartScoreColor(){
 		return currentChartTheme.getScoreColor();
+	}
+
+	public static Color getChartLabelColor(){
+		return currentChartTheme.getLabelColor();
 	}
 
 	public static Color getAshtavargaColor(app.astrosoft.consts.AshtavargaStrength strength) {
