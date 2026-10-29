@@ -119,11 +119,7 @@ public class Chart extends JPanel{
 		
 		houseSize = new Dimension(chartSize.width / 4, chartSize.height / 4);
 		
-		if (houseSize.width < 85 || houseSize.height < 72) {
-			tableSize = new Dimension(Math.max(1, houseSize.width - 6), Math.max(3, houseSize.height - 4));
-		} else {
-			tableSize = new Dimension((int)(houseSize.width * 0.88), (int)(houseSize.height * 0.86));
-		}
+		tableSize = new Dimension(Math.max(1, houseSize.width - 4), Math.max(3, houseSize.height - 4));
 		
 		rowHeight = Math.max(14, tableSize.height / 3);
 		

@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.util.EnumMap;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -30,72 +31,65 @@ public class ChartFontSizeScalingTest {
         return null;
     }
 
-    private static int getSunRenderedFontSize(JTable table) {
-        for (int r = 0; r < table.getRowCount(); r++) {
-            for (int col = 0; col < table.getColumnCount(); col++) {
-                Object val = table.getValueAt(r, col);
-                if (val == Planet.Sun) {
-                    TableCellRenderer renderer = table.getCellRenderer(r, col);
-                    Component comp = renderer.getTableCellRendererComponent(table, val, false, false, r, col);
-                    if (comp instanceof JLabel) {
-                        return ((JLabel) comp).getFont().getSize();
-                    }
-                }
-            }
-        }
-        return -1;
-    }
-
     @org.junit.Test
     public void testChartFontScaling() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
             try {
-                EnumMap<Planet, Integer> positions = new EnumMap<>(Planet.class);
+                EnumMap<Planet, Integer> hwPos = new EnumMap<>(Planet.class);
+                hwPos.put(Planet.Sun, 11);
+                hwPos.put(Planet.Moon, 11);
+                hwPos.put(Planet.Mars, 11);
+                hwPos.put(Planet.Mercury, 10);
+                hwPos.put(Planet.Jupiter, 6);
+                hwPos.put(Planet.Venus, 11);
+                hwPos.put(Planet.Saturn, 6);
+                hwPos.put(Planet.Rahu, 4);
+                hwPos.put(Planet.Ketu, 10);
+                hwPos.put(Planet.Ascendant, 12); // Meena
+
                 EnumMap<Planet, Boolean> directions = new EnumMap<>(Planet.class);
                 for (Planet p : Planet.planetsAsc()) {
-                    positions.put(p, 1);
                     directions.put(p, true);
                 }
                 EnumMap<Planet, Nakshathra> stars = new EnumMap<>(Planet.class);
-                stars.put(Planet.Sun, Nakshathra.Magam);
                 EnumMap<Planet, Double> longs = new EnumMap<>(Planet.class);
-                longs.put(Planet.Sun, 123.75);
 
                 Chart.resetFontOffset();
-                Chart chart = new Chart(new PlanetChartData(Varga.Rasi, positions, directions, stars, longs), new Dimension(418, 365));
+                Chart singleChart = new Chart(new PlanetChartData(Varga.Rasi, hwPos, directions, stars, longs), new Dimension(418, 365));
+                JFrame frame = new JFrame();
+                frame.setContentPane(singleChart);
+                frame.pack();
 
-                JTable tableBase = findFirstHouseTable(chart);
-                assert tableBase != null : "House table must exist";
-                int baseFontSize = getSunRenderedFontSize(tableBase);
-                assert baseFontSize > 0 : "Sun must be rendered";
-                System.out.println("Base Sun font size: " + baseFontSize);
+                JTable tableSingle = findFirstHouseTable(singleChart);
+                Component compSingle = tableSingle.getCellRenderer(0, 0).getTableCellRendererComponent(tableSingle, Planet.Ascendant, false, false, 0, 0);
+                assert compSingle instanceof JLabel : "compSingle must be JLabel";
+                assert "Asc".equals(((JLabel) compSingle).getText()) : "Text must be Asc";
+                assert compSingle.getFont().getSize() == 15 : "Base Asc font size must be 15";
 
-                // Now adjust font size by +2
-                Chart.adjustFontOffset(2);
-                chart.rebuild();
+                // +1 Font Offset
+                Chart.adjustFontOffset(1);
+                singleChart.rebuild();
+                frame.pack();
+                JTable tableSingleInc1 = findFirstHouseTable(singleChart);
+                Component compSingleInc1 = tableSingleInc1.getCellRenderer(0, 0).getTableCellRendererComponent(tableSingleInc1, Planet.Ascendant, false, false, 0, 0);
+                assert compSingleInc1.getFont().getSize() == 16 : "Asc font size after +1 must be 16";
+                assert "Asc".equals(((JLabel) compSingleInc1).getText()) : "Text must not be truncated at +1";
 
-                JTable tableInc = findFirstHouseTable(chart);
-                int incFontSize = getSunRenderedFontSize(tableInc);
-                System.out.println("After +2 offset, Sun font size: " + incFontSize);
-                assert incFontSize == baseFontSize + 2 : "Expected font size " + (baseFontSize + 2) + " but got " + incFontSize;
+                // +2 Font Offset
+                Chart.adjustFontOffset(1);
+                singleChart.rebuild();
+                frame.pack();
+                JTable tableSingleInc2 = findFirstHouseTable(singleChart);
+                Component compSingleInc2 = tableSingleInc2.getCellRenderer(0, 0).getTableCellRendererComponent(tableSingleInc2, Planet.Ascendant, false, false, 0, 0);
+                assert "Asc".equals(((JLabel) compSingleInc2).getText()) : "Text must not be truncated at +2";
 
-                // Now adjust font size by -1 (offset = +1)
-                Chart.adjustFontOffset(-1);
-                chart.rebuild();
-
-                JTable tableDec = findFirstHouseTable(chart);
-                int decFontSize = getSunRenderedFontSize(tableDec);
-                System.out.println("After -1 offset, Sun font size: " + decFontSize);
-                assert decFontSize == baseFontSize + 1 : "Expected font size " + (baseFontSize + 1) + " but got " + decFontSize;
-
-                // Now reset font size (offset = 0)
+                // Reset
                 Chart.resetFontOffset();
-                chart.rebuild();
-
-                JTable tableReset = findFirstHouseTable(chart);
-                int resetFontSize = getSunRenderedFontSize(tableReset);
-                System.out.println("After reset, Sun font size: " + resetFontSize);
-                assert resetFontSize == baseFontSize : "Expected font size " + baseFontSize + " but got " + resetFontSize;
+                singleChart.rebuild();
+                frame.pack();
+                JTable tableSingleReset = findFirstHouseTable(singleChart);
+                Component compSingleReset = tableSingleReset.getCellRenderer(0, 0).getTableCellRendererComponent(tableSingleReset, Planet.Ascendant, false, false, 0, 0);
+                assert compSingleReset.getFont().getSize() == 15 : "Font size after reset must be 15";
 
                 System.out.println("All ChartFontSizeScalingTest assertions PASSED successfully!");
             } catch (Throwable t) {

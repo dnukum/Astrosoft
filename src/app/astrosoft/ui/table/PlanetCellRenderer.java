@@ -59,15 +59,26 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			int targetSize = (tblFont != null) ? tblFont.getSize() : c.getFont().getSize();
 			l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, targetSize));
 			l.setText(p.toString(planetFormat));
-			
+			l.setBorder(null);
+
+			if (table != null && column >= 0 && column < table.getColumnCount()) {
+				int colW = table.getColumnModel().getColumn(column).getWidth();
+				if (colW > 10) {
+					int textW = l.getFontMetrics(l.getFont()).stringWidth(l.getText());
+					int fitSize = targetSize;
+					while (textW > colW - 2 && fitSize > 8) {
+						fitSize--;
+						Font fitFont = new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, fitSize);
+						textW = l.getFontMetrics(fitFont).stringWidth(l.getText());
+						l.setFont(fitFont);
+					}
+				}
+			}
+
 			Color fgClr = null;
 			
 			if (p.isAsc()){
 				fgClr = UIConsts.ASCENDANT_COLOR;
-				int colW = table.getColumnModel().getColumn(column).getWidth();
-				if (colW < 24) {
-					l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, Math.max(9, targetSize - 2)));
-				}
 			} else if (p == Planet.Moon){
 				fgClr = UIConsts.MOON_COLOR;
 			} else if (highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && planetDir.get(p)){
