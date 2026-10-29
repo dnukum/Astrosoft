@@ -133,8 +133,8 @@ public class ShadBalaBarView extends JPanel {
 		setMaximumSize(panelSize);
 
 		title = new JLabel("Planetary Strength (Shadbala)", SwingConstants.CENTER);
-		title.setFont(new Font("Verdana", Font.BOLD, 12));
-		title.setForeground(UIConsts.DARK_BLUE);
+		title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		title.setForeground(UIConsts.TEXT_DARK_NAVY);
 		title.setBounds(0, 0, CARD_WIDTH, 20);
 		add(title);
 
@@ -273,15 +273,15 @@ public class ShadBalaBarView extends JPanel {
 		g2.setStroke(origStroke);
 
 		// 100% marker label
-		g2.setFont(new Font("Verdana", Font.PLAIN, 9));
+		g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 9));
 		g2.setColor(new Color(140, 120, 100));
 		String markStr = "100% Min";
 		FontMetrics fmMark = g2.getFontMetrics();
 		g2.drawString(markStr, x100 - fmMark.stringWidth(markStr) / 2, lineTop - 3);
 
 		// Fonts
-		Font labelFont = new Font("Verdana", Font.BOLD, 11);
-		Font pctFont = new Font("Verdana", Font.BOLD, 10);
+		Font labelFont = new Font(Font.SANS_SERIF, Font.BOLD, 11);
+		Font pctFont = new Font(Font.SANS_SERIF, Font.BOLD, 10);
 		FontMetrics fmLabel = g2.getFontMetrics(labelFont);
 		FontMetrics fmPct = g2.getFontMetrics(pctFont);
 
@@ -293,13 +293,13 @@ public class ShadBalaBarView extends JPanel {
 
 			// 1. Planet Name (Right-aligned at trackX - 8)
 			g2.setFont(labelFont);
-			g2.setColor(UIConsts.DARK_BLUE);
+			g2.setColor(UIConsts.TEXT_DARK_NAVY);
 			String pName = item.planet.name();
 			int nameW = fmLabel.stringWidth(pName);
 			g2.drawString(pName, trackX - 8 - nameW, barY + BAR_HEIGHT - 3);
 
 			// 2. Background Track
-			g2.setColor(new Color(243, 240, 235));
+			g2.setColor(new Color(241, 245, 249));
 			g2.fillRoundRect(trackX, barY, trackWidth, BAR_HEIGHT, 6, 6);
 
 			// 3. Colored Bar
@@ -312,7 +312,7 @@ public class ShadBalaBarView extends JPanel {
 
 			// Hover highlight
 			if (i == hoveredIndex) {
-				g2.setColor(UIConsts.DARK_BLUE);
+				g2.setColor(UIConsts.TEXT_DARK_NAVY);
 				g2.setStroke(new BasicStroke(1.5f));
 				g2.drawRoundRect(trackX, barY, Math.max(barWidth, 6), BAR_HEIGHT, 6, 6);
 				g2.setStroke(origStroke);
@@ -331,6 +331,10 @@ public class ShadBalaBarView extends JPanel {
 	private void drawCardBorder(Graphics2D g2, int boxLeft, int boxRight, int boxTop, int boxBottom) {
 		int arc = 12;
 		int gap = 8;
+
+		// Clean white card background
+		g2.setColor(Color.WHITE);
+		g2.fillRoundRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop, arc, arc);
 
 		FontMetrics fm = title.getFontMetrics(title.getFont());
 		int textW = fm.stringWidth(title.getText());
@@ -354,7 +358,7 @@ public class ShadBalaBarView extends JPanel {
 
 		p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
 
-		g2.setColor(new Color(210, 180, 120)); // Warm gold border matching Ashtakavarga & Offsets
+		g2.setColor(UIConsts.ASHTAVARGA_DIVIDER_CLR); // Warm gold border matching Ashtakavarga & Offsets
 		g2.setStroke(new BasicStroke(1.5f));
 		g2.draw(p);
 	}

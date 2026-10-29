@@ -103,7 +103,7 @@ public class UIConsts {
 		
 		//Table Settings
 		//UIProps.put("Table.background", Color.WHITE);
-		UIProps.put("Table.foreground", LIGHT_BLUE);
+		UIProps.put("Table.foreground", TEXT_DARK_NAVY);
 		UIProps.put("Table.selectionBackground", GRAY_WHITE);
 		UIProps.put("Table.selectionForeground", GREENISH_BLUE);
 		//UIProps.put("Table.gridColor", new Color( 0, 128, 192));
@@ -137,26 +137,29 @@ public class UIConsts {
 		return border;
 	}
 	
+	public static final Color CANVAS_BACKGROUND = new Color(244, 245, 247); // #F4F5F7 Soft light gray
+	public static final Color CARD_BACKGROUND = Color.WHITE;
+	public static final Color LABEL_MUTED_COLOR = new Color(100, 116, 139); // #64748B Slate gray
+	public static final Color TEXT_DARK_NAVY = new Color(30, 41, 59); // #1E293B Dark navy/charcoal
+	public static final Color NAVY_BADGE_BG = new Color(15, 30, 60); // #0F1E3C Modern dark navy badge
+	public static final Color ASCENDANT_COLOR = new Color(220, 38, 38); // #DC2626 Modern clean red
+	public static final Color MOON_COLOR = new Color(124, 58, 237); // #7C3AED Muted violet/indigo
+	public static final Color ASHTAVARGA_WEAK_BG = new Color(255, 240, 240);    // #FFF0F0
+	public static final Color ASHTAVARGA_STRONG_BG = new Color(234, 242, 235);  // #EAF2EB
+	public static final Color ASHTAVARGA_NEUTRAL_BG = Color.WHITE;              // #FFFFFF
+	public static final Color ASHTAVARGA_DIVIDER_CLR = Color.decode("#d0a65c"); // #d0a65c Desaturated gold-ochre
+
 	public static Border getTitleBorder(Enum title){
 		return getTitleBorder(title.toString());
 	}
 	
 	public static Color getChartBackground(){
-		return YELLOWISH_WHITE;
+		return CARD_BACKGROUND;
 	}
 	
 	public static Border getChartBorder(){
-		//return BorderFactory.createEtchedBorder(EtchedBorder.RAISED, ROSE, Color.WHITE);
-		return BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.ORANGE, Color.WHITE);
-		//return BorderFactory.createEtchedBorder(EtchedBorder.LOWERED, YELLOWISH_WHITE.brighter(), YELLOWISH_WHITE.darker());
-		//new LineBorder(Color.GRAY, 1, true);
-		//BorderFactory.createBevelBorder(BevelBorder.RAISED);
+		return BorderFactory.createLineBorder(ASHTAVARGA_DIVIDER_CLR, 1);
 	}
-
-	public static final Color ASHTAVARGA_WEAK_BG = new Color(255, 240, 240);    // #FFF0F0
-	public static final Color ASHTAVARGA_STRONG_BG = new Color(234, 242, 235);  // #EAF2EB
-	public static final Color ASHTAVARGA_NEUTRAL_BG = Color.WHITE;              // #FFFFFF
-	public static final Color ASHTAVARGA_DIVIDER_CLR = Color.decode("#d0a65c"); // #d0a65c
 
 	public static Color getAshtavargaColor(app.astrosoft.consts.AshtavargaStrength strength) {
 		if (strength == null) {

@@ -10,6 +10,7 @@ package app.astrosoft.ui;
 import java.io.File;
 import java.util.logging.Logger;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.Dimension;
@@ -636,6 +637,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 		
 		final Chart rasi = new Chart(new PlanetChartData(Varga.Rasi, h.getPlanetaryInfo()), new Dimension(360,320));
 		final Chart navamsa = new Chart(new PlanetChartData(Varga.Navamsa, h.getPlanetaryInfo()), new Dimension(360,320));
+		rasi.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
+		navamsa.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
+		rasi.setBorder(javax.swing.BorderFactory.createLineBorder(UIConsts.ASHTAVARGA_DIVIDER_CLR, 1));
+		navamsa.setBorder(javax.swing.BorderFactory.createLineBorder(UIConsts.ASHTAVARGA_DIVIDER_CLR, 1));
 
 		final JPanel rasiNavamsaPanel = new JPanel(new GridLayout(1, 2, 20, 0));
 		rasiNavamsaPanel.setOpaque(false);
@@ -694,27 +699,28 @@ public class AstroSoft extends javax.swing.JFrame implements
 		planetOffsetsCheck.setSelected(true);
 		planetOffsetsCheck.setOpaque(false);
 		planetOffsetsCheck.setFocusable(false);
-		planetOffsetsCheck.setFont(new java.awt.Font("Verdana", java.awt.Font.PLAIN, 11));
-		planetOffsetsCheck.setForeground(UIConsts.DARK_BLUE);
+		planetOffsetsCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
+		planetOffsetsCheck.setForeground(UIConsts.TEXT_DARK_NAVY);
 		controlsPanel.add(planetOffsetsCheck);
 
 		final javax.swing.JCheckBox shadbalaCheck = new javax.swing.JCheckBox("Shadbala");
 		shadbalaCheck.setSelected(false);
 		shadbalaCheck.setOpaque(false);
 		shadbalaCheck.setFocusable(false);
-		shadbalaCheck.setFont(new java.awt.Font("Verdana", java.awt.Font.PLAIN, 11));
-		shadbalaCheck.setForeground(UIConsts.DARK_BLUE);
+		shadbalaCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
+		shadbalaCheck.setForeground(UIConsts.TEXT_DARK_NAVY);
 		controlsPanel.add(shadbalaCheck);
 
 		final javax.swing.JCheckBox ashtaVargaCheck = new javax.swing.JCheckBox("AshtaVarga");
 		ashtaVargaCheck.setOpaque(false);
 		ashtaVargaCheck.setFocusable(false);
-		ashtaVargaCheck.setFont(new java.awt.Font("Verdana", java.awt.Font.PLAIN, 11));
-		ashtaVargaCheck.setForeground(UIConsts.DARK_BLUE);
+		ashtaVargaCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
+		ashtaVargaCheck.setForeground(UIConsts.TEXT_DARK_NAVY);
 		controlsPanel.add(ashtaVargaCheck);
 
 		final JPanel contentWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
-		contentWrapper.setOpaque(false);
+		contentWrapper.setOpaque(true);
+		contentWrapper.setBackground(UIConsts.CANVAS_BACKGROUND);
 		contentWrapper.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 25));
 		contentWrapper.add(contentPanel);
 
@@ -722,8 +728,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 				javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		mainScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder());
-		mainScrollPane.getViewport().setOpaque(false);
-		mainScrollPane.setOpaque(false);
+		mainScrollPane.getViewport().setOpaque(true);
+		mainScrollPane.getViewport().setBackground(UIConsts.CANVAS_BACKGROUND);
+		mainScrollPane.setOpaque(true);
+		mainScrollPane.setBackground(UIConsts.CANVAS_BACKGROUND);
 		mainScrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		mainScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
 
@@ -734,19 +742,25 @@ public class AstroSoft extends javax.swing.JFrame implements
 				leftPanel.removeAll();
 				leftPanel.add(infoView);
 				leftPanel.add(javax.swing.Box.createVerticalStrut(50));
-				leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
+				javax.swing.JSeparator sep1 = new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL);
+				sep1.setForeground(new Color(226, 232, 240));
+				leftPanel.add(sep1);
 				leftPanel.add(javax.swing.Box.createVerticalStrut(6));
 				leftPanel.add(controlsPanel);
 				if (showOffsets) {
 					leftPanel.add(javax.swing.Box.createVerticalStrut(6));
-					leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
+					javax.swing.JSeparator sep2 = new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL);
+					sep2.setForeground(new Color(226, 232, 240));
+					leftPanel.add(sep2);
 					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
 					leftPanel.add(planetOffsetsView);
 				}
 				if (showShadbala) {
 					if (!showOffsets) {
 						leftPanel.add(javax.swing.Box.createVerticalStrut(6));
-						leftPanel.add(new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL));
+						javax.swing.JSeparator sep3 = new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL);
+						sep3.setForeground(new Color(226, 232, 240));
+						leftPanel.add(sep3);
 					}
 					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
 					leftPanel.add(shadbalaBarView);
@@ -810,7 +824,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		JPanel view = new JPanel(new BorderLayout());
 		view.setName("ChartView");
-		view.setOpaque(false);
+		view.setOpaque(true);
+		view.setBackground(UIConsts.CANVAS_BACKGROUND);
 		view.add(mainScrollPane, BorderLayout.CENTER);
 		view.setBounds(bounds);
 

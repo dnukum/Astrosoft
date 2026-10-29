@@ -3,6 +3,7 @@ package app.astrosoft.ui.view;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -20,7 +21,9 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.AstrosoftTableColumn;
@@ -33,6 +36,7 @@ import app.astrosoft.ui.table.DefaultColumnMetaData;
 import app.astrosoft.ui.table.ListTableData;
 import app.astrosoft.ui.table.MapTableRow;
 import app.astrosoft.ui.table.TableDataFactory;
+import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.util.AstroUtil;
 
 public class RelativePlanetView extends JPanel {
@@ -114,8 +118,8 @@ public class RelativePlanetView extends JPanel {
 		setMaximumSize(panelSize);
 
 		title = new JLabel("Planet Offset in Rasi", SwingConstants.CENTER);
-		title.setFont(new Font("Verdana", Font.BOLD, 12));
-		title.setForeground(app.astrosoft.ui.util.UIConsts.DARK_BLUE);
+		title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		title.setForeground(UIConsts.TEXT_DARK_NAVY);
 		title.setBounds(0, 0, cardWidth, 20);
 		add(title);
 		
@@ -125,9 +129,42 @@ public class RelativePlanetView extends JPanel {
 		
 		for(ListTableData<MapTableRow> data : splittedData){
 			AstrosoftTable table = new AstrosoftTable(new AstrosoftTableModel(data, colMetaData), TableStyle.NONE);
-			table.getColumnModel().getColumn(0).setPreferredWidth(85);
-			table.getColumnModel().getColumn(0).setMaxWidth(95);
-			table.getColumnModel().getColumn(1).setPreferredWidth(140);
+			table.setOpaque(false);
+			javax.swing.table.TableColumn pCol = table.getColumnModel().getColumn(0);
+			javax.swing.table.TableColumn lCol = table.getColumnModel().getColumn(1);
+			pCol.setPreferredWidth(85);
+			pCol.setMaxWidth(95);
+			lCol.setPreferredWidth(140);
+
+			pCol.setCellRenderer(new DefaultTableCellRenderer() {
+				@Override
+				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+					comp.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+					String text = (val != null) ? val.toString() : "";
+					if (text.startsWith("Ascendant")) {
+						comp.setForeground(UIConsts.ASCENDANT_COLOR);
+					} else if (text.startsWith("Moon")) {
+						comp.setForeground(UIConsts.MOON_COLOR);
+					} else {
+						comp.setForeground(UIConsts.TEXT_DARK_NAVY);
+					}
+					setOpaque(false);
+					return comp;
+				}
+			});
+
+			lCol.setCellRenderer(new DefaultTableCellRenderer() {
+				@Override
+				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+					comp.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+					comp.setForeground(UIConsts.TEXT_DARK_NAVY);
+					setOpaque(false);
+					return comp;
+				}
+			});
+
 			gridPanel.add(table);
 		}
 		
@@ -148,6 +185,10 @@ public class RelativePlanetView extends JPanel {
 		int boxRight = 528;
 		int boxTop = 10;
 		int boxBottom = 180;
+
+		// Clean white card background
+		g2.setColor(Color.WHITE);
+		g2.fillRoundRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop, arc, arc);
 
 		FontMetrics fm = title.getFontMetrics(title.getFont());
 		int textW = fm.stringWidth(title.getText());
@@ -183,7 +224,7 @@ public class RelativePlanetView extends JPanel {
 		// Top-left rounded corner
 		p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
 
-		g2.setColor(new Color(210, 180, 120)); // Warm gold border matching Ashtakavarga
+		g2.setColor(UIConsts.ASHTAVARGA_DIVIDER_CLR); // Warm gold border matching Ashtakavarga
 		g2.setStroke(new BasicStroke(1.5f));
 		g2.draw(p);
 		g2.dispose();

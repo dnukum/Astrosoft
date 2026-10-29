@@ -54,43 +54,34 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			JLabel l = new JLabel(((JLabel)c).getText());
 			Planet p = (Planet)value;
 			
-			l.setFont(c.getFont());
+			l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, c.getFont().getSize()));
 			l.setText(p.toString(planetFormat));
 			
 			Color fgClr = null;
 			
 			if (p.isAsc()){
-				fgClr = Color.RED;
+				fgClr = UIConsts.ASCENDANT_COLOR;
 				int colW = table.getColumnModel().getColumn(column).getWidth();
 				if (colW < 22) {
-					l.setFont(c.getFont().deriveFont(9.0f));
+					l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 9));
 				}
-			}
-			
-			if(p == Planet.Moon){
-				fgClr = Color.MAGENTA;
-			}
-			
-			if (highlightRetrogrades){
-				if (planetDir.containsKey(p) && planetDir.get(p)){
-					fgClr = UIConsts.GREENISH_BLUE;
-					
-					if(expandRetrogrades){
-						l.setText(p.toString(planetFormat) + " (" + DisplayStrings.RETRO_SYM + ")");
-					} else {
-						String text = p.toString(planetFormat);
-						if (text.length() > 0) {
-							l.setText("<html><u><b>" + text + "</b></u></html>");
-						}
+			} else if (p == Planet.Moon){
+				fgClr = UIConsts.MOON_COLOR;
+			} else if (highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && planetDir.get(p)){
+				fgClr = UIConsts.TEXT_DARK_NAVY;
+				if(expandRetrogrades){
+					l.setText(p.toString(planetFormat) + " (" + DisplayStrings.RETRO_SYM + ")");
+				} else {
+					String text = p.toString(planetFormat);
+					if (text.length() > 0) {
+						l.setText("<html><u><b>" + text + "</b></u></html>");
 					}
 				}
+			} else {
+				fgClr = UIConsts.TEXT_DARK_NAVY;
 			}
 			
-			if (fgClr != null){
-				l.setForeground(fgClr);
-			}else{
-				l.setForeground(table.getForeground());
-			}
+			l.setForeground(fgClr);
 			return l;
 		}
 		return c;

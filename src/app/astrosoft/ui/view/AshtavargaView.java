@@ -109,8 +109,8 @@ public class AshtavargaView extends AstrosoftView {
 		headerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 		JLabel label = new JLabel("Ashtavarga");
-		label.setFont(new Font("Verdana", Font.BOLD, 12));
-		label.setForeground(UIConsts.DARK_BLUE);
+		label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		label.setForeground(UIConsts.TEXT_DARK_NAVY);
 		headerPanel.add(label);
 
 		final JComboBox<AshtavargaItem> combo = new JComboBox<AshtavargaItem>(items);
@@ -257,8 +257,8 @@ public class AshtavargaView extends AstrosoftView {
 		headerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 		JLabel label = new JLabel("Ashtavarga");
-		label.setFont(new Font("Verdana", Font.BOLD, 12));
-		label.setForeground(UIConsts.DARK_BLUE);
+		label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		label.setForeground(UIConsts.TEXT_DARK_NAVY);
 		headerPanel.add(label);
 
 		final int cardWidth = gridPanelSize.width;
@@ -293,6 +293,10 @@ public class AshtavargaView extends AstrosoftView {
 				int boxRight = cardWidth - 2;
 				int boxTop = 14;
 				int boxBottom = cardHeight - 4;
+
+				// Clean white card background
+				g2.setColor(Color.WHITE);
+				g2.fillRoundRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop, arc, arc);
 
 				int headerX = headerPanel.getX();
 				int headerW = headerPanel.getWidth();

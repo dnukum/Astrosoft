@@ -179,28 +179,28 @@ public class Chart extends JPanel{
 				topRow.setBorder(BorderFactory.createEmptyBorder(isCompact ? 1 : 5, isCompact ? 2 : 7, 0, isCompact ? 2 : 7));
 
 				Font markerFont = isCompact 
-						? (isAsc && isMoon ? app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 8) : app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 9))
-						: app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12);
+						? (isAsc && isMoon ? new Font(Font.SANS_SERIF, Font.BOLD, 8) : new Font(Font.SANS_SERIF, Font.BOLD, 9))
+						: new Font(Font.SANS_SERIF, Font.BOLD, 12);
 
 				if (isAsc && isMoon) {
 					JLabel ascLbl = new JLabel("Asc");
 					ascLbl.setFont(markerFont);
-					ascLbl.setForeground(Color.RED);
+					ascLbl.setForeground(UIConsts.ASCENDANT_COLOR);
 					topRow.add(ascLbl, BorderLayout.WEST);
 
 					JLabel moonLbl = new JLabel("Mo");
 					moonLbl.setFont(markerFont);
-					moonLbl.setForeground(Color.MAGENTA);
+					moonLbl.setForeground(UIConsts.MOON_COLOR);
 					topRow.add(moonLbl, BorderLayout.EAST);
 				} else if (isAsc) {
 					JLabel ascLbl = new JLabel("Asc");
 					ascLbl.setFont(markerFont);
-					ascLbl.setForeground(Color.RED);
+					ascLbl.setForeground(UIConsts.ASCENDANT_COLOR);
 					topRow.add(ascLbl, BorderLayout.WEST);
 				} else if (isMoon) {
 					JLabel moonLbl = new JLabel("Mo");
 					moonLbl.setFont(markerFont);
-					moonLbl.setForeground(Color.MAGENTA);
+					moonLbl.setForeground(UIConsts.MOON_COLOR);
 					topRow.add(moonLbl, BorderLayout.WEST);
 				}
 
@@ -209,8 +209,8 @@ public class Chart extends JPanel{
 				Integer val = avData.getVarga().get(house);
 				String valStr = (val != null) ? val.toString() : "";
 				JLabel numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER);
-				numLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, isCompact ? 12 : 15));
-				numLbl.setForeground(UIConsts.DARK_BLUE);
+				numLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, isCompact ? 12 : 15));
+				numLbl.setForeground(UIConsts.TEXT_DARK_NAVY);
 				panel.add(numLbl, BorderLayout.CENTER);
 
 				panel.add(Box.createVerticalStrut(isCompact ? 2 : 16), BorderLayout.SOUTH);
@@ -268,8 +268,10 @@ public class Chart extends JPanel{
 
 				//houseTable.setDefaultRenderer(Planet.class, new PlanetCellRenderer());
 				if (houseSize.height < 68) {
-					houseTable.setFont(new Font("Verdana", Font.PLAIN, 10));
+					houseTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
 					houseTable.setRowMargin(1);
+				} else {
+					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
 				}
 				houseTable.setRowHeight(rowHeight);
 				houseTable.setPreferredSize(tableSize);
@@ -329,7 +331,7 @@ public class Chart extends JPanel{
 					super.paintComponent(g);
 					Graphics2D g2 = (Graphics2D) g.create();
 					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-					int arc = Math.min(getHeight(), 14);
+					int arc = getHeight();
 					g2.setColor(badgeBgColor);
 					g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
 					if (badgeBorderColor != null) {
@@ -341,7 +343,9 @@ public class Chart extends JPanel{
 				}
 			};
 			badge.setOpaque(false);
-			badge.setBorder(BorderFactory.createEmptyBorder(2, 9, 2, 9));
+			badge.setBorder(BorderFactory.createEmptyBorder(4, 14, 4, 14));
+			title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+			title.setForeground(Color.WHITE);
 			badge.add(title);
 			panel.add(badge, cGbc);
 		} else {
@@ -352,8 +356,8 @@ public class Chart extends JPanel{
 			cGbc.gridy = 1;
 			cGbc.insets = new java.awt.Insets(2, 0, 0, 0);
 			JLabel subTitleLabel = new JLabel(subtitle, javax.swing.SwingConstants.CENTER);
-			subTitleLabel.setFont(new Font("Verdana", Font.BOLD, 11));
-			subTitleLabel.setForeground(UIConsts.DARK_BLUE);
+			subTitleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+			subTitleLabel.setForeground(UIConsts.TEXT_DARK_NAVY);
 			panel.add(subTitleLabel, cGbc);
 		}
 		

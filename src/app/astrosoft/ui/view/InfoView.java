@@ -9,13 +9,16 @@ package app.astrosoft.ui.view;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import app.astrosoft.consts.TableStyle;
@@ -26,6 +29,7 @@ import app.astrosoft.ui.table.ListTableData;
 import app.astrosoft.ui.table.MapTableRow;
 import app.astrosoft.ui.table.Table;
 import app.astrosoft.ui.table.TableDataFactory;
+import app.astrosoft.ui.util.UIConsts;
 
 public class InfoView extends AstrosoftView {
 
@@ -153,6 +157,7 @@ public class InfoView extends AstrosoftView {
 
     	for(ListTableData<MapTableRow> data : splittedData){
     		final AstrosoftTable infoTable = new AstrosoftTable(new AstrosoftTableModel(data, infoColMetaData), TableStyle.NONE);
+    		infoTable.setOpaque(false);
     		createdTables.add(infoTable);
     		
     		javax.swing.table.TableColumn keyCol = infoTable.getColumnModel().getColumn(0);
@@ -161,17 +166,41 @@ public class InfoView extends AstrosoftView {
     		keyCol.setMaxWidth(115);
     		valCol.setPreferredWidth(142);
 
+    		keyCol.setCellRenderer(new DefaultTableCellRenderer() {
+    			@Override
+    			public Component getTableCellRendererComponent(JTable table, Object value,
+    					boolean isSelected, boolean hasFocus, int row, int column) {
+    				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+    				c.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+    				c.setForeground(UIConsts.LABEL_MUTED_COLOR);
+    				if (c instanceof JLabel) {
+    					((JLabel) c).setVerticalAlignment(SwingConstants.TOP);
+    				}
+    				setOpaque(false);
+    				return c;
+    			}
+    		});
+
     		valCol.setCellRenderer(new DefaultTableCellRenderer() {
     			@Override
     			public Component getTableCellRendererComponent(JTable table, Object value,
     					boolean isSelected, boolean hasFocus, int row, int column) {
     				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-    				c.setFont(new java.awt.Font("Verdana", java.awt.Font.PLAIN, 11));
+    				c.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+    				c.setForeground(UIConsts.TEXT_DARK_NAVY);
+    				if (c instanceof JLabel) {
+    					((JLabel) c).setVerticalAlignment(SwingConstants.TOP);
+    				}
+    				setOpaque(false);
     				if (value != null) {
     					Object keyVal = table.getValueAt(row, 0);
     					String key = (keyVal != null) ? keyVal.toString() : "";
     					String formatted = formatInfoValue(key, value.toString());
-    					setText(formatted);
+    					if (formatted.startsWith("<html>")) {
+    						setText("<html><span style='color:#1E293B;'>" + formatted.substring(6, formatted.length() - 7) + "</span></html>");
+    					} else {
+    						setText(formatted);
+    					}
     					setToolTipText(value.toString());
     				}
     				return c;
