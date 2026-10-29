@@ -112,6 +112,7 @@ public class AstrosoftToolBar extends JToolBar
         fontControlPanel.add(btnFontInc);
         fontControlPanel.add(btnFontReset);
         add(fontControlPanel);
+        setChartFontControlsVisible(false);
     }
 
     public void setFontAdjustmentActions(Runnable onInc, Runnable onDec, Runnable onReset) {

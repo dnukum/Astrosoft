@@ -204,9 +204,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 				getContentPane().validate();
 				if (home.getComponentCount() > 0) {
 				    java.awt.Component view = home.getComponent(0);
-				    if (view.getClass().getName().contains("MyMuhurtaView")
-				            || isChartView(view)
-				            || view.getClass().getName().contains("MarriageMatchView")) {
+				    if (isModernScreen(view)) {
 					    view.setBounds(0, 0, home.getWidth(), home.getHeight());
 				    }
 				    // Do absolutely nothing for other views! Let them keep their original internal bounds & offsets.
@@ -272,9 +270,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			public void componentResized(java.awt.event.ComponentEvent e) {
 				if (home.getComponentCount() > 0) {
 					java.awt.Component view = home.getComponent(0);
-					if (view.getClass().getName().contains("MyMuhurtaView")
-							|| isChartView(view)
-							|| view.getClass().getName().contains("MarriageMatchView")) {
+					if (isModernScreen(view)) {
 						view.setBounds(0, 0, home.getWidth(), home.getHeight());
 					}
 					view.revalidate();
@@ -317,9 +313,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		mainSplitPane.repaint();
 		if (home.getComponentCount() > 0) {
 			java.awt.Component view = home.getComponent(0);
-			if (view.getClass().getName().contains("MyMuhurtaView")
-					|| isChartView(view)
-					|| view.getClass().getName().contains("MarriageMatchView")) {
+			if (isModernScreen(view)) {
 				view.setBounds(0, 0, home.getWidth(), home.getHeight());
 				view.revalidate();
 			}
@@ -355,9 +349,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			mainSplitPane.repaint();
 			if (home.getComponentCount() > 0) {
 				java.awt.Component view = home.getComponent(0);
-				if (view.getClass().getName().contains("MyMuhurtaView")
-						|| isChartView(view)
-						|| view.getClass().getName().contains("MarriageMatchView")) {
+				if (isModernScreen(view)) {
 					view.setBounds(0, 0, home.getWidth(), home.getHeight());
 					view.revalidate();
 				}
@@ -641,21 +633,29 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	public void adjustChartFontSize(int delta) {
 		Chart.adjustFontOffset(delta);
-		if (currentRasiChart != null) {
-			currentRasiChart.rebuild();
-		}
-		if (currentNavamsaChart != null) {
-			currentNavamsaChart.rebuild();
-		}
+		refreshActiveModernScreenCharts();
 	}
 
 	public void resetChartFontSize() {
 		Chart.resetFontOffset();
-		if (currentRasiChart != null) {
-			currentRasiChart.rebuild();
+		refreshActiveModernScreenCharts();
+	}
+
+	private void refreshActiveModernScreenCharts() {
+		if (home.getComponentCount() > 0) {
+			java.awt.Component view = home.getComponent(0);
+			rebuildChartsInComponent(view);
+			home.repaint();
 		}
-		if (currentNavamsaChart != null) {
-			currentNavamsaChart.rebuild();
+	}
+
+	private void rebuildChartsInComponent(java.awt.Component comp) {
+		if (comp instanceof Chart) {
+			((Chart) comp).rebuild();
+		} else if (comp instanceof java.awt.Container) {
+			for (java.awt.Component child : ((java.awt.Container) comp).getComponents()) {
+				rebuildChartsInComponent(child);
+			}
 		}
 	}
 
@@ -1742,6 +1742,14 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return view != null && "ChartView".equals(view.getName());
 	}
 
+	private boolean isModernScreen(java.awt.Component view) {
+		if (view == null) return false;
+		String name = view.getClass().getName();
+		return isChartView(view)
+				|| name.contains("MarriageMatchView")
+				|| name.contains("MyMuhurtaView");
+	}
+
 	private class AstrosoftViewContainer implements ViewContainer{
 		public void addView(JPanel view){
 			home.removeAll();
@@ -1750,10 +1758,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 			refreshUI();
 			getContentPane().validate();
 			if (toolbar != null) {
-				toolbar.setChartFontControlsVisible(isChartView(view));
+				toolbar.setChartFontControlsVisible(isModernScreen(view));
 			}
 			
-			if (view.getClass().getName().contains("MyMuhurtaView") || isChartView(view) || view.getClass().getName().contains("MarriageMatchView")) {
+			if (isModernScreen(view)) {
 			    int viewW = home.getWidth();
 			    int viewH = home.getHeight();
 			    if (viewW <= 0 || viewH <= 0) {
