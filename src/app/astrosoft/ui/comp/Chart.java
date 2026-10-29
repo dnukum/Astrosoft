@@ -101,7 +101,7 @@ public class Chart extends JPanel{
 		if (houseSize.width < 85 || houseSize.height < 72) {
 			tableSize = new Dimension(Math.max(1, houseSize.width - 6), Math.max(3, houseSize.height - 4));
 		} else {
-			tableSize = new Dimension((int)(houseSize.width * 0.82), (int)(houseSize.height * 0.80));
+			tableSize = new Dimension((int)(houseSize.width * 0.88), (int)(houseSize.height * 0.86));
 		}
 		
 		rowHeight = Math.max(14, tableSize.height / 3);
@@ -272,7 +272,18 @@ public class Chart extends JPanel{
 					houseTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
 					houseTable.setRowMargin(1);
 				} else {
-					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+					int pCount = 0;
+					if (chartData instanceof PlanetChartData) {
+						PlanetChartData pcd = (PlanetChartData) chartData;
+						if (pcd.getPlanetsInRasi() != null && pcd.getPlanetsInRasi().containsKey(house)) {
+							List<Planet> pList = pcd.getPlanetsInRasi().get(house);
+							if (pList != null) {
+								pCount = pList.size();
+							}
+						}
+					}
+					int fontSize = (pCount <= 2) ? 15 : ((pCount <= 4) ? 13 : 11);
+					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
 				}
 				houseTable.setRowHeight(rowHeight);
 				houseTable.setPreferredSize(tableSize);

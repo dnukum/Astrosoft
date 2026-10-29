@@ -62,8 +62,8 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			if (p.isAsc()){
 				fgClr = UIConsts.ASCENDANT_COLOR;
 				int colW = table.getColumnModel().getColumn(column).getWidth();
-				if (colW < 22) {
-					l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 9));
+				if (colW < 24) {
+					l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, Math.max(9, c.getFont().getSize() - 2)));
 				}
 			} else if (p == Planet.Moon){
 				fgClr = UIConsts.MOON_COLOR;

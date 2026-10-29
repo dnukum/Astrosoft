@@ -635,18 +635,18 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		JPanel infoView = new InfoView(h.getHoroscopeInfo(), new Point(20,20));
 		
-		final Chart rasi = new Chart(new PlanetChartData(Varga.Rasi, h.getPlanetaryInfo()), new Dimension(360,320));
-		final Chart navamsa = new Chart(new PlanetChartData(Varga.Navamsa, h.getPlanetaryInfo()), new Dimension(360,320));
+		final Chart rasi = new Chart(new PlanetChartData(Varga.Rasi, h.getPlanetaryInfo()), new Dimension(418, 365));
+		final Chart navamsa = new Chart(new PlanetChartData(Varga.Navamsa, h.getPlanetaryInfo()), new Dimension(418, 365));
 		rasi.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
 		navamsa.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
 		rasi.setBorder(javax.swing.BorderFactory.createLineBorder(UIConsts.ASHTAVARGA_DIVIDER_CLR, 1));
 		navamsa.setBorder(javax.swing.BorderFactory.createLineBorder(UIConsts.ASHTAVARGA_DIVIDER_CLR, 1));
 
-		final JPanel rasiNavamsaPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+		final JPanel rasiNavamsaPanel = new JPanel(new GridLayout(1, 2, 22, 0));
 		rasiNavamsaPanel.setOpaque(false);
 		rasiNavamsaPanel.add(rasi);
 		rasiNavamsaPanel.add(navamsa);
-		rasiNavamsaPanel.setPreferredSize(new Dimension(740, 320));
+		rasiNavamsaPanel.setPreferredSize(new Dimension(858, 365));
 		rasiNavamsaPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 
 		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi());
@@ -663,7 +663,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		rightContainer.setLayout(new javax.swing.BoxLayout(rightContainer, javax.swing.BoxLayout.Y_AXIS));
 		rightContainer.setOpaque(false);
 		rightContainer.add(rasiNavamsaPanel);
-		rightContainer.setPreferredSize(new Dimension(760, 320));
+		rightContainer.setPreferredSize(new Dimension(858, 365));
 
 		final JPanel rightWrapper = new JPanel(new BorderLayout());
 		rightWrapper.setOpaque(false);
@@ -801,10 +801,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 				rightContainer.add(rasiNavamsaPanel);
 				if (show) {
 					rightContainer.add(ashtavargaWrapper);
-					int rightW = Math.max(760, ashtavargaWrapper.getPreferredSize().width);
-					rightContainer.setPreferredSize(new Dimension(rightW, 320 + ashtavargaWrapper.getPreferredSize().height));
+					int rightW = Math.max(858, ashtavargaWrapper.getPreferredSize().width);
+					rightContainer.setPreferredSize(new Dimension(rightW, 365 + ashtavargaWrapper.getPreferredSize().height));
 				} else {
-					rightContainer.setPreferredSize(new Dimension(760, 320));
+					rightContainer.setPreferredSize(new Dimension(858, 365));
 				}
 				rightContainer.revalidate();
 				rightContainer.repaint();
