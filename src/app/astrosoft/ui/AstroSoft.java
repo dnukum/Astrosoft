@@ -681,6 +681,22 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return count;
 	}
 
+	private static javax.swing.JComponent createThemeSeparator() {
+		javax.swing.JPanel line = new javax.swing.JPanel() {
+			@Override
+			protected void paintComponent(java.awt.Graphics g) {
+				super.paintComponent(g);
+				g.setColor(UIConsts.getChartBorderColor());
+				g.fillRect(0, 0, getWidth(), 1);
+			}
+		};
+		line.setOpaque(false);
+		line.setPreferredSize(new Dimension(530, 1));
+		line.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+		line.setMinimumSize(new Dimension(10, 1));
+		return line;
+	}
+
 	public JPanel createChartView() {
 
 		JPanel infoView = new InfoView(h.getHoroscopeInfo(), new Point(20,20));
@@ -793,26 +809,20 @@ public class AstroSoft extends javax.swing.JFrame implements
 				boolean showShadbala = shadbalaCheck.isSelected();
 				leftPanel.removeAll();
 				leftPanel.add(infoView);
-				leftPanel.add(javax.swing.Box.createVerticalStrut(16));
-				javax.swing.JSeparator sep1 = new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL);
-				sep1.setForeground(new Color(226, 232, 240));
-				leftPanel.add(sep1);
-				leftPanel.add(javax.swing.Box.createVerticalStrut(6));
+				leftPanel.add(javax.swing.Box.createVerticalStrut(14));
+				leftPanel.add(createThemeSeparator());
+				leftPanel.add(javax.swing.Box.createVerticalStrut(8));
 				leftPanel.add(controlsPanel);
 				if (showOffsets) {
-					leftPanel.add(javax.swing.Box.createVerticalStrut(6));
-					javax.swing.JSeparator sep2 = new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL);
-					sep2.setForeground(new Color(226, 232, 240));
-					leftPanel.add(sep2);
+					leftPanel.add(javax.swing.Box.createVerticalStrut(8));
+					leftPanel.add(createThemeSeparator());
 					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
 					leftPanel.add(planetOffsetsView);
 				}
 				if (showShadbala) {
 					if (!showOffsets) {
-						leftPanel.add(javax.swing.Box.createVerticalStrut(6));
-						javax.swing.JSeparator sep3 = new javax.swing.JSeparator(javax.swing.SwingConstants.HORIZONTAL);
-						sep3.setForeground(new Color(226, 232, 240));
-						leftPanel.add(sep3);
+						leftPanel.add(javax.swing.Box.createVerticalStrut(8));
+						leftPanel.add(createThemeSeparator());
 					}
 					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
 					leftPanel.add(shadbalaBarView);
