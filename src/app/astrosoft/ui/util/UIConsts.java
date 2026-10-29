@@ -149,21 +149,135 @@ public class UIConsts {
 	public static final Color ASHTAVARGA_NEUTRAL_BG = Color.WHITE;              // #FFFFFF
 	public static final Color ASHTAVARGA_DIVIDER_CLR = Color.decode("#d0a65c"); // #d0a65c Desaturated gold-ochre
 
+	public enum ChartTheme {
+		WARM_IVORY("Warm Ivory", 
+			new Color(250, 248, 242), // #FAF8F2
+			new Color(208, 166, 92),  // #D0A65C
+			new Color(30, 41, 59),    // #1E293B
+			new Color(220, 38, 38),   // #DC2626
+			new Color(2, 132, 199),   // #0284C7
+			new Color(30, 41, 59)
+		),
+		SOFT_ALABASTER("Soft Alabaster", 
+			new Color(250, 250, 249), // #FAFAF9
+			new Color(203, 213, 225), // #CBD5E1
+			new Color(15, 23, 42),    // #0F172A
+			new Color(225, 29, 72),   // #E11D48
+			new Color(2, 132, 199),   // #0284C7
+			new Color(15, 23, 42)
+		),
+		PALE_GOLD_MIST("Pale Gold Mist", 
+			new Color(252, 249, 238), // #FCF9EE
+			new Color(200, 155, 60),  // #C89B3C
+			new Color(49, 46, 129),   // #312E81
+			new Color(220, 38, 38),   // #DC2626
+			new Color(2, 132, 199),   // #0284C7
+			new Color(49, 46, 129)
+		),
+		CALM_SAGE("Calm Sage", 
+			new Color(245, 246, 243), // #F5F6F3
+			new Color(132, 150, 136), // #849688
+			new Color(30, 41, 59),    // #1E293B
+			new Color(220, 38, 38),   // #DC2626
+			new Color(2, 132, 199),   // #0284C7
+			new Color(30, 41, 59)
+		),
+		CLASSIC("Classic (Original)", 
+			new Color(255, 255, 252), // #FFFFFC YELLOWISH_WHITE
+			Color.ORANGE,             // Etched border highlight
+			new Color(0, 0, 204),     // #0000CC LIGHT_BLUE
+			Color.RED,                // Red Asc
+			Color.MAGENTA,            // Magenta Moon
+			new Color(0, 0, 140)      // #00008C DARK_BLUE score
+		);
+
+		private final String displayName;
+		private final Color background;
+		private final Color borderColor;
+		private final Color planetForeground;
+		private final Color ascendantColor;
+		private final Color moonColor;
+		private final Color scoreColor;
+
+		ChartTheme(String displayName, Color background, Color borderColor, 
+				   Color planetForeground, Color ascendantColor, Color moonColor, Color scoreColor) {
+			this.displayName = displayName;
+			this.background = background;
+			this.borderColor = borderColor;
+			this.planetForeground = planetForeground;
+			this.ascendantColor = ascendantColor;
+			this.moonColor = moonColor;
+			this.scoreColor = scoreColor;
+		}
+
+		public String displayName() { return displayName; }
+		public Color getBackground() { return background; }
+		public Color getBorderColor() { return borderColor; }
+		public Color getPlanetForeground() { return planetForeground; }
+		public Color getAscendantColor() { return ascendantColor; }
+		public Color getMoonColor() { return moonColor; }
+		public Color getScoreColor() { return scoreColor; }
+
+		public Border getBorder() {
+			if (this == CLASSIC) {
+				return BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.ORANGE, Color.WHITE);
+			}
+			return BorderFactory.createLineBorder(borderColor, 1);
+		}
+
+		@Override
+		public String toString() {
+			return displayName;
+		}
+	}
+
+	private static ChartTheme currentChartTheme = ChartTheme.WARM_IVORY;
+
+	public static ChartTheme getChartTheme() {
+		return currentChartTheme;
+	}
+
+	public static void setChartTheme(ChartTheme theme) {
+		if (theme != null) {
+			currentChartTheme = theme;
+		}
+	}
+
 	public static Border getTitleBorder(Enum title){
 		return getTitleBorder(title.toString());
 	}
 	
 	public static Color getChartBackground(){
-		return CARD_BACKGROUND;
+		return currentChartTheme.getBackground();
 	}
 	
 	public static Border getChartBorder(){
-		return BorderFactory.createLineBorder(ASHTAVARGA_DIVIDER_CLR, 1);
+		return currentChartTheme.getBorder();
+	}
+
+	public static Color getChartBorderColor(){
+		return currentChartTheme.getBorderColor();
+	}
+
+	public static Color getChartPlanetForeground(){
+		return currentChartTheme.getPlanetForeground();
+	}
+
+	public static Color getChartAscendantColor(){
+		return currentChartTheme.getAscendantColor();
+	}
+
+	public static Color getChartMoonColor(){
+		return currentChartTheme.getMoonColor();
+	}
+
+	public static Color getChartScoreColor(){
+		return currentChartTheme.getScoreColor();
 	}
 
 	public static Color getAshtavargaColor(app.astrosoft.consts.AshtavargaStrength strength) {
 		if (strength == null) {
-			return ASHTAVARGA_NEUTRAL_BG;
+			return getChartBackground();
 		}
 		switch (strength) {
 			case WEAK:
@@ -172,7 +286,7 @@ public class UIConsts {
 				return ASHTAVARGA_STRONG_BG;
 			case NEUTRAL:
 			default:
-				return ASHTAVARGA_NEUTRAL_BG;
+				return getChartBackground();
 		}
 	}
 }

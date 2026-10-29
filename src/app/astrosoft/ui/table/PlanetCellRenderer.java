@@ -80,11 +80,11 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			Color fgClr = null;
 			
 			if (p.isAsc()){
-				fgClr = UIConsts.ASCENDANT_COLOR;
+				fgClr = UIConsts.getChartAscendantColor();
 			} else if (p == Planet.Moon){
-				fgClr = UIConsts.MOON_COLOR;
+				fgClr = UIConsts.getChartMoonColor();
 			} else if (highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && planetDir.get(p)){
-				fgClr = UIConsts.TEXT_DARK_NAVY;
+				fgClr = UIConsts.getChartPlanetForeground();
 				if(expandRetrogrades){
 					l.setText(p.toString(planetFormat) + " (" + DisplayStrings.RETRO_SYM + ")");
 				} else {
@@ -94,7 +94,7 @@ public class PlanetCellRenderer implements TableCellRenderer {
 					}
 				}
 			} else {
-				fgClr = UIConsts.TEXT_DARK_NAVY;
+				fgClr = UIConsts.getChartPlanetForeground();
 			}
 			
 			l.setForeground(fgClr);

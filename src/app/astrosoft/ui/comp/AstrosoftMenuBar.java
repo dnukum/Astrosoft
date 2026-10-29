@@ -41,6 +41,7 @@ public class AstrosoftMenuBar extends JMenuBar
 	JMenuItem[] optionMenuItems;
 	JRadioButtonMenuItem[] ayaMenuItems;
     JRadioButtonMenuItem[] langMenuItems;
+    JRadioButtonMenuItem[] themeMenuItems;
     private JCheckBoxMenuItem notesMenuItem;
  	
     AstrosoftActionManager actionMgr;
@@ -131,7 +132,7 @@ public class AstrosoftMenuBar extends JMenuBar
         // Option Menu
         menu = new JMenu( "Options" );
 
-        optionSubMenus = new JMenu[2];
+        optionSubMenus = new JMenu[3];
         
         // Option Ayanamsa Sub Menu
         optionSubMenus[0] = new JMenu( "Ayanamsa " );
@@ -167,6 +168,21 @@ public class AstrosoftMenuBar extends JMenuBar
             i++;
         }
 
+        // Option Chart Theme Sub Menu
+        optionSubMenus[2] = new JMenu( "Chart Theme " );
+
+        ButtonGroup themeBtnGrp = new ButtonGroup(  );
+
+        EnumSet<Command> themeOptions = Command.themeOptions();
+        themeMenuItems = new JRadioButtonMenuItem[themeOptions.size()];
+        i = 0;
+        for ( Command theme : themeOptions ) {
+
+        	themeMenuItems[i] = new JRadioButtonMenuItem( actionMgr.getAction( theme ) );
+            optionSubMenus[2].add( themeMenuItems[i] );
+            themeBtnGrp.add( themeMenuItems[i] );
+            i++;
+        }
         
         addSubMenus(menu, optionSubMenus);
         
@@ -192,6 +208,10 @@ public class AstrosoftMenuBar extends JMenuBar
         AstrosoftPref preferences = AstroSoft.getPreferences();
         ayaMenuItems[preferences.getAyanamsa().ordinal()].setSelected( true );
         langMenuItems[preferences.getLanguage().ordinal()].setSelected( true );
+        app.astrosoft.ui.util.UIConsts.ChartTheme currentTheme = preferences.getChartTheme();
+        if (currentTheme != null && currentTheme.ordinal() < themeMenuItems.length) {
+            themeMenuItems[currentTheme.ordinal()].setSelected( true );
+        }
         
         addAllMenus();
         

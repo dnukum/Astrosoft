@@ -99,6 +99,9 @@ public class Chart extends JPanel{
 
 	public void rebuild() {
 		this.removeAll();
+		if (getBorder() != null) {
+			setBorder(UIConsts.getChartBorder());
+		}
 		addHouseTables();
 		revalidate();
 		repaint();
@@ -203,22 +206,22 @@ public class Chart extends JPanel{
 				if (isAsc && isMoon) {
 					JLabel ascLbl = new JLabel("Asc");
 					ascLbl.setFont(markerFont);
-					ascLbl.setForeground(UIConsts.ASCENDANT_COLOR);
+					ascLbl.setForeground(UIConsts.getChartAscendantColor());
 					topRow.add(ascLbl, BorderLayout.WEST);
 
 					JLabel moonLbl = new JLabel("Mo");
 					moonLbl.setFont(markerFont);
-					moonLbl.setForeground(UIConsts.MOON_COLOR);
+					moonLbl.setForeground(UIConsts.getChartMoonColor());
 					topRow.add(moonLbl, BorderLayout.EAST);
 				} else if (isAsc) {
 					JLabel ascLbl = new JLabel("Asc");
 					ascLbl.setFont(markerFont);
-					ascLbl.setForeground(UIConsts.ASCENDANT_COLOR);
+					ascLbl.setForeground(UIConsts.getChartAscendantColor());
 					topRow.add(ascLbl, BorderLayout.WEST);
 				} else if (isMoon) {
 					JLabel moonLbl = new JLabel("Mo");
 					moonLbl.setFont(markerFont);
-					moonLbl.setForeground(UIConsts.MOON_COLOR);
+					moonLbl.setForeground(UIConsts.getChartMoonColor());
 					topRow.add(moonLbl, BorderLayout.WEST);
 				}
 
@@ -228,7 +231,7 @@ public class Chart extends JPanel{
 				String valStr = (val != null) ? val.toString() : "";
 				JLabel numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER);
 				numLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, isCompact ? 12 : 15));
-				numLbl.setForeground(UIConsts.TEXT_DARK_NAVY);
+				numLbl.setForeground(UIConsts.getChartScoreColor());
 				panel.add(numLbl, BorderLayout.CENTER);
 
 				panel.add(Box.createVerticalStrut(isCompact ? 2 : 16), BorderLayout.SOUTH);
@@ -389,7 +392,7 @@ public class Chart extends JPanel{
 			cGbc.insets = new java.awt.Insets(2, 0, 0, 0);
 			JLabel subTitleLabel = new JLabel(subtitle, javax.swing.SwingConstants.CENTER);
 			subTitleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
-			subTitleLabel.setForeground(UIConsts.TEXT_DARK_NAVY);
+			subTitleLabel.setForeground(UIConsts.getChartScoreColor());
 			panel.add(subTitleLabel, cGbc);
 		}
 		

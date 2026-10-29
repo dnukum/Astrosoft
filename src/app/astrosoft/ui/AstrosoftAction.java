@@ -94,6 +94,16 @@ public class AstrosoftAction extends AbstractAction {
 			handler.optionChanged(Preference.Language, Language.ENGLISH);
 		} else if (cmd.equals(Command.LANG_TA)) {
 			handler.optionChanged(Preference.Language, Language.TAMIL);
+		} else if (cmd.equals(Command.THEME_WARM_IVORY)) {
+			handler.optionChanged(Preference.ChartTheme, app.astrosoft.ui.util.UIConsts.ChartTheme.WARM_IVORY);
+		} else if (cmd.equals(Command.THEME_SOFT_ALABASTER)) {
+			handler.optionChanged(Preference.ChartTheme, app.astrosoft.ui.util.UIConsts.ChartTheme.SOFT_ALABASTER);
+		} else if (cmd.equals(Command.THEME_PALE_GOLD_MIST)) {
+			handler.optionChanged(Preference.ChartTheme, app.astrosoft.ui.util.UIConsts.ChartTheme.PALE_GOLD_MIST);
+		} else if (cmd.equals(Command.THEME_CALM_SAGE)) {
+			handler.optionChanged(Preference.ChartTheme, app.astrosoft.ui.util.UIConsts.ChartTheme.CALM_SAGE);
+		} else if (cmd.equals(Command.THEME_CLASSIC)) {
+			handler.optionChanged(Preference.ChartTheme, app.astrosoft.ui.util.UIConsts.ChartTheme.CLASSIC);
 		} else if (Command.optionMenuItems().contains(cmd)) {
 			handler.optionChanged(Preference.valueOf(cmd.name()));
 		} else if (cmd.equals(Command.COMPUTE_NUMBER)){

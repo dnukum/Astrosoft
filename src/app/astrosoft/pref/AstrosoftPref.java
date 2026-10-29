@@ -28,7 +28,7 @@ public class AstrosoftPref {
 	public static enum Preference {
 
 		Language, PanCalcTime, EphCalcTime, Ayanamsa, Place, City, State, Country, Longitude, Latitude, TimeZone, IsInitialized,
-		AcrobatExe, AstrosoftFilesDir;
+		AcrobatExe, AstrosoftFilesDir, ChartTheme;
 	}
 
 	private static double defaultEphCalcTime = 0.0; // 12.00 AM
@@ -131,6 +131,7 @@ public class AstrosoftPref {
 		setPlace(Place.getDefault());
 		setAcrobatExecutable(defaultAcrobatExecutable);
 		setAstrosoftFilesDir(defaultAstrosoftFilesDir);
+		setChartTheme(app.astrosoft.ui.util.UIConsts.ChartTheme.WARM_IVORY);
 		
 	}
 
@@ -139,6 +140,22 @@ public class AstrosoftPref {
 			root.flush();
 		} catch (BackingStoreException e) {
 			log.log(Level.SEVERE, "Exception in flusing preferences " ,e);
+		}
+	}
+
+	public app.astrosoft.ui.util.UIConsts.ChartTheme getChartTheme() {
+		String themeStr = root.get(Preference.ChartTheme.name(), app.astrosoft.ui.util.UIConsts.ChartTheme.WARM_IVORY.name());
+		try {
+			return app.astrosoft.ui.util.UIConsts.ChartTheme.valueOf(themeStr);
+		} catch (Exception e) {
+			return app.astrosoft.ui.util.UIConsts.ChartTheme.WARM_IVORY;
+		}
+	}
+
+	public void setChartTheme(app.astrosoft.ui.util.UIConsts.ChartTheme theme) {
+		if (theme != null) {
+			root.put(Preference.ChartTheme.name(), theme.name());
+			flush();
 		}
 	}
 	
@@ -215,6 +232,9 @@ public class AstrosoftPref {
 			break;
 		case Ayanamsa:
 			setAyanamsa((Ayanamsa) value);
+			break;
+		case ChartTheme:
+			setChartTheme((app.astrosoft.ui.util.UIConsts.ChartTheme) value);
 			break;
 
 		case PanCalcTime:

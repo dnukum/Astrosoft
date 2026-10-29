@@ -143,11 +143,11 @@ public class RelativePlanetView extends JPanel {
 					comp.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
 					String text = (val != null) ? val.toString() : "";
 					if (text.startsWith("Ascendant")) {
-						comp.setForeground(UIConsts.ASCENDANT_COLOR);
+						comp.setForeground(UIConsts.getChartAscendantColor());
 					} else if (text.startsWith("Moon")) {
-						comp.setForeground(UIConsts.MOON_COLOR);
+						comp.setForeground(UIConsts.getChartMoonColor());
 					} else {
-						comp.setForeground(UIConsts.TEXT_DARK_NAVY);
+						comp.setForeground(UIConsts.getChartPlanetForeground());
 					}
 					setOpaque(false);
 					return comp;

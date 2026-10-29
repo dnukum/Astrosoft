@@ -183,6 +183,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	public AstroSoft() {
 
 		instance = this;
+		UIConsts.setChartTheme(preferences.getChartTheme());
 		initComponents();
 
         // WindowPlacement controls outer startup bounds, not the display dimensions.
@@ -677,8 +678,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 		this.currentNavamsaChart = navamsa;
 		rasi.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
 		navamsa.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
-		rasi.setBorder(javax.swing.BorderFactory.createLineBorder(UIConsts.ASHTAVARGA_DIVIDER_CLR, 1));
-		navamsa.setBorder(javax.swing.BorderFactory.createLineBorder(UIConsts.ASHTAVARGA_DIVIDER_CLR, 1));
+		rasi.setBorder(UIConsts.getChartBorder());
+		navamsa.setBorder(UIConsts.getChartBorder());
 
 		final JPanel rasiNavamsaPanel = new JPanel(new GridLayout(1, 2, 22, 0));
 		rasiNavamsaPanel.setOpaque(false);
@@ -1694,9 +1695,18 @@ public class AstroSoft extends javax.swing.JFrame implements
 		case Language:
 			optionLangChanged(((Language) value).name());
 			break;
+		case ChartTheme:
+			optionThemeChanged((app.astrosoft.ui.util.UIConsts.ChartTheme) value);
+			break;
 		}
 
 
+	}
+
+	private void optionThemeChanged(app.astrosoft.ui.util.UIConsts.ChartTheme theme) {
+		log.info("Chart Theme changed to: " + theme);
+		UIConsts.setChartTheme(theme);
+		refreshActiveModernScreenCharts();
 	}
 
 	public static AstrosoftPref getPreferences(){

@@ -69,6 +69,11 @@ public enum Command {
 	AY_KM (Ayanamsa.KRISHNAMURTHI.ayaName()),
 	LANG_EN (Language.ENGLISH.name()),
 	LANG_TA (Language.TAMIL.name()),
+	THEME_WARM_IVORY ("Warm Ivory"),
+	THEME_SOFT_ALABASTER ("Soft Alabaster"),
+	THEME_PALE_GOLD_MIST ("Pale Gold Mist"),
+	THEME_CALM_SAGE ("Calm Sage"),
+	THEME_CLASSIC ("Classic (Original)"),
 	Place (DisplayStrings.DEF_LOC_STR),
 	EphCalcTime(DisplayStrings.EPH_TIME_STR),
 	PanCalcTime(DisplayStrings.PAN_TIME_STR),
@@ -139,6 +144,10 @@ public enum Command {
 
 	public static EnumSet<Command> langOptions(){
 		return EnumSet.range(LANG_EN, LANG_TA);
+	}
+
+	public static EnumSet<Command> themeOptions(){
+		return EnumSet.range(THEME_WARM_IVORY, THEME_CLASSIC);
 	}
 
 	public static EnumSet<Command> fileMenuItems(){
