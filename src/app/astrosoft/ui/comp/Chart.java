@@ -60,6 +60,10 @@ import app.astrosoft.ui.window.WindowLabelModel;
 
 public class Chart extends JPanel{
 
+	public static final Color ASHTAVARGA_WEAK_BG = new Color(255, 240, 240);    // #FFF0F0
+	public static final Color ASHTAVARGA_STRONG_BG = new Color(234, 242, 235);  // #EAF2EB
+	public static final Color ASHTAVARGA_NEUTRAL_BG = Color.WHITE;              // #FFFFFF
+
 	private ChartData chartData;
 	
 	private List<JPanel> housePanel;
@@ -161,7 +165,6 @@ public class Chart extends JPanel{
 				app.astrosoft.beans.AshtaVargaChartData avData = (app.astrosoft.beans.AshtaVargaChartData) chartData;
 				panel.setLayout(new BorderLayout());
 				panel.setPreferredSize(houseSize);
-				panel.setBackground(UIConsts.getChartBackground());
 				panel.setBorder(UIConsts.getChartBorder());
 
 				Rasi asc = avData.getAscendant();
@@ -211,6 +214,30 @@ public class Chart extends JPanel{
 				panel.add(numLbl, BorderLayout.CENTER);
 
 				panel.add(Box.createVerticalStrut(isCompact ? 2 : 16), BorderLayout.SOUTH);
+
+				Color houseBg = ASHTAVARGA_NEUTRAL_BG;
+				if (val != null) {
+					String cName = avData.getChartName();
+					boolean isSav = (cName != null && (cName.equals("SAV") || cName.startsWith("Sarva")));
+					if (isSav) {
+						if (val <= 25) {
+							houseBg = ASHTAVARGA_WEAK_BG;
+						} else if (val >= 30) {
+							houseBg = ASHTAVARGA_STRONG_BG;
+						} else {
+							houseBg = ASHTAVARGA_NEUTRAL_BG;
+						}
+					} else {
+						if (val <= 2) {
+							houseBg = ASHTAVARGA_WEAK_BG;
+						} else if (val >= 5) {
+							houseBg = ASHTAVARGA_STRONG_BG;
+						} else {
+							houseBg = ASHTAVARGA_NEUTRAL_BG;
+						}
+					}
+				}
+				panel.setBackground(houseBg);
 
 				add(panel, getConstrains(houseNo));
 				housePanel.add(houseNo, panel);
@@ -304,7 +331,7 @@ public class Chart extends JPanel{
 		// Add ChartName and optional Subtitle at Center - Vertically and Horizontally Centered in Middle
 		houseNo = 12;
 		JPanel panel = new JPanel(new GridBagLayout());
-		panel.setBackground(UIConsts.getChartBackground());
+		panel.setBackground(chartData instanceof app.astrosoft.beans.AshtaVargaChartData ? ASHTAVARGA_NEUTRAL_BG : UIConsts.getChartBackground());
 		Dimension centerSize = new Dimension(houseSize.width * 2, houseSize.height * 2);
 		panel.setPreferredSize(centerSize);
 		panel.setMinimumSize(centerSize);

@@ -79,6 +79,33 @@ public class AshtavargaMultiGridTest {
 
             JLabel moonLabel = findLabelWithText(moonHouse, "Mo");
             assertNotNull("Mo label must be in Moon house of chart " + expectedCodes[i], moonLabel);
+
+            // Verify Ashtavarga highlight coloring
+            boolean isSav = expectedCodes[i].equals("SAV");
+            app.astrosoft.beans.AshtaVargaChartData avData = (app.astrosoft.beans.AshtaVargaChartData) cd;
+            for (Rasi r : Rasi.values()) {
+                JPanel hp = houses.get(r.ordinal());
+                Integer val = avData.getVarga().get(r);
+                if (val != null) {
+                    if (isSav) {
+                        if (val <= 25) {
+                            assertEquals("SAV weak house background", Chart.ASHTAVARGA_WEAK_BG, hp.getBackground());
+                        } else if (val >= 30) {
+                            assertEquals("SAV strong house background", Chart.ASHTAVARGA_STRONG_BG, hp.getBackground());
+                        } else {
+                            assertEquals("SAV neutral house background", Chart.ASHTAVARGA_NEUTRAL_BG, hp.getBackground());
+                        }
+                    } else {
+                        if (val <= 2) {
+                            assertEquals(expectedCodes[i] + " weak house background", Chart.ASHTAVARGA_WEAK_BG, hp.getBackground());
+                        } else if (val >= 5) {
+                            assertEquals(expectedCodes[i] + " strong house background", Chart.ASHTAVARGA_STRONG_BG, hp.getBackground());
+                        } else {
+                            assertEquals(expectedCodes[i] + " neutral house background", Chart.ASHTAVARGA_NEUTRAL_BG, hp.getBackground());
+                        }
+                    }
+                }
+            }
         }
 
         // Test pack and paint
