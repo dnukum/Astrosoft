@@ -80,30 +80,27 @@ public class AshtavargaMultiGridTest {
             JLabel moonLabel = findLabelWithText(moonHouse, "Mo");
             assertNotNull("Mo label must be in Moon house of chart " + expectedCodes[i], moonLabel);
 
-            // Verify Ashtavarga highlight coloring
+            // Verify Ashtavarga domain strength and highlight coloring
             boolean isSav = expectedCodes[i].equals("SAV");
             app.astrosoft.beans.AshtaVargaChartData avData = (app.astrosoft.beans.AshtaVargaChartData) cd;
+            assertEquals("isSarvaAshtavarga check", isSav, avData.isSarvaAshtavarga());
+
             for (Rasi r : Rasi.values()) {
                 JPanel hp = houses.get(r.ordinal());
                 Integer val = avData.getVarga().get(r);
                 if (val != null) {
+                    app.astrosoft.consts.AshtavargaStrength expectedStrength;
                     if (isSav) {
-                        if (val <= 25) {
-                            assertEquals("SAV weak house background", Chart.ASHTAVARGA_WEAK_BG, hp.getBackground());
-                        } else if (val >= 30) {
-                            assertEquals("SAV strong house background", Chart.ASHTAVARGA_STRONG_BG, hp.getBackground());
-                        } else {
-                            assertEquals("SAV neutral house background", Chart.ASHTAVARGA_NEUTRAL_BG, hp.getBackground());
-                        }
+                        expectedStrength = (val <= 25) ? app.astrosoft.consts.AshtavargaStrength.WEAK
+                                : (val >= 30) ? app.astrosoft.consts.AshtavargaStrength.STRONG
+                                : app.astrosoft.consts.AshtavargaStrength.NEUTRAL;
                     } else {
-                        if (val <= 2) {
-                            assertEquals(expectedCodes[i] + " weak house background", Chart.ASHTAVARGA_WEAK_BG, hp.getBackground());
-                        } else if (val >= 5) {
-                            assertEquals(expectedCodes[i] + " strong house background", Chart.ASHTAVARGA_STRONG_BG, hp.getBackground());
-                        } else {
-                            assertEquals(expectedCodes[i] + " neutral house background", Chart.ASHTAVARGA_NEUTRAL_BG, hp.getBackground());
-                        }
+                        expectedStrength = (val <= 2) ? app.astrosoft.consts.AshtavargaStrength.WEAK
+                                : (val >= 5) ? app.astrosoft.consts.AshtavargaStrength.STRONG
+                                : app.astrosoft.consts.AshtavargaStrength.NEUTRAL;
                     }
+                    assertEquals("Domain strength for " + expectedCodes[i] + " " + r, expectedStrength, avData.getStrength(r));
+                    assertEquals("House background for " + expectedCodes[i] + " " + r, app.astrosoft.ui.util.UIConsts.getAshtavargaColor(expectedStrength), hp.getBackground());
                 }
             }
         }

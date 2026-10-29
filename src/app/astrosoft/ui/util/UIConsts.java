@@ -152,6 +152,26 @@ public class UIConsts {
 		//new LineBorder(Color.GRAY, 1, true);
 		//BorderFactory.createBevelBorder(BevelBorder.RAISED);
 	}
+
+	public static final Color ASHTAVARGA_WEAK_BG = new Color(255, 240, 240);    // #FFF0F0
+	public static final Color ASHTAVARGA_STRONG_BG = new Color(234, 242, 235);  // #EAF2EB
+	public static final Color ASHTAVARGA_NEUTRAL_BG = Color.WHITE;              // #FFFFFF
+	public static final Color ASHTAVARGA_DIVIDER_CLR = Color.decode("#d0a65c"); // #d0a65c
+
+	public static Color getAshtavargaColor(app.astrosoft.consts.AshtavargaStrength strength) {
+		if (strength == null) {
+			return ASHTAVARGA_NEUTRAL_BG;
+		}
+		switch (strength) {
+			case WEAK:
+				return ASHTAVARGA_WEAK_BG;
+			case STRONG:
+				return ASHTAVARGA_STRONG_BG;
+			case NEUTRAL:
+			default:
+				return ASHTAVARGA_NEUTRAL_BG;
+		}
+	}
 }
 
 

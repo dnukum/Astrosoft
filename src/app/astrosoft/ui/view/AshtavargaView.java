@@ -246,7 +246,7 @@ public class AshtavargaView extends AstrosoftView {
 		final Color badgeText = new Color(26, 54, 93);
 
 		for (int i = 0; i < items.length; i++) {
-			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi), miniChartSize);
+			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi, items[i].getVargaName()), miniChartSize);
 			charts[i].setTitleFont(titleFont);
 			charts[i].setToolTipText(fullNames[i]);
 			charts[i].setTitleBadge(badgeBg, badgeBorder, badgeText);
@@ -303,7 +303,7 @@ public class AshtavargaView extends AstrosoftView {
 				int x3 = gridX + 3 * miniChartSize.width + 2 * hgap + hgap / 2;
 				int yDiv = gridY + miniChartSize.height + vgap / 2;
 
-				final Color dividerColor = Color.decode("#d0a65c");
+				final Color dividerColor = UIConsts.ASHTAVARGA_DIVIDER_CLR;
 				g2.setColor(dividerColor);
 				g2.setStroke(new BasicStroke(2.0f));
 

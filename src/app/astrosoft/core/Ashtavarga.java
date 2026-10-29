@@ -460,6 +460,10 @@ public class Ashtavarga implements Exportable {
     	}
     
 	}
+
+    public static app.astrosoft.consts.AshtavargaStrength getStrength(AshtavargaName name, int binduCount) {
+    	return app.astrosoft.consts.AshtavargaStrength.of(name, binduCount);
+    }
     
     public Table getGunaTable(final AshtavargaName ashtavargaName){
     

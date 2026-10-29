@@ -60,9 +60,9 @@ import app.astrosoft.ui.window.WindowLabelModel;
 
 public class Chart extends JPanel{
 
-	public static final Color ASHTAVARGA_WEAK_BG = new Color(255, 240, 240);    // #FFF0F0
-	public static final Color ASHTAVARGA_STRONG_BG = new Color(234, 242, 235);  // #EAF2EB
-	public static final Color ASHTAVARGA_NEUTRAL_BG = Color.WHITE;              // #FFFFFF
+	public static final Color ASHTAVARGA_WEAK_BG = UIConsts.ASHTAVARGA_WEAK_BG;
+	public static final Color ASHTAVARGA_STRONG_BG = UIConsts.ASHTAVARGA_STRONG_BG;
+	public static final Color ASHTAVARGA_NEUTRAL_BG = UIConsts.ASHTAVARGA_NEUTRAL_BG;
 
 	private ChartData chartData;
 	
@@ -215,29 +215,8 @@ public class Chart extends JPanel{
 
 				panel.add(Box.createVerticalStrut(isCompact ? 2 : 16), BorderLayout.SOUTH);
 
-				Color houseBg = ASHTAVARGA_NEUTRAL_BG;
-				if (val != null) {
-					String cName = avData.getChartName();
-					boolean isSav = (cName != null && (cName.equals("SAV") || cName.startsWith("Sarva")));
-					if (isSav) {
-						if (val <= 25) {
-							houseBg = ASHTAVARGA_WEAK_BG;
-						} else if (val >= 30) {
-							houseBg = ASHTAVARGA_STRONG_BG;
-						} else {
-							houseBg = ASHTAVARGA_NEUTRAL_BG;
-						}
-					} else {
-						if (val <= 2) {
-							houseBg = ASHTAVARGA_WEAK_BG;
-						} else if (val >= 5) {
-							houseBg = ASHTAVARGA_STRONG_BG;
-						} else {
-							houseBg = ASHTAVARGA_NEUTRAL_BG;
-						}
-					}
-				}
-				panel.setBackground(houseBg);
+				app.astrosoft.consts.AshtavargaStrength strength = avData.getStrength(house);
+				panel.setBackground(UIConsts.getAshtavargaColor(strength));
 
 				add(panel, getConstrains(houseNo));
 				housePanel.add(houseNo, panel);

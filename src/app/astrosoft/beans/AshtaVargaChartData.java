@@ -24,11 +24,13 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
 
 	private EnumMap<Rasi, Integer> varga;
 	private Rasi moonRasi;
+	private AshtavargaName vargaName;
 	
 	public AshtaVargaChartData(AshtavargaName name, EnumMap<Rasi, Integer> varga) {
 		super();
 		
 		this.varga = varga;
+		this.vargaName = name;
 		chartName = name.toString();
 		
 		int count = Ashtavarga.getCount(name);
@@ -38,15 +40,42 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
 	}
 
 	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga) {
-		this(displayName, varga, null, null);
+		this(displayName, varga, null, null, null);
 	}
 
 	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga, Rasi ascendant, Rasi moonRasi) {
+		this(displayName, varga, ascendant, moonRasi, null);
+	}
+
+	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga, Rasi ascendant, Rasi moonRasi, AshtavargaName vargaName) {
 		super();
 		this.varga = varga;
 		this.chartName = displayName;
 		this.ascendant = ascendant;
 		this.moonRasi = moonRasi;
+		this.vargaName = vargaName;
+	}
+
+	public boolean isSarvaAshtavarga() {
+		if (vargaName != null) {
+			return vargaName == AshtavargaName.SarvaAshtavarga;
+		}
+		return chartName != null && (chartName.equals("SAV") || chartName.startsWith("Sarva"));
+	}
+
+	public app.astrosoft.consts.AshtavargaStrength getStrength(Rasi house) {
+		if (varga == null) {
+			return app.astrosoft.consts.AshtavargaStrength.NEUTRAL;
+		}
+		Integer bindus = varga.get(house);
+		if (bindus == null) {
+			return app.astrosoft.consts.AshtavargaStrength.NEUTRAL;
+		}
+		return app.astrosoft.consts.AshtavargaStrength.of(isSarvaAshtavarga(), bindus);
+	}
+
+	public AshtavargaName getVargaName() {
+		return vargaName;
 	}
 
 	public Rasi getMoonRasi() {
