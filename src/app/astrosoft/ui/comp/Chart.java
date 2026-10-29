@@ -6,17 +6,21 @@
 
 package app.astrosoft.ui.comp;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -69,6 +73,10 @@ public class Chart extends JPanel{
 	private JLabel title;
 	private String subtitle;
 	private boolean showHouseNumber = true;
+
+	private boolean showTitleBadge = false;
+	private Color badgeBgColor;
+	private Color badgeBorderColor;
 	
 	public Chart(ChartData chartData, Dimension chartSize) {
 		this(chartData, chartSize, null, true);
@@ -127,6 +135,9 @@ public class Chart extends JPanel{
     }
 
 	private void addHouseTables() {
+		if (housePanel != null) {
+			housePanel.clear();
+		}
 		
 		Set<Rasi> dataHouses = chartData.getHouses();
 		boolean isPlanetChart = (chartData instanceof PlanetChartData);
@@ -304,7 +315,32 @@ public class Chart extends JPanel{
 		cGbc.gridx = 0;
 		cGbc.gridy = 0;
 		cGbc.anchor = GridBagConstraints.CENTER;
-		panel.add(title, cGbc);
+
+		if (showTitleBadge && badgeBgColor != null) {
+			JPanel badge = new JPanel(new GridBagLayout()) {
+				@Override
+				protected void paintComponent(Graphics g) {
+					super.paintComponent(g);
+					Graphics2D g2 = (Graphics2D) g.create();
+					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					int arc = Math.min(getHeight(), 14);
+					g2.setColor(badgeBgColor);
+					g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
+					if (badgeBorderColor != null) {
+						g2.setColor(badgeBorderColor);
+						g2.setStroke(new BasicStroke(1.2f));
+						g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc, arc);
+					}
+					g2.dispose();
+				}
+			};
+			badge.setOpaque(false);
+			badge.setBorder(BorderFactory.createEmptyBorder(2, 9, 2, 9));
+			badge.add(title);
+			panel.add(badge, cGbc);
+		} else {
+			panel.add(title, cGbc);
+		}
 		
 		if (subtitle != null && !subtitle.trim().isEmpty()) {
 			cGbc.gridy = 1;
@@ -338,6 +374,19 @@ public class Chart extends JPanel{
 
 	public void setTitleFont(Font font){
 		title.setFont(font);
+	}
+
+	public void setTitleBadge(Color bgColor, Color borderColor, Color textColor) {
+		this.showTitleBadge = true;
+		this.badgeBgColor = bgColor;
+		this.badgeBorderColor = borderColor;
+		if (textColor != null) {
+			this.title.setForeground(textColor);
+		}
+		this.removeAll();
+		addHouseTables();
+		revalidate();
+		repaint();
 	}
 
 	public void setHouseBackground(Rasi house, Color bg) {

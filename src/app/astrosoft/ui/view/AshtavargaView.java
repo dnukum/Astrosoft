@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Path2D;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -244,6 +245,13 @@ public class AshtavargaView extends AstrosoftView {
 			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi), miniChartSize);
 			charts[i].setTitleFont(titleFont);
 			charts[i].setToolTipText(fullNames[i]);
+			if (i == 0) {
+				// SAV: Indigo title badge
+				charts[i].setTitleBadge(new Color(224, 231, 255), new Color(99, 102, 241), new Color(30, 27, 75));
+			} else {
+				// Planets: Warm amber-gold title badge
+				charts[i].setTitleBadge(new Color(254, 243, 199), new Color(212, 163, 75), new Color(26, 54, 93));
+			}
 		}
 
 		final JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
@@ -264,8 +272,31 @@ public class AshtavargaView extends AstrosoftView {
 
 		final JPanel gridContainer = new JPanel(new GridLayout(2, 4, hgap, vgap));
 		gridContainer.setOpaque(false);
-		for (Chart c : charts) {
-			gridContainer.add(c);
+
+		// Accent SAV Card container
+		final JPanel savCard = new JPanel(new BorderLayout()) {
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2.setColor(new Color(244, 246, 255)); // Soft indigo-white tint
+				g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 6, 6);
+				g2.setColor(new Color(99, 102, 241)); // Distinct indigo accent border
+				g2.setStroke(new BasicStroke(2.0f));
+				g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 6, 6);
+				g2.dispose();
+			}
+		};
+		savCard.setOpaque(false);
+		savCard.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+		savCard.add(charts[0], BorderLayout.CENTER);
+
+		gridContainer.add(savCard);
+
+		// Remaining 7 planet charts without card wrappers
+		for (int i = 1; i < charts.length; i++) {
+			gridContainer.add(charts[i]);
 		}
 
 		final JPanel mainPanel = new JPanel(null) {
