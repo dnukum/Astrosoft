@@ -268,6 +268,11 @@ public class AshtavargaView extends AstrosoftView {
 		final int hgap = 14;
 		final int vgap = 12;
 
+		final int gridW = 4 * miniChartSize.width + 3 * hgap;
+		final int gridH = 2 * miniChartSize.height + vgap;
+		final int gridX = (cardWidth - gridW) / 2;
+		final int gridY = 28;
+
 		final JPanel gridContainer = new JPanel(new GridLayout(2, 4, hgap, vgap));
 		gridContainer.setOpaque(false);
 		for (Chart c : charts) {
@@ -291,6 +296,24 @@ public class AshtavargaView extends AstrosoftView {
 
 				int headerX = headerPanel.getX();
 				int headerW = headerPanel.getWidth();
+
+				// Grid delineators (dark blue dividers across charts)
+				int x1 = gridX + miniChartSize.width + hgap / 2;
+				int x2 = gridX + 2 * miniChartSize.width + hgap + hgap / 2;
+				int x3 = gridX + 3 * miniChartSize.width + 2 * hgap + hgap / 2;
+				int yDiv = gridY + miniChartSize.height + vgap / 2;
+
+				g2.setColor(UIConsts.DARK_BLUE);
+				g2.setStroke(new BasicStroke(2.0f));
+
+				// Horizontal divider dividing Row 1 and Row 2
+				g2.drawLine(boxLeft, yDiv, boxRight, yDiv);
+
+				// 3 vertical dividers dividing the 4 columns
+				g2.drawLine(x1, boxTop, x1, boxBottom);
+				g2.drawLine(x3, boxTop, x3, boxBottom);
+				int headerBottom = Math.max(boxTop, headerPanel.getY() + headerPanel.getHeight() - 4);
+				g2.drawLine(x2, headerBottom, x2, boxBottom);
 
 				Path2D p = new Path2D.Double();
 				// Top-left line running snug to header
@@ -338,10 +361,6 @@ public class AshtavargaView extends AstrosoftView {
 		int headerX = (cardWidth - hd.width) / 2;
 		headerPanel.setBounds(headerX, 0, hd.width, 28);
 
-		int gridW = 4 * miniChartSize.width + 3 * hgap;
-		int gridH = 2 * miniChartSize.height + vgap;
-		int gridX = (cardWidth - gridW) / 2;
-		int gridY = 28;
 		gridContainer.setBounds(gridX, gridY, gridW, gridH);
 
 		mainPanel.add(headerPanel);
