@@ -495,6 +495,10 @@ public class Chart extends JPanel{
 		return c;
 	}
 
+	public ChartData getChartData() {
+		return chartData;
+	}
+
 	public void updateChartData(ChartData chartData){
 		updateChartData(chartData, this.subtitle);
 	}

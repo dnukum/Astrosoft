@@ -239,6 +239,13 @@ public class TransitChartDialogTest extends TestCase {
         assertTrue("Table must be below buttons: buttonBottom=" + buttonBottomY + ", tableTop=" + tableTopY,
                 tableTopY >= buttonBottomY);
 
+        java.awt.Rectangle updateBounds = javax.swing.SwingUtilities.convertRectangle(
+                dialog.getUpdateButton().getParent(), dialog.getUpdateButton().getBounds(), dialog.getContentPane());
+        int updateTopY = updateBounds.y;
+        int tableBottomY = scrollBounds.y + scrollBounds.height;
+        assertTrue("Update button must be below table: tableBottom=" + tableBottomY + ", updateTop=" + updateTopY,
+                updateTopY >= tableBottomY);
+
         dialog.dispose();
         frame.dispose();
     }
@@ -283,6 +290,112 @@ public class TransitChartDialogTest extends TestCase {
         assertEquals("Sun", table.getValueAt(0, 0));
         assertEquals("Mesha -> Vrishabha", table.getValueAt(0, 1));
         assertNotNull(table.getValueAt(0, 2));
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testUpdateButtonStateAndSelection() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new StubTransitChartComputation());
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        javax.swing.JTable table = dialog.getDetailsTable();
+
+        assertNotNull(updateBtn);
+        assertNotNull(table);
+        assertTrue("Row selection must be allowed", table.getRowSelectionAllowed());
+        assertEquals(javax.swing.ListSelectionModel.SINGLE_SELECTION, table.getSelectionModel().getSelectionMode());
+
+        // Initially disabled
+        assertFalse("Update button should be disabled when no row is selected", updateBtn.isEnabled());
+
+        // Select a row
+        table.setRowSelectionInterval(1, 1);
+        assertTrue("Update button should be enabled when a row is selected", updateBtn.isEnabled());
+
+        // Deselect
+        table.clearSelection();
+        assertFalse("Update button should be disabled when selection is cleared", updateBtn.isEnabled());
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testUpdateActionWithStubComputation() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        Date initialInstant = new Date(1700000000000L);
+        TransitChartDialog dialog = new TransitChartDialog(frame, initialInstant, place, new StubTransitChartComputation());
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        javax.swing.JTable table = dialog.getDetailsTable();
+
+        assertEquals(initialInstant, dialog.getSelectedInstant());
+
+        // Select Moon row (index 1)
+        table.setRowSelectionInterval(1, 1);
+        assertTrue(updateBtn.isEnabled());
+
+        // Click Update
+        updateBtn.doClick();
+
+        // Stub returns instant + 1 day (86400000L)
+        Date expectedDate = TransitChartDialog.roundUpToMinute(new Date(initialInstant.getTime() + 86400000L));
+        assertEquals(expectedDate, dialog.getSelectedInstant());
+        assertFalse("Update button should be disabled after update", updateBtn.isEnabled());
+        assertEquals(-1, table.getSelectedRow());
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testUpdateActionWithRealComputation() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        Calendar cal = Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+        cal.set(2026, Calendar.NOVEMBER, 1, 0, 0, 0); // 1 Nov 2026, 12:00 AM
+        Date initialTime = cal.getTime();
+
+        TransitChartDialog dialog = new TransitChartDialog(frame, initialTime, place, new DefaultTransitChartComputation());
+        dialog.setExpanded(true);
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        javax.swing.JTable table = dialog.getDetailsTable();
+
+        // Row 1 is Moon
+        assertEquals("Moon", table.getValueAt(1, 0));
+        assertEquals("Mithuna -> Kataka", table.getValueAt(1, 1));
+        String initialMoonDateStr = (String) table.getValueAt(1, 2);
+        assertTrue("Moon transition should be on 1 Nov 2026: " + initialMoonDateStr,
+                initialMoonDateStr.contains("1 Nov 2026") || initialMoonDateStr.contains("Nov 1, 2026"));
+
+        // Select Moon row
+        table.setRowSelectionInterval(1, 1);
+        assertTrue(updateBtn.isEnabled());
+
+        // Click Update
+        updateBtn.doClick();
+
+        // Selected instant should now be the Moon transition time
+        assertTrue("Chart subtitle should reflect new time: " + dialog.getChart().getSubtitle(),
+                dialog.getChart().getSubtitle().contains("1 Nov 2026") || dialog.getChart().getSubtitle().contains("Nov 1, 2026"));
+
+        // Moon in the updated chart must now have entered Kataka (>= 90 deg)
+        app.astrosoft.beans.PlanetChartData planetChartData = (app.astrosoft.beans.PlanetChartData) dialog.getChart().getChartData();
+        assertNotNull(planetChartData);
+        double moonPos = planetChartData.getPlanetLongitude(Planet.Moon);
+        assertEquals(app.astrosoft.consts.Rasi.Kataka, app.astrosoft.consts.Rasi.ofDeg(moonPos));
+        assertTrue("Kataka should contain Moon", planetChartData.getPlanetsInRasi().get(app.astrosoft.consts.Rasi.Kataka).contains(Planet.Moon));
+
+        // Ascendant should be calculated for the new time
+        assertNotNull(planetChartData.getAscendant());
+        assertNotNull(planetChartData.getPlanetLongitude(Planet.Ascendant));
+
+        // Update button should be disabled and selection cleared
+        assertFalse("Update button should be disabled after update completes", updateBtn.isEnabled());
+        assertEquals(-1, table.getSelectedRow());
+
+        // The Moon row in the newly refreshed table should now show its NEXT transition (Kataka -> Simha)
+        assertEquals("Kataka -> Simha", table.getValueAt(1, 1));
 
         dialog.dispose();
         frame.dispose();

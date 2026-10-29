@@ -15,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -24,7 +25,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,11 +43,14 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     private final JButton editButton;
     private final JButton moreButton;
+    private final JButton updateButton;
+    private final JPanel updateButtonBar;
     private final JPanel chartHolder;
     private final JScrollPane detailsScrollPane;
     private final JTable detailsTable;
     private final DefaultTableModel tableModel;
     private final TransitChartComputation computation;
+    private final List<Date> rowTransitionDates = new ArrayList<>();
 
     private Place currentPlace;
     private Date selectedInstant;
@@ -111,8 +117,15 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsTable.setFont(new Font("Verdana", Font.PLAIN, 11));
         detailsTable.getTableHeader().setFont(new Font("Verdana", Font.BOLD, 11));
         detailsTable.getTableHeader().setReorderingAllowed(false);
-        detailsTable.setRowSelectionAllowed(false);
-        detailsTable.setFocusable(false);
+        detailsTable.setRowSelectionAllowed(true);
+        detailsTable.setColumnSelectionAllowed(false);
+        detailsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        detailsTable.setFocusable(true);
+        detailsTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateUpdateButtonState();
+            }
+        });
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
@@ -135,6 +148,19 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsScrollPane.setVisible(false);
         contentPanel.add(detailsScrollPane);
 
+        // Update button below table
+        updateButtonBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 6));
+        updateButtonBar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        updateButtonBar.setBackground(UIConsts.THEME_CLR);
+        updateButtonBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
+        updateButton = new JButton("Update");
+        updateButton.setEnabled(false);
+        updateButton.addActionListener(e -> onUpdateClicked());
+        updateButtonBar.add(updateButton);
+        updateButtonBar.setVisible(false);
+        contentPanel.add(updateButtonBar);
+
         dlgPanel.add(contentPanel, BorderLayout.CENTER);
 
         add(dlgPanel);
@@ -155,9 +181,10 @@ public class TransitChartDialog extends AstrosoftDialog {
         this.isExpanded = expanded;
         moreButton.setText(isExpanded ? "Less..." : "More...");
         detailsScrollPane.setVisible(isExpanded);
+        updateButtonBar.setVisible(isExpanded);
         if (isExpanded) {
-            setMinimumSize(new Dimension(320, 540));
-            setSize(new Dimension(Math.max(getWidth(), 360), 615));
+            setMinimumSize(new Dimension(320, 580));
+            setSize(new Dimension(Math.max(getWidth(), 360), 655));
         } else {
             setMinimumSize(MIN_DLG_SIZE);
             setSize(new Dimension(getWidth(), 395));
@@ -215,6 +242,8 @@ public class TransitChartDialog extends AstrosoftDialog {
             return;
         }
         tableModel.setRowCount(0);
+        rowTransitionDates.clear();
+
         Map<Planet, TransitChartComputation.SignTransition> transitions =
                 computation.computeSignTransitions(getSelectedInstant(), currentPlace, planetaryInfo);
 
@@ -226,11 +255,43 @@ public class TransitChartDialog extends AstrosoftDialog {
         for (Planet p : Planet.allPlanets()) {
             TransitChartComputation.SignTransition trans = transitions != null ? transitions.get(p) : null;
             String signChangeStr = trans != null ? trans.getTransitionString() : "—";
-            String dateChangeStr = (trans != null && trans.getTransitionDate() != null)
-                    ? sdf.format(roundUpToMinute(trans.getTransitionDate()))
+            Date roundedDate = (trans != null && trans.getTransitionDate() != null)
+                    ? roundUpToMinute(trans.getTransitionDate())
+                    : null;
+            String dateChangeStr = (roundedDate != null)
+                    ? sdf.format(roundedDate)
                     : "—";
 
+            rowTransitionDates.add(roundedDate);
             tableModel.addRow(new Object[]{p.toString(), signChangeStr, dateChangeStr});
+        }
+        if (detailsTable != null) {
+            detailsTable.clearSelection();
+        }
+        updateUpdateButtonState();
+    }
+
+    private void updateUpdateButtonState() {
+        if (updateButton == null || detailsTable == null) {
+            return;
+        }
+        int selectedRow = detailsTable.getSelectedRow();
+        if (selectedRow >= 0 && selectedRow < rowTransitionDates.size()) {
+            Date targetDate = rowTransitionDates.get(selectedRow);
+            updateButton.setEnabled(targetDate != null);
+        } else {
+            updateButton.setEnabled(false);
+        }
+    }
+
+    private void onUpdateClicked() {
+        int selectedRow = detailsTable.getSelectedRow();
+        if (selectedRow >= 0 && selectedRow < rowTransitionDates.size()) {
+            Date targetDate = rowTransitionDates.get(selectedRow);
+            if (targetDate != null) {
+                selectedInstant = targetDate;
+                updateChart();
+            }
         }
     }
 
@@ -288,6 +349,10 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     public JButton getMoreButton() {
         return moreButton;
+    }
+
+    public JButton getUpdateButton() {
+        return updateButton;
     }
 
     public JTable getDetailsTable() {
