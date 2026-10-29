@@ -81,6 +81,7 @@ public class Chart extends JPanel{
 	private boolean showTitleBadge = false;
 	private Color badgeBgColor;
 	private Color badgeBorderColor;
+	private Color badgeTextColor;
 	
 	public Chart(ChartData chartData, Dimension chartSize) {
 		this(chartData, chartSize, null, true);
@@ -345,7 +346,7 @@ public class Chart extends JPanel{
 			badge.setOpaque(false);
 			badge.setBorder(BorderFactory.createEmptyBorder(4, 14, 4, 14));
 			title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-			title.setForeground(Color.WHITE);
+			title.setForeground(badgeTextColor != null ? badgeTextColor : Color.WHITE);
 			badge.add(title);
 			panel.add(badge, cGbc);
 		} else {
@@ -390,9 +391,7 @@ public class Chart extends JPanel{
 		this.showTitleBadge = true;
 		this.badgeBgColor = bgColor;
 		this.badgeBorderColor = borderColor;
-		if (textColor != null) {
-			this.title.setForeground(textColor);
-		}
+		this.badgeTextColor = textColor;
 		this.removeAll();
 		addHouseTables();
 		revalidate();

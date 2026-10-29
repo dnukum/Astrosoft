@@ -243,7 +243,7 @@ public class AshtavargaView extends AstrosoftView {
 		final Font titleFont = UIUtil.getFont(Font.BOLD, 13);
 		final Color badgeBg = new Color(254, 243, 199);
 		final Color badgeBorder = new Color(212, 163, 75);
-		final Color badgeText = new Color(26, 54, 93);
+		final Color badgeText = UIConsts.TEXT_DARK_NAVY;
 
 		for (int i = 0; i < items.length; i++) {
 			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi, items[i].getVargaName()), miniChartSize);
