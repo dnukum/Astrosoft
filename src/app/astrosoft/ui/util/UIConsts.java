@@ -143,7 +143,7 @@ public class UIConsts {
 	public static final Color TEXT_DARK_NAVY = new Color(30, 41, 59); // #1E293B Dark navy/charcoal
 	public static final Color NAVY_BADGE_BG = new Color(15, 30, 60); // #0F1E3C Modern dark navy badge
 	public static final Color ASCENDANT_COLOR = new Color(220, 38, 38); // #DC2626 Modern clean red
-	public static final Color MOON_COLOR = new Color(124, 58, 237); // #7C3AED Muted violet/indigo
+	public static final Color MOON_COLOR = new Color(2, 132, 199); // #0284C7 Sky / Cerulean Blue
 	public static final Color ASHTAVARGA_WEAK_BG = new Color(255, 240, 240);    // #FFF0F0
 	public static final Color ASHTAVARGA_STRONG_BG = new Color(234, 242, 235);  // #EAF2EB
 	public static final Color ASHTAVARGA_NEUTRAL_BG = Color.WHITE;              // #FFFFFF
