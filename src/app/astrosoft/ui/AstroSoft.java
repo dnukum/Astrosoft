@@ -429,6 +429,11 @@ public class AstroSoft extends javax.swing.JFrame implements
 		setJMenuBar(mbar);
 
 		toolbar = new AstrosoftToolBar(actionMgr);
+		toolbar.setFontAdjustmentActions(
+			() -> adjustChartFontSize(1),
+			() -> adjustChartFontSize(-1),
+			() -> resetChartFontSize()
+		);
 
 		this.add(toolbar, BorderLayout.PAGE_START);
 
@@ -631,12 +636,37 @@ public class AstroSoft extends javax.swing.JFrame implements
 		viewManager.showView(View.CHART_VIEW);
 	}
 
+	private Chart currentRasiChart;
+	private Chart currentNavamsaChart;
+
+	public void adjustChartFontSize(int delta) {
+		Chart.adjustFontOffset(delta);
+		if (currentRasiChart != null) {
+			currentRasiChart.rebuild();
+		}
+		if (currentNavamsaChart != null) {
+			currentNavamsaChart.rebuild();
+		}
+	}
+
+	public void resetChartFontSize() {
+		Chart.resetFontOffset();
+		if (currentRasiChart != null) {
+			currentRasiChart.rebuild();
+		}
+		if (currentNavamsaChart != null) {
+			currentNavamsaChart.rebuild();
+		}
+	}
+
 	public JPanel createChartView() {
 
 		JPanel infoView = new InfoView(h.getHoroscopeInfo(), new Point(20,20));
 		
 		final Chart rasi = new Chart(new PlanetChartData(Varga.Rasi, h.getPlanetaryInfo()), new Dimension(418, 365));
 		final Chart navamsa = new Chart(new PlanetChartData(Varga.Navamsa, h.getPlanetaryInfo()), new Dimension(418, 365));
+		this.currentRasiChart = rasi;
+		this.currentNavamsaChart = navamsa;
 		rasi.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
 		navamsa.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
 		rasi.setBorder(javax.swing.BorderFactory.createLineBorder(UIConsts.ASHTAVARGA_DIVIDER_CLR, 1));
@@ -1719,6 +1749,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 			
 			refreshUI();
 			getContentPane().validate();
+			if (toolbar != null) {
+				toolbar.setChartFontControlsVisible(isChartView(view));
+			}
 			
 			if (view.getClass().getName().contains("MyMuhurtaView") || isChartView(view) || view.getClass().getName().contains("MarriageMatchView")) {
 			    int viewW = home.getWidth();

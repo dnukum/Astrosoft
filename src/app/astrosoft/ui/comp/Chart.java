@@ -82,6 +82,27 @@ public class Chart extends JPanel{
 	private Color badgeBgColor;
 	private Color badgeBorderColor;
 	private Color badgeTextColor;
+
+	private static int fontOffset = 0;
+
+	public static int getFontOffset() {
+		return fontOffset;
+	}
+
+	public static void adjustFontOffset(int delta) {
+		fontOffset = Math.max(-4, Math.min(8, fontOffset + delta));
+	}
+
+	public static void resetFontOffset() {
+		fontOffset = 0;
+	}
+
+	public void rebuild() {
+		this.removeAll();
+		addHouseTables();
+		revalidate();
+		repaint();
+	}
 	
 	public Chart(ChartData chartData, Dimension chartSize) {
 		this(chartData, chartSize, null, true);
@@ -282,7 +303,8 @@ public class Chart extends JPanel{
 							}
 						}
 					}
-					int fontSize = (pCount <= 2) ? 15 : ((pCount <= 4) ? 13 : 11);
+					int baseFontSize = (pCount <= 2) ? 15 : ((pCount <= 4) ? 13 : 11);
+					int fontSize = Math.max(9, baseFontSize + fontOffset);
 					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
 				}
 				houseTable.setRowHeight(rowHeight);
