@@ -306,6 +306,8 @@ public class TransitChartDialogTest extends TestCase {
         assertNotNull(table);
         assertTrue("Row selection must be allowed", table.getRowSelectionAllowed());
         assertEquals(javax.swing.ListSelectionModel.SINGLE_SELECTION, table.getSelectionModel().getSelectionMode());
+        assertEquals(new java.awt.Color(198, 222, 255), table.getSelectionBackground());
+        assertEquals(new java.awt.Color(0, 0, 120), table.getSelectionForeground());
 
         // Initially disabled
         assertFalse("Update button should be disabled when no row is selected", updateBtn.isEnabled());

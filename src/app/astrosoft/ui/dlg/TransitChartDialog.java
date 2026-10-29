@@ -121,9 +121,20 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsTable.setColumnSelectionAllowed(false);
         detailsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         detailsTable.setFocusable(true);
+        detailsTable.setSelectionBackground(new java.awt.Color(198, 222, 255));
+        detailsTable.setSelectionForeground(new java.awt.Color(0, 0, 120));
+        detailsTable.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
         detailsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 updateUpdateButtonState();
+            }
+        });
+        detailsTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2 && javax.swing.SwingUtilities.isLeftMouseButton(e)) {
+                    onUpdateClicked();
+                }
             }
         });
 
