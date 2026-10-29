@@ -633,30 +633,38 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	public void adjustChartFontSize(int delta) {
 		Chart.adjustFontOffset(delta);
+		log.info("adjustChartFontSize: delta=" + delta + ", current fontOffset=" + Chart.getFontOffset());
 		refreshActiveModernScreenCharts();
 	}
 
 	public void resetChartFontSize() {
 		Chart.resetFontOffset();
+		log.info("resetChartFontSize: fontOffset reset to 0");
 		refreshActiveModernScreenCharts();
 	}
 
 	private void refreshActiveModernScreenCharts() {
 		if (home.getComponentCount() > 0) {
 			java.awt.Component view = home.getComponent(0);
-			rebuildChartsInComponent(view);
+			int count = rebuildChartsInComponent(view);
+			log.info("refreshActiveModernScreenCharts: rebuilt " + count + " Chart instances in active view " + (view != null ? view.getClass().getSimpleName() : "null") + " (fontOffset=" + Chart.getFontOffset() + ")");
 			home.repaint();
+		} else {
+			log.info("refreshActiveModernScreenCharts: home has no components");
 		}
 	}
 
-	private void rebuildChartsInComponent(java.awt.Component comp) {
+	private int rebuildChartsInComponent(java.awt.Component comp) {
+		int count = 0;
 		if (comp instanceof Chart) {
 			((Chart) comp).rebuild();
+			count++;
 		} else if (comp instanceof java.awt.Container) {
 			for (java.awt.Component child : ((java.awt.Container) comp).getComponents()) {
-				rebuildChartsInComponent(child);
+				count += rebuildChartsInComponent(child);
 			}
 		}
+		return count;
 	}
 
 	public JPanel createChartView() {

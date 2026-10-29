@@ -16,6 +16,7 @@ import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -31,6 +32,7 @@ import app.astrosoft.ui.util.UIConsts;
 
 public class AstrosoftToolBar extends JToolBar
 {
+	private static final Logger log = Logger.getLogger(AstrosoftToolBar.class.getName());
 	
 	List<JButton> buttons ;
 	private JSeparator fontSeparator;
@@ -83,6 +85,7 @@ public class AstrosoftToolBar extends JToolBar
         btnFontDec.setPreferredSize(new Dimension(30, 24));
         btnFontDec.setForeground(UIConsts.TEXT_DARK_NAVY);
         btnFontDec.addActionListener(e -> {
+            log.info("Toolbar A- clicked");
             if (onDecFont != null) onDecFont.run();
         });
 
@@ -94,6 +97,7 @@ public class AstrosoftToolBar extends JToolBar
         btnFontInc.setPreferredSize(new Dimension(30, 24));
         btnFontInc.setForeground(UIConsts.TEXT_DARK_NAVY);
         btnFontInc.addActionListener(e -> {
+            log.info("Toolbar A+ clicked");
             if (onIncFont != null) onIncFont.run();
         });
 
@@ -105,6 +109,7 @@ public class AstrosoftToolBar extends JToolBar
         btnFontReset.setPreferredSize(new Dimension(42, 24));
         btnFontReset.setForeground(UIConsts.LABEL_MUTED_COLOR);
         btnFontReset.addActionListener(e -> {
+            log.info("Toolbar 100% clicked");
             if (onResetFont != null) onResetFont.run();
         });
 

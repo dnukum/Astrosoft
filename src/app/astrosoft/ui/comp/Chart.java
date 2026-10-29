@@ -290,7 +290,9 @@ public class Chart extends JPanel{
 
 				//houseTable.setDefaultRenderer(Planet.class, new PlanetCellRenderer());
 				if (houseSize.height < 68) {
-					houseTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+					int baseCompact = (houseSize.height < 52) ? 9 : 10;
+					int fontSize = Math.max(8, baseCompact + fontOffset);
+					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
 					houseTable.setRowMargin(1);
 				} else {
 					int pCount = 0;

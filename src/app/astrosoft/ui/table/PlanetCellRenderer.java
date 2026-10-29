@@ -8,6 +8,7 @@ package app.astrosoft.ui.table;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.util.EnumMap;
 
 import javax.swing.JLabel;
@@ -54,7 +55,9 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			JLabel l = new JLabel(((JLabel)c).getText());
 			Planet p = (Planet)value;
 			
-			l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, c.getFont().getSize()));
+			Font tblFont = (table != null) ? table.getFont() : null;
+			int targetSize = (tblFont != null) ? tblFont.getSize() : c.getFont().getSize();
+			l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, targetSize));
 			l.setText(p.toString(planetFormat));
 			
 			Color fgClr = null;
@@ -63,7 +66,7 @@ public class PlanetCellRenderer implements TableCellRenderer {
 				fgClr = UIConsts.ASCENDANT_COLOR;
 				int colW = table.getColumnModel().getColumn(column).getWidth();
 				if (colW < 24) {
-					l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, Math.max(9, c.getFont().getSize() - 2)));
+					l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, Math.max(9, targetSize - 2)));
 				}
 			} else if (p == Planet.Moon){
 				fgClr = UIConsts.MOON_COLOR;
