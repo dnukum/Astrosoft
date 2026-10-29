@@ -117,7 +117,7 @@ public class RelativePlanetView extends JPanel {
 		setMinimumSize(panelSize);
 		setMaximumSize(panelSize);
 
-		title = new JLabel("Planet Offset in Rasi", SwingConstants.CENTER);
+		title = new JLabel("Planetary Positions", SwingConstants.CENTER);
 		title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
 		title.setForeground(UIConsts.TEXT_DARK_NAVY);
 		title.setBounds(0, 0, cardWidth, 20);
@@ -132,9 +132,9 @@ public class RelativePlanetView extends JPanel {
 			table.setOpaque(false);
 			javax.swing.table.TableColumn pCol = table.getColumnModel().getColumn(0);
 			javax.swing.table.TableColumn lCol = table.getColumnModel().getColumn(1);
-			pCol.setPreferredWidth(85);
-			pCol.setMaxWidth(95);
-			lCol.setPreferredWidth(140);
+			pCol.setPreferredWidth(90);
+			pCol.setMaxWidth(100);
+			lCol.setPreferredWidth(145);
 
 			pCol.setCellRenderer(new DefaultTableCellRenderer() {
 				@Override
@@ -168,7 +168,7 @@ public class RelativePlanetView extends JPanel {
 			gridPanel.add(table);
 		}
 		
-		gridPanel.setBounds(32, 40, 466, 110);
+		gridPanel.setBounds(20, 36, 490, 114);
 		add(gridPanel);
 	}
 
@@ -179,7 +179,7 @@ public class RelativePlanetView extends JPanel {
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		int arc = 12;
-		int gap = 8;
+		int gap = 16;
 
 		int boxLeft = 2;
 		int boxRight = 528;

@@ -763,7 +763,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		controlsPanel.setMinimumSize(new Dimension(300, 28));
 		controlsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
 
-		final javax.swing.JCheckBox planetOffsetsCheck = new javax.swing.JCheckBox("Planet Offsets");
+		final javax.swing.JCheckBox planetOffsetsCheck = new javax.swing.JCheckBox("Planetary Positions");
 		planetOffsetsCheck.setSelected(true);
 		planetOffsetsCheck.setOpaque(false);
 		planetOffsetsCheck.setFocusable(false);
@@ -833,6 +833,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 				leftWrapper.setPreferredSize(new Dimension(530, Math.max(540, h)));
 				leftWrapper.revalidate();
 				leftWrapper.repaint();
+				int rightW = rightContainer.getPreferredSize().width;
+				int totalW = 530 + 40 + rightW;
+				int totalH = Math.max(leftWrapper.getPreferredSize().height, rightContainer.getPreferredSize().height);
+				contentPanel.setPreferredSize(new Dimension(totalW, totalH));
 				contentPanel.revalidate();
 				contentPanel.repaint();
 				contentWrapper.revalidate();
@@ -872,6 +876,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 				rightContainer.repaint();
 				rightWrapper.revalidate();
 				rightWrapper.repaint();
+				int totalW = 530 + 40 + rightContainer.getPreferredSize().width;
+				int totalH = Math.max(leftWrapper.getPreferredSize().height, rightContainer.getPreferredSize().height);
+				contentPanel.setPreferredSize(new Dimension(totalW, totalH));
 				contentPanel.revalidate();
 				contentPanel.repaint();
 				contentWrapper.revalidate();

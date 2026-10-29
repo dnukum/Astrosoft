@@ -34,6 +34,7 @@ import app.astrosoft.ui.util.UIConsts;
 public class InfoView extends AstrosoftView {
 
 	private List<AstrosoftTable> createdTables = new ArrayList<AstrosoftTable>();
+	private JLabel titleLabel;
 
 	public static String formatInfoValue(String key, String value) {
 		if (value == null || value.trim().isEmpty()) return "";
@@ -232,6 +233,15 @@ public class InfoView extends AstrosoftView {
     		infoPanel.add(infoTable);
     	}
     	
+    	titleLabel = new JLabel("Information", SwingConstants.CENTER);
+    	titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+    	titleLabel.setForeground(UIConsts.getChartPlanetForeground());
+    	JPanel headerPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+    	headerPanel.setOpaque(false);
+    	headerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 8, 0));
+    	headerPanel.add(titleLabel);
+
+    	add(headerPanel, BorderLayout.NORTH);
     	add(infoPanel, BorderLayout.CENTER);
 
     	int maxTableH = 0;
@@ -246,7 +256,7 @@ public class InfoView extends AstrosoftView {
     	setOpaque(true);
     	updateTheme();
 
-    	Dimension exactSize = new Dimension(530, maxTableH + 24);
+    	Dimension exactSize = new Dimension(530, maxTableH + 46);
     	setPreferredSize(exactSize);
     	setMinimumSize(exactSize);
     	setMaximumSize(exactSize);
@@ -258,6 +268,9 @@ public class InfoView extends AstrosoftView {
     		UIConsts.getChartBorder(),
     		javax.swing.BorderFactory.createEmptyBorder(10, 14, 10, 14)
     	));
+    	if (titleLabel != null) {
+    		titleLabel.setForeground(UIConsts.getChartPlanetForeground());
+    	}
     	if (createdTables != null) {
     		for (AstrosoftTable tbl : createdTables) {
     			tbl.repaint();
