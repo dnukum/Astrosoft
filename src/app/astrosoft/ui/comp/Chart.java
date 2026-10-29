@@ -158,28 +158,34 @@ public class Chart extends JPanel{
 				boolean isAsc = (asc == house);
 				boolean isMoon = (moon == house);
 
+				boolean isCompact = (houseSize.width < 60 || houseSize.height < 50);
+
 				JPanel topRow = new JPanel(new BorderLayout());
 				topRow.setOpaque(false);
-				topRow.setBorder(BorderFactory.createEmptyBorder(5, 7, 0, 7));
+				topRow.setBorder(BorderFactory.createEmptyBorder(isCompact ? 1 : 5, isCompact ? 2 : 7, 0, isCompact ? 2 : 7));
+
+				Font markerFont = isCompact 
+						? (isAsc && isMoon ? app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 8) : app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 9))
+						: app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12);
 
 				if (isAsc && isMoon) {
 					JLabel ascLbl = new JLabel("Asc");
-					ascLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+					ascLbl.setFont(markerFont);
 					ascLbl.setForeground(Color.RED);
 					topRow.add(ascLbl, BorderLayout.WEST);
 
 					JLabel moonLbl = new JLabel("Mo");
-					moonLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+					moonLbl.setFont(markerFont);
 					moonLbl.setForeground(Color.MAGENTA);
 					topRow.add(moonLbl, BorderLayout.EAST);
 				} else if (isAsc) {
 					JLabel ascLbl = new JLabel("Asc");
-					ascLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+					ascLbl.setFont(markerFont);
 					ascLbl.setForeground(Color.RED);
 					topRow.add(ascLbl, BorderLayout.WEST);
 				} else if (isMoon) {
 					JLabel moonLbl = new JLabel("Mo");
-					moonLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+					moonLbl.setFont(markerFont);
 					moonLbl.setForeground(Color.MAGENTA);
 					topRow.add(moonLbl, BorderLayout.WEST);
 				}
@@ -189,11 +195,11 @@ public class Chart extends JPanel{
 				Integer val = avData.getVarga().get(house);
 				String valStr = (val != null) ? val.toString() : "";
 				JLabel numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER);
-				numLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 15));
+				numLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, isCompact ? 12 : 15));
 				numLbl.setForeground(UIConsts.DARK_BLUE);
 				panel.add(numLbl, BorderLayout.CENTER);
 
-				panel.add(Box.createVerticalStrut(16), BorderLayout.SOUTH);
+				panel.add(Box.createVerticalStrut(isCompact ? 2 : 16), BorderLayout.SOUTH);
 
 				add(panel, getConstrains(houseNo));
 				housePanel.add(houseNo, panel);

@@ -644,7 +644,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		rasiNavamsaPanel.setPreferredSize(new Dimension(740, 320));
 		rasiNavamsaPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 
-		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi());
+		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi());
 
 		final JPanel ashtavargaWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		ashtavargaWrapper.setOpaque(false);
