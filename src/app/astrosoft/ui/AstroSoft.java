@@ -691,8 +691,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 			}
 		};
 		line.setOpaque(false);
+		line.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 		line.setPreferredSize(new Dimension(530, 1));
-		line.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+		line.setMaximumSize(new Dimension(530, 1));
 		line.setMinimumSize(new Dimension(10, 1));
 		return line;
 	}

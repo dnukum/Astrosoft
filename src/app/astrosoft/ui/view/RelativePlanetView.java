@@ -178,23 +178,29 @@ public class RelativePlanetView extends JPanel {
 		Graphics2D g2 = (Graphics2D) g.create();
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+		int currentW = getWidth();
+		if (currentW <= 0) currentW = 530;
+		int currentH = getHeight();
+		if (currentH <= 0) currentH = 184;
+
 		int arc = 12;
 		int gap = 16;
 
 		int boxLeft = 2;
-		int boxRight = 528;
+		int boxRight = currentW - 4;
 		int boxTop = 10;
-		int boxBottom = 180;
+		int boxBottom = currentH - 5;
 
 		// Theme card background
 		g2.setColor(UIConsts.getChartBackground());
 		g2.fillRoundRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop, arc, arc);
 
+		title.setBounds(0, 0, currentW, 20);
 		title.setForeground(UIConsts.getChartPlanetForeground());
 
 		FontMetrics fm = title.getFontMetrics(title.getFont());
 		int textW = fm.stringWidth(title.getText());
-		int textX = (getWidth() - textW) / 2;
+		int textX = (currentW - textW) / 2;
 
 		Path2D p = new Path2D.Double();
 		// Top-left line to title cutout
