@@ -174,8 +174,8 @@ public class AshtavargaView extends AstrosoftView {
 				// Top-left rounded corner
 				p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
 
-				g2.setColor(new Color(210, 180, 120)); // Warm gold border
-				g2.setStroke(new BasicStroke(1.5f));
+				g2.setColor(Color.decode("#d0a65c")); // Warm gold-ochre border
+				g2.setStroke(new BasicStroke(1.8f));
 				g2.draw(p);
 				g2.dispose();
 			}
@@ -297,13 +297,14 @@ public class AshtavargaView extends AstrosoftView {
 				int headerX = headerPanel.getX();
 				int headerW = headerPanel.getWidth();
 
-				// Grid delineators (dark blue dividers across charts)
+				// Grid delineators (warm gold-ochre dividers across charts)
 				int x1 = gridX + miniChartSize.width + hgap / 2;
 				int x2 = gridX + 2 * miniChartSize.width + hgap + hgap / 2;
 				int x3 = gridX + 3 * miniChartSize.width + 2 * hgap + hgap / 2;
 				int yDiv = gridY + miniChartSize.height + vgap / 2;
 
-				g2.setColor(UIConsts.DARK_BLUE);
+				final Color dividerColor = Color.decode("#d0a65c");
+				g2.setColor(dividerColor);
 				g2.setStroke(new BasicStroke(2.0f));
 
 				// Horizontal divider dividing Row 1 and Row 2
@@ -345,8 +346,8 @@ public class AshtavargaView extends AstrosoftView {
 				// Top-left rounded corner
 				p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
 
-				g2.setColor(new Color(210, 180, 120)); // Warm gold border
-				g2.setStroke(new BasicStroke(1.5f));
+				g2.setColor(Color.decode("#d0a65c")); // Warm gold-ochre border
+				g2.setStroke(new BasicStroke(1.8f));
 				g2.draw(p);
 				g2.dispose();
 			}
