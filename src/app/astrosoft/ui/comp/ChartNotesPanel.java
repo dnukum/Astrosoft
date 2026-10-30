@@ -823,6 +823,17 @@ public class ChartNotesPanel extends JPanel {
             return super.getPreferredSpan(axis);
         }
 
+        @Override
+        public float getAlignment(int axis) {
+            if (axis == View.Y_AXIS) {
+                // Return 0.0f (top-alignment) so that Swing's baseline calculation
+                // never assigns a negative Y-offset to the image, which would cause it
+                // to render upwards and clobber preceding lines of text.
+                return 0.0f;
+            }
+            return super.getAlignment(axis);
+        }
+
         private int getCustomWidth() {
             Object attr = getElement().getAttributes().getAttribute(HTML.Attribute.WIDTH);
             if (attr != null) {
@@ -880,14 +891,13 @@ public class ChartNotesPanel extends JPanel {
     public void insertImageAtCaret(Image rawImg) {
         if (!editor.isEnabled() || !editor.isEditable() || rawImg == null) return;
         try {
-            BufferedImage prepared = prepareImageForNotes(rawImg, 500);
+            BufferedImage prepared = prepareImageForNotes(rawImg, 480);
             if (prepared == null) return;
             String b64 = encodeImageToBase64Png(prepared);
             if (b64 == null) return;
 
             int w = prepared.getWidth();
             int h = prepared.getHeight();
-            String imgHtml = "<p><img src=\"data:image/png;base64," + b64 + "\" width=\"" + w + "\" height=\"" + h + "\" /></p>";
 
             int pos = editor.getCaretPosition();
             editor.replaceSelection("");
@@ -895,12 +905,13 @@ public class ChartNotesPanel extends JPanel {
             HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
             HTMLDocument doc = (HTMLDocument) editor.getDocument();
             if (doc.getLength() == 0 || editor.getText().replaceAll("<[^>]*>", "").trim().isEmpty()) {
-                editor.setText("<html><head></head><body>" + imgHtml + "<p><br></p></body></html>");
+                editor.setText("<html><head></head><body><p><img src=\"data:image/png;base64," + b64 + "\" width=\"" + w + "\" height=\"" + h + "\" /></p><p><br></p></body></html>");
             } else {
+                String imgHtml = "<br><img src=\"data:image/png;base64," + b64 + "\" width=\"" + w + "\" height=\"" + h + "\" /><br>";
                 try {
                     kit.insertHTML(doc, pos, imgHtml, 0, 0, HTML.Tag.IMG);
                 } catch (Exception ex) {
-                    kit.insertHTML(doc, doc.getLength(), "<p><br></p>" + imgHtml + "<p><br></p>", 0, 0, HTML.Tag.IMG);
+                    kit.insertHTML(doc, doc.getLength(), "<br>" + imgHtml, 0, 0, HTML.Tag.IMG);
                 }
             }
             syncToHoroscope();

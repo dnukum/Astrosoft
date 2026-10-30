@@ -145,4 +145,79 @@ public class ChartNotesImagePasteTest {
         assertNotNull("Loaded BirthData must not be null", loadedBd);
         assertEquals("Loaded notes must preserve image HTML", imgHtml, loadedBd.getNotes());
     }
+
+    @Test
+    public void testPastingImageDoesNotClobberPrecedingLines() throws Exception {
+        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        ChartNotesPanel panel = new ChartNotesPanel();
+        panel.setHoroscope(h);
+
+        String initialHtml = "<p>Client Details</p>"
+                + "<p>Line 1</p>"
+                + "<p>Line 2</p>"
+                + "<p>Line 7</p>"
+                + "<p>Family Lineage</p>";
+        panel.getEditor().setText(initialHtml);
+
+        javax.swing.text.Document doc = panel.getEditor().getDocument();
+        String fullText = doc.getText(0, doc.getLength());
+        int pos7 = fullText.indexOf("Line 7");
+        int posAfter7 = fullText.indexOf("\n", pos7);
+        if (posAfter7 == -1) posAfter7 = pos7 + "Line 7".length();
+        panel.getEditor().setCaretPosition(posAfter7);
+
+        // Paste an image of 300x200
+        BufferedImage dummy = new BufferedImage(300, 200, BufferedImage.TYPE_INT_RGB);
+        panel.insertImageAtCaret(dummy);
+
+        // Verify document structure and view hierarchy
+        JFrame frame = new JFrame();
+        frame.getContentPane().add(panel);
+        frame.setSize(500, 800);
+        frame.pack();
+
+        BufferedImage canvas = new BufferedImage(500, 800, BufferedImage.TYPE_INT_RGB);
+        Graphics2D gCanvas = canvas.createGraphics();
+        panel.paint(gCanvas);
+        gCanvas.dispose();
+        frame.dispose();
+
+        // Crucial invariant: The image must not be placed at negative offset or above preceding line
+        javax.swing.text.View rootView = panel.getEditor().getUI().getRootView(panel.getEditor());
+        java.awt.Rectangle rootAlloc = new java.awt.Rectangle(0, 0, 500, 800);
+        java.awt.Rectangle imgAlloc = findViewBounds(rootView, rootAlloc, ChartNotesPanel.Base64ImageView.class);
+        assertNotNull("Base64ImageView must be present in view tree", imgAlloc);
+
+        int line7Pos = panel.getEditor().getDocument().getText(0, panel.getEditor().getDocument().getLength()).indexOf("Line 7");
+        java.awt.Shape line7Shape = panel.getEditor().modelToView2D(line7Pos);
+        assertNotNull("Line 7 shape must exist", line7Shape);
+
+        assertTrue("Image Y (" + imgAlloc.y + ") must be below Line 7 Y (" + line7Shape.getBounds().y + ")",
+                imgAlloc.y >= line7Shape.getBounds().y);
+
+        // Verify that all original text sections still exist in the document
+        String resultText = panel.getEditor().getDocument().getText(0, panel.getEditor().getDocument().getLength());
+        assertTrue(resultText.contains("Client Details"));
+        assertTrue(resultText.contains("Line 1"));
+        assertTrue(resultText.contains("Line 2"));
+        assertTrue(resultText.contains("Line 7"));
+        assertTrue(resultText.contains("Family Lineage"));
+    }
+
+    private java.awt.Rectangle findViewBounds(javax.swing.text.View v, java.awt.Shape alloc, Class<?> targetClass) {
+        if (targetClass.isInstance(v)) {
+            return (alloc != null) ? alloc.getBounds() : null;
+        }
+        for (int i = 0; i < v.getViewCount(); i++) {
+            java.awt.Shape childAlloc = null;
+            if (alloc != null) {
+                try {
+                    childAlloc = v.getChildAllocation(i, alloc);
+                } catch (Exception ignored) {}
+            }
+            java.awt.Rectangle res = findViewBounds(v.getView(i), childAlloc, targetClass);
+            if (res != null) return res;
+        }
+        return null;
+    }
 }
