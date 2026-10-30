@@ -737,6 +737,29 @@ public class ChartNotesPanel extends JPanel {
         }
     }
 
+    public void insertHtmlAtCaret(String htmlSnippet) {
+        if (!editor.isEnabled() || !editor.isEditable() || htmlSnippet == null || htmlSnippet.trim().isEmpty()) return;
+        try {
+            int pos = editor.getCaretPosition();
+            editor.replaceSelection("");
+            pos = editor.getCaretPosition();
+            HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
+            HTMLDocument doc = (HTMLDocument) editor.getDocument();
+            if (doc.getLength() == 0 || editor.getText().replaceAll("<[^>]*>", "").trim().isEmpty()) {
+                editor.setText("<html><head></head><body>" + htmlSnippet + "<p><br></p></body></html>");
+            } else {
+                try {
+                    kit.insertHTML(doc, pos, htmlSnippet, 0, 0, HTML.Tag.BODY);
+                } catch (Exception ex) {
+                    kit.insertHTML(doc, doc.getLength(), "<p><br></p>" + htmlSnippet + "<p><br></p>", 0, 0, HTML.Tag.BODY);
+                }
+            }
+            syncToHoroscope();
+        } catch (Exception ex) {
+            editor.replaceSelection("\n" + htmlSnippet + "\n");
+        }
+    }
+
     public static class NotesHTMLEditorKit extends HTMLEditorKit {
         @Override
         public ViewFactory getViewFactory() {
@@ -973,6 +996,15 @@ public class ChartNotesPanel extends JPanel {
                         String tableHtml = convertTabDelimitedToHtmlTable(rawText);
                         if (tableHtml != null && !tableHtml.trim().isEmpty()) {
                             insertHtmlTableAtCaret(tableHtml);
+                            return;
+                        }
+                    }
+
+                    // 4b. If plain text contains Markdown formatting (headings, markdown tables, bold/italic, lists)
+                    if (rawText != null && app.astrosoft.ui.util.MarkdownParser.isMarkdown(rawText)) {
+                        String mdHtml = app.astrosoft.ui.util.MarkdownParser.toHtml(rawText);
+                        if (mdHtml != null && !mdHtml.trim().isEmpty()) {
+                            insertHtmlAtCaret(mdHtml);
                             return;
                         }
                     }
