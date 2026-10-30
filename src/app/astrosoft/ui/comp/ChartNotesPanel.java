@@ -13,13 +13,23 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.Base64;
+import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
@@ -49,9 +59,12 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.StyledEditorKit;
+import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.ImageView;
 import javax.swing.text.html.StyleSheet;
 
 import app.astrosoft.beans.NotesOwner;
@@ -62,9 +75,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
 
 public class ChartNotesPanel extends JPanel {
 
@@ -216,6 +226,10 @@ public class ChartNotesPanel extends JPanel {
             g2.drawLine(x + 3, y + 6, x + 1, y + 8);
             g2.dispose();
         }
+    }
+
+    public ChartNotesPanel() {
+        this(null);
     }
 
     public ChartNotesPanel(NotesListener listener) {
@@ -403,7 +417,7 @@ public class ChartNotesPanel extends JPanel {
         editor.setMargin(new Insets(10, 12, 10, 12));
         editor.setBackground(Color.WHITE);
 
-        HTMLEditorKit kit = new HTMLEditorKit();
+        HTMLEditorKit kit = new NotesHTMLEditorKit();
         StyleSheet styleSheet = kit.getStyleSheet();
         styleSheet.addRule("body { font-family: Arial, Helvetica, sans-serif; font-size: 13pt; line-height: 1.45; margin: 10px 12px; color: #1a1a1a; }");
         styleSheet.addRule("p { margin-top: 0px; margin-bottom: 8px; line-height: 1.45; }");
@@ -723,6 +737,155 @@ public class ChartNotesPanel extends JPanel {
         }
     }
 
+    public static class NotesHTMLEditorKit extends HTMLEditorKit {
+        @Override
+        public ViewFactory getViewFactory() {
+            return new HTMLFactory() {
+                @Override
+                public View create(javax.swing.text.Element elem) {
+                    Object o = elem.getAttributes().getAttribute(javax.swing.text.StyleConstants.NameAttribute);
+                    if (o instanceof HTML.Tag) {
+                        HTML.Tag kind = (HTML.Tag) o;
+                        if (kind == HTML.Tag.IMG) {
+                            return new Base64ImageView(elem);
+                        }
+                    }
+                    return super.create(elem);
+                }
+            };
+        }
+    }
+
+    public static class Base64ImageView extends ImageView {
+        private Image cachedImage;
+
+        public Base64ImageView(javax.swing.text.Element elem) {
+            super(elem);
+            initializeImage();
+        }
+
+        private void initializeImage() {
+            String src = (String) getElement().getAttributes().getAttribute(HTML.Attribute.SRC);
+            if (src != null && src.startsWith("data:image/")) {
+                try {
+                    int comma = src.indexOf(',');
+                    if (comma != -1) {
+                        String b64 = src.substring(comma + 1);
+                        byte[] bytes = Base64.getDecoder().decode(b64);
+                        cachedImage = ImageIO.read(new ByteArrayInputStream(bytes));
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        @Override
+        public Image getImage() {
+            if (cachedImage != null) {
+                return cachedImage;
+            }
+            return super.getImage();
+        }
+
+        @Override
+        public float getPreferredSpan(int axis) {
+            if (cachedImage != null) {
+                int w = getCustomWidth();
+                int h = getCustomHeight();
+                if (axis == View.X_AXIS) {
+                    return (w > 0) ? w : cachedImage.getWidth(null);
+                } else {
+                    return (h > 0) ? h : cachedImage.getHeight(null);
+                }
+            }
+            return super.getPreferredSpan(axis);
+        }
+
+        private int getCustomWidth() {
+            Object attr = getElement().getAttributes().getAttribute(HTML.Attribute.WIDTH);
+            if (attr != null) {
+                try { return Integer.parseInt(attr.toString()); } catch (Exception ignored) {}
+            }
+            return (cachedImage != null) ? cachedImage.getWidth(null) : 0;
+        }
+
+        private int getCustomHeight() {
+            Object attr = getElement().getAttributes().getAttribute(HTML.Attribute.HEIGHT);
+            if (attr != null) {
+                try { return Integer.parseInt(attr.toString()); } catch (Exception ignored) {}
+            }
+            return (cachedImage != null) ? cachedImage.getHeight(null) : 0;
+        }
+    }
+
+    public static BufferedImage prepareImageForNotes(Image img, int maxWidth) {
+        if (img == null) return null;
+        int w = img.getWidth(null);
+        int h = img.getHeight(null);
+        if (w <= 0 || h <= 0) {
+            javax.swing.ImageIcon icon = new javax.swing.ImageIcon(img);
+            w = icon.getIconWidth();
+            h = icon.getIconHeight();
+        }
+        if (w <= 0 || h <= 0) return null;
+
+        int targetW = w;
+        int targetH = h;
+        if (w > maxWidth) {
+            targetW = maxWidth;
+            targetH = Math.max(1, (int) Math.round(((double) h * maxWidth) / w));
+        }
+
+        BufferedImage bImg = new BufferedImage(targetW, targetH, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = bImg.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(Color.WHITE);
+        g2.fillRect(0, 0, targetW, targetH);
+        g2.drawImage(img, 0, 0, targetW, targetH, null);
+        g2.dispose();
+        return bImg;
+    }
+
+    public static String encodeImageToBase64Png(BufferedImage img) throws java.io.IOException {
+        if (img == null) return null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "png", baos);
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
+    }
+
+    public void insertImageAtCaret(Image rawImg) {
+        if (!editor.isEnabled() || !editor.isEditable() || rawImg == null) return;
+        try {
+            BufferedImage prepared = prepareImageForNotes(rawImg, 500);
+            if (prepared == null) return;
+            String b64 = encodeImageToBase64Png(prepared);
+            if (b64 == null) return;
+
+            int w = prepared.getWidth();
+            int h = prepared.getHeight();
+            String imgHtml = "<p><img src=\"data:image/png;base64," + b64 + "\" width=\"" + w + "\" height=\"" + h + "\" /></p>";
+
+            int pos = editor.getCaretPosition();
+            editor.replaceSelection("");
+            pos = editor.getCaretPosition();
+            HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
+            HTMLDocument doc = (HTMLDocument) editor.getDocument();
+            if (doc.getLength() == 0 || editor.getText().replaceAll("<[^>]*>", "").trim().isEmpty()) {
+                editor.setText("<html><head></head><body>" + imgHtml + "<p><br></p></body></html>");
+            } else {
+                try {
+                    kit.insertHTML(doc, pos, imgHtml, 0, 0, HTML.Tag.IMG);
+                } catch (Exception ex) {
+                    kit.insertHTML(doc, doc.getLength(), "<p><br></p>" + imgHtml + "<p><br></p>", 0, 0, HTML.Tag.IMG);
+                }
+            }
+            syncToHoroscope();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private Action createSmartPasteAction() {
         return new AbstractAction("Paste") {
             @Override
@@ -730,6 +893,40 @@ public class ChartNotesPanel extends JPanel {
                 if (!editor.isEnabled() || !editor.isEditable()) return;
                 try {
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+                    // 0a. Inspect direct Image flavor (Mac Cmd+Ctrl+Shift+4 or copied image)
+                    if (clipboard.isDataFlavorAvailable(DataFlavor.imageFlavor)) {
+                        try {
+                            Image img = (Image) clipboard.getData(DataFlavor.imageFlavor);
+                            if (img != null) {
+                                insertImageAtCaret(img);
+                                return;
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+
+                    // 0b. Inspect copied image files from Finder / File Explorer
+                    if (clipboard.isDataFlavorAvailable(DataFlavor.javaFileListFlavor)) {
+                        try {
+                            List<?> files = (List<?>) clipboard.getData(DataFlavor.javaFileListFlavor);
+                            if (files != null && !files.isEmpty()) {
+                                for (Object item : files) {
+                                    if (item instanceof File) {
+                                        File f = (File) item;
+                                        String name = f.getName().toLowerCase();
+                                        if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".gif") || name.endsWith(".bmp")) {
+                                            BufferedImage fileImg = ImageIO.read(f);
+                                            if (fileImg != null) {
+                                                insertImageAtCaret(fileImg);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+
                     String htmlData = null;
                     String rawText = null;
 
@@ -1338,7 +1535,15 @@ public class ChartNotesPanel extends JPanel {
     public boolean isEmpty() {
         try {
             String text = editor.getDocument().getText(0, editor.getDocument().getLength()).trim();
-            return text.isEmpty();
+            if (!text.isEmpty()) {
+                return false;
+            }
+            // Check if document contains images or tables even if text is whitespace
+            String fullHtml = editor.getText();
+            if (fullHtml != null && (fullHtml.contains("<img") || fullHtml.contains("<table"))) {
+                return false;
+            }
+            return true;
         } catch (Exception e) {
             return true;
         }
