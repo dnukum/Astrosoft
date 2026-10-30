@@ -58,6 +58,22 @@ public class DefaultTransitChartComputation implements TransitChartComputation {
                 : sh.getPlanetaryPosition();
 
         Map<Planet, SignTransition> transitions = new EnumMap<Planet, SignTransition>(Planet.class);
+
+        // Ascendant sign transition
+        Double ascPos = positions.get(Planet.Ascendant);
+        if (ascPos == null) {
+            double[] ac = new double[10];
+            double[] housePos = new double[13];
+            sh.getSwissEph().swe_houses(jdNow, SwissHelper.HOUSE_FLAG, place.latitude(), place.longitude(), SwissHelper.HOUSE_SYSTEM, housePos, ac);
+            ascPos = housePos[1];
+        }
+        if (ascPos != null) {
+            SignTransition ascTrans = getAscendantSignTransition(sh.getSwissEph(), ascPos, jdNow, place.latitude(), place.longitude());
+            if (ascTrans != null) {
+                transitions.put(Planet.Ascendant, ascTrans);
+            }
+        }
+
         for (Planet p : Planet.allPlanets()) {
             Double pos = positions.get(p);
             if (pos != null) {
@@ -68,6 +84,35 @@ public class DefaultTransitChartComputation implements TransitChartComputation {
             }
         }
         return transitions;
+    }
+
+    private SignTransition getAscendantSignTransition(swisseph.SwissEph sw, double ascPos, double jdNow, double lat, double lon) {
+        Rasi currentRasi = Rasi.ofDeg(ascPos);
+        Rasi nextRasi = currentRasi.next();
+        double boundary = (currentRasi.ordinal() + 1) * 30.0;
+        double degToTravel = boundary - ascPos;
+        if (degToTravel <= 0.0001) {
+            degToTravel += 30.0;
+        }
+
+        double low = jdNow;
+        double high = jdNow + 0.15; // ~3.6 hours is guaranteed to cross into next sign
+        double[] ac = new double[10];
+        double[] positions = new double[13];
+
+        for (int i = 0; i < 25; i++) {
+            double mid = (low + high) / 2.0;
+            sw.swe_houses(mid, SwissHelper.HOUSE_FLAG, lat, lon, SwissHelper.HOUSE_SYSTEM, positions, ac);
+            double midDeg = positions[1];
+            double moved = (midDeg - ascPos + 360.0) % 360.0;
+            if (moved < degToTravel) {
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+        double targetJd = (low + high) / 2.0;
+        return new SignTransition(currentRasi, nextRasi, SweDate.getDate(targetJd));
     }
 
     private SignTransition getSignTransition(SwissHelper sh, Planet p, double pos, double jdNow) {

@@ -37,8 +37,8 @@ public class TransitChartDialog extends AstrosoftDialog {
     private static final Logger log = Logger.getLogger(TransitChartDialog.class.getName());
 
     public static final String CHART_TITLE = "Transit (D1)";
-    private static final Dimension DLG_SIZE = new Dimension(360, 395);
-    private static final Dimension MIN_DLG_SIZE = new Dimension(320, 360);
+    private static final Dimension DLG_SIZE = new Dimension(380, 395);
+    private static final Dimension MIN_DLG_SIZE = new Dimension(360, 360);
     private static final Dimension CHART_SIZE = new Dimension(300, 300);
 
     private final JButton editButton;
@@ -143,14 +143,14 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
         detailsTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
 
-        detailsTable.getColumnModel().getColumn(0).setPreferredWidth(65);
-        detailsTable.getColumnModel().getColumn(1).setPreferredWidth(140);
-        detailsTable.getColumnModel().getColumn(2).setPreferredWidth(145);
+        detailsTable.getColumnModel().getColumn(0).setPreferredWidth(60);
+        detailsTable.getColumnModel().getColumn(1).setPreferredWidth(130);
+        detailsTable.getColumnModel().getColumn(2).setPreferredWidth(155);
 
         detailsScrollPane = new JScrollPane(detailsTable);
         detailsScrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
-        detailsScrollPane.setPreferredSize(new Dimension(320, 206));
-        detailsScrollPane.setMinimumSize(new Dimension(280, 100));
+        detailsScrollPane.setPreferredSize(new Dimension(345, 228));
+        detailsScrollPane.setMinimumSize(new Dimension(320, 100));
         detailsScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         detailsScrollPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(4, 10, 8, 10),
@@ -194,8 +194,8 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsScrollPane.setVisible(isExpanded);
         updateButtonBar.setVisible(isExpanded);
         if (isExpanded) {
-            setMinimumSize(new Dimension(320, 580));
-            setSize(new Dimension(Math.max(getWidth(), 360), 655));
+            setMinimumSize(new Dimension(360, 600));
+            setSize(new Dimension(Math.max(getWidth(), 380), 675));
         } else {
             setMinimumSize(MIN_DLG_SIZE);
             setSize(new Dimension(getWidth(), 395));
@@ -263,6 +263,20 @@ public class TransitChartDialog extends AstrosoftDialog {
             sdf.setTimeZone(currentPlace.astrosoftTimeZone().getTimeZone());
         }
 
+        // 1. ASC as the first row
+        TransitChartComputation.SignTransition ascTrans = transitions != null ? transitions.get(Planet.Ascendant) : null;
+        String ascSignChangeStr = ascTrans != null ? ascTrans.getTransitionString() : "—";
+        Date roundedAscDate = (ascTrans != null && ascTrans.getTransitionDate() != null)
+                ? roundUpToMinute(ascTrans.getTransitionDate())
+                : null;
+        String ascDateChangeStr = (roundedAscDate != null)
+                ? sdf.format(roundedAscDate)
+                : "—";
+
+        rowTransitionDates.add(roundedAscDate);
+        tableModel.addRow(new Object[]{"ASC", ascSignChangeStr, ascDateChangeStr});
+
+        // 2. Grahas (Sun, Moon, etc.)
         for (Planet p : Planet.allPlanets()) {
             TransitChartComputation.SignTransition trans = transitions != null ? transitions.get(p) : null;
             String signChangeStr = trans != null ? trans.getTransitionString() : "—";

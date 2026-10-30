@@ -286,10 +286,14 @@ public class TransitChartDialogTest extends TestCase {
         assertEquals("Sign Change", table.getColumnName(1));
         assertEquals("Date Change", table.getColumnName(2));
 
-        assertEquals(9, table.getRowCount()); // 9 grahas
-        assertEquals("Sun", table.getValueAt(0, 0));
+        assertEquals(10, table.getRowCount()); // ASC + 9 grahas
+        assertEquals("ASC", table.getValueAt(0, 0));
         assertEquals("Mesha -> Vrishabha", table.getValueAt(0, 1));
         assertNotNull(table.getValueAt(0, 2));
+
+        assertEquals("Sun", table.getValueAt(1, 0));
+        assertEquals("Mesha -> Vrishabha", table.getValueAt(1, 1));
+        assertNotNull(table.getValueAt(1, 2));
 
         dialog.dispose();
         frame.dispose();
@@ -363,15 +367,23 @@ public class TransitChartDialogTest extends TestCase {
         javax.swing.JButton updateBtn = dialog.getUpdateButton();
         javax.swing.JTable table = dialog.getDetailsTable();
 
-        // Row 1 is Moon
-        assertEquals("Moon", table.getValueAt(1, 0));
-        assertEquals("Mithuna -> Kataka", table.getValueAt(1, 1));
-        String initialMoonDateStr = (String) table.getValueAt(1, 2);
+        // Row 0 is ASC
+        assertEquals("ASC", table.getValueAt(0, 0));
+        assertNotNull(table.getValueAt(0, 1));
+        assertNotNull(table.getValueAt(0, 2));
+
+        // Row 1 is Sun
+        assertEquals("Sun", table.getValueAt(1, 0));
+
+        // Row 2 is Moon
+        assertEquals("Moon", table.getValueAt(2, 0));
+        assertEquals("Mithuna -> Kataka", table.getValueAt(2, 1));
+        String initialMoonDateStr = (String) table.getValueAt(2, 2);
         assertTrue("Moon transition should be on 1 Nov 2026: " + initialMoonDateStr,
                 initialMoonDateStr.contains("1 Nov 2026") || initialMoonDateStr.contains("Nov 1, 2026"));
 
         // Select Moon row
-        table.setRowSelectionInterval(1, 1);
+        table.setRowSelectionInterval(2, 2);
         assertTrue(updateBtn.isEnabled());
 
         // Click Update
@@ -396,8 +408,42 @@ public class TransitChartDialogTest extends TestCase {
         assertFalse("Update button should be disabled after update completes", updateBtn.isEnabled());
         assertEquals(-1, table.getSelectedRow());
 
-        // The Moon row in the newly refreshed table should now show its NEXT transition (Kataka -> Simha)
-        assertEquals("Kataka -> Simha", table.getValueAt(1, 1));
+        // The Moon row (row 2) in the newly refreshed table should now show its NEXT transition (Kataka -> Simha)
+        assertEquals("Kataka -> Simha", table.getValueAt(2, 1));
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testUpdateActionWithAscendantTransition() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        Calendar cal = Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+        cal.set(2026, Calendar.NOVEMBER, 1, 10, 0, 0);
+        Date initialTime = cal.getTime();
+
+        TransitChartDialog dialog = new TransitChartDialog(frame, initialTime, place, new DefaultTransitChartComputation());
+        dialog.setExpanded(true);
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        javax.swing.JTable table = dialog.getDetailsTable();
+
+        assertEquals("ASC", table.getValueAt(0, 0));
+        String ascTransStr = (String) table.getValueAt(0, 1);
+        assertTrue("ASC transition should contain ' -> '", ascTransStr.contains(" -> "));
+        String[] parts = ascTransStr.split(" -> ");
+        String toRasiStr = parts[1].trim();
+
+        // Select ASC row
+        table.setRowSelectionInterval(0, 0);
+        assertTrue(updateBtn.isEnabled());
+
+        // Click Update
+        updateBtn.doClick();
+
+        // Chart data should reflect the new Ascendant sign
+        app.astrosoft.beans.PlanetChartData planetChartData = (app.astrosoft.beans.PlanetChartData) dialog.getChart().getChartData();
+        assertNotNull(planetChartData);
+        assertEquals(toRasiStr, planetChartData.getAscendant().toString());
 
         dialog.dispose();
         frame.dispose();
@@ -425,16 +471,29 @@ public class TransitChartDialogTest extends TestCase {
         assertNotNull(info);
         java.util.Map<Planet, Date> changes = comp.computeSignChanges(now, place, info);
         assertNotNull(changes);
-        assertEquals(9, changes.size());
+        assertEquals(10, changes.size());
         for (Planet p : Planet.allPlanets()) {
             Date change = changes.get(p);
             assertNotNull("Sign change date must be computed for " + p, change);
             assertTrue("Sign change date must be in future for " + p, change.after(now));
         }
+        Date ascChange = changes.get(Planet.Ascendant);
+        assertNotNull("Sign change date must be computed for Ascendant", ascChange);
+        assertTrue("Sign change date must be in future for Ascendant", ascChange.after(now));
 
         java.util.Map<Planet, TransitChartComputation.SignTransition> transitions = comp.computeSignTransitions(now, place, info);
         assertNotNull(transitions);
-        assertEquals(9, transitions.size());
+        assertEquals(10, transitions.size());
+
+        TransitChartComputation.SignTransition ascTrans = transitions.get(Planet.Ascendant);
+        assertNotNull("SignTransition must be computed for Ascendant", ascTrans);
+        assertNotNull("fromRasi must not be null for Ascendant", ascTrans.getFromRasi());
+        assertNotNull("toRasi must not be null for Ascendant", ascTrans.getToRasi());
+        assertEquals(ascTrans.getFromRasi().next(), ascTrans.getToRasi());
+        assertTrue("Transition string should contain '->'", ascTrans.getTransitionString().contains(" -> "));
+        assertNotNull("Transition date must not be null for Ascendant", ascTrans.getTransitionDate());
+        assertTrue("Transition date must be in future for Ascendant", ascTrans.getTransitionDate().after(now));
+
         for (Planet p : Planet.allPlanets()) {
             TransitChartComputation.SignTransition trans = transitions.get(p);
             assertNotNull("SignTransition must be computed for " + p, trans);
@@ -465,6 +524,7 @@ public class TransitChartDialogTest extends TestCase {
         @Override
         public java.util.Map<Planet, Date> computeSignChanges(Date instant, Place place, PlanetaryInfo planetaryInfo) {
             java.util.Map<Planet, Date> map = new java.util.EnumMap<Planet, Date>(Planet.class);
+            map.put(Planet.Ascendant, new Date(instant.getTime() + 7200000L));
             for (Planet p : Planet.allPlanets()) {
                 map.put(p, new Date(instant.getTime() + 86400000L));
             }
@@ -476,6 +536,10 @@ public class TransitChartDialogTest extends TestCase {
                 Date instant, Place place, PlanetaryInfo planetaryInfo) {
             java.util.Map<Planet, TransitChartComputation.SignTransition> map =
                     new java.util.EnumMap<Planet, TransitChartComputation.SignTransition>(Planet.class);
+            map.put(Planet.Ascendant, new TransitChartComputation.SignTransition(
+                    app.astrosoft.consts.Rasi.Mesha,
+                    app.astrosoft.consts.Rasi.Vrishabha,
+                    new Date(instant.getTime() + 7200000L)));
             for (Planet p : Planet.allPlanets()) {
                 map.put(p, new TransitChartComputation.SignTransition(
                         app.astrosoft.consts.Rasi.Mesha,

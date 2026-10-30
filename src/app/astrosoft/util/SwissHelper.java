@@ -206,6 +206,10 @@ public class SwissHelper {
 	public TransitHelper getTransitHelper(Planet planet){
 		return new TransitHelper(planet, sw);
 	}
+
+	public SwissEph getSwissEph() {
+		return sw;
+	}
 	
 	public static void main(String[] args) {
 		
