@@ -6,12 +6,18 @@
 
 package app.astrosoft.ui.view;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.RenderingHints;
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +41,7 @@ public class InfoView extends AstrosoftView {
 
 	private List<AstrosoftTable> createdTables = new ArrayList<AstrosoftTable>();
 	private JLabel titleLabel;
+	private JPanel infoPanel;
 
 	public static String formatInfoValue(String key, String value) {
 		if (value == null || value.trim().isEmpty()) return "";
@@ -154,7 +161,7 @@ public class InfoView extends AstrosoftView {
     		splittedData = TableDataFactory.splitTableData(allData, splitSize);
     	}
     	
-    	JPanel infoPanel = new JPanel(new GridLayout(1, 2, 16, 0));
+    	infoPanel = new JPanel(new GridLayout(1, 2, 16, 0));
     	infoPanel.setOpaque(false);
     	createdTables.clear();
 
@@ -233,16 +240,14 @@ public class InfoView extends AstrosoftView {
     		infoPanel.add(infoTable);
     	}
     	
-    	titleLabel = new JLabel("Information", SwingConstants.CENTER);
+    	setLayout(null);
+    	setOpaque(false);
+
+    	titleLabel = new JLabel("Profile", SwingConstants.CENTER);
     	titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
     	titleLabel.setForeground(UIConsts.getChartPlanetForeground());
-    	JPanel headerPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-    	headerPanel.setOpaque(false);
-    	headerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 8, 0));
-    	headerPanel.add(titleLabel);
-
-    	add(headerPanel, BorderLayout.NORTH);
-    	add(infoPanel, BorderLayout.CENTER);
+    	titleLabel.setBounds(0, 0, 530, 20);
+    	add(titleLabel);
 
     	int maxTableH = 0;
     	for (AstrosoftTable tbl : createdTables) {
@@ -253,21 +258,103 @@ public class InfoView extends AstrosoftView {
     		if (h > maxTableH) maxTableH = h;
     	}
 
-    	setOpaque(true);
-    	updateTheme();
+    	infoPanel.setBounds(18, 34, 494, maxTableH + 6);
+    	add(infoPanel);
 
-    	Dimension exactSize = new Dimension(530, maxTableH + 46);
+    	Dimension exactSize = new Dimension(530, maxTableH + 50);
     	setPreferredSize(exactSize);
     	setMinimumSize(exactSize);
     	setMaximumSize(exactSize);
+
+    	updateTheme();
+    }
+
+    @Override
+    public void doLayout() {
+    	super.doLayout();
+    	int currentW = getWidth();
+    	if (currentW <= 0) currentW = 530;
+    	int currentH = getHeight();
+    	if (currentH <= 0) currentH = getPreferredSize() != null ? getPreferredSize().height : 200;
+
+    	if (titleLabel != null) {
+    		titleLabel.setBounds(0, 0, currentW, 20);
+    	}
+    	if (infoPanel != null) {
+    		infoPanel.setBounds(18, 34, Math.max(100, currentW - 36), Math.max(50, currentH - 42));
+    	}
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+    	super.paintComponent(g);
+    	Graphics2D g2 = (Graphics2D) g.create();
+    	g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+    	int currentW = getWidth();
+    	if (currentW <= 0) currentW = 530;
+    	int currentH = getHeight();
+    	if (currentH <= 0) currentH = getPreferredSize() != null ? getPreferredSize().height : 200;
+
+    	int arc = 12;
+    	int gap = 16;
+
+    	int boxLeft = 2;
+    	int boxRight = currentW - 4;
+    	int boxTop = 10;
+    	int boxBottom = currentH - 5;
+
+    	// Theme card background
+    	g2.setColor(UIConsts.getChartBackground());
+    	g2.fillRoundRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop, arc, arc);
+
+    	if (titleLabel != null) {
+    		titleLabel.setBounds(0, 0, currentW, 20);
+    		titleLabel.setForeground(UIConsts.getChartPlanetForeground());
+
+    		FontMetrics fm = titleLabel.getFontMetrics(titleLabel.getFont());
+    		int textW = fm.stringWidth(titleLabel.getText());
+    		int textX = (currentW - textW) / 2;
+
+    		Path2D p = new Path2D.Double();
+    		// Top-left line to title cutout
+    		p.moveTo(boxLeft + arc, boxTop);
+    		p.lineTo(Math.max(boxLeft + arc, textX - gap), boxTop);
+
+    		// Top-right line from title cutout to right corner
+    		p.moveTo(Math.min(boxRight - arc, textX + textW + gap), boxTop);
+    		p.lineTo(boxRight - arc, boxTop);
+
+    		// Top-right rounded corner
+    		p.quadTo(boxRight, boxTop, boxRight, boxTop + arc);
+
+    		// Right vertical border
+    		p.lineTo(boxRight, boxBottom - arc);
+
+    		// Bottom-right rounded corner
+    		p.quadTo(boxRight, boxBottom, boxRight - arc, boxBottom);
+
+    		// Bottom horizontal border
+    		p.lineTo(boxLeft + arc, boxBottom);
+
+    		// Bottom-left rounded corner
+    		p.quadTo(boxLeft, boxBottom, boxLeft, boxBottom - arc);
+
+    		// Left vertical border
+    		p.lineTo(boxLeft, boxTop + arc);
+
+    		// Top-left rounded corner
+    		p.quadTo(boxLeft, boxTop, boxLeft + arc, boxTop);
+
+    		g2.setColor(UIConsts.getChartBorderColor());
+    		g2.setStroke(new BasicStroke(1.5f));
+    		g2.draw(p);
+    	}
+    	g2.dispose();
     }
 
     public void updateTheme() {
-    	setBackground(UIConsts.getChartBackground());
-    	setBorder(javax.swing.BorderFactory.createCompoundBorder(
-    		UIConsts.getChartBorder(),
-    		javax.swing.BorderFactory.createEmptyBorder(10, 14, 10, 14)
-    	));
+    	setBorder(null);
     	if (titleLabel != null) {
     		titleLabel.setForeground(UIConsts.getChartPlanetForeground());
     	}

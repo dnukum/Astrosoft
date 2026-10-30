@@ -10,9 +10,11 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -20,12 +22,17 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -112,6 +119,7 @@ public class AshtavargaView extends AstrosoftView {
 		label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
 		label.setForeground(UIConsts.TEXT_DARK_NAVY);
 		headerPanel.add(label);
+		headerPanel.add(createAshtavargaInfoButton(headerPanel));
 
 		final JComboBox<AshtavargaItem> combo = new JComboBox<AshtavargaItem>(items);
 		combo.setFont(new Font("Verdana", Font.PLAIN, 12));
@@ -260,6 +268,7 @@ public class AshtavargaView extends AstrosoftView {
 		label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
 		label.setForeground(UIConsts.TEXT_DARK_NAVY);
 		headerPanel.add(label);
+		headerPanel.add(createAshtavargaInfoButton(headerPanel));
 
 		final int cardWidth = gridPanelSize.width;
 		final int cardHeight = gridPanelSize.height;
@@ -372,6 +381,86 @@ public class AshtavargaView extends AstrosoftView {
 		mainPanel.add(gridContainer);
 
 		return mainPanel;
+	}
+
+	public static JComponent createAshtavargaInfoButton(final Component parent) {
+		final JComponent btn = new JComponent() {
+			private boolean hovered = false;
+			{
+				setToolTipText("Ashtakavarga Strength Guide");
+				setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				Dimension d = new Dimension(18, 18);
+				setPreferredSize(d);
+				setMinimumSize(d);
+				setMaximumSize(d);
+				setSize(d);
+				setFocusable(true);
+
+				addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseEntered(MouseEvent e) {
+						hovered = true;
+						repaint();
+					}
+
+					@Override
+					public void mouseExited(MouseEvent e) {
+						hovered = false;
+						repaint();
+					}
+
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						app.astrosoft.ui.dlg.AshtavargaGuideDialog.showDialog(parent);
+					}
+				});
+
+				addKeyListener(new KeyAdapter() {
+					@Override
+					public void keyPressed(KeyEvent e) {
+						if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_SPACE) {
+							app.astrosoft.ui.dlg.AshtavargaGuideDialog.showDialog(parent);
+						}
+					}
+				});
+			}
+
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+				int w = getWidth();
+				int h = getHeight();
+				int size = Math.min(w, h) - 2;
+				int x = (w - size) / 2;
+				int y = (h - size) / 2;
+
+				// Background circle fill
+				Color bg = hovered ? new Color(254, 235, 175) : new Color(254, 243, 199);
+				g2.setColor(bg);
+				g2.fillOval(x, y, size, size);
+
+				// Border
+				Color border = UIConsts.getChartBorderColor();
+				g2.setColor(border);
+				g2.setStroke(new BasicStroke(1.4f));
+				g2.drawOval(x, y, size, size);
+
+				// Centered italic serif "i"
+				g2.setFont(new Font(Font.SERIF, Font.BOLD | Font.ITALIC, 11));
+				g2.setColor(UIConsts.TEXT_DARK_NAVY);
+				FontMetrics fm = g2.getFontMetrics();
+				int textW = fm.stringWidth("i");
+				int textH = fm.getAscent() - fm.getDescent();
+				g2.drawString("i", x + (size - textW) / 2, y + (size + textH) / 2);
+
+				g2.dispose();
+			}
+		};
+		return btn;
 	}
 
 	/**

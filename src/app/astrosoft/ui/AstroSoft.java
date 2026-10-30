@@ -760,9 +760,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 		final javax.swing.JPanel controlsPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 12, 0));
 		controlsPanel.setOpaque(false);
 		controlsPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-		controlsPanel.setPreferredSize(new Dimension(525, 28));
-		controlsPanel.setMinimumSize(new Dimension(300, 28));
-		controlsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+		controlsPanel.setPreferredSize(new Dimension(525, 24));
+		controlsPanel.setMinimumSize(new Dimension(300, 24));
+		controlsPanel.setMaximumSize(new Dimension(530, 24));
 
 		final javax.swing.JCheckBox planetOffsetsCheck = new javax.swing.JCheckBox("Planetary Positions");
 		planetOffsetsCheck.setSelected(true);
@@ -810,19 +810,19 @@ public class AstroSoft extends javax.swing.JFrame implements
 				boolean showShadbala = shadbalaCheck.isSelected();
 				leftPanel.removeAll();
 				leftPanel.add(infoView);
-				leftPanel.add(javax.swing.Box.createVerticalStrut(14));
+				leftPanel.add(javax.swing.Box.createVerticalStrut(12));
 				leftPanel.add(createThemeSeparator());
-				leftPanel.add(javax.swing.Box.createVerticalStrut(8));
+				leftPanel.add(javax.swing.Box.createVerticalStrut(9));
 				leftPanel.add(controlsPanel);
 				if (showOffsets) {
-					leftPanel.add(javax.swing.Box.createVerticalStrut(8));
+					leftPanel.add(javax.swing.Box.createVerticalStrut(9));
 					leftPanel.add(createThemeSeparator());
 					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
 					leftPanel.add(planetOffsetsView);
 				}
 				if (showShadbala) {
 					if (!showOffsets) {
-						leftPanel.add(javax.swing.Box.createVerticalStrut(8));
+						leftPanel.add(javax.swing.Box.createVerticalStrut(9));
 						leftPanel.add(createThemeSeparator());
 					}
 					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
