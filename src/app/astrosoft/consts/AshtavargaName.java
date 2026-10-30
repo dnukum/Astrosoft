@@ -29,6 +29,14 @@ public enum AshtavargaName {
 	public static AshtavargaName ofPlanet(Planet p){
 		return valueOf(p.name());
 	}
+
+	public Planet toPlanet() {
+		try {
+			return Planet.valueOf(name());
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+	}
 	
 	public String toString(Language lang) {
 

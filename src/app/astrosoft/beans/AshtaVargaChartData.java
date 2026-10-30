@@ -25,6 +25,7 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
 	private EnumMap<Rasi, Integer> varga;
 	private Rasi moonRasi;
 	private AshtavargaName vargaName;
+	private Rasi natalRasi;
 	
 	public AshtaVargaChartData(AshtavargaName name, EnumMap<Rasi, Integer> varga) {
 		super();
@@ -48,12 +49,25 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
 	}
 
 	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga, Rasi ascendant, Rasi moonRasi, AshtavargaName vargaName) {
+		this(displayName, varga, ascendant, moonRasi, vargaName, null);
+	}
+
+	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga, Rasi ascendant, Rasi moonRasi, AshtavargaName vargaName, Rasi natalRasi) {
 		super();
 		this.varga = varga;
 		this.chartName = displayName;
 		this.ascendant = ascendant;
 		this.moonRasi = moonRasi;
 		this.vargaName = vargaName;
+		this.natalRasi = natalRasi;
+	}
+
+	public Rasi getNatalRasi() {
+		return natalRasi;
+	}
+
+	public void setNatalRasi(Rasi natalRasi) {
+		this.natalRasi = natalRasi;
 	}
 
 	public boolean isSarvaAshtavarga() {

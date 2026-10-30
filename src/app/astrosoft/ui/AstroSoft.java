@@ -718,7 +718,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		rasiNavamsaPanel.setPreferredSize(new Dimension(858, 365));
 		rasiNavamsaPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 
-		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi());
+		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi(), h.getPlanetRasis());
 
 		final JPanel ashtavargaWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		ashtavargaWrapper.setOpaque(false);
@@ -1843,7 +1843,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 				case DIV_CHART_VIEW:
 					return new VargaChartView(h.getTitle(), h.getPlanetaryInfo());
 				case ASHTAVARGA_VIEW:
-					return new AshtavargaView(h.getTitle(), h.getAshtaVarga(), h.getAscendant(), h.getRasi(), new Point(30,20));
+					return new AshtavargaView(h.getTitle(), h.getAshtaVarga(), h.getAscendant(), h.getRasi(), h.getPlanetRasis(), new Point(30,20));
 				case PANCHANG_VIEW:
 					return new PanchangView(pan, new Point(30,20));
 				case MY_MUHURTA_VIEW:

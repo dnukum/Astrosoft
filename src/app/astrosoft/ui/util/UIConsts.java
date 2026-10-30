@@ -157,7 +157,8 @@ public class UIConsts {
 			new Color(220, 38, 38),   // #DC2626
 			new Color(2, 132, 199),   // #0284C7
 			new Color(30, 41, 59),    // Score
-			new Color(100, 116, 139)  // Label (#64748B)
+			new Color(100, 116, 139), // Label (#64748B)
+			new Color(194, 65, 12)    // Natal Highlight (#C2410C Warm Rust)
 		),
 		SOFT_ALABASTER("Soft Alabaster", 
 			new Color(250, 250, 249), // #FAFAF9
@@ -166,7 +167,8 @@ public class UIConsts {
 			new Color(225, 29, 72),   // #E11D48
 			new Color(2, 132, 199),   // #0284C7
 			new Color(15, 23, 42),
-			new Color(100, 116, 139)
+			new Color(100, 116, 139),
+			new Color(190, 18, 60)    // Natal Highlight (#BE123C Ruby Crimson)
 		),
 		PALE_GOLD_MIST("Pale Gold Mist", 
 			new Color(252, 249, 238), // #FCF9EE
@@ -175,7 +177,8 @@ public class UIConsts {
 			new Color(220, 38, 38),   // #DC2626
 			new Color(2, 132, 199),   // #0284C7
 			new Color(49, 46, 129),
-			new Color(110, 105, 135)
+			new Color(110, 105, 135),
+			new Color(217, 119, 6)    // Natal Highlight (#D97706 Vibrant Amber)
 		),
 		CALM_SAGE("Calm Sage", 
 			new Color(245, 246, 243), // #F5F6F3
@@ -184,7 +187,8 @@ public class UIConsts {
 			new Color(220, 38, 38),   // #DC2626
 			new Color(2, 132, 199),   // #0284C7
 			new Color(30, 41, 59),
-			new Color(100, 116, 110)
+			new Color(100, 116, 110),
+			new Color(154, 52, 18)    // Natal Highlight (#9A3412 Earthy Rust)
 		),
 		CLASSIC("Classic (Original)", 
 			new Color(255, 255, 252), // #FFFFFC YELLOWISH_WHITE
@@ -193,7 +197,8 @@ public class UIConsts {
 			Color.RED,                // Red Asc
 			Color.MAGENTA,            // Magenta Moon
 			new Color(0, 0, 140),     // #00008C DARK_BLUE score
-			new Color(0, 70, 140)     // GREENISH_BLUE label
+			new Color(0, 70, 140),    // GREENISH_BLUE label
+			new Color(225, 29, 72)    // Natal Highlight (#E11D48 Bright Coral Red)
 		);
 
 		private final String displayName;
@@ -204,9 +209,11 @@ public class UIConsts {
 		private final Color moonColor;
 		private final Color scoreColor;
 		private final Color labelColor;
+		private final Color natalHighlightColor;
 
 		ChartTheme(String displayName, Color background, Color borderColor, 
-				   Color planetForeground, Color ascendantColor, Color moonColor, Color scoreColor, Color labelColor) {
+				   Color planetForeground, Color ascendantColor, Color moonColor, Color scoreColor, Color labelColor,
+				   Color natalHighlightColor) {
 			this.displayName = displayName;
 			this.background = background;
 			this.borderColor = borderColor;
@@ -215,6 +222,7 @@ public class UIConsts {
 			this.moonColor = moonColor;
 			this.scoreColor = scoreColor;
 			this.labelColor = labelColor;
+			this.natalHighlightColor = natalHighlightColor;
 		}
 
 		public String displayName() { return displayName; }
@@ -225,6 +233,7 @@ public class UIConsts {
 		public Color getMoonColor() { return moonColor; }
 		public Color getScoreColor() { return scoreColor; }
 		public Color getLabelColor() { return labelColor; }
+		public Color getNatalHighlightColor() { return natalHighlightColor; }
 
 		public Border getBorder() {
 			if (this == CLASSIC) {
@@ -285,6 +294,10 @@ public class UIConsts {
 
 	public static Color getChartLabelColor(){
 		return currentChartTheme.getLabelColor();
+	}
+
+	public static Color getChartNatalHighlightColor(){
+		return currentChartTheme.getNatalHighlightColor();
 	}
 
 	public static Color getAshtavargaColor(app.astrosoft.consts.AshtavargaStrength strength) {

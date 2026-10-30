@@ -38,6 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ToolTipManager;
+import javax.swing.table.TableColumnModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
@@ -176,6 +177,31 @@ public class Chart extends JPanel{
 		
 		int vGap = Math.max(1, (houseSize.height - (rowHeight * 3) - 2) / 2);
 		int hGap = Math.max(1, (houseSize.width - tableSize.width - 2) / 2);
+
+		int maxPlanets = 1;
+		if (chartData instanceof PlanetChartData) {
+			PlanetChartData pcd = (PlanetChartData) chartData;
+			if (pcd.getPlanetsInRasi() != null) {
+				for (List<Planet> pList : pcd.getPlanetsInRasi().values()) {
+					if (pList != null && pList.size() > maxPlanets) {
+						maxPlanets = pList.size();
+					}
+				}
+			}
+		}
+
+		int uniformFontSize;
+		if (houseSize.height < 68) {
+			int baseCompact = (houseSize.height < 52) ? 9 : 10;
+			uniformFontSize = Math.max(8, baseCompact + fontOffset);
+		} else if (houseSize.height < 80) {
+			int baseMedium = (maxPlanets <= 2) ? 14 : ((maxPlanets <= 4) ? 12 : 11);
+			uniformFontSize = Math.max(9, baseMedium + fontOffset);
+		} else {
+			int baseLarge = (maxPlanets <= 2) ? 15 : ((maxPlanets <= 4) ? 14 : 12);
+			uniformFontSize = Math.max(9, baseLarge + fontOffset);
+		}
+
 		for(Rasi house : Rasi.values()){
 			
 			houseNo = house.ordinal();
@@ -229,9 +255,47 @@ public class Chart extends JPanel{
 
 				Integer val = avData.getVarga().get(house);
 				String valStr = (val != null) ? val.toString() : "";
-				JLabel numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER);
-				numLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, isCompact ? 12 : 15));
-				numLbl.setForeground(UIConsts.getChartScoreColor());
+
+				final boolean isNatal = (avData.getNatalRasi() == house);
+				JLabel numLbl;
+				if (isNatal) {
+					final Color ringColor = UIConsts.getChartNatalHighlightColor();
+					numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER) {
+						@Override
+						protected void paintComponent(Graphics g) {
+							Graphics2D g2 = (Graphics2D) g.create();
+							g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+							int w = getWidth();
+							int h = getHeight();
+							int diameter = Math.min(w, h) - 2;
+							if (isCompact) {
+								diameter = Math.min(diameter, 22);
+							} else {
+								diameter = Math.min(diameter, 30);
+							}
+							int x = (w - diameter) / 2;
+							int y = (h - diameter) / 2;
+
+							// Highlight ring stroke around the score without altering the cell background
+							g2.setColor(ringColor);
+							g2.setStroke(new BasicStroke(1.8f));
+							g2.drawOval(x, y, diameter, diameter);
+							g2.dispose();
+
+							super.paintComponent(g);
+						}
+					};
+					numLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, isCompact ? 12 : 15));
+					numLbl.setForeground(UIConsts.getChartScoreColor());
+					String tip = "Natal " + (avData.getVargaName() != null ? avData.getVargaName().toString() : "Planet") 
+							+ " placement in " + house.toString(Language.ENGLISH) + " (" + valStr + " bindus)";
+					numLbl.setToolTipText(tip);
+					toolTipManager.registerComponent(numLbl);
+				} else {
+					numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER);
+					numLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, isCompact ? 12 : 15));
+					numLbl.setForeground(UIConsts.getChartScoreColor());
+				}
 				panel.add(numLbl, BorderLayout.CENTER);
 
 				panel.add(Box.createVerticalStrut(isCompact ? 2 : 16), BorderLayout.SOUTH);
@@ -287,26 +351,54 @@ public class Chart extends JPanel{
                 };
 				panel.add(houseTable, getConstrains(houseNo));
 
-				//houseTable.setDefaultRenderer(Planet.class, new PlanetCellRenderer());
+				houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, uniformFontSize));
 				if (houseSize.height < 68) {
-					int baseCompact = (houseSize.height < 52) ? 9 : 10;
-					int fontSize = Math.max(8, baseCompact + fontOffset);
-					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
 					houseTable.setRowMargin(1);
-				} else {
-					int pCount = 0;
-					if (chartData instanceof PlanetChartData) {
-						PlanetChartData pcd = (PlanetChartData) chartData;
-						if (pcd.getPlanetsInRasi() != null && pcd.getPlanetsInRasi().containsKey(house)) {
-							List<Planet> pList = pcd.getPlanetsInRasi().get(house);
-							if (pList != null) {
-								pCount = pList.size();
-							}
+				}
+
+				int pCount = 0;
+				if (chartData instanceof PlanetChartData) {
+					PlanetChartData pcd = (PlanetChartData) chartData;
+					if (pcd.getPlanetsInRasi() != null && pcd.getPlanetsInRasi().containsKey(house)) {
+						List<Planet> pList = pcd.getPlanetsInRasi().get(house);
+						if (pList != null) {
+							pCount = pList.size();
 						}
 					}
-					int baseFontSize = (pCount <= 2) ? 15 : ((pCount <= 4) ? 13 : 11);
-					int fontSize = Math.max(9, baseFontSize + fontOffset);
-					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
+				}
+
+				if (pCount == 1) {
+					TableColumnModel cm = houseTable.getColumnModel();
+					if (cm.getColumnCount() >= 3) {
+						cm.getColumn(0).setMinWidth(0);
+						cm.getColumn(0).setMaxWidth(0);
+						cm.getColumn(0).setPreferredWidth(0);
+						cm.getColumn(0).setWidth(0);
+
+						cm.getColumn(1).setPreferredWidth(tableSize.width);
+						cm.getColumn(1).setWidth(tableSize.width);
+
+						cm.getColumn(2).setMinWidth(0);
+						cm.getColumn(2).setMaxWidth(0);
+						cm.getColumn(2).setPreferredWidth(0);
+						cm.getColumn(2).setWidth(0);
+					}
+				} else if (pCount == 2) {
+					TableColumnModel cm = houseTable.getColumnModel();
+					if (cm.getColumnCount() >= 3) {
+						int w0 = tableSize.width / 2;
+						int w2 = tableSize.width - w0;
+						cm.getColumn(0).setPreferredWidth(w0);
+						cm.getColumn(0).setWidth(w0);
+
+						cm.getColumn(1).setMinWidth(0);
+						cm.getColumn(1).setMaxWidth(0);
+						cm.getColumn(1).setPreferredWidth(0);
+						cm.getColumn(1).setWidth(0);
+
+						cm.getColumn(2).setPreferredWidth(w2);
+						cm.getColumn(2).setWidth(w2);
+					}
 				}
 				houseTable.setRowHeight(rowHeight);
 				houseTable.setPreferredSize(tableSize);

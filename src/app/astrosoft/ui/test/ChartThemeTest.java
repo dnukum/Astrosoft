@@ -51,6 +51,7 @@ public class ChartThemeTest {
             assertNotNull(theme.getMoonColor());
             assertNotNull(theme.getScoreColor());
             assertNotNull(theme.getLabelColor());
+            assertNotNull(theme.getNatalHighlightColor());
         }
     }
 

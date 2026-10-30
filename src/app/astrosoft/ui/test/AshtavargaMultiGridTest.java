@@ -120,6 +120,69 @@ public class AshtavargaMultiGridTest {
         frame.dispose();
     }
 
+    @Test
+    public void testAshtavargaNatalRasiHighlighting() throws Exception {
+        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        assertNotNull("Horoscope loaded", h);
+
+        Rasi asc = h.getAscendant();
+        Rasi moon = h.getRasi();
+        java.util.EnumMap<app.astrosoft.consts.Planet, Rasi> planetRasis = h.getPlanetRasis();
+
+        JPanel panel = AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), asc, moon, planetRasis);
+        assertNotNull("Grid panel created", panel);
+
+        List<Chart> charts = findComponents(panel, Chart.class);
+        assertEquals("Must contain exactly 8 charts", 8, charts.size());
+
+        java.lang.reflect.Field field = Chart.class.getDeclaredField("chartData");
+        field.setAccessible(true);
+        java.lang.reflect.Field housePanelField = Chart.class.getDeclaredField("housePanel");
+        housePanelField.setAccessible(true);
+
+        // Chart 0 is SAV -> natalRasi must be null
+        app.astrosoft.beans.AshtaVargaChartData savData = (app.astrosoft.beans.AshtaVargaChartData) field.get(charts.get(0));
+        org.junit.Assert.assertNull("SAV must not have a natal Rasi", savData.getNatalRasi());
+
+        // Charts 1..7 are planets Sun..Saturn
+        app.astrosoft.consts.Planet[] planets = {
+            app.astrosoft.consts.Planet.Sun,
+            app.astrosoft.consts.Planet.Moon,
+            app.astrosoft.consts.Planet.Mars,
+            app.astrosoft.consts.Planet.Mercury,
+            app.astrosoft.consts.Planet.Jupiter,
+            app.astrosoft.consts.Planet.Venus,
+            app.astrosoft.consts.Planet.Saturn
+        };
+
+        for (int i = 0; i < planets.length; i++) {
+            Chart c = charts.get(i + 1);
+            app.astrosoft.beans.AshtaVargaChartData bchData = (app.astrosoft.beans.AshtaVargaChartData) field.get(c);
+            Rasi expectedNatalRasi = planetRasis.get(planets[i]);
+            assertEquals("Natal Rasi for " + planets[i], expectedNatalRasi, bchData.getNatalRasi());
+
+            // Check that the natal house score label exists and has natal tooltip
+            List<JPanel> houses = (List<JPanel>) housePanelField.get(c);
+            JPanel natalHouse = houses.get(expectedNatalRasi.ordinal());
+            Integer val = bchData.getVarga().get(expectedNatalRasi);
+            assertNotNull("Score in natal house", val);
+            JLabel scoreLabel = findLabelWithText(natalHouse, String.valueOf(val));
+            assertNotNull("Score label must be found in natal house for " + planets[i], scoreLabel);
+            assertTrue("Score label tooltip should mention Natal placement",
+                    scoreLabel.getToolTipText() != null && scoreLabel.getToolTipText().contains("Natal " + planets[i].name()));
+        }
+
+        // Test painting with highlight
+        JFrame frame = new JFrame();
+        frame.getContentPane().add(panel);
+        frame.pack();
+        BufferedImage img = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        panel.paint(g);
+        g.dispose();
+        frame.dispose();
+    }
+
     @SuppressWarnings("unchecked")
     private static <T extends Component> List<T> findComponents(Container parent, Class<T> clazz) {
         List<T> list = new ArrayList<T>();

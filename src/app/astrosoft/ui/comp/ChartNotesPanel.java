@@ -20,8 +20,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
@@ -86,7 +84,16 @@ public class ChartNotesPanel extends JPanel {
     private JButton underlineBtn;
     private JButton bulletBtn;
     private JButton numListBtn;
-    private JButton timeBtn;
+    private JButton deTabBtn;
+    private JButton tabBtn;
+    private JButton btnFontDec;
+    private JButton btnFontInc;
+    private JButton btnFontReset;
+
+    private static int fontOffset = 0;
+    private static final int BASE_FONT_SIZE = 13;
+    private static final int MIN_FONT_OFFSET = -4; // 9pt
+    private static final int MAX_FONT_OFFSET = 11; // 24pt
     private JLabel titleLabel;
     private boolean isUpdating = false;
     private boolean isDocked = true;
@@ -167,6 +174,46 @@ public class ChartNotesPanel extends JPanel {
             int[] xp = {x + 1, x + 7, x + 1};
             int[] yp = {y + 1, y + 5, y + 9};
             g2.fillPolygon(xp, yp, 3);
+            g2.dispose();
+        }
+    }
+
+    private static class DeTabIcon implements javax.swing.Icon {
+        public int getIconWidth() { return 13; }
+        public int getIconHeight() { return 12; }
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(c != null ? c.getForeground() : Color.DARK_GRAY);
+            g2.setStroke(new java.awt.BasicStroke(1.2f));
+            // 3 text lines
+            g2.drawLine(x + 5, y + 2, x + 12, y + 2);
+            g2.drawLine(x + 5, y + 6, x + 12, y + 6);
+            g2.drawLine(x + 5, y + 10, x + 12, y + 10);
+            // Left-pointing arrow (outdent)
+            g2.drawLine(x + 3, y + 6, x, y + 6);
+            g2.drawLine(x, y + 6, x + 2, y + 4);
+            g2.drawLine(x, y + 6, x + 2, y + 8);
+            g2.dispose();
+        }
+    }
+
+    private static class TabIcon implements javax.swing.Icon {
+        public int getIconWidth() { return 13; }
+        public int getIconHeight() { return 12; }
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(c != null ? c.getForeground() : Color.DARK_GRAY);
+            g2.setStroke(new java.awt.BasicStroke(1.2f));
+            // 3 text lines
+            g2.drawLine(x + 5, y + 2, x + 12, y + 2);
+            g2.drawLine(x + 5, y + 6, x + 12, y + 6);
+            g2.drawLine(x + 5, y + 10, x + 12, y + 10);
+            // Right-pointing arrow (indent)
+            g2.drawLine(x, y + 6, x + 3, y + 6);
+            g2.drawLine(x + 3, y + 6, x + 1, y + 4);
+            g2.drawLine(x + 3, y + 6, x + 1, y + 8);
             g2.dispose();
         }
     }
@@ -276,11 +323,55 @@ public class ChartNotesPanel extends JPanel {
         numListBtn.setFocusable(false);
         numListBtn.addActionListener(numListAction);
 
-        timeBtn = new JButton("+ Time");
-        timeBtn.setToolTipText("Insert Current Date/Time Stamp");
-        timeBtn.setMargin(new Insets(2, 6, 2, 6));
-        timeBtn.setFocusable(false);
-        timeBtn.addActionListener(e -> insertTimestamp());
+        Action deTabAction = new AbstractAction("De-tab / Outdent") {
+            public void actionPerformed(ActionEvent e) {
+                handleTab(true);
+            }
+        };
+        deTabBtn = new JButton(new DeTabIcon());
+        deTabBtn.setToolTipText("De-tab / Outdent (Shift+Tab / Cmd+[)");
+        deTabBtn.setMargin(new Insets(2, 5, 2, 5));
+        deTabBtn.setFocusable(false);
+        deTabBtn.addActionListener(deTabAction);
+
+        Action tabAction = new AbstractAction("Tab / Indent") {
+            public void actionPerformed(ActionEvent e) {
+                handleTab(false);
+            }
+        };
+        tabBtn = new JButton(new TabIcon());
+        tabBtn.setToolTipText("Tab / Indent (Tab / Cmd+])");
+        tabBtn.setMargin(new Insets(2, 5, 2, 5));
+        tabBtn.setFocusable(false);
+        tabBtn.addActionListener(tabAction);
+
+        btnFontDec = new JButton("A-");
+        btnFontDec.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        btnFontDec.setToolTipText("Decrease Notes Font Size (Ctrl+- / Cmd+-)");
+        btnFontDec.setFocusable(false);
+        btnFontDec.setMargin(new Insets(1, 3, 1, 3));
+        btnFontDec.setPreferredSize(new Dimension(28, 22));
+        btnFontDec.setForeground(UIConsts.TEXT_DARK_NAVY);
+        btnFontDec.addActionListener(e -> adjustFontSize(-1));
+
+        btnFontInc = new JButton("A+");
+        btnFontInc.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        btnFontInc.setToolTipText("Increase Notes Font Size (Ctrl++ / Cmd++)");
+        btnFontInc.setFocusable(false);
+        btnFontInc.setMargin(new Insets(1, 3, 1, 3));
+        btnFontInc.setPreferredSize(new Dimension(28, 22));
+        btnFontInc.setForeground(UIConsts.TEXT_DARK_NAVY);
+        btnFontInc.addActionListener(e -> adjustFontSize(1));
+
+        int percent = (int) Math.round(((double) getCurrentFontSize() / BASE_FONT_SIZE) * 100);
+        btnFontReset = new JButton(percent + "%");
+        btnFontReset.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+        btnFontReset.setToolTipText("Reset Notes Font Size to 100% (Ctrl+0 / Cmd+0)");
+        btnFontReset.setFocusable(false);
+        btnFontReset.setMargin(new Insets(1, 2, 1, 2));
+        btnFontReset.setPreferredSize(new Dimension(42, 22));
+        btnFontReset.setForeground(UIConsts.LABEL_MUTED_COLOR);
+        btnFontReset.addActionListener(e -> resetFontSize());
 
         formatToolbar.add(Box.createHorizontalStrut(6));
         formatToolbar.add(boldBtn);
@@ -289,8 +380,12 @@ public class ChartNotesPanel extends JPanel {
         formatToolbar.addSeparator(new Dimension(8, 16));
         formatToolbar.add(bulletBtn);
         formatToolbar.add(numListBtn);
+        formatToolbar.add(deTabBtn);
+        formatToolbar.add(tabBtn);
         formatToolbar.addSeparator(new Dimension(8, 16));
-        formatToolbar.add(timeBtn);
+        formatToolbar.add(btnFontDec);
+        formatToolbar.add(btnFontInc);
+        formatToolbar.add(btnFontReset);
 
         JPanel topContainer = new JPanel(new BorderLayout());
         topContainer.add(headerPanel, BorderLayout.NORTH);
@@ -299,10 +394,11 @@ public class ChartNotesPanel extends JPanel {
 
         // 3. Editor & Typography Document
         editor = new JTextPane();
+        editor.setFocusTraversalKeysEnabled(false);
         editor.setContentType("text/html");
         editor.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 
-        Font baseFont = new Font("Arial", Font.PLAIN, 13);
+        Font baseFont = new Font("Arial", Font.PLAIN, BASE_FONT_SIZE);
         editor.setFont(baseFont);
         editor.setMargin(new Insets(10, 12, 10, 12));
         editor.setBackground(Color.WHITE);
@@ -320,6 +416,7 @@ public class ChartNotesPanel extends JPanel {
         styleSheet.addRule("th { background-color: #f0f4f8; font-weight: bold; padding: 4px 8px; text-align: left; }");
         styleSheet.addRule("td { padding: 4px 8px; vertical-align: top; }");
         editor.setEditorKit(kit);
+        applyNotesFontSize();
 
         // Smart Paste Action for proper plain-text / rich-text handling
         Action smartPasteAction = createSmartPasteAction();
@@ -339,10 +436,10 @@ public class ChartNotesPanel extends JPanel {
         };
 
         // Mac & Windows shortcut bindings
-        setupKeyBindings(boldAction, italicAction, underlineAction, bulletAction, numListAction, smartPasteAction, undoAction, redoAction);
+        setupKeyBindings(boldAction, italicAction, underlineAction, bulletAction, numListAction, tabAction, deTabAction, smartPasteAction, undoAction, redoAction);
 
-        // Context Popup Menu (Undo, Redo, Cut, Copy, Paste, Bullets, Numbers, Select All)
-        setupContextMenu(smartPasteAction, undoAction, redoAction, bulletAction, numListAction);
+        // Context Popup Menu (Undo, Redo, Cut, Copy, Paste, Bullets, Numbers, Indent, Outdent, Select All)
+        setupContextMenu(smartPasteAction, undoAction, redoAction, bulletAction, numListAction, tabAction, deTabAction);
 
         // Auto-save sync to Horoscope
         editor.getDocument().addDocumentListener(new DocumentListener() {
@@ -718,7 +815,7 @@ public class ChartNotesPanel extends JPanel {
         };
     }
 
-    private void setupKeyBindings(Action boldAction, Action italicAction, Action underlineAction, Action bulletAction, Action numListAction, Action smartPasteAction, Action undoAction, Action redoAction) {
+    private void setupKeyBindings(Action boldAction, Action italicAction, Action underlineAction, Action bulletAction, Action numListAction, Action tabAction, Action deTabAction, Action smartPasteAction, Action undoAction, Action redoAction) {
         InputMap im = editor.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap am = editor.getActionMap();
 
@@ -728,6 +825,10 @@ public class ChartNotesPanel extends JPanel {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, meta), "font-underline");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_8, meta | InputEvent.SHIFT_DOWN_MASK), "toggle-bullet");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_7, meta | InputEvent.SHIFT_DOWN_MASK), "toggle-numlist");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "indent-tab");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK), "outdent-tab");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, meta), "indent-tab");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, meta), "outdent-tab");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, meta), "smart-paste");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, meta), DefaultEditorKit.copyAction);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, meta), DefaultEditorKit.cutAction);
@@ -742,6 +843,8 @@ public class ChartNotesPanel extends JPanel {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_DOWN_MASK), "font-underline");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_8, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "toggle-bullet");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_7, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "toggle-numlist");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, KeyEvent.CTRL_DOWN_MASK), "indent-tab");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, KeyEvent.CTRL_DOWN_MASK), "outdent-tab");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "smart-paste");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.copyAction);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.cutAction);
@@ -750,11 +853,42 @@ public class ChartNotesPanel extends JPanel {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "redo");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK), "redo");
 
+        Action incFontAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) { adjustFontSize(1); }
+        };
+        Action decFontAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) { adjustFontSize(-1); }
+        };
+        Action resetFontAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) { resetFontSize(); }
+        };
+
+        // Mac Meta & Windows Ctrl shortcuts for font sizing
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, meta), "font-inc");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, meta | InputEvent.SHIFT_DOWN_MASK), "font-inc");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, meta), "font-inc");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, meta), "font-dec");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, meta), "font-dec");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_0, meta), "font-reset");
+
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_DOWN_MASK), "font-inc");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "font-inc");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.CTRL_DOWN_MASK), "font-inc");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.CTRL_DOWN_MASK), "font-dec");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, KeyEvent.CTRL_DOWN_MASK), "font-dec");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_0, KeyEvent.CTRL_DOWN_MASK), "font-reset");
+
+        am.put("font-inc", incFontAction);
+        am.put("font-dec", decFontAction);
+        am.put("font-reset", resetFontAction);
+
         am.put("font-bold", boldAction);
         am.put("font-italic", italicAction);
         am.put("font-underline", underlineAction);
         am.put("toggle-bullet", bulletAction);
         am.put("toggle-numlist", numListAction);
+        am.put("indent-tab", tabAction);
+        am.put("outdent-tab", deTabAction);
         am.put("smart-paste", smartPasteAction);
         am.put(DefaultEditorKit.pasteAction, smartPasteAction);
         am.put("undo", undoAction);
@@ -779,7 +913,7 @@ public class ChartNotesPanel extends JPanel {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK), DefaultEditorKit.insertBreakAction);
     }
 
-    private void setupContextMenu(Action smartPasteAction, Action undoAction, Action redoAction, Action bulletAction, Action numListAction) {
+    private void setupContextMenu(Action smartPasteAction, Action undoAction, Action redoAction, Action bulletAction, Action numListAction, Action tabAction, Action deTabAction) {
         JPopupMenu popup = new JPopupMenu();
 
         JMenuItem undoItem = new JMenuItem(undoAction);
@@ -792,6 +926,16 @@ public class ChartNotesPanel extends JPanel {
         pasteItem.setText("Paste");
         JMenuItem bulletItem = new JMenuItem(bulletAction);
         JMenuItem numListItem = new JMenuItem(numListAction);
+        JMenuItem deTabItem = new JMenuItem(deTabAction);
+        JMenuItem tabItem = new JMenuItem(tabAction);
+
+        JMenuItem incFontItem = new JMenuItem("Increase Font Size (A+)");
+        incFontItem.addActionListener(e -> adjustFontSize(1));
+        JMenuItem decFontItem = new JMenuItem("Decrease Font Size (A-)");
+        decFontItem.addActionListener(e -> adjustFontSize(-1));
+        JMenuItem resetFontItem = new JMenuItem("Reset Font Size (100%)");
+        resetFontItem.addActionListener(e -> resetFontSize());
+
         JMenuItem selectAllItem = new JMenuItem("Select All");
         selectAllItem.addActionListener(e -> editor.selectAll());
 
@@ -804,68 +948,261 @@ public class ChartNotesPanel extends JPanel {
         popup.addSeparator();
         popup.add(bulletItem);
         popup.add(numListItem);
+        popup.add(deTabItem);
+        popup.add(tabItem);
+        popup.addSeparator();
+        popup.add(incFontItem);
+        popup.add(decFontItem);
+        popup.add(resetFontItem);
         popup.addSeparator();
         popup.add(selectAllItem);
 
         editor.setComponentPopupMenu(popup);
     }
 
+    public static int getFontOffset() {
+        return fontOffset;
+    }
+
+    public static int getCurrentFontSize() {
+        return BASE_FONT_SIZE + fontOffset;
+    }
+
+    public void adjustFontSize(int delta) {
+        fontOffset = Math.max(MIN_FONT_OFFSET, Math.min(MAX_FONT_OFFSET, fontOffset + delta));
+        applyNotesFontSize();
+    }
+
+    public void resetFontSize() {
+        fontOffset = 0;
+        applyNotesFontSize();
+    }
+
+    private void applyNotesFontSize() {
+        if (editor == null) return;
+        int currentSize = getCurrentFontSize();
+        editor.setFont(new Font("Arial", Font.PLAIN, currentSize));
+        if (editor.getEditorKit() instanceof HTMLEditorKit) {
+            HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
+            String rule = "body, p, td, th, li { font-size: " + currentSize + "pt; }";
+            kit.getStyleSheet().addRule(rule);
+            if (editor.getDocument() instanceof HTMLDocument) {
+                ((HTMLDocument) editor.getDocument()).getStyleSheet().addRule(rule);
+            }
+        }
+        int percent = (int) Math.round(((double) currentSize / BASE_FONT_SIZE) * 100);
+        if (btnFontReset != null) {
+            btnFontReset.setText(percent + "%");
+            btnFontReset.setToolTipText("Reset Notes Font Size to 100% (currently " + percent + "% / " + currentSize + "pt)");
+        }
+        editor.revalidate();
+        editor.repaint();
+    }
+
+    public void handleTab(boolean outdent) {
+        if (!editor.isEnabled() || !editor.isEditable()) return;
+        Document doc = editor.getDocument();
+        int selStart = Math.min(editor.getSelectionStart(), editor.getSelectionEnd());
+        int selEnd = Math.max(editor.getSelectionStart(), editor.getSelectionEnd());
+
+        try {
+            int docLen = doc.getLength();
+            if (docLen == 0) {
+                if (!outdent) {
+                    if (undoManager != null) undoManager.startCompoundEdit();
+                    try {
+                        doc.insertString(0, "\u00A0\u00A0\u00A0\u00A0", null);
+                        editor.setCaretPosition(4);
+                    } finally {
+                        if (undoManager != null) undoManager.endCompoundEdit();
+                    }
+                }
+                editor.requestFocusInWindow();
+                return;
+            }
+
+            String fullText = doc.getText(0, docLen);
+
+            int lineStart = selStart;
+            while (lineStart > 0 && fullText.charAt(lineStart - 1) != '\n') {
+                lineStart--;
+            }
+
+            int lineEnd = selEnd;
+            while (lineEnd < fullText.length() && fullText.charAt(lineEnd) != '\n') {
+                lineEnd++;
+            }
+
+            // In HTMLDocument, index 0 can be an implied leading newline
+            if (lineStart == 0 && lineEnd == 0 && fullText.length() > 0 && fullText.charAt(0) == '\n') {
+                lineStart = 1;
+                lineEnd = 1;
+                while (lineEnd < fullText.length() && fullText.charAt(lineEnd) != '\n') {
+                    lineEnd++;
+                }
+            }
+
+            String targetText = fullText.substring(lineStart, lineEnd);
+            String[] lines = targetText.split("\n", -1);
+            StringBuilder sb = new StringBuilder();
+
+            final String TAB_STR = "\u00A0\u00A0\u00A0\u00A0";
+            boolean isSingleEmpty = (lines.length == 1 && lines[0].isEmpty());
+
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                if (outdent) {
+                    if (line.startsWith("\t")) {
+                        sb.append(line.substring(1));
+                    } else {
+                        int spacesToRemove = 0;
+                        while (spacesToRemove < 4 && spacesToRemove < line.length()) {
+                            char c = line.charAt(spacesToRemove);
+                            if (c == ' ' || c == '\u00A0') {
+                                spacesToRemove++;
+                            } else {
+                                break;
+                            }
+                        }
+                        sb.append(line.substring(spacesToRemove));
+                    }
+                } else {
+                    if (!line.isEmpty() || isSingleEmpty) {
+                        sb.append(TAB_STR).append(line);
+                    } else {
+                        sb.append(line);
+                    }
+                }
+                if (i < lines.length - 1) {
+                    sb.append("\n");
+                }
+            }
+
+            String replacement = sb.toString();
+            if (undoManager != null) {
+                undoManager.startCompoundEdit();
+            }
+            try {
+                if (doc instanceof javax.swing.text.AbstractDocument) {
+                    ((javax.swing.text.AbstractDocument) doc).replace(lineStart, lineEnd - lineStart, replacement, null);
+                } else {
+                    doc.remove(lineStart, lineEnd - lineStart);
+                    doc.insertString(lineStart, replacement, null);
+                }
+            } finally {
+                if (undoManager != null) {
+                    undoManager.endCompoundEdit();
+                }
+            }
+
+            if (selStart != selEnd) {
+                editor.select(lineStart, lineStart + replacement.length());
+            } else {
+                int newCaret = Math.min(lineStart + replacement.length(), doc.getLength());
+                editor.setCaretPosition(newCaret);
+            }
+            editor.requestFocusInWindow();
+        } catch (Exception ex) {
+            // Keep editor responsive
+        }
+    }
+
     public void toggleList(boolean isNumbered) {
         if (!editor.isEnabled() || !editor.isEditable()) return;
         Document doc = editor.getDocument();
-        int selStart = editor.getSelectionStart();
-        int selEnd = editor.getSelectionEnd();
+        int selStart = Math.min(editor.getSelectionStart(), editor.getSelectionEnd());
+        int selEnd = Math.max(editor.getSelectionStart(), editor.getSelectionEnd());
         try {
-            String fullText = doc.getText(0, doc.getLength());
-            int lineStart = fullText.lastIndexOf('\n', selStart - 1);
-            lineStart = (lineStart == -1) ? 0 : lineStart + 1;
+            int docLen = doc.getLength();
+            if (docLen == 0) {
+                String bullet = isNumbered ? "1. " : "• ";
+                if (undoManager != null) undoManager.startCompoundEdit();
+                try {
+                    doc.insertString(0, bullet, null);
+                    editor.setCaretPosition(bullet.length());
+                } finally {
+                    if (undoManager != null) undoManager.endCompoundEdit();
+                }
+                editor.requestFocusInWindow();
+                return;
+            }
 
-            int lineEnd = fullText.indexOf('\n', selEnd);
-            lineEnd = (lineEnd == -1) ? doc.getLength() : lineEnd;
+            String fullText = doc.getText(0, docLen);
+
+            int lineStart = selStart;
+            while (lineStart > 0 && fullText.charAt(lineStart - 1) != '\n') {
+                lineStart--;
+            }
+
+            int lineEnd = selEnd;
+            while (lineEnd < fullText.length() && fullText.charAt(lineEnd) != '\n') {
+                lineEnd++;
+            }
+
+            // In HTMLDocument, index 0 can be an implied leading newline
+            if (lineStart == 0 && lineEnd == 0 && fullText.length() > 0 && fullText.charAt(0) == '\n') {
+                lineStart = 1;
+                lineEnd = 1;
+                while (lineEnd < fullText.length() && fullText.charAt(lineEnd) != '\n') {
+                    lineEnd++;
+                }
+            }
 
             String targetText = fullText.substring(lineStart, lineEnd);
             String[] lines = targetText.split("\n", -1);
 
             boolean allMatches = true;
+            int nonEmptyCount = 0;
             for (String l : lines) {
                 if (l.trim().isEmpty()) continue;
+                nonEmptyCount++;
                 if (isNumbered) {
-                    if (!l.matches("^\\s*\\d+\\.\\s+.*")) {
+                    if (!l.matches("^\\s*\\d+\\.\\s*.*")) {
                         allMatches = false;
                         break;
                     }
                 } else {
-                    if (!l.matches("^\\s*•\\s+.*")) {
+                    if (!l.matches("^\\s*•\\s*.*")) {
                         allMatches = false;
                         break;
                     }
                 }
             }
 
+            if (nonEmptyCount == 0) {
+                allMatches = false;
+            }
+
             StringBuilder sb = new StringBuilder();
             int counter = 1;
-            for (int i = 0; i < lines.length; i++) {
-                String line = lines[i];
-                if (line.trim().isEmpty()) {
-                    sb.append(line);
-                } else if (allMatches) {
-                    // Toggle off
-                    if (isNumbered) {
-                        sb.append(line.replaceFirst("^\\s*\\d+\\.\\s+", ""));
+            boolean isSingleEmptyLine = (lines.length == 1 && lines[0].trim().isEmpty());
+
+            if (isSingleEmptyLine) {
+                sb.append(isNumbered ? "1. " : "• ");
+            } else {
+                for (int i = 0; i < lines.length; i++) {
+                    String line = lines[i];
+                    if (line.trim().isEmpty()) {
+                        sb.append(line);
+                    } else if (allMatches) {
+                        // Toggle off
+                        if (isNumbered) {
+                            sb.append(line.replaceFirst("^\\s*\\d+\\.\\s*", ""));
+                        } else {
+                            sb.append(line.replaceFirst("^\\s*•\\s*", ""));
+                        }
                     } else {
-                        sb.append(line.replaceFirst("^\\s*•\\s+", ""));
+                        // Format into list
+                        String cleanLine = line.replaceFirst("^\\s*([•]|\\d+\\.)\\s*", "");
+                        if (isNumbered) {
+                            sb.append(counter++).append(". ").append(cleanLine);
+                        } else {
+                            sb.append("• ").append(cleanLine);
+                        }
                     }
-                } else {
-                    // Format into list
-                    String cleanLine = line.replaceFirst("^\\s*([•]|\\d+\\.)\\s+", "");
-                    if (isNumbered) {
-                        sb.append(counter++).append(". ").append(cleanLine);
-                    } else {
-                        sb.append("• ").append(cleanLine);
+                    if (i < lines.length - 1) {
+                        sb.append("\n");
                     }
-                }
-                if (i < lines.length - 1) {
-                    sb.append("\n");
                 }
             }
 
@@ -915,8 +1252,10 @@ public class ChartNotesPanel extends JPanel {
             String wholeLine = fullText.substring(lineStart, lineEnd);
 
             // 1. Bullet list
-            if (wholeLine.matches("^\\s*•\\s*.*")) {
-                String content = wholeLine.replaceFirst("^\\s*•\\s*", "").trim();
+            java.util.regex.Matcher bm = java.util.regex.Pattern.compile("^([\\s\\u00A0]*)•\\s*(.*)").matcher(wholeLine);
+            if (bm.matches()) {
+                String indent = bm.group(1);
+                String content = bm.group(2).trim();
                 if (content.isEmpty()) {
                     // Empty bullet line -> Exit list
                     if (undoManager != null) undoManager.startCompoundEdit();
@@ -926,11 +1265,12 @@ public class ChartNotesPanel extends JPanel {
                         if (undoManager != null) undoManager.endCompoundEdit();
                     }
                     return true;
-                } else if (beforeCaret.matches("^\\s*•\\s*.*")) {
+                } else if (beforeCaret.matches("^[\\s\\u00A0]*•\\s*.*")) {
+                    String next = "\n" + indent + "• ";
                     if (undoManager != null) undoManager.startCompoundEdit();
                     try {
-                        doc.insertString(caret, "\n• ", null);
-                        editor.setCaretPosition(caret + 3);
+                        doc.insertString(caret, next, null);
+                        editor.setCaretPosition(caret + next.length());
                     } finally {
                         if (undoManager != null) undoManager.endCompoundEdit();
                     }
@@ -939,10 +1279,11 @@ public class ChartNotesPanel extends JPanel {
             }
 
             // 2. Numbered list
-            java.util.regex.Matcher m = java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s*(.*)").matcher(wholeLine);
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("^([\\s\\u00A0]*)(\\d+)\\.\\s*(.*)").matcher(wholeLine);
             if (m.matches()) {
-                int num = Integer.parseInt(m.group(1));
-                String content = m.group(2).trim();
+                String indent = m.group(1);
+                int num = Integer.parseInt(m.group(2));
+                String content = m.group(3).trim();
                 if (content.isEmpty()) {
                     // Empty numbered line -> Exit list
                     if (undoManager != null) undoManager.startCompoundEdit();
@@ -952,8 +1293,8 @@ public class ChartNotesPanel extends JPanel {
                         if (undoManager != null) undoManager.endCompoundEdit();
                     }
                     return true;
-                } else if (beforeCaret.matches("^\\s*\\d+\\.\\s*.*")) {
-                    String next = "\n" + (num + 1) + ". ";
+                } else if (beforeCaret.matches("^[\\s\\u00A0]*\\d+\\.\\s*.*")) {
+                    String next = "\n" + indent + (num + 1) + ". ";
                     if (undoManager != null) undoManager.startCompoundEdit();
                     try {
                         doc.insertString(caret, next, null);
@@ -968,20 +1309,6 @@ public class ChartNotesPanel extends JPanel {
             // Fall back
         }
         return false;
-    }
-
-    private void insertTimestamp() {
-        if (!editor.isEnabled()) return;
-        String stamp = "<b>[" + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()) + "]</b> ";
-        try {
-            HTMLEditorKit htmlKit = (HTMLEditorKit) editor.getEditorKit();
-            HTMLDocument htmlDoc = (HTMLDocument) editor.getDocument();
-            int pos = editor.getCaretPosition();
-            htmlKit.insertHTML(htmlDoc, pos, stamp, 0, 0, HTML.Tag.B);
-            editor.requestFocusInWindow();
-        } catch (Exception ex) {
-            editor.replaceSelection("[" + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()) + "] ");
-        }
     }
 
     public void flushToOwner() {
@@ -1090,6 +1417,7 @@ public class ChartNotesPanel extends JPanel {
         if (undoManager != null) {
             undoManager.discardAllEdits();
         }
+        applyNotesFontSize();
     }
 
     private void insertFormattedTextAtCaret(String cleaned) {
@@ -1194,7 +1522,11 @@ public class ChartNotesPanel extends JPanel {
         underlineBtn.setEnabled(enabled);
         bulletBtn.setEnabled(enabled);
         numListBtn.setEnabled(enabled);
-        timeBtn.setEnabled(enabled);
+        if (deTabBtn != null) deTabBtn.setEnabled(enabled);
+        if (tabBtn != null) tabBtn.setEnabled(enabled);
+        if (btnFontDec != null) btnFontDec.setEnabled(enabled);
+        if (btnFontInc != null) btnFontInc.setEnabled(enabled);
+        if (btnFontReset != null) btnFontReset.setEnabled(enabled);
     }
 
     public JTextPane getEditor() {

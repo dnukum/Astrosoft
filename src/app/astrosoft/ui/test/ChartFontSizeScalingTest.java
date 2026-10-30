@@ -98,4 +98,70 @@ public class ChartFontSizeScalingTest {
             }
         });
     }
+
+    @org.junit.Test
+    public void testChartUniformFontSizes() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                EnumMap<Planet, Integer> pos = new EnumMap<>(Planet.class);
+                pos.put(Planet.Sun, 7);      // Libra
+                pos.put(Planet.Mercury, 7);  // Libra
+                pos.put(Planet.Venus, 7);    // Libra
+                pos.put(Planet.Mars, 4);     // Cancer
+                pos.put(Planet.Jupiter, 4);  // Cancer
+                pos.put(Planet.Moon, 3);     // Gemini
+                pos.put(Planet.Saturn, 12);  // Pisces
+                pos.put(Planet.Rahu, 11);    // Aquarius
+                pos.put(Planet.Ketu, 5);     // Leo
+                pos.put(Planet.Ascendant, 8);// Scorpio
+
+                EnumMap<Planet, Boolean> directions = new EnumMap<>(Planet.class);
+                for (Planet p : Planet.planetsAsc()) {
+                    directions.put(p, false);
+                }
+                directions.put(Planet.Saturn, true); // retro
+                directions.put(Planet.Mercury, true); // retro
+                directions.put(Planet.Venus, true); // retro
+
+                Chart.resetFontOffset();
+                Chart chart = new Chart(new PlanetChartData(Varga.Rasi, pos, directions, null, null), new Dimension(300, 300));
+                JFrame frame = new JFrame();
+                frame.setContentPane(chart);
+                frame.pack();
+
+                java.util.List<Integer> fontSizes = new java.util.ArrayList<>();
+                for (Component c : chart.getComponents()) {
+                    if (c instanceof javax.swing.JPanel) {
+                        for (Component sub : ((javax.swing.JPanel) c).getComponents()) {
+                            if (sub instanceof JTable) {
+                                JTable table = (JTable) sub;
+                                for (int r = 0; r < table.getRowCount(); r++) {
+                                    for (int col = 0; col < table.getColumnCount(); col++) {
+                                        Object val = table.getValueAt(r, col);
+                                        if (val instanceof Planet) {
+                                            TableCellRenderer rend = table.getCellRenderer(r, col);
+                                            Component comp = rend.getTableCellRendererComponent(table, val, false, false, r, col);
+                                            fontSizes.add(comp.getFont().getSize());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                frame.dispose();
+
+                assert fontSizes.size() == 10 : "Must have 10 planet cells";
+                int expected = fontSizes.get(0);
+                assert expected >= 12 : "Base font size should be at least 12pt, was " + expected;
+                for (int s : fontSizes) {
+                    assert s == expected : "All planet font sizes must be uniform (" + expected + "), but found: " + s;
+                }
+                System.out.println("testChartUniformFontSizes PASSED: All 10 planets uniformly sized at " + expected + "pt!");
+            } catch (Throwable t) {
+                t.printStackTrace();
+                System.exit(1);
+            }
+        });
+    }
 }

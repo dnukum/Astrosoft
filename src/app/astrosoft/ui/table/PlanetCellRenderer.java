@@ -60,12 +60,15 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			int targetSize = (tblFont != null) ? tblFont.getSize() : c.getFont().getSize();
 			l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, targetSize));
 			l.setText(p.toString(planetFormat));
-			l.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 2));
+			l.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 
 			if (table != null && column >= 0 && column < table.getColumnCount()) {
 				int colW = table.getColumnModel().getColumn(column).getWidth();
+				if (colW >= 40) {
+					l.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+				}
 				if (colW > 10) {
-					int availW = colW - 6;
+					int availW = colW - 4;
 					int textW = l.getFontMetrics(l.getFont()).stringWidth(l.getText());
 					int fitSize = targetSize;
 					while (textW > availW && fitSize > 8) {

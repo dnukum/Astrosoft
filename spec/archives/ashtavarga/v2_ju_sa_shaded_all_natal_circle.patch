@@ -1,0 +1,549 @@
+diff --git a/src/app/astrosoft/beans/AshtaVargaChartData.java b/src/app/astrosoft/beans/AshtaVargaChartData.java
+index 341ed2f..331642d 100644
+--- a/src/app/astrosoft/beans/AshtaVargaChartData.java
++++ b/src/app/astrosoft/beans/AshtaVargaChartData.java
+@@ -25,6 +25,7 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
+ 	private EnumMap<Rasi, Integer> varga;
+ 	private Rasi moonRasi;
+ 	private AshtavargaName vargaName;
++	private Rasi natalRasi;
+ 	
+ 	public AshtaVargaChartData(AshtavargaName name, EnumMap<Rasi, Integer> varga) {
+ 		super();
+@@ -48,12 +49,25 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
+ 	}
+ 
+ 	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga, Rasi ascendant, Rasi moonRasi, AshtavargaName vargaName) {
++		this(displayName, varga, ascendant, moonRasi, vargaName, null);
++	}
++
++	public AshtaVargaChartData(String displayName, EnumMap<Rasi, Integer> varga, Rasi ascendant, Rasi moonRasi, AshtavargaName vargaName, Rasi natalRasi) {
+ 		super();
+ 		this.varga = varga;
+ 		this.chartName = displayName;
+ 		this.ascendant = ascendant;
+ 		this.moonRasi = moonRasi;
+ 		this.vargaName = vargaName;
++		this.natalRasi = natalRasi;
++	}
++
++	public Rasi getNatalRasi() {
++		return natalRasi;
++	}
++
++	public void setNatalRasi(Rasi natalRasi) {
++		this.natalRasi = natalRasi;
+ 	}
+ 
+ 	public boolean isSarvaAshtavarga() {
+@@ -63,6 +77,10 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
+ 		return chartName != null && (chartName.equals("SAV") || chartName.startsWith("Sarva"));
+ 	}
+ 
++	public boolean hasStrengthShading() {
++		return isSarvaAshtavarga() || vargaName == AshtavargaName.Jupiter || vargaName == AshtavargaName.Saturn;
++	}
++
+ 	public app.astrosoft.consts.AshtavargaStrength getStrength(Rasi house) {
+ 		if (varga == null) {
+ 			return app.astrosoft.consts.AshtavargaStrength.NEUTRAL;
+diff --git a/src/app/astrosoft/consts/AshtavargaName.java b/src/app/astrosoft/consts/AshtavargaName.java
+index 58c9d0b..10caee7 100644
+--- a/src/app/astrosoft/consts/AshtavargaName.java
++++ b/src/app/astrosoft/consts/AshtavargaName.java
+@@ -29,6 +29,14 @@ public enum AshtavargaName {
+ 	public static AshtavargaName ofPlanet(Planet p){
+ 		return valueOf(p.name());
+ 	}
++
++	public Planet toPlanet() {
++		try {
++			return Planet.valueOf(name());
++		} catch (IllegalArgumentException e) {
++			return null;
++		}
++	}
+ 	
+ 	public String toString(Language lang) {
+ 
+diff --git a/src/app/astrosoft/ui/AstroSoft.java b/src/app/astrosoft/ui/AstroSoft.java
+index 80f2325..e6cb33a 100644
+--- a/src/app/astrosoft/ui/AstroSoft.java
++++ b/src/app/astrosoft/ui/AstroSoft.java
+@@ -718,7 +718,7 @@ public class AstroSoft extends javax.swing.JFrame implements
+ 		rasiNavamsaPanel.setPreferredSize(new Dimension(858, 365));
+ 		rasiNavamsaPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+ 
+-		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi());
++		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi(), h.getPlanetRasis());
+ 
+ 		final JPanel ashtavargaWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+ 		ashtavargaWrapper.setOpaque(false);
+@@ -1843,7 +1843,7 @@ public class AstroSoft extends javax.swing.JFrame implements
+ 				case DIV_CHART_VIEW:
+ 					return new VargaChartView(h.getTitle(), h.getPlanetaryInfo());
+ 				case ASHTAVARGA_VIEW:
+-					return new AshtavargaView(h.getTitle(), h.getAshtaVarga(), h.getAscendant(), h.getRasi(), new Point(30,20));
++					return new AshtavargaView(h.getTitle(), h.getAshtaVarga(), h.getAscendant(), h.getRasi(), h.getPlanetRasis(), new Point(30,20));
+ 				case PANCHANG_VIEW:
+ 					return new PanchangView(pan, new Point(30,20));
+ 				case MY_MUHURTA_VIEW:
+diff --git a/src/app/astrosoft/ui/comp/Chart.java b/src/app/astrosoft/ui/comp/Chart.java
+index 5974858..da6e031 100644
+--- a/src/app/astrosoft/ui/comp/Chart.java
++++ b/src/app/astrosoft/ui/comp/Chart.java
+@@ -38,6 +38,7 @@ import javax.swing.JPanel;
+ import javax.swing.JPopupMenu;
+ import javax.swing.JTable;
+ import javax.swing.ToolTipManager;
++import javax.swing.table.TableColumnModel;
+ import javax.swing.border.BevelBorder;
+ import javax.swing.border.EtchedBorder;
+ import javax.swing.border.LineBorder;
+@@ -176,6 +177,31 @@ public class Chart extends JPanel{
+ 		
+ 		int vGap = Math.max(1, (houseSize.height - (rowHeight * 3) - 2) / 2);
+ 		int hGap = Math.max(1, (houseSize.width - tableSize.width - 2) / 2);
++
++		int maxPlanets = 1;
++		if (chartData instanceof PlanetChartData) {
++			PlanetChartData pcd = (PlanetChartData) chartData;
++			if (pcd.getPlanetsInRasi() != null) {
++				for (List<Planet> pList : pcd.getPlanetsInRasi().values()) {
++					if (pList != null && pList.size() > maxPlanets) {
++						maxPlanets = pList.size();
++					}
++				}
++			}
++		}
++
++		int uniformFontSize;
++		if (houseSize.height < 68) {
++			int baseCompact = (houseSize.height < 52) ? 9 : 10;
++			uniformFontSize = Math.max(8, baseCompact + fontOffset);
++		} else if (houseSize.height < 80) {
++			int baseMedium = (maxPlanets <= 2) ? 14 : ((maxPlanets <= 4) ? 12 : 11);
++			uniformFontSize = Math.max(9, baseMedium + fontOffset);
++		} else {
++			int baseLarge = (maxPlanets <= 2) ? 15 : ((maxPlanets <= 4) ? 14 : 12);
++			uniformFontSize = Math.max(9, baseLarge + fontOffset);
++		}
++
+ 		for(Rasi house : Rasi.values()){
+ 			
+ 			houseNo = house.ordinal();
+@@ -229,15 +255,57 @@ public class Chart extends JPanel{
+ 
+ 				Integer val = avData.getVarga().get(house);
+ 				String valStr = (val != null) ? val.toString() : "";
+-				JLabel numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER);
+-				numLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, isCompact ? 12 : 15));
+-				numLbl.setForeground(UIConsts.getChartScoreColor());
++
++				final boolean isNatal = (avData.getNatalRasi() == house);
++				JLabel numLbl;
++				if (isNatal) {
++					final Color ringColor = UIConsts.getChartNatalHighlightColor();
++					numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER) {
++						@Override
++						protected void paintComponent(Graphics g) {
++							Graphics2D g2 = (Graphics2D) g.create();
++							g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
++							int w = getWidth();
++							int h = getHeight();
++							int diameter = Math.min(w, h) - 2;
++							if (isCompact) {
++								diameter = Math.min(diameter, 22);
++							} else {
++								diameter = Math.min(diameter, 30);
++							}
++							int x = (w - diameter) / 2;
++							int y = (h - diameter) / 2;
++
++							// Highlight ring stroke around the score without altering the cell background
++							g2.setColor(ringColor);
++							g2.setStroke(new BasicStroke(1.8f));
++							g2.drawOval(x, y, diameter, diameter);
++							g2.dispose();
++
++							super.paintComponent(g);
++						}
++					};
++					numLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, isCompact ? 12 : 15));
++					numLbl.setForeground(UIConsts.getChartScoreColor());
++					String tip = "Natal " + (avData.getVargaName() != null ? avData.getVargaName().toString() : "Planet") 
++							+ " placement in " + house.toString(Language.ENGLISH) + " (" + valStr + " bindus)";
++					numLbl.setToolTipText(tip);
++					toolTipManager.registerComponent(numLbl);
++				} else {
++					numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER);
++					numLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, isCompact ? 12 : 15));
++					numLbl.setForeground(UIConsts.getChartScoreColor());
++				}
+ 				panel.add(numLbl, BorderLayout.CENTER);
+ 
+ 				panel.add(Box.createVerticalStrut(isCompact ? 2 : 16), BorderLayout.SOUTH);
+ 
+-				app.astrosoft.consts.AshtavargaStrength strength = avData.getStrength(house);
+-				panel.setBackground(UIConsts.getAshtavargaColor(strength));
++				if (avData.hasStrengthShading()) {
++					app.astrosoft.consts.AshtavargaStrength strength = avData.getStrength(house);
++					panel.setBackground(UIConsts.getAshtavargaColor(strength));
++				} else {
++					panel.setBackground(UIConsts.getChartBackground());
++				}
+ 
+ 				add(panel, getConstrains(houseNo));
+ 				housePanel.add(houseNo, panel);
+@@ -287,26 +355,54 @@ public class Chart extends JPanel{
+                 };
+ 				panel.add(houseTable, getConstrains(houseNo));
+ 
+-				//houseTable.setDefaultRenderer(Planet.class, new PlanetCellRenderer());
++				houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, uniformFontSize));
+ 				if (houseSize.height < 68) {
+-					int baseCompact = (houseSize.height < 52) ? 9 : 10;
+-					int fontSize = Math.max(8, baseCompact + fontOffset);
+-					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
+ 					houseTable.setRowMargin(1);
+-				} else {
+-					int pCount = 0;
+-					if (chartData instanceof PlanetChartData) {
+-						PlanetChartData pcd = (PlanetChartData) chartData;
+-						if (pcd.getPlanetsInRasi() != null && pcd.getPlanetsInRasi().containsKey(house)) {
+-							List<Planet> pList = pcd.getPlanetsInRasi().get(house);
+-							if (pList != null) {
+-								pCount = pList.size();
+-							}
++				}
++
++				int pCount = 0;
++				if (chartData instanceof PlanetChartData) {
++					PlanetChartData pcd = (PlanetChartData) chartData;
++					if (pcd.getPlanetsInRasi() != null && pcd.getPlanetsInRasi().containsKey(house)) {
++						List<Planet> pList = pcd.getPlanetsInRasi().get(house);
++						if (pList != null) {
++							pCount = pList.size();
+ 						}
+ 					}
+-					int baseFontSize = (pCount <= 2) ? 15 : ((pCount <= 4) ? 13 : 11);
+-					int fontSize = Math.max(9, baseFontSize + fontOffset);
+-					houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
++				}
++
++				if (pCount == 1) {
++					TableColumnModel cm = houseTable.getColumnModel();
++					if (cm.getColumnCount() >= 3) {
++						cm.getColumn(0).setMinWidth(0);
++						cm.getColumn(0).setMaxWidth(0);
++						cm.getColumn(0).setPreferredWidth(0);
++						cm.getColumn(0).setWidth(0);
++
++						cm.getColumn(1).setPreferredWidth(tableSize.width);
++						cm.getColumn(1).setWidth(tableSize.width);
++
++						cm.getColumn(2).setMinWidth(0);
++						cm.getColumn(2).setMaxWidth(0);
++						cm.getColumn(2).setPreferredWidth(0);
++						cm.getColumn(2).setWidth(0);
++					}
++				} else if (pCount == 2) {
++					TableColumnModel cm = houseTable.getColumnModel();
++					if (cm.getColumnCount() >= 3) {
++						int w0 = tableSize.width / 2;
++						int w2 = tableSize.width - w0;
++						cm.getColumn(0).setPreferredWidth(w0);
++						cm.getColumn(0).setWidth(w0);
++
++						cm.getColumn(1).setMinWidth(0);
++						cm.getColumn(1).setMaxWidth(0);
++						cm.getColumn(1).setPreferredWidth(0);
++						cm.getColumn(1).setWidth(0);
++
++						cm.getColumn(2).setPreferredWidth(w2);
++						cm.getColumn(2).setWidth(w2);
++					}
+ 				}
+ 				houseTable.setRowHeight(rowHeight);
+ 				houseTable.setPreferredSize(tableSize);
+diff --git a/src/app/astrosoft/ui/test/AshtavargaMultiGridTest.java b/src/app/astrosoft/ui/test/AshtavargaMultiGridTest.java
+index cc383d5..85380d9 100644
+--- a/src/app/astrosoft/ui/test/AshtavargaMultiGridTest.java
++++ b/src/app/astrosoft/ui/test/AshtavargaMultiGridTest.java
+@@ -100,7 +100,10 @@ public class AshtavargaMultiGridTest {
+                                 : app.astrosoft.consts.AshtavargaStrength.NEUTRAL;
+                     }
+                     assertEquals("Domain strength for " + expectedCodes[i] + " " + r, expectedStrength, avData.getStrength(r));
+-                    assertEquals("House background for " + expectedCodes[i] + " " + r, app.astrosoft.ui.util.UIConsts.getAshtavargaColor(expectedStrength), hp.getBackground());
++                    java.awt.Color expectedBg = avData.hasStrengthShading()
++                            ? app.astrosoft.ui.util.UIConsts.getAshtavargaColor(expectedStrength)
++                            : app.astrosoft.ui.util.UIConsts.getChartBackground();
++                    assertEquals("House background for " + expectedCodes[i] + " " + r, expectedBg, hp.getBackground());
+                 }
+             }
+         }
+@@ -120,6 +123,69 @@ public class AshtavargaMultiGridTest {
+         frame.dispose();
+     }
+ 
++    @Test
++    public void testAshtavargaNatalRasiHighlighting() throws Exception {
++        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
++        assertNotNull("Horoscope loaded", h);
++
++        Rasi asc = h.getAscendant();
++        Rasi moon = h.getRasi();
++        java.util.EnumMap<app.astrosoft.consts.Planet, Rasi> planetRasis = h.getPlanetRasis();
++
++        JPanel panel = AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), asc, moon, planetRasis);
++        assertNotNull("Grid panel created", panel);
++
++        List<Chart> charts = findComponents(panel, Chart.class);
++        assertEquals("Must contain exactly 8 charts", 8, charts.size());
++
++        java.lang.reflect.Field field = Chart.class.getDeclaredField("chartData");
++        field.setAccessible(true);
++        java.lang.reflect.Field housePanelField = Chart.class.getDeclaredField("housePanel");
++        housePanelField.setAccessible(true);
++
++        // Chart 0 is SAV -> natalRasi must be null
++        app.astrosoft.beans.AshtaVargaChartData savData = (app.astrosoft.beans.AshtaVargaChartData) field.get(charts.get(0));
++        org.junit.Assert.assertNull("SAV must not have a natal Rasi", savData.getNatalRasi());
++
++        // Charts 1..7 are planets Sun..Saturn
++        app.astrosoft.consts.Planet[] planets = {
++            app.astrosoft.consts.Planet.Sun,
++            app.astrosoft.consts.Planet.Moon,
++            app.astrosoft.consts.Planet.Mars,
++            app.astrosoft.consts.Planet.Mercury,
++            app.astrosoft.consts.Planet.Jupiter,
++            app.astrosoft.consts.Planet.Venus,
++            app.astrosoft.consts.Planet.Saturn
++        };
++
++        for (int i = 0; i < planets.length; i++) {
++            Chart c = charts.get(i + 1);
++            app.astrosoft.beans.AshtaVargaChartData bchData = (app.astrosoft.beans.AshtaVargaChartData) field.get(c);
++            Rasi expectedNatalRasi = planetRasis.get(planets[i]);
++            assertEquals("Natal Rasi for " + planets[i], expectedNatalRasi, bchData.getNatalRasi());
++
++            // Check that the natal house score label exists and has natal tooltip
++            List<JPanel> houses = (List<JPanel>) housePanelField.get(c);
++            JPanel natalHouse = houses.get(expectedNatalRasi.ordinal());
++            Integer val = bchData.getVarga().get(expectedNatalRasi);
++            assertNotNull("Score in natal house", val);
++            JLabel scoreLabel = findLabelWithText(natalHouse, String.valueOf(val));
++            assertNotNull("Score label must be found in natal house for " + planets[i], scoreLabel);
++            assertTrue("Score label tooltip should mention Natal placement",
++                    scoreLabel.getToolTipText() != null && scoreLabel.getToolTipText().contains("Natal " + planets[i].name()));
++        }
++
++        // Test painting with highlight
++        JFrame frame = new JFrame();
++        frame.getContentPane().add(panel);
++        frame.pack();
++        BufferedImage img = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_INT_RGB);
++        Graphics2D g = img.createGraphics();
++        panel.paint(g);
++        g.dispose();
++        frame.dispose();
++    }
++
+     @SuppressWarnings("unchecked")
+     private static <T extends Component> List<T> findComponents(Container parent, Class<T> clazz) {
+         List<T> list = new ArrayList<T>();
+diff --git a/src/app/astrosoft/ui/test/ChartThemeTest.java b/src/app/astrosoft/ui/test/ChartThemeTest.java
+index 29da8b6..c8c8b35 100644
+--- a/src/app/astrosoft/ui/test/ChartThemeTest.java
++++ b/src/app/astrosoft/ui/test/ChartThemeTest.java
+@@ -51,6 +51,7 @@ public class ChartThemeTest {
+             assertNotNull(theme.getMoonColor());
+             assertNotNull(theme.getScoreColor());
+             assertNotNull(theme.getLabelColor());
++            assertNotNull(theme.getNatalHighlightColor());
+         }
+     }
+ 
+diff --git a/src/app/astrosoft/ui/util/UIConsts.java b/src/app/astrosoft/ui/util/UIConsts.java
+index 31cc428..82273b8 100644
+--- a/src/app/astrosoft/ui/util/UIConsts.java
++++ b/src/app/astrosoft/ui/util/UIConsts.java
+@@ -157,7 +157,8 @@ public class UIConsts {
+ 			new Color(220, 38, 38),   // #DC2626
+ 			new Color(2, 132, 199),   // #0284C7
+ 			new Color(30, 41, 59),    // Score
+-			new Color(100, 116, 139)  // Label (#64748B)
++			new Color(100, 116, 139), // Label (#64748B)
++			new Color(194, 65, 12)    // Natal Highlight (#C2410C Warm Rust)
+ 		),
+ 		SOFT_ALABASTER("Soft Alabaster", 
+ 			new Color(250, 250, 249), // #FAFAF9
+@@ -166,7 +167,8 @@ public class UIConsts {
+ 			new Color(225, 29, 72),   // #E11D48
+ 			new Color(2, 132, 199),   // #0284C7
+ 			new Color(15, 23, 42),
+-			new Color(100, 116, 139)
++			new Color(100, 116, 139),
++			new Color(190, 18, 60)    // Natal Highlight (#BE123C Ruby Crimson)
+ 		),
+ 		PALE_GOLD_MIST("Pale Gold Mist", 
+ 			new Color(252, 249, 238), // #FCF9EE
+@@ -175,7 +177,8 @@ public class UIConsts {
+ 			new Color(220, 38, 38),   // #DC2626
+ 			new Color(2, 132, 199),   // #0284C7
+ 			new Color(49, 46, 129),
+-			new Color(110, 105, 135)
++			new Color(110, 105, 135),
++			new Color(217, 119, 6)    // Natal Highlight (#D97706 Vibrant Amber)
+ 		),
+ 		CALM_SAGE("Calm Sage", 
+ 			new Color(245, 246, 243), // #F5F6F3
+@@ -184,7 +187,8 @@ public class UIConsts {
+ 			new Color(220, 38, 38),   // #DC2626
+ 			new Color(2, 132, 199),   // #0284C7
+ 			new Color(30, 41, 59),
+-			new Color(100, 116, 110)
++			new Color(100, 116, 110),
++			new Color(154, 52, 18)    // Natal Highlight (#9A3412 Earthy Rust)
+ 		),
+ 		CLASSIC("Classic (Original)", 
+ 			new Color(255, 255, 252), // #FFFFFC YELLOWISH_WHITE
+@@ -193,7 +197,8 @@ public class UIConsts {
+ 			Color.RED,                // Red Asc
+ 			Color.MAGENTA,            // Magenta Moon
+ 			new Color(0, 0, 140),     // #00008C DARK_BLUE score
+-			new Color(0, 70, 140)     // GREENISH_BLUE label
++			new Color(0, 70, 140),    // GREENISH_BLUE label
++			new Color(225, 29, 72)    // Natal Highlight (#E11D48 Bright Coral Red)
+ 		);
+ 
+ 		private final String displayName;
+@@ -204,9 +209,11 @@ public class UIConsts {
+ 		private final Color moonColor;
+ 		private final Color scoreColor;
+ 		private final Color labelColor;
++		private final Color natalHighlightColor;
+ 
+ 		ChartTheme(String displayName, Color background, Color borderColor, 
+-				   Color planetForeground, Color ascendantColor, Color moonColor, Color scoreColor, Color labelColor) {
++				   Color planetForeground, Color ascendantColor, Color moonColor, Color scoreColor, Color labelColor,
++				   Color natalHighlightColor) {
+ 			this.displayName = displayName;
+ 			this.background = background;
+ 			this.borderColor = borderColor;
+@@ -215,6 +222,7 @@ public class UIConsts {
+ 			this.moonColor = moonColor;
+ 			this.scoreColor = scoreColor;
+ 			this.labelColor = labelColor;
++			this.natalHighlightColor = natalHighlightColor;
+ 		}
+ 
+ 		public String displayName() { return displayName; }
+@@ -225,6 +233,7 @@ public class UIConsts {
+ 		public Color getMoonColor() { return moonColor; }
+ 		public Color getScoreColor() { return scoreColor; }
+ 		public Color getLabelColor() { return labelColor; }
++		public Color getNatalHighlightColor() { return natalHighlightColor; }
+ 
+ 		public Border getBorder() {
+ 			if (this == CLASSIC) {
+@@ -287,6 +296,10 @@ public class UIConsts {
+ 		return currentChartTheme.getLabelColor();
+ 	}
+ 
++	public static Color getChartNatalHighlightColor(){
++		return currentChartTheme.getNatalHighlightColor();
++	}
++
+ 	public static Color getAshtavargaColor(app.astrosoft.consts.AshtavargaStrength strength) {
+ 		if (strength == null) {
+ 			return getChartBackground();
+diff --git a/src/app/astrosoft/ui/view/AshtavargaView.java b/src/app/astrosoft/ui/view/AshtavargaView.java
+index a07ed50..5a4c218 100644
+--- a/src/app/astrosoft/ui/view/AshtavargaView.java
++++ b/src/app/astrosoft/ui/view/AshtavargaView.java
+@@ -38,11 +38,13 @@ import javax.swing.JPanel;
+ 
+ import app.astrosoft.beans.AshtaVargaChartData;
+ import app.astrosoft.consts.AshtavargaName;
++import app.astrosoft.consts.Planet;
+ import app.astrosoft.consts.Rasi;
+ import app.astrosoft.core.Ashtavarga;
+ import app.astrosoft.ui.comp.Chart;
+ import app.astrosoft.ui.util.UIConsts;
+ import app.astrosoft.ui.util.UIUtil;
++import java.util.EnumMap;
+ 
+ public class AshtavargaView extends AstrosoftView {
+ 	
+@@ -80,19 +82,27 @@ public class AshtavargaView extends AstrosoftView {
+ 	}
+ 
+ 	public AshtavargaView(String title, Ashtavarga ashtavarga, Point loc) {
+-		this(title, ashtavarga, null, null, loc);
++		this(title, ashtavarga, null, null, null, loc);
+ 	}
+ 
+ 	public AshtavargaView(String title, Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi, Point loc) {
++		this(title, ashtavarga, ascendant, moonRasi, null, loc);
++	}
++
++	public AshtavargaView(String title, Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi, EnumMap<Planet, Rasi> planetRasis, Point loc) {
+ 		super(title, viewSize, loc);
+-		add(createAshtavargaPanel(ashtavarga, ascendant, moonRasi), BorderLayout.CENTER);
++		add(createAshtavargaPanel(ashtavarga, ascendant, moonRasi, planetRasis), BorderLayout.CENTER);
+ 	}
+ 
+ 	public static JPanel createAshtavargaPanel(final Ashtavarga ashtavarga) {
+-		return createAshtavargaPanel(ashtavarga, null, null);
++		return createAshtavargaPanel(ashtavarga, null, null, null);
+ 	}
+ 
+ 	public static JPanel createAshtavargaPanel(final Ashtavarga ashtavarga, final Rasi ascendant, final Rasi moonRasi) {
++		return createAshtavargaPanel(ashtavarga, ascendant, moonRasi, null);
++	}
++
++	public static JPanel createAshtavargaPanel(final Ashtavarga ashtavarga, final Rasi ascendant, final Rasi moonRasi, final EnumMap<Planet, Rasi> planetRasis) {
+ 		final AshtavargaItem[] items = new AshtavargaItem[] {
+ 			new AshtavargaItem("SAV (Sarva Ashtakavarga)", "SAV", AshtavargaName.SarvaAshtavarga),
+ 			new AshtavargaItem("Sun (Su)", "Su", AshtavargaName.Sun),
+@@ -107,7 +117,10 @@ public class AshtavargaView extends AstrosoftView {
+ 		final Font titleFont = UIUtil.getFont(Font.BOLD, 16);
+ 		final Chart[] charts = new Chart[items.length];
+ 		for (int i = 0; i < items.length; i++) {
+-			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi), chartSize);
++			AshtavargaName vName = items[i].getVargaName();
++			Planet p = vName != null ? vName.toPlanet() : null;
++			Rasi natalRasi = (p != null && planetRasis != null) ? planetRasis.get(p) : (p == Planet.Moon ? moonRasi : null);
++			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi, items[i].getVargaName(), natalRasi), chartSize);
+ 			charts[i].setTitleFont(titleFont);
+ 		}
+ 
+@@ -221,10 +234,14 @@ public class AshtavargaView extends AstrosoftView {
+ 	public static final Dimension gridPanelSize = new Dimension(858, 380);
+ 
+ 	public static JPanel createAshtavargaGridPanel(final Ashtavarga ashtavarga) {
+-		return createAshtavargaGridPanel(ashtavarga, null, null);
++		return createAshtavargaGridPanel(ashtavarga, null, null, null);
+ 	}
+ 
+ 	public static JPanel createAshtavargaGridPanel(final Ashtavarga ashtavarga, final Rasi ascendant, final Rasi moonRasi) {
++		return createAshtavargaGridPanel(ashtavarga, ascendant, moonRasi, null);
++	}
++
++	public static JPanel createAshtavargaGridPanel(final Ashtavarga ashtavarga, final Rasi ascendant, final Rasi moonRasi, final EnumMap<Planet, Rasi> planetRasis) {
+ 		final AshtavargaItem[] items = new AshtavargaItem[] {
+ 			new AshtavargaItem("SAV", "SAV", AshtavargaName.SarvaAshtavarga),
+ 			new AshtavargaItem("Su", "Su", AshtavargaName.Sun),
+@@ -254,7 +271,10 @@ public class AshtavargaView extends AstrosoftView {
+ 		final Color badgeText = UIConsts.TEXT_DARK_NAVY;
+ 
+ 		for (int i = 0; i < items.length; i++) {
+-			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi, items[i].getVargaName()), miniChartSize);
++			AshtavargaName vName = items[i].getVargaName();
++			Planet p = vName != null ? vName.toPlanet() : null;
++			Rasi natalRasi = (p != null && planetRasis != null) ? planetRasis.get(p) : (p == Planet.Moon ? moonRasi : null);
++			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi, items[i].getVargaName(), natalRasi), miniChartSize);
+ 			charts[i].setTitleFont(titleFont);
+ 			charts[i].setToolTipText(fullNames[i]);
+ 			charts[i].setTitleBadge(badgeBg, badgeBorder, badgeText);

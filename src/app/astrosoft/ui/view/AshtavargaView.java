@@ -38,11 +38,13 @@ import javax.swing.JPanel;
 
 import app.astrosoft.beans.AshtaVargaChartData;
 import app.astrosoft.consts.AshtavargaName;
+import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.core.Ashtavarga;
 import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.ui.util.UIUtil;
+import java.util.EnumMap;
 
 public class AshtavargaView extends AstrosoftView {
 	
@@ -80,19 +82,27 @@ public class AshtavargaView extends AstrosoftView {
 	}
 
 	public AshtavargaView(String title, Ashtavarga ashtavarga, Point loc) {
-		this(title, ashtavarga, null, null, loc);
+		this(title, ashtavarga, null, null, null, loc);
 	}
 
 	public AshtavargaView(String title, Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi, Point loc) {
+		this(title, ashtavarga, ascendant, moonRasi, null, loc);
+	}
+
+	public AshtavargaView(String title, Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi, EnumMap<Planet, Rasi> planetRasis, Point loc) {
 		super(title, viewSize, loc);
-		add(createAshtavargaPanel(ashtavarga, ascendant, moonRasi), BorderLayout.CENTER);
+		add(createAshtavargaPanel(ashtavarga, ascendant, moonRasi, planetRasis), BorderLayout.CENTER);
 	}
 
 	public static JPanel createAshtavargaPanel(final Ashtavarga ashtavarga) {
-		return createAshtavargaPanel(ashtavarga, null, null);
+		return createAshtavargaPanel(ashtavarga, null, null, null);
 	}
 
 	public static JPanel createAshtavargaPanel(final Ashtavarga ashtavarga, final Rasi ascendant, final Rasi moonRasi) {
+		return createAshtavargaPanel(ashtavarga, ascendant, moonRasi, null);
+	}
+
+	public static JPanel createAshtavargaPanel(final Ashtavarga ashtavarga, final Rasi ascendant, final Rasi moonRasi, final EnumMap<Planet, Rasi> planetRasis) {
 		final AshtavargaItem[] items = new AshtavargaItem[] {
 			new AshtavargaItem("SAV (Sarva Ashtakavarga)", "SAV", AshtavargaName.SarvaAshtavarga),
 			new AshtavargaItem("Sun (Su)", "Su", AshtavargaName.Sun),
@@ -107,7 +117,10 @@ public class AshtavargaView extends AstrosoftView {
 		final Font titleFont = UIUtil.getFont(Font.BOLD, 16);
 		final Chart[] charts = new Chart[items.length];
 		for (int i = 0; i < items.length; i++) {
-			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi), chartSize);
+			AshtavargaName vName = items[i].getVargaName();
+			Planet p = vName != null ? vName.toPlanet() : null;
+			Rasi natalRasi = (p != null && planetRasis != null) ? planetRasis.get(p) : (p == Planet.Moon ? moonRasi : null);
+			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi, items[i].getVargaName(), natalRasi), chartSize);
 			charts[i].setTitleFont(titleFont);
 		}
 
@@ -221,10 +234,14 @@ public class AshtavargaView extends AstrosoftView {
 	public static final Dimension gridPanelSize = new Dimension(858, 380);
 
 	public static JPanel createAshtavargaGridPanel(final Ashtavarga ashtavarga) {
-		return createAshtavargaGridPanel(ashtavarga, null, null);
+		return createAshtavargaGridPanel(ashtavarga, null, null, null);
 	}
 
 	public static JPanel createAshtavargaGridPanel(final Ashtavarga ashtavarga, final Rasi ascendant, final Rasi moonRasi) {
+		return createAshtavargaGridPanel(ashtavarga, ascendant, moonRasi, null);
+	}
+
+	public static JPanel createAshtavargaGridPanel(final Ashtavarga ashtavarga, final Rasi ascendant, final Rasi moonRasi, final EnumMap<Planet, Rasi> planetRasis) {
 		final AshtavargaItem[] items = new AshtavargaItem[] {
 			new AshtavargaItem("SAV", "SAV", AshtavargaName.SarvaAshtavarga),
 			new AshtavargaItem("Su", "Su", AshtavargaName.Sun),
@@ -254,7 +271,10 @@ public class AshtavargaView extends AstrosoftView {
 		final Color badgeText = UIConsts.TEXT_DARK_NAVY;
 
 		for (int i = 0; i < items.length; i++) {
-			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi, items[i].getVargaName()), miniChartSize);
+			AshtavargaName vName = items[i].getVargaName();
+			Planet p = vName != null ? vName.toPlanet() : null;
+			Rasi natalRasi = (p != null && planetRasis != null) ? planetRasis.get(p) : (p == Planet.Moon ? moonRasi : null);
+			charts[i] = new Chart(new AshtaVargaChartData(items[i].getChartCode(), ashtavarga.getAshtavarga(items[i].getVargaName()), ascendant, moonRasi, items[i].getVargaName(), natalRasi), miniChartSize);
 			charts[i].setTitleFont(titleFont);
 			charts[i].setToolTipText(fullNames[i]);
 			charts[i].setTitleBadge(badgeBg, badgeBorder, badgeText);
