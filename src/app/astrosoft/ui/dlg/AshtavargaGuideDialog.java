@@ -101,7 +101,7 @@ public class AshtavargaGuideDialog extends JDialog {
         JPanel savCard = createCardPanel();
         savCard.add(createLegendRow(UIConsts.ASHTAVARGA_STRONG_BG, "Strong", ">= 30 points", "Auspicious, high vitality, productive house"));
         savCard.add(Box.createVerticalStrut(6));
-        savCard.add(createLegendRow(Color.WHITE, "Average", "26 - 29 points", "Moderate, balanced baseline results"));
+        savCard.add(createLegendRow(UIConsts.getAshtavargaColor(app.astrosoft.consts.AshtavargaStrength.NEUTRAL), "Average", "26 - 29 points", "Moderate, balanced baseline results"));
         savCard.add(Box.createVerticalStrut(6));
         savCard.add(createLegendRow(UIConsts.ASHTAVARGA_WEAK_BG, "Weak", "<= 25 points", "Challenging, reduced vitality, extra effort needed"));
         contentPanel.add(savCard);
@@ -116,7 +116,7 @@ public class AshtavargaGuideDialog extends JDialog {
         JPanel bavCard = createCardPanel();
         bavCard.add(createLegendRow(UIConsts.ASHTAVARGA_STRONG_BG, "Strong", ">= 5 points (5 to 8)", "Strong planetary support & favorable transit influence"));
         bavCard.add(Box.createVerticalStrut(6));
-        bavCard.add(createLegendRow(Color.WHITE, "Average", "3 - 4 points", "Balanced, neutral planetary transit influence"));
+        bavCard.add(createLegendRow(UIConsts.getAshtavargaColor(app.astrosoft.consts.AshtavargaStrength.NEUTRAL), "Average", "3 - 4 points", "Balanced, neutral planetary transit influence"));
         bavCard.add(Box.createVerticalStrut(6));
         bavCard.add(createLegendRow(UIConsts.ASHTAVARGA_WEAK_BG, "Weak", "<= 2 points (0 to 2)", "Low planetary support, challenging transit influence"));
         contentPanel.add(bavCard);
@@ -180,7 +180,8 @@ public class AshtavargaGuideDialog extends JDialog {
     private JPanel createCardPanel() {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setOpaque(false);
+        card.setBackground(Color.WHITE);
+        card.setOpaque(true);
         card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(UIConsts.getChartBorderColor(), 1, true),
             BorderFactory.createEmptyBorder(10, 12, 10, 12)
@@ -203,8 +204,8 @@ public class AshtavargaGuideDialog extends JDialog {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(swatchBg);
                 g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
-                g2.setColor(new Color(190, 195, 205));
-                g2.setStroke(new BasicStroke(1.0f));
+                g2.setColor(UIConsts.getChartBorderColor());
+                g2.setStroke(new BasicStroke(1.2f));
                 g2.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
                 g2.dispose();
             }
