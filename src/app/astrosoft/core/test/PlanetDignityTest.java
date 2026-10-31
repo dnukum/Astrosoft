@@ -48,9 +48,9 @@ public class PlanetDignityTest {
 	public void fullSevenByTwelveTable() {
 		for (Planet p : EXPECTED.keySet()) {
 			String[] cells = EXPECTED.get(p).split(" ");
-			assertEquals(p + " row width", 12, cells.length);
+			assertEquals(p.name() + " row width", 12, cells.length);
 			for (Rasi r : Rasi.values()) {
-				assertEquals(p + " in " + r, decode(cells[r.ordinal()]),
+				assertEquals(p.name() + " in " + r.name(), decode(cells[r.ordinal()]),
 						PlanetStatusCalculator.dignity(p, r));
 			}
 		}
@@ -103,8 +103,8 @@ public class PlanetDignityTest {
 			for (Rasi r : Rasi.values()) {
 				if (r.owner() == p) {
 					Dignity d = PlanetStatusCalculator.dignity(p, r);
-					assertNotSame(p + " in own sign " + r, Dignity.NONE, d);
-					assertNotSame(p + " in own sign " + r, Dignity.DEBILITATED, d);
+					assertNotSame(p.name() + " in own sign " + r.name(), Dignity.NONE, d);
+					assertNotSame(p.name() + " in own sign " + r.name(), Dignity.DEBILITATED, d);
 				}
 			}
 		}
@@ -115,7 +115,7 @@ public class PlanetDignityTest {
 		Planet[] none = {Planet.Rahu, Planet.Ketu, Planet.Ascendant, Planet.Ra_Ke};
 		for (Planet p : none) {
 			for (Rasi r : Rasi.values()) {
-				assertEquals(p + " in " + r, Dignity.NONE, PlanetStatusCalculator.dignity(p, r));
+				assertEquals(p.name() + " in " + r.name(), Dignity.NONE, PlanetStatusCalculator.dignity(p, r));
 			}
 		}
 	}

@@ -54,7 +54,7 @@ public class PlanetMoolaTrikonaTest {
 	@Test
 	public void sunIsMoolaTrikonaInLeoOnly() {
 		for (Rasi r : Rasi.values()) {
-			assertEquals("Sun in " + r, r == Rasi.Simha, Planet.Sun.isMoolaTrikona(r));
+			assertEquals("Sun in " + r.name(), r == Rasi.Simha, Planet.Sun.isMoolaTrikona(r));
 		}
 	}
 
