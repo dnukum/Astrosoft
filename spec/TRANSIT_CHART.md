@@ -519,5 +519,6 @@ Forbidden: dignity logic in the renderer or the dialog; calling `Planet.toString
 
 - Status markers are scoped to the **Planetary Positions** view (`PlanetView`, `ViewManager.PLANET_POS_VIEW`) only. They are not added to `Chart`, `PlanetCellRenderer` chart cells, or the Transit Chart dialog for now.
 - Primary presentation is a text **Status** column using clear labels: Exalted, Debilitated, Moolatrikona, Own sign, Vargottama. Combined values read as, for example, `Exalted, Vargottama`. Glyphs are optional and are not required for this scope.
-- Navamsa sign for Vargottama is read from `PlanetaryInfo.getPlanetRasi(Varga.Navamsa)` and Rasi sign from `PlanetaryInfo.getPlanetRasi()`. No new astronomical computation is introduced.
+- Navamsa sign for Vargottama is read from `PlanetaryInfo.getDivChart(Varga.Navamsa)` (1-based sign numbers; `getPlanetRasi(Varga)` is deliberately not used because of a separate known defect) and Rasi sign from `PlanetaryInfo.getPlanetRasi()`. No new astronomical computation is introduced.
 - Layering: `PlanetStatusCalculator` (core) decides; `PlanetStatusLabels` (ui.util, pure strings) words it; `PlanetView` / table data only display it.
+- Export (decision 2026-10-31): the Status column is view-only. The horoscope XML and Markdown exports are unchanged. Adding Status to exports is a separate, deferred change that must first pin the current export output with a test.
