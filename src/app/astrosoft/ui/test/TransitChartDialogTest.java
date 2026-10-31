@@ -505,6 +505,68 @@ public class TransitChartDialogTest extends TestCase {
         }
     }
 
+    public void testRasiPreviousOnMeshaAndWrapping() {
+        assertEquals(app.astrosoft.consts.Rasi.Meena, app.astrosoft.consts.Rasi.Mesha.previous());
+        assertEquals(app.astrosoft.consts.Rasi.Meena, app.astrosoft.consts.Rasi.ofIndex(-1));
+        assertEquals(app.astrosoft.consts.Rasi.Kumbha, app.astrosoft.consts.Rasi.ofIndex(-2));
+        assertEquals(app.astrosoft.consts.Rasi.Mesha, app.astrosoft.consts.Rasi.ofIndex(-12));
+        assertEquals(app.astrosoft.consts.Rasi.Meena, app.astrosoft.consts.Rasi.ofIndex(-13));
+    }
+
+    public void testSaturnTransitionWhenSaturnInMesha() {
+        Place place = AstroSoft.getPreferences().getPlace();
+        Calendar cal = Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+        cal.set(2027, Calendar.JUNE, 4, 12, 0, 0); // In June 2027, Saturn is in Mesha
+        Date transitTime = cal.getTime();
+
+        DefaultTransitChartComputation comp = new DefaultTransitChartComputation();
+        PlanetaryInfo info = comp.compute(transitTime, place);
+        assertEquals(app.astrosoft.consts.Rasi.Mesha, app.astrosoft.consts.Rasi.ofDeg(info.getPlanetPosition().get(Planet.Saturn)));
+
+        java.util.Map<Planet, TransitChartComputation.SignTransition> transitions =
+                comp.computeSignTransitions(transitTime, place, info);
+        assertNotNull(transitions);
+        TransitChartComputation.SignTransition saTrans = transitions.get(Planet.Saturn);
+        assertNotNull("Saturn sign transition must be computed without ArrayIndexOutOfBoundsException", saTrans);
+        assertEquals(app.astrosoft.consts.Rasi.Mesha, saTrans.getFromRasi());
+        assertNotNull(saTrans.getToRasi());
+    }
+
+    public void testUpdateChartWhenSaturnSelectedInTable() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        Calendar cal = Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+        cal.set(2027, Calendar.JUNE, 2, 16, 58, 0);
+        Date transitTime = cal.getTime();
+
+        TransitChartDialog dialog = new TransitChartDialog(frame, transitTime, place, new DefaultTransitChartComputation());
+        assertNotNull(dialog.getChart());
+
+        // Select Saturn in the detailsTable
+        javax.swing.JTable table = dialog.getDetailsTable();
+        assertNotNull(table);
+        int saturnRow = -1;
+        for (int r = 0; r < table.getRowCount(); r++) {
+            if ("Saturn".equals(table.getValueAt(r, 0))) {
+                saturnRow = r;
+                break;
+            }
+        }
+        assertTrue("Saturn row must be found in table", saturnRow >= 0);
+        table.setRowSelectionInterval(saturnRow, saturnRow);
+
+        // Click update
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        if (updateBtn.isEnabled()) {
+            updateBtn.doClick();
+            // Verify table and chart updated without throwing exception
+            assertNotNull(dialog.getChart());
+            assertTrue(table.getRowCount() > 0);
+        }
+        dialog.dispose();
+        frame.dispose();
+    }
+
     private static class StubTransitChartComputation implements TransitChartComputation {
         public PlanetaryInfo compute(Date instant, Place place) {
             EnumMap<Planet, Double> positions = new EnumMap<Planet, Double>(Planet.class);

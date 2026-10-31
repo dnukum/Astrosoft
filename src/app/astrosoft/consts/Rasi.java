@@ -37,7 +37,7 @@ public enum Rasi {
 	}
 	
 	public static Rasi ofIndex(int index){
-		return vals[index % vals.length];
+		return vals[Math.floorMod(index, vals.length)];
 	}
 	
 	public static Rasi ofDeg(double deg){

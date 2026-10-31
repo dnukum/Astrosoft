@@ -21,7 +21,7 @@ public enum Nakshathra {
 	public Nakshathra next() { return ofIndex(ordinal() + 1); }
 
 	public static Nakshathra ofIndex(int index) {
-		return vals[index % vals.length];
+		return vals[Math.floorMod(index, vals.length)];
 	}
 
 	public static Nakshathra ofDeg(double deg) {

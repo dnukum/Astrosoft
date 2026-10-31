@@ -28,7 +28,7 @@ public enum Karana {
 	private static Karana vals[] = values();
 	
 	public static Karana ofIndex(int index) {
-		return vals[index % vals.length];
+		return vals[Math.floorMod(index, vals.length)];
 	}
 	
 	public static Karana ofDeg(double deg){

@@ -28,7 +28,7 @@ public enum Thithi {
 	private static Thithi vals[] = values();
 
 	public static Thithi ofIndex(int index) {
-		return vals[index % vals.length];
+		return vals[Math.floorMod(index, vals.length)];
 	}
 	
 	public static Thithi ofDeg(double sun, double moon ) {

@@ -58,7 +58,7 @@ public enum Varga {
 	}
 	
 	public static Varga ofIndex(int index) {
-		return vals[index % vals.length];
+		return vals[Math.floorMod(index, vals.length)];
 	}
 	
 	public String toString() {

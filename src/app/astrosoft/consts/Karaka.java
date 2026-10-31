@@ -22,7 +22,7 @@ public enum Karaka {
 	private static Karaka vals[] = values();
 
 	public static Karaka ofIndex(int index) {
-		return vals[index % vals.length];
+		return vals[Math.floorMod(index, vals.length)];
 	}
 	
 	public String toString() {

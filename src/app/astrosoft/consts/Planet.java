@@ -56,7 +56,7 @@ public enum Planet {
 	}
 	
 	public static Planet ofIndex(int index){
-		return vals[index % 9];
+		return vals[Math.floorMod(index, 9)];
 	}
 	
 	public String sym(){

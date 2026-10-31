@@ -32,7 +32,7 @@ public enum Month {
 	}
 	
 	public static Month ofIndex(int index){
-		return vals[index % vals.length];
+		return vals[Math.floorMod(index, vals.length)];
 	}
 	
 	public int length(){

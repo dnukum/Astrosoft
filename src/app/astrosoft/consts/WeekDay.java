@@ -37,7 +37,7 @@ public enum WeekDay {
 	public WeekDay prev() { return ofIndex((ordinal() + vals.length - 1) % vals.length); }
 
 	public static WeekDay ofIndex(int index) {
-		return vals[index % vals.length];
+		return vals[Math.floorMod(index, vals.length)];
 	}
 	
 	public static WeekDay ofDay( int yr, int mon, int date ) {
