@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -25,6 +26,7 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import app.astrosoft.beans.PlanetStatus;
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.Planet;
@@ -36,6 +38,7 @@ import app.astrosoft.ui.table.DefaultColumnMetaData;
 import app.astrosoft.ui.table.ListTableData;
 import app.astrosoft.ui.table.MapTableRow;
 import app.astrosoft.ui.table.TableDataFactory;
+import app.astrosoft.ui.util.PlanetLabels;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.util.AstroUtil;
 
@@ -80,21 +83,15 @@ public class RelativePlanetView extends JPanel {
 		}
 		
 		EnumMap<Planet, Boolean> planetDir = planetaryInfo.getPlanetDirection();
+		Map<Planet, PlanetStatus> planetStatus = PlanetLabels.statuses(planetaryInfo);
 
 		List<MapTableRow> rows = new ArrayList<MapTableRow>();
 		for (Planet p : sortedPlanets) {
 			MapTableRow row = new MapTableRow();
-			String name = p.name();
 			boolean isRetro = planetDir.containsKey(p) && planetDir.get(p);
 			boolean isCombust = planetaryInfo.getPlanetCombustion() != null && planetaryInfo.getPlanetCombustion().containsKey(p) && planetaryInfo.getPlanetCombustion().get(p);
 			
-			if (isRetro && isCombust) {
-				name += " (R, C)";
-			} else if (isRetro) {
-				name += " (R)";
-			} else if (isCombust) {
-				name += " (C)";
-			}
+			String name = PlanetLabels.label(p.name(), isRetro, isCombust, p.isAsc() ? null : planetStatus.get(p));
 			row.addColumn(AstrosoftTableColumn.Planet, name);
 			
 			double offset = planetPos.get(p) % 30.0;
@@ -132,9 +129,9 @@ public class RelativePlanetView extends JPanel {
 			table.setOpaque(false);
 			javax.swing.table.TableColumn pCol = table.getColumnModel().getColumn(0);
 			javax.swing.table.TableColumn lCol = table.getColumnModel().getColumn(1);
-			pCol.setPreferredWidth(90);
-			pCol.setMaxWidth(100);
-			lCol.setPreferredWidth(145);
+			pCol.setPreferredWidth(120);
+			pCol.setMaxWidth(130);
+			lCol.setPreferredWidth(117);
 
 			pCol.setCellRenderer(new DefaultTableCellRenderer() {
 				@Override
