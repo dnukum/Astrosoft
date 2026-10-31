@@ -125,7 +125,7 @@ public enum Planet {
 	
 	public Rasi moolaTrikonaRasi(){
 		switch(this){
-			case Sun: return Rasi.Mesha;
+			case Sun: return Rasi.Simha;
 			case Moon: return Rasi.Vrishabha;
 			case Mars: return Rasi.Mesha;
 			case Mercury: return Rasi.Kanya;
