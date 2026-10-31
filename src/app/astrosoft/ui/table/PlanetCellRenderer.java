@@ -60,23 +60,29 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			int targetSize = (tblFont != null) ? tblFont.getSize() : c.getFont().getSize();
 			l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, targetSize));
 			l.setText(p.toString(planetFormat));
-			l.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 
-			if (table != null && column >= 0 && column < table.getColumnCount()) {
-				int colW = table.getColumnModel().getColumn(column).getWidth();
-				if (colW >= 40) {
-					l.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-				}
-				if (colW > 10) {
-					int availW = colW - 4;
-					int textW = l.getFontMetrics(l.getFont()).stringWidth(l.getText());
-					int fitSize = targetSize;
-					while (textW > availW && fitSize > 8) {
-						fitSize--;
-						Font fitFont = new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, fitSize);
-						textW = l.getFontMetrics(fitFont).stringWidth(l.getText());
-						l.setFont(fitFont);
-					}
+			int colW = (table != null && column >= 0 && column < table.getColumnCount())
+					? table.getColumnModel().getColumn(column).getWidth()
+					: 0;
+
+			// In narrow columns (< 26px, typical in 3-planet houses), zero out horizontal padding
+			// to avoid clipping wide planet abbreviations like "Mo" (Moon) or "Asc" (Ascendant).
+			int pad = (colW > 0 && colW < 26) ? 0 : ((colW > 0 && colW < 35) ? 1 : 2);
+			l.setBorder(BorderFactory.createEmptyBorder(0, pad, 0, pad));
+
+			if (colW >= 40 || column == 1) {
+				l.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			}
+
+			if (colW > 10) {
+				int availW = colW - (pad * 2) - 1;
+				int textW = l.getFontMetrics(l.getFont()).stringWidth(l.getText());
+				int fitSize = targetSize;
+				while (textW > availW && fitSize > 8) {
+					fitSize--;
+					Font fitFont = new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, fitSize);
+					textW = l.getFontMetrics(fitFont).stringWidth(l.getText());
+					l.setFont(fitFont);
 				}
 			}
 

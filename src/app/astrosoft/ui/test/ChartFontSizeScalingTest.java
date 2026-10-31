@@ -164,4 +164,83 @@ public class ChartFontSizeScalingTest {
             }
         });
     }
+
+    @org.junit.Test
+    public void testThreePlanetsNarrowColumnNoClipping() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                EnumMap<Planet, Integer> pos = new EnumMap<>(Planet.class);
+                pos.put(Planet.Moon, 1);     // Mesha (1-based or 0-based: house 1)
+                pos.put(Planet.Venus, 1);    // Mesha
+                pos.put(Planet.Saturn, 1);   // Mesha
+                pos.put(Planet.Sun, 2);      // Vrishabha
+                pos.put(Planet.Ascendant, 2);// Vrishabha
+                pos.put(Planet.Mercury, 3);
+                pos.put(Planet.Jupiter, 4);
+                pos.put(Planet.Ketu, 4);
+                pos.put(Planet.Mars, 5);
+                pos.put(Planet.Rahu, 10);
+
+                EnumMap<Planet, Boolean> directions = new EnumMap<>(Planet.class);
+                for (Planet p : Planet.planetsAsc()) {
+                    directions.put(p, false);
+                }
+
+                Chart.resetFontOffset();
+                Chart chart = new Chart(new PlanetChartData(Varga.Rasi, pos, directions, null, null), new Dimension(300, 300));
+                JFrame frame = new JFrame();
+                frame.setContentPane(chart);
+                frame.pack();
+                frame.doLayout();
+
+                for (Component c : chart.getComponents()) {
+                    if (c instanceof javax.swing.JPanel) {
+                        javax.swing.JPanel p = (javax.swing.JPanel) c;
+                        p.doLayout();
+                        for (Component sub : p.getComponents()) {
+                            if (sub instanceof JTable) {
+                                JTable table = (JTable) sub;
+                                table.doLayout();
+                                for (int r = 0; r < table.getRowCount(); r++) {
+                                    for (int col = 0; col < table.getColumnCount(); col++) {
+                                        Object val = table.getValueAt(r, col);
+                                        if (val instanceof Planet) {
+                                            Planet planet = (Planet) val;
+                                            TableCellRenderer rend = table.getCellRenderer(r, col);
+                                            Component comp = table.prepareRenderer(rend, r, col);
+                                            assert comp instanceof JLabel : "Renderer must be JLabel";
+                                            JLabel lbl = (JLabel) comp;
+                                            int colW = table.getColumnModel().getColumn(col).getWidth();
+                                            java.awt.Insets insets = lbl.getInsets();
+                                            java.awt.FontMetrics fm = lbl.getFontMetrics(lbl.getFont());
+                                            java.awt.Rectangle viewR = new java.awt.Rectangle(
+                                                insets.left, insets.top,
+                                                colW - insets.left - insets.right,
+                                                table.getRowHeight(r)
+                                            );
+                                            String clipped = SwingUtilities.layoutCompoundLabel(
+                                                lbl, fm, lbl.getText(), null,
+                                                lbl.getVerticalAlignment(), lbl.getHorizontalAlignment(),
+                                                lbl.getVerticalTextPosition(), lbl.getHorizontalTextPosition(),
+                                                viewR, new java.awt.Rectangle(), new java.awt.Rectangle(), 0
+                                            );
+                                            assert !"...".equals(clipped) && !"...".equals(clipped.trim()) : 
+                                                "Planet " + planet + " must not be clipped to ellipsis, was: " + clipped;
+                                            assert !clipped.contains("...") : 
+                                                "Planet " + planet + " label clipped to: " + clipped;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                frame.dispose();
+                System.out.println("testThreePlanetsNarrowColumnNoClipping PASSED: No planet labels clipped to ellipsis!");
+            } catch (Throwable t) {
+                t.printStackTrace();
+                System.exit(1);
+            }
+        });
+    }
 }
