@@ -3,6 +3,7 @@ package app.astrosoft.core;
 import java.util.EnumSet;
 import java.util.Set;
 
+import app.astrosoft.beans.PlanetStatus;
 import app.astrosoft.consts.Dignity;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
@@ -52,5 +53,12 @@ public final class PlanetStatusCalculator {
 			throw new IllegalArgumentException("planet, d1 and d9 must not be null");
 		}
 		return CLASSICAL.contains(planet) && d1 == d9;
+	}
+
+	/**
+	 * Combined status: dignity from the D1 sign, Vargottama from D1 vs D9 sign.
+	 */
+	public static PlanetStatus statusOf(Planet planet, Rasi d1, Rasi d9) {
+		return new PlanetStatus(dignity(planet, d1), isVargottama(planet, d1, d9));
 	}
 }
