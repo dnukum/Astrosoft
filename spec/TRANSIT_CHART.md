@@ -487,7 +487,7 @@ Source: B.V. Raman, *Graha and Bhava Balas*, Table II (as encoded in `PlanetDign
 
 ### 17.3 Product Decisions (reversible)
 
-- Markers are shown only in the Transit Chart. Other charts that share `Chart` and `PlanetCellRenderer` are unchanged (opt-in).
+- (Superseded by 17.6) Markers are shown only in the Transit Chart. Other charts that share `Chart` and `PlanetCellRenderer` are unchanged (opt-in).
 - Marker suffixes appended to the planet label: Exalted U+25B2, Debilitated U+25BC, Moolatrikona U+25C6, Own U+25A0, Vargottama U+2021. Vargottama follows any dignity marker.
 - Glyph choices are provisional pending a visual review in narrow (3-planet) cells.
 
@@ -514,3 +514,10 @@ Forbidden: dignity logic in the renderer or the dialog; calling `Planet.toString
 | `PlanetStatusTest` | `statusOf` combines dignity and Vargottama |
 | `PlanetStatusMarkersTest` | Suffix strings for every combination |
 | Pending | `VargaCharts` degree-window sweep for Navamsa sign; renderer opt-in regression; transit wiring |
+
+### 17.6 Scope Revision (2026-10-31, product decision)
+
+- Status markers are scoped to the **Planetary Positions** view (`PlanetView`, `ViewManager.PLANET_POS_VIEW`) only. They are not added to `Chart`, `PlanetCellRenderer` chart cells, or the Transit Chart dialog for now.
+- Primary presentation is a text **Status** column using clear labels: Exalted, Debilitated, Moolatrikona, Own sign, Vargottama. Combined values read as, for example, `Exalted, Vargottama`. Glyphs are optional and are not required for this scope.
+- Navamsa sign for Vargottama is read from `PlanetaryInfo.getPlanetRasi(Varga.Navamsa)` and Rasi sign from `PlanetaryInfo.getPlanetRasi()`. No new astronomical computation is introduced.
+- Layering: `PlanetStatusCalculator` (core) decides; `PlanetStatusLabels` (ui.util, pure strings) words it; `PlanetView` / table data only display it.
