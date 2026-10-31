@@ -28,7 +28,7 @@ public class AstrosoftPref {
 	public static enum Preference {
 
 		Language, PanCalcTime, EphCalcTime, Ayanamsa, Place, City, State, Country, Longitude, Latitude, TimeZone, IsInitialized,
-		AcrobatExe, AstrosoftFilesDir, ChartTheme;
+		AcrobatExe, AstrosoftFilesDir, ChartTheme, LeftColumnCollapsed;
 	}
 
 	private static double defaultEphCalcTime = 0.0; // 12.00 AM
@@ -159,6 +159,16 @@ public class AstrosoftPref {
 		}
 	}
 	
+	/** Whether the Horoscope screen's left column (Profile, Planetary Positions) is collapsed. */
+	public boolean isLeftColumnCollapsed() {
+		return root.getBoolean(Preference.LeftColumnCollapsed.name(), false);
+	}
+
+	public void setLeftColumnCollapsed(boolean collapsed) {
+		root.putBoolean(Preference.LeftColumnCollapsed.name(), collapsed);
+		flush();
+	}
+
 	public Ayanamsa getAyanamsa(){
 		return Enum.valueOf(Ayanamsa.class,root.get(Preference.Ayanamsa.name(), Ayanamsa.getDefault().name()));
 	}

@@ -681,23 +681,6 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return count;
 	}
 
-	private static javax.swing.JComponent createThemeSeparator() {
-		javax.swing.JPanel line = new javax.swing.JPanel() {
-			@Override
-			protected void paintComponent(java.awt.Graphics g) {
-				super.paintComponent(g);
-				g.setColor(UIConsts.getChartBorderColor());
-				g.fillRect(0, 0, getWidth(), 1);
-			}
-		};
-		line.setOpaque(false);
-		line.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-		line.setPreferredSize(new Dimension(530, 1));
-		line.setMaximumSize(new Dimension(530, 1));
-		line.setMinimumSize(new Dimension(10, 1));
-		return line;
-	}
-
 	public JPanel createChartView() {
 
 		JPanel infoView = new InfoView(h.getHoroscopeInfo(), new Point(20,20));
@@ -728,64 +711,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 		ashtavargaWrapper.setMaximumSize(new Dimension(ashtavargaPane.getPreferredSize().width, ashtavargaPane.getPreferredSize().height + 25));
 		ashtavargaWrapper.add(ashtavargaPane);
 
-		final JPanel rightContainer = new JPanel();
-		rightContainer.setLayout(new javax.swing.BoxLayout(rightContainer, javax.swing.BoxLayout.Y_AXIS));
-		rightContainer.setOpaque(false);
-		rightContainer.add(rasiNavamsaPanel);
-		rightContainer.setPreferredSize(new Dimension(858, 365));
-
-		final JPanel rightWrapper = new JPanel(new BorderLayout());
-		rightWrapper.setOpaque(false);
-		rightWrapper.add(rightContainer, BorderLayout.NORTH);
-
-		final JPanel contentPanel = new JPanel(new BorderLayout(40, 0));
-		contentPanel.setOpaque(false);
-
 		final JPanel planetOffsetsView = new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo());
-		planetOffsetsView.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-		infoView.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-
 		final JPanel shadbalaBarView = new app.astrosoft.ui.view.ShadBalaBarView(h.getShadBala());
-		shadbalaBarView.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
 
-		final javax.swing.JPanel leftPanel = new javax.swing.JPanel();
-		leftPanel.setLayout(new javax.swing.BoxLayout(leftPanel, javax.swing.BoxLayout.Y_AXIS));
-		leftPanel.setOpaque(false);
-
-		final javax.swing.JPanel leftWrapper = new javax.swing.JPanel(new java.awt.BorderLayout());
-		leftWrapper.setOpaque(false);
-		leftWrapper.setPreferredSize(new Dimension(530, 540));
-		leftWrapper.add(leftPanel, java.awt.BorderLayout.NORTH);
-
-		final javax.swing.JPanel controlsPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 12, 0));
-		controlsPanel.setOpaque(false);
-		controlsPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-		controlsPanel.setPreferredSize(new Dimension(525, 24));
-		controlsPanel.setMinimumSize(new Dimension(300, 24));
-		controlsPanel.setMaximumSize(new Dimension(530, 24));
-
-		final javax.swing.JCheckBox planetOffsetsCheck = new javax.swing.JCheckBox("Planetary Positions");
-		planetOffsetsCheck.setSelected(true);
-		planetOffsetsCheck.setOpaque(false);
-		planetOffsetsCheck.setFocusable(false);
-		planetOffsetsCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
-		planetOffsetsCheck.setForeground(UIConsts.getChartPlanetForeground());
-		controlsPanel.add(planetOffsetsCheck);
-
-		final javax.swing.JCheckBox shadbalaCheck = new javax.swing.JCheckBox("Shadbala");
-		shadbalaCheck.setSelected(false);
-		shadbalaCheck.setOpaque(false);
-		shadbalaCheck.setFocusable(false);
-		shadbalaCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
-		shadbalaCheck.setForeground(UIConsts.getChartPlanetForeground());
-		controlsPanel.add(shadbalaCheck);
-
-		final javax.swing.JCheckBox ashtaVargaCheck = new javax.swing.JCheckBox("AshtaVarga");
-		ashtaVargaCheck.setOpaque(false);
-		ashtaVargaCheck.setFocusable(false);
-		ashtaVargaCheck.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11));
-		ashtaVargaCheck.setForeground(UIConsts.getChartPlanetForeground());
-		controlsPanel.add(ashtaVargaCheck);
+		final app.astrosoft.ui.view.HoroscopeDashboard contentPanel = new app.astrosoft.ui.view.HoroscopeDashboard(
+				infoView, planetOffsetsView, shadbalaBarView, rasiNavamsaPanel, ashtavargaWrapper,
+				getPreferences().isLeftColumnCollapsed(),
+				collapsed -> getPreferences().setLeftColumnCollapsed(collapsed));
 
 		final JPanel contentWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
 		contentWrapper.setOpaque(true);
@@ -803,94 +735,6 @@ public class AstroSoft extends javax.swing.JFrame implements
 		mainScrollPane.setBackground(UIConsts.CANVAS_BACKGROUND);
 		mainScrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		mainScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
-
-		final Runnable updateLeftLayout = new Runnable() {
-			public void run() {
-				boolean showOffsets = planetOffsetsCheck.isSelected();
-				boolean showShadbala = shadbalaCheck.isSelected();
-				leftPanel.removeAll();
-				leftPanel.add(infoView);
-				leftPanel.add(javax.swing.Box.createVerticalStrut(12));
-				leftPanel.add(createThemeSeparator());
-				leftPanel.add(javax.swing.Box.createVerticalStrut(9));
-				leftPanel.add(controlsPanel);
-				if (showOffsets) {
-					leftPanel.add(javax.swing.Box.createVerticalStrut(9));
-					leftPanel.add(createThemeSeparator());
-					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
-					leftPanel.add(planetOffsetsView);
-				}
-				if (showShadbala) {
-					if (!showOffsets) {
-						leftPanel.add(javax.swing.Box.createVerticalStrut(9));
-						leftPanel.add(createThemeSeparator());
-					}
-					leftPanel.add(javax.swing.Box.createVerticalStrut(12));
-					leftPanel.add(shadbalaBarView);
-				}
-				leftPanel.revalidate();
-				leftPanel.repaint();
-				int h = leftPanel.getPreferredSize().height;
-				leftWrapper.setPreferredSize(new Dimension(530, Math.max(540, h)));
-				leftWrapper.revalidate();
-				leftWrapper.repaint();
-				int rightW = rightContainer.getPreferredSize().width;
-				int totalW = 530 + 40 + rightW;
-				int totalH = Math.max(leftWrapper.getPreferredSize().height, rightContainer.getPreferredSize().height);
-				contentPanel.setPreferredSize(new Dimension(totalW, totalH));
-				contentPanel.revalidate();
-				contentPanel.repaint();
-				contentWrapper.revalidate();
-				contentWrapper.repaint();
-				mainScrollPane.revalidate();
-				mainScrollPane.repaint();
-			}
-		};
-
-		planetOffsetsCheck.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				updateLeftLayout.run();
-			}
-		});
-
-		shadbalaCheck.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				updateLeftLayout.run();
-			}
-		});
-
-		updateLeftLayout.run();
-
-		ashtaVargaCheck.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				boolean show = ashtaVargaCheck.isSelected();
-				rightContainer.removeAll();
-				rightContainer.add(rasiNavamsaPanel);
-				if (show) {
-					rightContainer.add(ashtavargaWrapper);
-					int rightW = Math.max(858, ashtavargaWrapper.getPreferredSize().width);
-					rightContainer.setPreferredSize(new Dimension(rightW, 365 + ashtavargaWrapper.getPreferredSize().height));
-				} else {
-					rightContainer.setPreferredSize(new Dimension(858, 365));
-				}
-				rightContainer.revalidate();
-				rightContainer.repaint();
-				rightWrapper.revalidate();
-				rightWrapper.repaint();
-				int totalW = 530 + 40 + rightContainer.getPreferredSize().width;
-				int totalH = Math.max(leftWrapper.getPreferredSize().height, rightContainer.getPreferredSize().height);
-				contentPanel.setPreferredSize(new Dimension(totalW, totalH));
-				contentPanel.revalidate();
-				contentPanel.repaint();
-				contentWrapper.revalidate();
-				contentWrapper.repaint();
-				mainScrollPane.revalidate();
-				mainScrollPane.repaint();
-			}
-		});
-
-		contentPanel.add(leftWrapper, BorderLayout.WEST);
-		contentPanel.add(rightWrapper, BorderLayout.CENTER);
 
 		JPanel view = new JPanel(new BorderLayout());
 		view.setName("ChartView");
