@@ -460,3 +460,57 @@ Potential future enhancements, intentionally deferred:
 - persisted transit sessions
 - comparison mode against natal chart
 - transit overlays inside other chart workflows
+
+---
+
+## 17. Planet Status Markers (Addendum, 2026-10-31)
+
+This addendum adds dignity and Vargottama markers to planet cells in the Transit Chart. Each rule below is labelled by type, as required by the project instructions.
+
+### 17.1 Domain Rules (textual rule)
+
+Source: B.V. Raman, *Graha and Bhava Balas*, Table II (as encoded in `PlanetDignityTest`, hand-written and independent of production code).
+
+- Exaltation: Sun-Aries, Moon-Taurus, Mars-Capricorn, Mercury-Virgo, Jupiter-Cancer, Venus-Pisces, Saturn-Libra.
+- Debilitation: the sign opposite the exaltation sign.
+- Moolatrikona (whole sign): Sun-Leo, Mars-Aries, Jupiter-Sagittarius, Venus-Libra, Saturn-Aquarius. Moon-Taurus and Mercury-Virgo are exaltation signs and do not report Moolatrikona.
+- Own sign: sign lordship of the seven classical planets.
+- Precedence when several apply: Exalted, then Moolatrikona, then Own. Debilitated stands alone.
+- Vargottama: same sign in Rasi (D1) and Navamsa (D9).
+- Not applicable to Rahu, Ketu, Ascendant or the combined node.
+
+### 17.2 Interpretation and Convention
+
+- Moolatrikona is applied by whole sign, not by degree range. Degree-limited Moolatrikona is out of scope.
+- Dignity is shown for the planet's sign in the displayed Rasi chart only.
+- Vargottama needs the planet's Navamsa sign, which comes from the existing `VargaCharts` pipeline. It is not recomputed by the UI.
+
+### 17.3 Product Decisions (reversible)
+
+- Markers are shown only in the Transit Chart. Other charts that share `Chart` and `PlanetCellRenderer` are unchanged (opt-in).
+- Marker suffixes appended to the planet label: Exalted U+25B2, Debilitated U+25BC, Moolatrikona U+25C6, Own U+25A0, Vargottama U+2021. Vargottama follows any dignity marker.
+- Glyph choices are provisional pending a visual review in narrow (3-planet) cells.
+
+### 17.4 Layering and Implementation
+
+| Layer | Item | Rule |
+|---|---|---|
+| `consts` | `Dignity` enum | Pure enum |
+| `beans` | `PlanetStatus` | Immutable pair: `Dignity`, `vargottama` |
+| `core` | `PlanetStatusCalculator.dignity`, `isVargottama`, `statusOf` | Pure functions, no Swing, no preferences, no I/O |
+| `ui.util` | `PlanetStatusMarkers.suffix(PlanetStatus)` | Pure string mapping, no Swing |
+| `beans` | `PlanetChartData` status map | Optional, default empty |
+| `ui.table` | `PlanetCellRenderer` | Appends the suffix only if a status exists for the planet; contains no dignity logic |
+| `ui.dlg` | `TransitChartDialog` | Orchestrates only: asks the computation layer for statuses and passes them to the chart data |
+
+Forbidden: dignity logic in the renderer or the dialog; calling `Planet.toString()` in domain code or tests (it reaches `AstroSoft` through `Internalization`); changing existing chart behaviour when no status is supplied.
+
+### 17.5 Test Plan
+
+| Test | Covers |
+|---|---|
+| `PlanetDignityTest` | Full 7 by 12 table, precedence, non-classical planets, nulls |
+| `PlanetVargottamaTest` | 84 same-sign cases, 924 different-sign cases, non-classical planets, nulls |
+| `PlanetStatusTest` | `statusOf` combines dignity and Vargottama |
+| `PlanetStatusMarkersTest` | Suffix strings for every combination |
+| Pending | `VargaCharts` degree-window sweep for Navamsa sign; renderer opt-in regression; transit wiring |
