@@ -20,6 +20,10 @@ public interface TransitChartComputation {
         return Collections.emptyMap();
     }
 
+    default SignTransition computePreviousSignTransition(Date instant, Place place, Planet planet) {
+        return null;
+    }
+
     public static class SignTransition {
         private final Rasi fromRasi;
         private final Rasi toRasi;

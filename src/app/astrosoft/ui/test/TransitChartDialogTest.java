@@ -567,6 +567,214 @@ public class TransitChartDialogTest extends TestCase {
         frame.dispose();
     }
 
+    public void testPrevAndNextButtonsConfiguration() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        TransitChartDialog dialog = new TransitChartDialog(frame, new Date(), place, new StubTransitChartComputation());
+        dialog.setExpanded(true);
+
+        javax.swing.JButton prevBtn = dialog.getPrevButton();
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        javax.swing.JButton nextBtn = dialog.getNextButton();
+
+        assertNotNull(prevBtn);
+        assertNotNull(updateBtn);
+        assertNotNull(nextBtn);
+
+        assertEquals("<<", prevBtn.getText());
+        assertEquals("Update", updateBtn.getText());
+        assertEquals(">>", nextBtn.getText());
+
+        // Initially without row selection, all are disabled
+        assertFalse(prevBtn.isEnabled());
+        assertFalse(updateBtn.isEnabled());
+        assertFalse(nextBtn.isEnabled());
+
+        // When a row is selected, both << and >> are enabled
+        dialog.getDetailsTable().setRowSelectionInterval(1, 1);
+        assertTrue(prevBtn.isEnabled());
+        assertTrue(updateBtn.isEnabled());
+        assertTrue(nextBtn.isEnabled());
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testNextButtonAdvancesTableWithoutUpdatingChartStub() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        Date initialInstant = new Date(1700000000000L);
+        TransitChartDialog dialog = new TransitChartDialog(frame, initialInstant, place, new StubTransitChartComputation());
+        dialog.setExpanded(true);
+
+        javax.swing.JButton prevBtn = dialog.getPrevButton();
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        javax.swing.JButton nextBtn = dialog.getNextButton();
+        javax.swing.JTable table = dialog.getDetailsTable();
+
+        // Select Moon (row 2 or row 1)
+        table.setRowSelectionInterval(1, 1);
+        assertTrue(nextBtn.isEnabled());
+
+        Date chartInstantBefore = dialog.getSelectedInstant();
+        assertEquals(initialInstant, chartInstantBefore);
+
+        // Click >>
+        nextBtn.doClick();
+
+        // Table instant must have advanced by 86400000L (rounded up)
+        Date expectedTableInstant = TransitChartDialog.roundUpToMinute(new Date(initialInstant.getTime() + 86400000L));
+        assertEquals(expectedTableInstant, dialog.getTableInstant());
+
+        // CRITICAL REQUIREMENT: Chart instant must NOT be updated yet!
+        assertEquals("Transit chart must not be updated until Update button is pressed",
+                chartInstantBefore, dialog.getSelectedInstant());
+
+        // Selection should remain on row 1
+        assertEquals(1, table.getSelectedRow());
+
+        // Update button should be enabled because table is pending update
+        assertTrue(updateBtn.isEnabled());
+
+        // Click Update
+        updateBtn.doClick();
+
+        // Now chart must be updated to the new table instant
+        assertEquals(expectedTableInstant, dialog.getSelectedInstant());
+        assertEquals(expectedTableInstant, dialog.getTableInstant());
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testPrevButtonMovesTableBackwardWithoutUpdatingChartStub() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        Date initialInstant = new Date(1700000000000L);
+        TransitChartDialog dialog = new TransitChartDialog(frame, initialInstant, place, new StubTransitChartComputation());
+        dialog.setExpanded(true);
+
+        javax.swing.JButton prevBtn = dialog.getPrevButton();
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        javax.swing.JTable table = dialog.getDetailsTable();
+
+        // Select ASC (row 0)
+        table.setRowSelectionInterval(0, 0);
+        assertTrue(prevBtn.isEnabled());
+
+        Date chartInstantBefore = dialog.getSelectedInstant();
+
+        // Click <<
+        prevBtn.doClick();
+
+        // ASC offset in stub is 7200000L (2 hours) backward
+        Date expectedTableInstant = TransitChartDialog.roundUpToMinute(new Date(initialInstant.getTime() - 7200000L));
+        assertEquals(expectedTableInstant, dialog.getTableInstant());
+
+        // Chart instant must NOT be updated yet
+        assertEquals("Transit chart must not be updated until Update button is pressed",
+                chartInstantBefore, dialog.getSelectedInstant());
+
+        // Selection remains on row 0
+        assertEquals(0, table.getSelectedRow());
+
+        // Update button enabled
+        assertTrue(updateBtn.isEnabled());
+
+        // Click Update
+        updateBtn.doClick();
+        assertEquals(expectedTableInstant, dialog.getSelectedInstant());
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
+    public void testRealComputationPreviousSignTransition() {
+        Place place = AstroSoft.getPreferences().getPlace();
+        Calendar cal = Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+        cal.set(2027, Calendar.JUNE, 4, 12, 0, 0); // Saturn firmly in Mesha
+        Date testTime = cal.getTime();
+
+        DefaultTransitChartComputation comp = new DefaultTransitChartComputation();
+
+        // 1. Saturn previous transition: entered Mesha from Meena
+        TransitChartComputation.SignTransition prevSaturn =
+                comp.computePreviousSignTransition(testTime, place, Planet.Saturn);
+        assertNotNull("Previous sign transition must be found for Saturn", prevSaturn);
+        assertEquals(app.astrosoft.consts.Rasi.Meena, prevSaturn.getFromRasi());
+        assertEquals(app.astrosoft.consts.Rasi.Mesha, prevSaturn.getToRasi());
+        assertTrue("Previous transition date must be before test time",
+                prevSaturn.getTransitionDate().before(testTime));
+
+        // 2. Ascendant previous transition
+        TransitChartComputation.SignTransition prevAsc =
+                comp.computePreviousSignTransition(testTime, place, Planet.Ascendant);
+        assertNotNull("Previous sign transition must be found for Ascendant", prevAsc);
+        assertNotNull(prevAsc.getFromRasi());
+        assertNotNull(prevAsc.getToRasi());
+        assertEquals(prevAsc.getFromRasi().next(), prevAsc.getToRasi());
+        assertTrue("Previous ASC transition must be before test time",
+                prevAsc.getTransitionDate().before(testTime));
+    }
+
+    public void testRealComputationNextAndPrevButtonsWithSaturn() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+        Calendar cal = Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+        cal.set(2027, Calendar.JUNE, 4, 12, 0, 0); // Saturn in Mesha
+        Date initialTime = cal.getTime();
+
+        TransitChartDialog dialog = new TransitChartDialog(frame, initialTime, place, new DefaultTransitChartComputation());
+        dialog.setExpanded(true);
+
+        javax.swing.JButton prevBtn = dialog.getPrevButton();
+        javax.swing.JButton updateBtn = dialog.getUpdateButton();
+        javax.swing.JButton nextBtn = dialog.getNextButton();
+        javax.swing.JTable table = dialog.getDetailsTable();
+
+        // Find Saturn row
+        int saturnRow = -1;
+        for (int r = 0; r < table.getRowCount(); r++) {
+            if ("Saturn".equals(table.getValueAt(r, 0))) {
+                saturnRow = r;
+                break;
+            }
+        }
+        assertTrue(saturnRow >= 0);
+        table.setRowSelectionInterval(saturnRow, saturnRow);
+
+        Date chartTimeBefore = dialog.getSelectedInstant();
+        assertEquals(initialTime, chartTimeBefore);
+
+        // Click >> on Saturn
+        nextBtn.doClick();
+
+        // Table instant advanced into future
+        Date tableTimeAfterNext = dialog.getTableInstant();
+        assertTrue("Table instant must be after initial time", tableTimeAfterNext.after(initialTime));
+
+        // Chart MUST NOT be updated yet
+        assertEquals("Chart must remain at initial time", chartTimeBefore, dialog.getSelectedInstant());
+
+        // Now click << to step back
+        prevBtn.doClick();
+
+        Date tableTimeAfterPrev = dialog.getTableInstant();
+        assertTrue("Table instant must have moved backward", tableTimeAfterPrev.before(tableTimeAfterNext));
+
+        // Still, chart must NOT be updated yet
+        assertEquals("Chart must remain at initial time", chartTimeBefore, dialog.getSelectedInstant());
+
+        // Click Update
+        updateBtn.doClick();
+
+        // Now chart must be updated to table instant
+        assertEquals(dialog.getTableInstant(), dialog.getSelectedInstant());
+
+        dialog.dispose();
+        frame.dispose();
+    }
+
     private static class StubTransitChartComputation implements TransitChartComputation {
         public PlanetaryInfo compute(Date instant, Place place) {
             EnumMap<Planet, Double> positions = new EnumMap<Planet, Double>(Planet.class);
@@ -609,6 +817,16 @@ public class TransitChartDialogTest extends TestCase {
                         new Date(instant.getTime() + 86400000L)));
             }
             return map;
+        }
+
+        @Override
+        public TransitChartComputation.SignTransition computePreviousSignTransition(
+                Date instant, Place place, Planet planet) {
+            long offset = (planet == Planet.Ascendant) ? 7200000L : 86400000L;
+            return new TransitChartComputation.SignTransition(
+                    app.astrosoft.consts.Rasi.Mesha,
+                    app.astrosoft.consts.Rasi.Meena,
+                    new Date(instant.getTime() - offset));
         }
     }
 }

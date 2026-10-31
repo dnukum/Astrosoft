@@ -43,7 +43,9 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     private final JButton editButton;
     private final JButton moreButton;
+    private final JButton prevButton;
     private final JButton updateButton;
+    private final JButton nextButton;
     private final JPanel updateButtonBar;
     private final JPanel chartHolder;
     private final JScrollPane detailsScrollPane;
@@ -54,6 +56,7 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     private Place currentPlace;
     private Date selectedInstant;
+    private Date tableInstant;
     private Chart chart;
     private boolean isExpanded = false;
 
@@ -66,6 +69,7 @@ public class TransitChartDialog extends AstrosoftDialog {
         this.computation = computation;
         this.currentPlace = initPlace != null ? initPlace : AstroSoft.getPreferences().getPlace();
         this.selectedInstant = initInstant != null ? initInstant : new Date();
+        this.tableInstant = this.selectedInstant;
 
         setResizable(true);
         setMinimumSize(MIN_DLG_SIZE);
@@ -126,7 +130,7 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsTable.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
         detailsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                updateUpdateButtonState();
+                updateControlButtonsState();
             }
         });
         detailsTable.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -159,16 +163,27 @@ public class TransitChartDialog extends AstrosoftDialog {
         detailsScrollPane.setVisible(false);
         contentPanel.add(detailsScrollPane);
 
-        // Update button below table
-        updateButtonBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 6));
+        // Control buttons bar below table: [ << ]  [ Update ]  [ >> ]
+        updateButtonBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 6));
         updateButtonBar.setAlignmentX(Component.CENTER_ALIGNMENT);
         updateButtonBar.setBackground(UIConsts.THEME_CLR);
         updateButtonBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
+        prevButton = new JButton("<<");
+        prevButton.setEnabled(false);
+        prevButton.addActionListener(e -> onPrevClicked());
+        updateButtonBar.add(prevButton);
 
         updateButton = new JButton("Update");
         updateButton.setEnabled(false);
         updateButton.addActionListener(e -> onUpdateClicked());
         updateButtonBar.add(updateButton);
+
+        nextButton = new JButton(">>");
+        nextButton.setEnabled(false);
+        nextButton.addActionListener(e -> onNextClicked());
+        updateButtonBar.add(nextButton);
+
         updateButtonBar.setVisible(false);
         contentPanel.add(updateButtonBar);
 
@@ -219,6 +234,7 @@ public class TransitChartDialog extends AstrosoftDialog {
         } else if (time != null) {
             selectedInstant = time;
         }
+        tableInstant = selectedInstant;
         updateChart();
     }
 
@@ -227,6 +243,7 @@ public class TransitChartDialog extends AstrosoftDialog {
             return;
         }
         try {
+            tableInstant = selectedInstant;
             PlanetaryInfo planetaryInfo = computation.compute(getSelectedInstant(), currentPlace);
             PlanetChartData chartData = new PlanetChartData(CHART_TITLE, Varga.Rasi, planetaryInfo);
             String subtitle = formatSubtitle(getSelectedInstant(), currentPlace);
@@ -256,7 +273,7 @@ public class TransitChartDialog extends AstrosoftDialog {
         rowTransitionDates.clear();
 
         Map<Planet, TransitChartComputation.SignTransition> transitions =
-                computation.computeSignTransitions(getSelectedInstant(), currentPlace, planetaryInfo);
+                computation.computeSignTransitions(getTableInstant(), currentPlace, planetaryInfo);
 
         SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy, h:mm a");
         if (currentPlace != null && currentPlace.astrosoftTimeZone() != null) {
@@ -293,28 +310,91 @@ public class TransitChartDialog extends AstrosoftDialog {
         if (detailsTable != null) {
             detailsTable.clearSelection();
         }
-        updateUpdateButtonState();
+        updateControlButtonsState();
     }
 
-    private void updateUpdateButtonState() {
-        if (updateButton == null || detailsTable == null) {
+    public static Planet getPlanetForRow(int row) {
+        if (row == 0) return Planet.Ascendant;
+        int i = 1;
+        for (Planet p : Planet.allPlanets()) {
+            if (i == row) return p;
+            i++;
+        }
+        return null;
+    }
+
+    private void updateControlButtonsState() {
+        if (updateButtonBar == null || detailsTable == null) {
             return;
         }
         int selectedRow = detailsTable.getSelectedRow();
+        boolean hasRowSelection = selectedRow >= 0 && selectedRow < rowTransitionDates.size();
+
+        if (prevButton != null) {
+            prevButton.setEnabled(hasRowSelection);
+        }
+        if (nextButton != null) {
+            nextButton.setEnabled(hasRowSelection && rowTransitionDates.get(selectedRow) != null);
+        }
+        if (updateButton != null) {
+            boolean timePending = (tableInstant != null && !tableInstant.equals(selectedInstant));
+            boolean rowCanUpdate = (hasRowSelection && rowTransitionDates.get(selectedRow) != null);
+            updateButton.setEnabled(timePending || rowCanUpdate);
+        }
+    }
+
+    private void onNextClicked() {
+        int selectedRow = detailsTable.getSelectedRow();
         if (selectedRow >= 0 && selectedRow < rowTransitionDates.size()) {
             Date targetDate = rowTransitionDates.get(selectedRow);
-            updateButton.setEnabled(targetDate != null);
-        } else {
-            updateButton.setEnabled(false);
+            if (targetDate != null) {
+                tableInstant = targetDate;
+                PlanetaryInfo planetaryInfo = computation.compute(tableInstant, currentPlace);
+                updateTable(planetaryInfo);
+                if (selectedRow >= 0 && selectedRow < detailsTable.getRowCount()) {
+                    detailsTable.setRowSelectionInterval(selectedRow, selectedRow);
+                }
+                updateControlButtonsState();
+            }
+        }
+    }
+
+    private void onPrevClicked() {
+        int selectedRow = detailsTable.getSelectedRow();
+        if (selectedRow >= 0 && selectedRow < detailsTable.getRowCount()) {
+            Planet p = getPlanetForRow(selectedRow);
+            if (p != null) {
+                Date curTime = getTableInstant();
+                TransitChartComputation.SignTransition prevTrans =
+                        computation.computePreviousSignTransition(curTime, currentPlace, p);
+                if (prevTrans != null && prevTrans.getTransitionDate() != null) {
+                    Date targetDate = roundUpToMinute(prevTrans.getTransitionDate());
+                    tableInstant = targetDate;
+                    PlanetaryInfo planetaryInfo = computation.compute(tableInstant, currentPlace);
+                    updateTable(planetaryInfo);
+                    if (selectedRow >= 0 && selectedRow < detailsTable.getRowCount()) {
+                        detailsTable.setRowSelectionInterval(selectedRow, selectedRow);
+                    }
+                    updateControlButtonsState();
+                }
+            }
         }
     }
 
     private void onUpdateClicked() {
+        // If table has stepped to a new time via >> or <<, apply tableInstant to chart
+        if (tableInstant != null && !tableInstant.equals(selectedInstant)) {
+            selectedInstant = tableInstant;
+            updateChart();
+            return;
+        }
+        // Otherwise, update chart to the selected row's transition date
         int selectedRow = detailsTable.getSelectedRow();
         if (selectedRow >= 0 && selectedRow < rowTransitionDates.size()) {
             Date targetDate = rowTransitionDates.get(selectedRow);
             if (targetDate != null) {
                 selectedInstant = targetDate;
+                tableInstant = targetDate;
                 updateChart();
             }
         }
@@ -378,6 +458,18 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     public JButton getUpdateButton() {
         return updateButton;
+    }
+
+    public JButton getPrevButton() {
+        return prevButton;
+    }
+
+    public JButton getNextButton() {
+        return nextButton;
+    }
+
+    public Date getTableInstant() {
+        return tableInstant != null ? tableInstant : selectedInstant;
     }
 
     public JTable getDetailsTable() {

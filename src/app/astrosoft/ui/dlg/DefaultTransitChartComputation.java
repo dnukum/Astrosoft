@@ -161,4 +161,143 @@ public class DefaultTransitChartComputation implements TransitChartComputation {
         }
         return null;
     }
+
+    private static double toJulDay(Date date) {
+        return date.getTime() / 86400000.0 + 2440587.5;
+    }
+
+    @Override
+    public SignTransition computePreviousSignTransition(Date instant, Place place, Planet planet) {
+        if (instant == null || place == null || planet == null) {
+            return null;
+        }
+        double jdNow = toJulDay(instant);
+        SwissHelper sh = new SwissHelper(new SweDate(jdNow));
+
+        if (planet == Planet.Ascendant) {
+            return getPreviousAscendantSignTransition(sh.getSwissEph(), jdNow, place.latitude(), place.longitude(), instant);
+        }
+
+        if (planet == Planet.Ketu) {
+            SignTransition rahuPrev = computePreviousSignTransition(instant, place, Planet.Rahu);
+            if (rahuPrev != null && rahuPrev.getTransitionDate() != null) {
+                SwissHelper shPrev = new SwissHelper(new SweDate(toJulDay(rahuPrev.getTransitionDate())));
+                Double ketuPos = shPrev.getPlanetaryPosition().get(Planet.Ketu);
+                if (ketuPos != null) {
+                    Rasi ketuTo = Rasi.ofDeg(ketuPos);
+                    Rasi ketuFrom = rahuPrev.getToRasi().equals(rahuPrev.getFromRasi().previous())
+                            ? ketuTo.next()
+                            : ketuTo.previous();
+                    return new SignTransition(ketuFrom, ketuTo, rahuPrev.getTransitionDate());
+                }
+            }
+            return null;
+        }
+
+        Map<Planet, Double> positions = sh.getPlanetaryPosition();
+        Double pos = positions.get(planet);
+        if (pos == null) {
+            return null;
+        }
+
+        return getPreviousPlanetSignTransition(sh, planet, pos, jdNow, instant);
+    }
+
+    private SignTransition getPreviousAscendantSignTransition(swisseph.SwissEph sw, double jdNow, double lat, double lon, Date instant) {
+        double searchJd = jdNow - 0.0005;
+        double[] ac = new double[10];
+        double[] positions = new double[13];
+
+        for (int attempt = 0; attempt < 3; attempt++) {
+            sw.swe_houses(searchJd, SwissHelper.HOUSE_FLAG, lat, lon, SwissHelper.HOUSE_SYSTEM, positions, ac);
+            double curAsc = positions[1];
+            Rasi currentRasi = Rasi.ofDeg(curAsc);
+            double boundary = currentRasi.ordinal() * 30.0;
+
+            double degTraveled = (curAsc - boundary + 360.0) % 360.0;
+            if (degTraveled <= 0.0001) {
+                degTraveled += 30.0;
+            }
+
+            double high = searchJd;
+            double low = searchJd - 0.20;
+
+            for (int i = 0; i < 25; i++) {
+                double mid = (low + high) / 2.0;
+                sw.swe_houses(mid, SwissHelper.HOUSE_FLAG, lat, lon, SwissHelper.HOUSE_SYSTEM, positions, ac);
+                double midDeg = positions[1];
+                double moved = (curAsc - midDeg + 360.0) % 360.0;
+                if (moved < degTraveled) {
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+            }
+            double targetJd = (low + high) / 2.0;
+            Date transDate = SweDate.getDate(targetJd);
+            Date rounded = TransitChartDialog.roundUpToMinute(transDate);
+            if (rounded.getTime() < instant.getTime()) {
+                return new SignTransition(currentRasi.previous(), currentRasi, transDate);
+            }
+            searchJd = targetJd - 0.005;
+        }
+        return null;
+    }
+
+    private SignTransition getPreviousPlanetSignTransition(SwissHelper sh, Planet p, double pos, double jdNow, Date instant) {
+        TransitHelper th = sh.getTransitHelper(p);
+        double searchJd = jdNow - 0.0005;
+
+        for (int attempt = 0; attempt < 3; attempt++) {
+            SwissHelper shAtSearch = new SwissHelper(new SweDate(searchJd));
+            Map<Planet, Double> curPositions = shAtSearch.getPlanetaryPosition();
+            Double curPos = curPositions.get(p);
+            if (curPos == null) {
+                curPos = pos;
+            }
+
+            Rasi currentRasi = Rasi.ofDeg(curPos);
+            double lowerBoundary = (currentRasi.ordinal() * 30.0) % 360.0;
+            double upperBoundary = ((currentRasi.ordinal() + 1) * 30.0) % 360.0;
+
+            double tLow = th.getTransit(lowerBoundary, searchJd, true);
+            double tHigh = th.getTransit(upperBoundary, searchJd, true);
+
+            double targetJd = -1;
+            Rasi fromRasi = null;
+            Rasi toRasi = null;
+
+            if (tLow < searchJd && tHigh < searchJd) {
+                if (tLow > tHigh) {
+                    targetJd = tLow;
+                    fromRasi = currentRasi.previous();
+                    toRasi = currentRasi;
+                } else {
+                    targetJd = tHigh;
+                    fromRasi = currentRasi.next();
+                    toRasi = currentRasi;
+                }
+            } else if (tLow < searchJd) {
+                targetJd = tLow;
+                fromRasi = currentRasi.previous();
+                toRasi = currentRasi;
+            } else if (tHigh < searchJd) {
+                targetJd = tHigh;
+                fromRasi = currentRasi.next();
+                toRasi = currentRasi;
+            }
+
+            if (targetJd > 0 && fromRasi != null && toRasi != null) {
+                Date transDate = SweDate.getDate(targetJd);
+                Date rounded = TransitChartDialog.roundUpToMinute(transDate);
+                if (rounded.getTime() < instant.getTime()) {
+                    return new SignTransition(fromRasi, toRasi, transDate);
+                }
+                searchJd = targetJd - 0.005;
+            } else {
+                break;
+            }
+        }
+        return null;
+    }
 }
