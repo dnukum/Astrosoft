@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.util.EnumMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -18,7 +19,9 @@ import javax.swing.table.TableCellRenderer;
 
 import app.astrosoft.consts.DisplayFormat;
 import app.astrosoft.consts.DisplayStrings;
+import app.astrosoft.beans.PlanetStatus;
 import app.astrosoft.consts.Planet;
+import app.astrosoft.ui.util.PlanetStatusCodes;
 import app.astrosoft.ui.util.UIConsts;
 
 public class PlanetCellRenderer implements TableCellRenderer {
@@ -28,6 +31,13 @@ public class PlanetCellRenderer implements TableCellRenderer {
 	private boolean expandRetrogrades;
 	private DisplayFormat planetFormat;
 	private EnumMap<Planet, Boolean> planetDir;
+
+	private Map<Planet, PlanetStatus> planetStatus;
+
+	/** Optional dignity/vargottama status; when set, the planet cell shows e.g. "Sun (R,Ex,V)". */
+	public void setPlanetStatus(Map<Planet, PlanetStatus> planetStatus) {
+		this.planetStatus = planetStatus;
+	}
 	
 	public PlanetCellRenderer(TableCellRenderer tableCellRenderer, DisplayFormat planetFormat, boolean highlightRetrogrades, boolean expandRetrogrades, EnumMap<Planet, Boolean> planetDir) {
 		
@@ -106,6 +116,14 @@ public class PlanetCellRenderer implements TableCellRenderer {
 				fgClr = UIConsts.getChartPlanetForeground();
 			}
 			
+			if (planetStatus != null && !p.isAsc()) {
+				boolean retro = highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && planetDir.get(p) && p != Planet.Moon;
+				if (expandRetrogrades || !retro) {
+					String retroSym = (expandRetrogrades && retro) ? DisplayStrings.RETRO_SYM.toString() : null;
+					l.setText(p.toString(planetFormat) + PlanetStatusCodes.suffixText(retroSym, planetStatus.get(p)));
+				}
+			}
+
 			l.setForeground(fgClr);
 			return l;
 		}
