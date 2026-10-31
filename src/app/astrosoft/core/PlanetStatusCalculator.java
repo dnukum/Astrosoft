@@ -43,4 +43,14 @@ public final class PlanetStatusCalculator {
 		}
 		return Dignity.NONE;
 	}
+
+	/**
+	 * Vargottama: same sign in Rasi (D1) and Navamsa (D9). Classical seven only.
+	 */
+	public static boolean isVargottama(Planet planet, Rasi d1, Rasi d9) {
+		if (planet == null || d1 == null || d9 == null) {
+			throw new IllegalArgumentException("planet, d1 and d9 must not be null");
+		}
+		return CLASSICAL.contains(planet) && d1 == d9;
+	}
 }
