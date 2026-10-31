@@ -48,6 +48,7 @@ public class PlanetView extends AstrosoftView {
     	
     	PlanetCellRenderer planetRenderer = new PlanetCellRenderer(planetTable.getCellRenderer(AstrosoftTableColumn.Planet), DisplayFormat.FULL_NAME, true, true, planetaryInfo.getPlanetDirection());
 		planetRenderer.setPlanetStatus(PlanetLabels.statuses(planetaryInfo));
+		planetRenderer.setPlanetCombustion(planetaryInfo.getPlanetCombustion());
 		planetTable.setCellRenderer(planetRenderer, AstrosoftTableColumn.Planet);
 		TitleLabel label = new TitleLabel(DisplayStrings.PLANET_POS_STR);
 

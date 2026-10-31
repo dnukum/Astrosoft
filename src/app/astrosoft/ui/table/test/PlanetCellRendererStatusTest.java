@@ -20,7 +20,14 @@ import app.astrosoft.ui.table.PlanetCellRenderer;
 public class PlanetCellRendererStatusTest {
 
 	private static PlanetCellRenderer renderer(EnumMap<Planet, Boolean> dir, EnumMap<Planet, PlanetStatus> st) {
+		return renderer(dir, null, st);
+	}
+
+	private static PlanetCellRenderer renderer(EnumMap<Planet, Boolean> dir, EnumMap<Planet, Boolean> combust, EnumMap<Planet, PlanetStatus> st) {
 		PlanetCellRenderer r = new PlanetCellRenderer(new DefaultTableCellRenderer(), DisplayFormat.FULL_NAME, true, true, dir);
+		if (combust != null) {
+			r.setPlanetCombustion(combust);
+		}
 		if (st != null) {
 			r.setPlanetStatus(st);
 		}
@@ -78,5 +85,27 @@ public class PlanetCellRendererStatusTest {
 		EnumMap<Planet, PlanetStatus> st = new EnumMap<Planet, PlanetStatus>(Planet.class);
 		String t = text(renderer(new EnumMap<Planet, Boolean>(Planet.class), st), Planet.Mars);
 		assertTrue(!t.contains("("));
+	}
+
+	@Test
+	public void combustOnlyGetsCSuffix() {
+		EnumMap<Planet, Boolean> combust = new EnumMap<Planet, Boolean>(Planet.class);
+		combust.put(Planet.Jupiter, true);
+		EnumMap<Planet, PlanetStatus> st = new EnumMap<Planet, PlanetStatus>(Planet.class);
+		st.put(Planet.Jupiter, new PlanetStatus(Dignity.NONE, false));
+		String t = text(renderer(new EnumMap<Planet, Boolean>(Planet.class), combust, st), Planet.Jupiter);
+		assertEquals(Planet.Jupiter.toString(DisplayFormat.FULL_NAME) + " (C)", t);
+	}
+
+	@Test
+	public void retrogradeAndCombustPrefixBothSymbols() {
+		EnumMap<Planet, Boolean> dir = new EnumMap<Planet, Boolean>(Planet.class);
+		dir.put(Planet.Mercury, true);
+		EnumMap<Planet, Boolean> combust = new EnumMap<Planet, Boolean>(Planet.class);
+		combust.put(Planet.Mercury, true);
+		EnumMap<Planet, PlanetStatus> st = new EnumMap<Planet, PlanetStatus>(Planet.class);
+		st.put(Planet.Mercury, new PlanetStatus(Dignity.DEBILITATED, true));
+		String t = text(renderer(dir, combust, st), Planet.Mercury);
+		assertEquals(Planet.Mercury.toString(DisplayFormat.FULL_NAME) + " (" + DisplayStrings.RETRO_SYM + ",C,Db,V)", t);
 	}
 }

@@ -129,7 +129,7 @@ public class PlanetaryInfo implements Exportable{
 		double sunPos = planetPosition.get(Planet.Sun);
 		
 		for (Planet p : Planet.majorPlanets()) {
-			if (p == Planet.Sun || p == Planet.Moon || p == Planet.Ascendant || p.isNode()) {
+			if (p == Planet.Sun || p == Planet.Ascendant || p.isNode()) {
 				planetCombustion.put(p, false);
 				continue;
 			}
@@ -144,11 +144,12 @@ public class PlanetaryInfo implements Exportable{
 			double orb = 0;
 			
 			switch(p) {
+				case Moon: orb = 12.0; break;
 				case Mars: orb = 17.0; break;
 				case Mercury: orb = isRetro ? 12.0 : 14.0; break;
 				case Jupiter: orb = 11.0; break;
 				case Venus: orb = isRetro ? 8.0 : 10.0; break;
-				case Saturn: orb = 5.0; break;
+				case Saturn: orb = 15.0; break;
 				default: orb = 0; break;
 			}
 			

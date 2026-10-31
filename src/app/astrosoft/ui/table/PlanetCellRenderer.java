@@ -31,12 +31,18 @@ public class PlanetCellRenderer implements TableCellRenderer {
 	private boolean expandRetrogrades;
 	private DisplayFormat planetFormat;
 	private EnumMap<Planet, Boolean> planetDir;
+	private EnumMap<Planet, Boolean> planetCombustion;
 
 	private Map<Planet, PlanetStatus> planetStatus;
 
 	/** Optional dignity/vargottama status; when set, the planet cell shows e.g. "Sun (R,Ex,V)". */
 	public void setPlanetStatus(Map<Planet, PlanetStatus> planetStatus) {
 		this.planetStatus = planetStatus;
+	}
+
+	/** Optional combustion map; when set, combust planets show "C" e.g. "Mercury (R,C,Ex,V)". */
+	public void setPlanetCombustion(EnumMap<Planet, Boolean> planetCombustion) {
+		this.planetCombustion = planetCombustion;
 	}
 	
 	public PlanetCellRenderer(TableCellRenderer tableCellRenderer, DisplayFormat planetFormat, boolean highlightRetrogrades, boolean expandRetrogrades, EnumMap<Planet, Boolean> planetDir) {
@@ -117,10 +123,19 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			}
 			
 			if (planetStatus != null && !p.isAsc()) {
-				boolean retro = highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && planetDir.get(p) && p != Planet.Moon;
+				boolean retro = highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && Boolean.TRUE.equals(planetDir.get(p)) && p != Planet.Moon;
+				boolean combust = planetCombustion != null && Boolean.TRUE.equals(planetCombustion.get(p));
 				if (expandRetrogrades || !retro) {
 					String retroSym = (expandRetrogrades && retro) ? DisplayStrings.RETRO_SYM.toString() : null;
-					l.setText(p.toString(planetFormat) + PlanetStatusCodes.suffixText(retroSym, planetStatus.get(p)));
+					String lead = null;
+					if (retroSym != null && combust) {
+						lead = retroSym + ",C";
+					} else if (retroSym != null) {
+						lead = retroSym;
+					} else if (combust) {
+						lead = "C";
+					}
+					l.setText(p.toString(planetFormat) + PlanetStatusCodes.suffixText(lead, planetStatus.get(p)));
 				}
 			}
 
