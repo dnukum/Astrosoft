@@ -180,4 +180,36 @@ public class RahuNodeCalculationTest {
         double trueRahu = h.getPlanetaryPosition(Planet.Rahu);
         assertEquals("True Rahu must cross backward into Kumbha (Aquarius)", Rasi.Kumbha, Rasi.ofDeg(trueRahu));
     }
+
+    @Test
+    public void testRahuMeanTestChartDownloads() {
+        // Rahu_mean_Test: Mar 5, 1971 02:12 AM at Vijayawada (16N30, 80E38, IST)
+        // True Node: Rahu = 00:01 Kumbha (Aquarius), Ketu = 00:01 Simha (Leo)
+        // Mean Node: Rahu flips across 0° cusp into Makara (Capricorn 29° 10'), Ketu into Kataka (Cancer 29° 10')
+        String path = "/Users/mukunds100/Downloads/Rahu_mean_Test.ash";
+        File file = new File(path);
+        if (!file.exists()) {
+            return;
+        }
+
+        Horoscope h = Horoscope.createFromFile(path);
+        assertNotNull("Rahu_mean_Test chart should load", h);
+
+        // TRUE Node mode:
+        h.setRahuNode(RahuNode.TRUE);
+        double trueRahu = h.getPlanetaryPosition(Planet.Rahu);
+        double trueKetu = h.getPlanetaryPosition(Planet.Ketu);
+        assertEquals("True Rahu is in Kumbha (Aquarius)", Rasi.Kumbha, Rasi.ofDeg(trueRahu));
+        assertTrue("True Rahu is at 00:01 Kumbha (< 0.1°)", (trueRahu % 30.0) < 0.1);
+        assertEquals("True Ketu is in Simha (Leo)", Rasi.Simha, Rasi.ofDeg(trueKetu));
+
+        // MEAN Node mode (Default):
+        h.setRahuNode(RahuNode.MEAN);
+        double meanRahu = h.getPlanetaryPosition(Planet.Rahu);
+        double meanKetu = h.getPlanetaryPosition(Planet.Ketu);
+        assertEquals("Mean Rahu flips across boundary into Makara (Capricorn)", Rasi.Makara, Rasi.ofDeg(meanRahu));
+        assertTrue("Mean Rahu is at ~29° 10' Makara (> 29.0°)", (meanRahu % 30.0) > 29.0);
+        assertEquals("Mean Ketu flips into Kataka (Cancer)", Rasi.Kataka, Rasi.ofDeg(meanKetu));
+        assertTrue("Mean Ketu is at ~29° 10' Kataka (> 29.0°)", (meanKetu % 30.0) > 29.0);
+    }
 }
