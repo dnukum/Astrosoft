@@ -19,6 +19,7 @@ import java.util.prefs.Preferences;
 import app.astrosoft.beans.Place;
 import app.astrosoft.consts.Ayanamsa;
 import app.astrosoft.consts.Language;
+import app.astrosoft.consts.RahuNode;
 import app.astrosoft.util.AstroUtil;
 
 public class AstrosoftPref {
@@ -27,7 +28,7 @@ public class AstrosoftPref {
 
 	public static enum Preference {
 
-		Language, PanCalcTime, EphCalcTime, Ayanamsa, Place, City, State, Country, Longitude, Latitude, TimeZone, IsInitialized,
+		Language, PanCalcTime, EphCalcTime, Ayanamsa, RahuNode, Place, City, State, Country, Longitude, Latitude, TimeZone, IsInitialized,
 		AcrobatExe, AstrosoftFilesDir, ChartTheme, LeftColumnCollapsed;
 	}
 
@@ -94,6 +95,11 @@ public class AstrosoftPref {
 		flush();
 	}
 
+	public void setRahuNode(RahuNode rahuNode) {
+		root.put(Preference.RahuNode.name(), rahuNode.name());
+		flush();
+	}
+
 	public void setPlace(Place place) {
 		root.node(Preference.Place.name()).put(Preference.City.name(),
 				place.city());
@@ -128,6 +134,7 @@ public class AstrosoftPref {
 		setPanCalcTime(defaultPanCalcTime);
 		setEphCalcTime(defaultEphCalcTime);
 		setAyanamsa(Ayanamsa.getDefault());
+		setRahuNode(RahuNode.getDefault());
 		setPlace(Place.getDefault());
 		setAcrobatExecutable(defaultAcrobatExecutable);
 		setAstrosoftFilesDir(defaultAstrosoftFilesDir);
@@ -171,6 +178,10 @@ public class AstrosoftPref {
 
 	public Ayanamsa getAyanamsa(){
 		return Enum.valueOf(Ayanamsa.class,root.get(Preference.Ayanamsa.name(), Ayanamsa.getDefault().name()));
+	}
+
+	public RahuNode getRahuNode() {
+		return Enum.valueOf(RahuNode.class, root.get(Preference.RahuNode.name(), RahuNode.getDefault().name()));
 	}
 
 	public Language getLanguage() {
@@ -242,6 +253,9 @@ public class AstrosoftPref {
 			break;
 		case Ayanamsa:
 			setAyanamsa((Ayanamsa) value);
+			break;
+		case RahuNode:
+			setRahuNode((RahuNode) value);
 			break;
 		case ChartTheme:
 			setChartTheme((app.astrosoft.ui.util.UIConsts.ChartTheme) value);

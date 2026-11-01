@@ -23,12 +23,14 @@ public class TransitHelper {
 	
 	private TransitCalculator tc;
 	
-	TransitHelper(Planet planet, SwissEph sw) {
+	TransitHelper(Planet planet, SwissEph sw, int swissPlanetNo) {
 		
 		this.sw = sw;
-		tc = new TCPlanet(sw,planet.planetNo(),TRANSIT_FLAG,0);
-		
-		//System.out.println("Roll over-->" + tc.getRollover());
+		tc = new TCPlanet(sw, swissPlanetNo, TRANSIT_FLAG, 0);
+	}
+
+	TransitHelper(Planet planet, SwissEph sw) {
+		this(planet, sw, planet.planetNo());
 	}
 	
 	public double getTransit(double position, double startJDUT, boolean backwards){

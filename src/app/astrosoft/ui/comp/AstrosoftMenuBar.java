@@ -40,6 +40,7 @@ public class AstrosoftMenuBar extends JMenuBar
 	JMenuItem[] computeMenuItems;
 	JMenuItem[] optionMenuItems;
 	JRadioButtonMenuItem[] ayaMenuItems;
+    JRadioButtonMenuItem[] nodeMenuItems;
     JRadioButtonMenuItem[] langMenuItems;
     JRadioButtonMenuItem[] themeMenuItems;
     private JCheckBoxMenuItem notesMenuItem;
@@ -132,59 +133,65 @@ public class AstrosoftMenuBar extends JMenuBar
         // Option Menu
         menu = new JMenu( "Options" );
 
-        optionSubMenus = new JMenu[3];
-        
         // Option Ayanamsa Sub Menu
-        optionSubMenus[0] = new JMenu( "Ayanamsa " );
-
+        JMenu ayaSubMenu = new JMenu( "Ayanamsa " );
         ButtonGroup ayaBtnGrp = new ButtonGroup(  );
-        
         EnumSet<Command> ayaOptions = Command.ayanamsaOptions();
         ayaMenuItems = new JRadioButtonMenuItem[ayaOptions.size()];
-
         i = 0;
         for ( Command ayanamsa : ayaOptions ) {
-
-            ayaMenuItems[i] =
-                new JRadioButtonMenuItem( actionMgr.getAction( ayanamsa) );
-            optionSubMenus[0].add( ayaMenuItems[i] );
+            ayaMenuItems[i] = new JRadioButtonMenuItem( actionMgr.getAction( ayanamsa) );
+            ayaSubMenu.add( ayaMenuItems[i] );
             ayaBtnGrp.add( ayaMenuItems[i] );
             i++;
         }
-        
-        //Option Language Sub Menu
-        optionSubMenus[1] = new JMenu( "Language " );
+        menu.add( ayaSubMenu );
 
+        // Option Lunar Nodes Sub Menu
+        JMenu nodeSubMenu = new JMenu( "Lunar Nodes " );
+        ButtonGroup nodeBtnGrp = new ButtonGroup(  );
+        EnumSet<Command> nodeOptions = Command.nodeOptions();
+        nodeMenuItems = new JRadioButtonMenuItem[nodeOptions.size()];
+        i = 0;
+        for ( Command nodeOpt : nodeOptions ) {
+            nodeMenuItems[i] = new JRadioButtonMenuItem( actionMgr.getAction( nodeOpt ) );
+            nodeSubMenu.add( nodeMenuItems[i] );
+            nodeBtnGrp.add( nodeMenuItems[i] );
+            i++;
+        }
+        menu.add( nodeSubMenu );
+
+        menu.addSeparator();
+
+        // Option Language Sub Menu
+        JMenu langSubMenu = new JMenu( "Language " );
         ButtonGroup langBtnGrp = new ButtonGroup(  );
-
         EnumSet<Command> langOptions = Command.langOptions();
         langMenuItems = new JRadioButtonMenuItem[langOptions.size()];
         i = 0;
-        for ( Command lang : Command.langOptions() ) {
-
+        for ( Command lang : langOptions ) {
         	langMenuItems[i] = new JRadioButtonMenuItem( actionMgr.getAction( lang) );
-            optionSubMenus[1].add( langMenuItems[i] );
+            langSubMenu.add( langMenuItems[i] );
             langBtnGrp.add( langMenuItems[i] );
             i++;
         }
+        menu.add( langSubMenu );
 
         // Option Chart Theme Sub Menu
-        optionSubMenus[2] = new JMenu( "Chart Theme " );
-
+        JMenu themeSubMenu = new JMenu( "Chart Theme " );
         ButtonGroup themeBtnGrp = new ButtonGroup(  );
-
         EnumSet<Command> themeOptions = Command.themeOptions();
         themeMenuItems = new JRadioButtonMenuItem[themeOptions.size()];
         i = 0;
         for ( Command theme : themeOptions ) {
-
         	themeMenuItems[i] = new JRadioButtonMenuItem( actionMgr.getAction( theme ) );
-            optionSubMenus[2].add( themeMenuItems[i] );
+            themeSubMenu.add( themeMenuItems[i] );
             themeBtnGrp.add( themeMenuItems[i] );
             i++;
         }
-        
-        addSubMenus(menu, optionSubMenus);
+        menu.add( themeSubMenu );
+
+        menu.addSeparator();
         
         //Rest of option menuitems
         EnumSet<Command> optionItems = Command.optionMenuItems();
@@ -207,6 +214,9 @@ public class AstrosoftMenuBar extends JMenuBar
 
         AstrosoftPref preferences = AstroSoft.getPreferences();
         ayaMenuItems[preferences.getAyanamsa().ordinal()].setSelected( true );
+        if (preferences.getRahuNode() != null && preferences.getRahuNode().ordinal() < nodeMenuItems.length) {
+            nodeMenuItems[preferences.getRahuNode().ordinal()].setSelected( true );
+        }
         langMenuItems[preferences.getLanguage().ordinal()].setSelected( true );
         app.astrosoft.ui.util.UIConsts.ChartTheme currentTheme = preferences.getChartTheme();
         if (currentTheme != null && currentTheme.ordinal() < themeMenuItems.length) {

@@ -29,6 +29,7 @@ import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.Ayanamsa;
 import app.astrosoft.consts.DisplayStrings;
+import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.Paksha;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
@@ -255,6 +256,12 @@ public class Horoscope implements PreferenceChangeListener, Exportable, NotesOwn
 	public void setAyanamsa(Ayanamsa ayanamsa) {
 
 		swissHelper.setAyanamsa(ayanamsa);
+		calculateAll();
+	}
+
+	public void setRahuNode(RahuNode rahuNode) {
+
+		swissHelper.setRahuNode(rahuNode);
 		calculateAll();
 	}
 

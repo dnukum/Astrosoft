@@ -15,6 +15,7 @@ import javax.swing.KeyStroke;
 
 import app.astrosoft.consts.Command;
 import app.astrosoft.consts.Ayanamsa;
+import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.Varga;
 import app.astrosoft.service.NumeroNameService;
 import app.astrosoft.test.NumeroNameTest;
@@ -90,6 +91,10 @@ public class AstrosoftAction extends AbstractAction {
 			handler.optionChanged(Preference.Ayanamsa, Ayanamsa.LAHARI);
 		} else if (cmd.equals(Command.AY_RAM)) {
 			handler.optionChanged(Preference.Ayanamsa, Ayanamsa.RAMAN);
+		} else if (cmd.equals(Command.NODE_MEAN)) {
+			handler.optionChanged(Preference.RahuNode, RahuNode.MEAN);
+		} else if (cmd.equals(Command.NODE_TRUE)) {
+			handler.optionChanged(Preference.RahuNode, RahuNode.TRUE);
 		} else if (cmd.equals(Command.LANG_EN)) {
 			handler.optionChanged(Preference.Language, Language.ENGLISH);
 		} else if (cmd.equals(Command.LANG_TA)) {

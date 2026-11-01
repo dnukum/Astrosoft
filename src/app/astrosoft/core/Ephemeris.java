@@ -21,6 +21,7 @@ import app.astrosoft.consts.AstroConsts;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.Ayanamsa;
 import app.astrosoft.consts.DisplayFormat;
+import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Month;
@@ -106,6 +107,13 @@ public class Ephemeris implements PreferenceChangeListener {
     public void setAyanamsa( Ayanamsa ayanamsa ) {
 
         swissHelper.setAyanamsa(ayanamsa);
+        calcEphemeris(  );
+        
+    }
+
+    public void setRahuNode( RahuNode rahuNode ) {
+
+        swissHelper.setRahuNode(rahuNode);
         calcEphemeris(  );
         
     }

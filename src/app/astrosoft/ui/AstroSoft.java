@@ -37,6 +37,7 @@ import app.astrosoft.beans.PlanetChartData;
 import app.astrosoft.beans.AshtaVargaChartData;
 import app.astrosoft.consts.AshtavargaName;
 import app.astrosoft.consts.Ayanamsa;
+import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.Command;
 import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.consts.Language;
@@ -1345,6 +1346,23 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	}
 
+	private void optionRahuNodeChanged(RahuNode rahuNode) {
+
+		if (eph != null) {
+			eph.setRahuNode(rahuNode);
+			viewManager.showView(View.EPHEMERIS_VIEW);
+		}
+
+		if (pan != null) {
+			viewManager.showView(View.PANCHANG_VIEW);
+		}
+
+		if (h != null) {
+			h.setRahuNode(rahuNode);
+			viewManager.showView(View.CHART_VIEW);
+		}
+	}
+
 	private void optionLangChanged(String lang) {
 
 		if (eph != null) {
@@ -1566,6 +1584,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 		switch (preference) {
 		case Ayanamsa:
 			optionAyanamsaChanged((Ayanamsa) value);
+			break;
+		case RahuNode:
+			optionRahuNodeChanged((RahuNode) value);
 			break;
 		case Language:
 			optionLangChanged(((Language) value).name());

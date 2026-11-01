@@ -15,6 +15,7 @@ import app.astrosoft.consts.AstroConsts;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.Ayanamsa;
 import app.astrosoft.consts.Planet;
+import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.core.Ephemeris.EphData;
 import app.astrosoft.ui.AstroSoft;
@@ -36,6 +37,8 @@ public class SwissHelper {
 	
 	private EnumMap<Planet, Boolean> isReverse;
 
+	private RahuNode rahuNode;
+
 	public SwissHelper(SweDate sweDate) {
 		this();
 		this.sweDate = sweDate;
@@ -54,7 +57,18 @@ public class SwissHelper {
 	
 	public SwissHelper() {
 		sw = new SwissEph();
-		sw.swe_set_sid_mode(AstroSoft.getPreferences().getAyanamsa().ayaValue(), 0.0, 0.0);
+		Ayanamsa aya = Ayanamsa.getDefault();
+		RahuNode node = RahuNode.getDefault();
+		try {
+			if (AstroSoft.getPreferences() != null) {
+				aya = AstroSoft.getPreferences().getAyanamsa();
+				node = AstroSoft.getPreferences().getRahuNode();
+			}
+		} catch (Exception e) {
+			// Fallback to defaults in headless / test environments
+		}
+		sw.swe_set_sid_mode(aya.ayaValue(), 0.0, 0.0);
+		this.rahuNode = node;
 	}
 
 	public void setSweDate(SweDate sweDate) {
@@ -66,6 +80,17 @@ public class SwissHelper {
 
 		sw.swe_set_sid_mode(ayanamsa.ayaValue(), 0.0, 0.0);
 		calcPlanetaryPosition();
+	}
+
+	public void setRahuNode(RahuNode rahuNode) {
+		this.rahuNode = rahuNode;
+		if (sweDate != null) {
+			calcPlanetaryPosition();
+		}
+	}
+
+	public RahuNode getRahuNode() {
+		return rahuNode != null ? rahuNode : RahuNode.getDefault();
 	}
 	
 	public void calcPlanetaryPosition() {
@@ -83,7 +108,11 @@ public class SwissHelper {
 		
 		for (Planet planet : planets) {
 
-			int rc = sw.swe_calc_ut(sweDate.getJulDay(), planet.planetNo(),
+			int planetNo = (planet == Planet.Rahu)
+					? getRahuNode().swissPlanetNo()
+					: planet.planetNo();
+
+			int rc = sw.swe_calc_ut(sweDate.getJulDay(), planetNo,
 					AstroConsts.iflag, res, sbErr);
 			planetPos.put(planet, res[0]);
 
@@ -132,7 +161,10 @@ public class SwissHelper {
 	
 		double[] res = new double[6];
 		StringBuffer sbErr = new StringBuffer();
-		sw.swe_calc_ut(sweDate.getJulDay(), planet.planetNo(), AstroConsts.iflag, res, sbErr);
+		int planetNo = (planet == Planet.Rahu)
+				? getRahuNode().swissPlanetNo()
+				: planet.planetNo();
+		sw.swe_calc_ut(sweDate.getJulDay(), planetNo, AstroConsts.iflag, res, sbErr);
 		return res[3];
 	}
 	
@@ -204,7 +236,10 @@ public class SwissHelper {
 	}
 	
 	public TransitHelper getTransitHelper(Planet planet){
-		return new TransitHelper(planet, sw);
+		int planetNo = (planet == Planet.Rahu)
+				? getRahuNode().swissPlanetNo()
+				: planet.planetNo();
+		return new TransitHelper(planet, sw, planetNo);
 	}
 
 	public SwissEph getSwissEph() {

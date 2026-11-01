@@ -67,6 +67,8 @@ public enum Command {
 	AY_LAH (Ayanamsa.LAHARI.ayaName()),
 	AY_RAM (Ayanamsa.RAMAN.ayaName()),
 	AY_KM (Ayanamsa.KRISHNAMURTHI.ayaName()),
+	NODE_MEAN (RahuNode.MEAN.nodeName()),
+	NODE_TRUE (RahuNode.TRUE.nodeName()),
 	LANG_EN (Language.ENGLISH.name()),
 	LANG_TA (Language.TAMIL.name()),
 	THEME_WARM_IVORY ("Warm Ivory"),
@@ -140,6 +142,10 @@ public enum Command {
 
 	public static EnumSet<Command> ayanamsaOptions(){
 		return EnumSet.range(AY_LAH, AY_KM);
+	}
+
+	public static EnumSet<Command> nodeOptions(){
+		return EnumSet.range(NODE_MEAN, NODE_TRUE);
 	}
 
 	public static EnumSet<Command> langOptions(){

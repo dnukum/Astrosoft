@@ -23,7 +23,7 @@ public enum Planet {
 	Jupiter("Ju", SweConst.SE_JUPITER, 16.0, 4),
 	Venus("Ve", SweConst.SE_VENUS, 20.0, 8),
 	Saturn("Sa", SweConst.SE_SATURN, 19.0, 5),
-	Rahu("Ra", SweConst.SE_TRUE_NODE, 18.0, 3),
+	Rahu("Ra", SweConst.SE_MEAN_NODE, 18.0, 3),
 	Ketu("Ke", SweConst.SE_MEAN_APOG, 7.0, 7),
 	Ascendant("Asc"),
 	Ra_Ke("Ra/Ke"),
