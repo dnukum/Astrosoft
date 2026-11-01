@@ -212,4 +212,51 @@ public class RahuNodeCalculationTest {
         assertEquals("Mean Ketu flips into Kataka (Cancer)", Rasi.Kataka, Rasi.ofDeg(meanKetu));
         assertTrue("Mean Ketu is at ~29° 10' Kataka (> 29.0°)", (meanKetu % 30.0) > 29.0);
     }
+
+    @Test
+    public void testNonBoundaryChartsMainPath() {
+        // For non-boundary charts (~96.7% of all horoscopes), Rahu and Ketu remain in the
+        // identical Rasi in both Mean and True modes, differing only by a minor perturbation (< 1.85°).
+        String[] sampleFiles = {
+            "samples/Test.ash",
+            "samples/raja.ash",
+            "samples/A.Elango.ash"
+        };
+
+        for (String samplePath : sampleFiles) {
+            File f = new File(samplePath);
+            if (!f.exists()) {
+                continue;
+            }
+
+            Horoscope h = Horoscope.createFromFile(samplePath);
+            assertNotNull("Horoscope should load: " + samplePath, h);
+
+            // Compute with MEAN node (default)
+            h.setRahuNode(RahuNode.MEAN);
+            double meanRahu = h.getPlanetaryPosition(Planet.Rahu);
+            double meanKetu = h.getPlanetaryPosition(Planet.Ketu);
+            Rasi meanRahuRasi = Rasi.ofDeg(meanRahu);
+            Rasi meanKetuRasi = Rasi.ofDeg(meanKetu);
+
+            // Compute with TRUE node (option)
+            h.setRahuNode(RahuNode.TRUE);
+            double trueRahu = h.getPlanetaryPosition(Planet.Rahu);
+            double trueKetu = h.getPlanetaryPosition(Planet.Ketu);
+            Rasi trueRahuRasi = Rasi.ofDeg(trueRahu);
+            Rasi trueKetuRasi = Rasi.ofDeg(trueKetu);
+
+            // In main path non-boundary charts:
+            // 1. Rasi sign for Rahu must be identical
+            assertEquals("Rahu sign must be invariant in non-boundary chart: " + samplePath, meanRahuRasi, trueRahuRasi);
+            // 2. Rasi sign for Ketu must be identical
+            assertEquals("Ketu sign must be invariant in non-boundary chart: " + samplePath, meanKetuRasi, trueKetuRasi);
+            // 3. Absolute perturbation difference must be small (< 1.85 degrees)
+            double diff = Math.abs(meanRahu - trueRahu);
+            if (diff > 180.0) {
+                diff = 360.0 - diff;
+            }
+            assertTrue("Perturbation difference between Mean and True Rahu must be < 1.85°: " + diff, diff < 1.85);
+        }
+    }
 }
