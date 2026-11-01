@@ -19,4 +19,19 @@ public class VersionTest extends TestCase {
         assertTrue("Version '" + version + "' should match yyyyMMdd:HHmmss or be Development Build",
                    matchesTimestamp || isDevBuild);
     }
+
+    public void testDisplayVersion() {
+        String displayVersion = Version.getDisplayVersion();
+        assertNotNull("Display version should not be null", displayVersion);
+        assertFalse("Display version should not be empty", displayVersion.trim().isEmpty());
+
+        if (Version.getVersion().equals("Development Build")) {
+            assertEquals("Development Build", displayVersion);
+        } else {
+            assertTrue("Display version should contain version id: " + displayVersion,
+                    displayVersion.startsWith(Version.getVersion()));
+            assertTrue("Display version should mention 'Built on': " + displayVersion,
+                    displayVersion.contains("(Built on "));
+        }
+    }
 }

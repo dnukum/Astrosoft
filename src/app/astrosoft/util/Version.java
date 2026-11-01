@@ -12,12 +12,58 @@ public class Version {
 
     private static final Logger log = Logger.getLogger(Version.class.getName());
     private static String version = null;
+    private static String buildDate = null;
 
     public static synchronized String getVersion() {
         if (version != null) {
             return version;
         }
+        loadVersionInfo();
+        return version;
+    }
 
+    public static synchronized String getBuildDate() {
+        if (buildDate != null) {
+            return buildDate;
+        }
+        loadVersionInfo();
+        return buildDate;
+    }
+
+    /**
+     * Returns a human-friendly version string including formatted build date,
+     * e.g., "20261031:213849 (Built on Oct 31, 2026 at 21:38:49)" or "Development Build".
+     */
+    public static synchronized String getDisplayVersion() {
+        String ver = getVersion();
+        String dateStr = getBuildDate();
+
+        if (ver == null || ver.equals("Development Build")) {
+            return "Development Build";
+        }
+
+        // Try formatting dateStr ("MM/dd/yyyy HH:mm:ss") into "MMM d, yyyy 'at' HH:mm:ss"
+        if (dateStr != null && !dateStr.trim().isEmpty()) {
+            try {
+                java.text.SimpleDateFormat inFmt = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
+                java.util.Date d = inFmt.parse(dateStr.trim());
+                java.text.SimpleDateFormat outFmt = new java.text.SimpleDateFormat("MMM d, yyyy 'at' HH:mm:ss", java.util.Locale.US);
+                return ver + " (Built on " + outFmt.format(d) + ")";
+            } catch (Exception ignored) {}
+        }
+
+        // Fallback: parse from version itself (pattern "yyyyMMdd:HHmmss")
+        try {
+            java.text.SimpleDateFormat inFmt = new java.text.SimpleDateFormat("yyyyMMdd:HHmmss", java.util.Locale.US);
+            java.util.Date d = inFmt.parse(ver.trim());
+            java.text.SimpleDateFormat outFmt = new java.text.SimpleDateFormat("MMM d, yyyy 'at' HH:mm:ss", java.util.Locale.US);
+            return ver + " (Built on " + outFmt.format(d) + ")";
+        } catch (Exception ignored) {}
+
+        return ver;
+    }
+
+    private static void loadVersionInfo() {
         // 1. Try reading from /resources/version.properties
         try (InputStream in = Version.class.getResourceAsStream("/resources/version.properties")) {
             if (in != null) {
@@ -26,6 +72,10 @@ public class Version {
                 String val = props.getProperty("build.version");
                 if (val != null && !val.trim().isEmpty()) {
                     version = val.trim();
+                }
+                String dVal = props.getProperty("build.date");
+                if (dVal != null && !dVal.trim().isEmpty()) {
+                    buildDate = dVal.trim();
                 }
             }
         } catch (Exception e) {
@@ -41,6 +91,10 @@ public class Version {
                     String val = props.getProperty("build.version");
                     if (val != null && !val.trim().isEmpty()) {
                         version = val.trim();
+                    }
+                    String dVal = props.getProperty("build.date");
+                    if (dVal != null && !dVal.trim().isEmpty()) {
+                        buildDate = dVal.trim();
                     }
                 }
             } catch (Exception e) {
@@ -63,8 +117,6 @@ public class Version {
         if (version == null) {
             version = "Development Build";
         }
-
-        return version;
     }
 
     /**
@@ -72,5 +124,6 @@ public class Version {
      */
     public static synchronized void resetCache() {
         version = null;
+        buildDate = null;
     }
 }

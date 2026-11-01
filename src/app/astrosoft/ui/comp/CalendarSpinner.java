@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.BorderFactory;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -22,6 +23,7 @@ import javax.swing.SpinnerModel;
 import javax.swing.SpringLayout;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.DefaultFormatter;
 
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.util.SpringUtilities;
@@ -87,10 +89,7 @@ public class CalendarSpinner extends CalendarChooser {
 		spinner.setPreferredSize(spinnerSize);
 		
 		editor = new JSpinner.DateEditor(spinner, dateFormat);
-		editor.getTextField().setBorder(BorderFactory.createCompoundBorder(
-		        editor.getTextField().getBorder(),
-		        BorderFactory.createEmptyBorder(0, 5, 0, 0)
-		));
+		configureEditor(editor);
 		spinner.setEditor(editor);
 		
 		spinner.addChangeListener(new ChangeListener(){
@@ -127,14 +126,23 @@ public class CalendarSpinner extends CalendarChooser {
 		
 		dateFormat = format;
 		editor = new JSpinner.DateEditor(spinner, dateFormat);
-		editor.getTextField().setBorder(BorderFactory.createCompoundBorder(
-		        editor.getTextField().getBorder(),
-		        BorderFactory.createEmptyBorder(0, 5, 0, 0)
-		));
+		configureEditor(editor);
 		editor.getTextField().setForeground(fgClr);
 		editor.getTextField().setBackground(bgClr);
 		
 		spinner.setEditor(editor);
+	}
+
+	private void configureEditor(JSpinner.DateEditor dateEditor) {
+		JFormattedTextField tf = dateEditor.getTextField();
+		tf.setBorder(BorderFactory.createCompoundBorder(
+		        tf.getBorder(),
+		        BorderFactory.createEmptyBorder(0, 5, 0, 0)
+		));
+		JFormattedTextField.AbstractFormatter formatter = tf.getFormatter();
+		if (formatter instanceof DefaultFormatter) {
+			((DefaultFormatter) formatter).setOverwriteMode(true);
+		}
 	}
 
 	@Override

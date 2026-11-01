@@ -183,6 +183,52 @@ public class TransitChartDialogTest extends TestCase {
         assertTrue("getSelectedDate() should commit typed text 11 PM: was " + formatted, formatted.contains("11 : 00 : 00 PM"));
     }
 
+    public void testCalendarSpinnerKeystrokeOverwriteMode() throws Exception {
+        CalendarSpinner timeSpinner = CalendarChooser.getTimeChooser();
+        timeSpinner.getChooser();
+        SimpleDateFormat sdf = new SimpleDateFormat(CalendarSpinner.FMT_TIME);
+        timeSpinner.setSelectedDate(sdf.parse("09 : 30 : 00 AM"));
+
+        JFormattedTextField textField = null;
+        for (Component c : timeSpinner.getChooser().getComponents()) {
+            if (c instanceof javax.swing.JSpinner) {
+                javax.swing.JSpinner js = (javax.swing.JSpinner) c;
+                if (js.getEditor() instanceof javax.swing.JSpinner.DefaultEditor) {
+                    textField = ((javax.swing.JSpinner.DefaultEditor) js.getEditor()).getTextField();
+                }
+            }
+        }
+        assertNotNull("Spinner text field should be found", textField);
+
+        // Verify overwrite mode is enabled on the formatter
+        assertTrue("Formatter must have overwriteMode enabled",
+                textField.getFormatter() instanceof javax.swing.text.DefaultFormatter &&
+                ((javax.swing.text.DefaultFormatter) textField.getFormatter()).getOverwriteMode());
+
+        // Simulate typing keystroke actions directly as Swing invokes them
+        javax.swing.Action keyAction = textField.getActionMap().get(javax.swing.text.DefaultEditorKit.defaultKeyTypedAction);
+        assertNotNull("defaultKeyTypedAction should exist", keyAction);
+
+        // Type '1' then '2' at position 0 (hours: 09 -> 12)
+        textField.setCaretPosition(0);
+        keyAction.actionPerformed(new java.awt.event.ActionEvent(textField, java.awt.event.ActionEvent.ACTION_PERFORMED, "1"));
+        keyAction.actionPerformed(new java.awt.event.ActionEvent(textField, java.awt.event.ActionEvent.ACTION_PERFORMED, "2"));
+
+        // Type '5' then '0' at position 5 (minutes: 30 -> 50)
+        textField.setCaretPosition(5);
+        keyAction.actionPerformed(new java.awt.event.ActionEvent(textField, java.awt.event.ActionEvent.ACTION_PERFORMED, "5"));
+        keyAction.actionPerformed(new java.awt.event.ActionEvent(textField, java.awt.event.ActionEvent.ACTION_PERFORMED, "0"));
+
+        // Type 'P' at position 13 (AM -> PM)
+        textField.setCaretPosition(13);
+        keyAction.actionPerformed(new java.awt.event.ActionEvent(textField, java.awt.event.ActionEvent.ACTION_PERFORMED, "P"));
+
+        // Verify text field contents and committed value
+        assertEquals("12 : 50 : 00 PM", textField.getText());
+        Date committed = timeSpinner.getSelectedDate();
+        assertEquals("12 : 50 : 00 PM", sdf.format(committed));
+    }
+
     public void testMoreButtonExpandsAndCollapses() {
         AstroSoft frame = new AstroSoft();
         Place place = AstroSoft.getPreferences().getPlace();

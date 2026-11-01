@@ -30,7 +30,7 @@ import app.astrosoft.util.Version;
 public class AboutDialog extends AstrosoftDialog {
 
     public AboutDialog(AstroSoft parent) {
-        super(parent, "About AstroSoft", new Dimension(460, 315));
+        super(parent, "About AstroSoft", new Dimension(540, 315));
         setModal(true);
         initComponents();
     }
@@ -40,7 +40,7 @@ public class AboutDialog extends AstrosoftDialog {
         dlgPanel.setBorder(BorderFactory.createEmptyBorder(16, 18, 14, 18));
 
         // 1. Top Header Banner
-        ImageIcon bannerIcon = loadScaledBanner(420);
+        ImageIcon bannerIcon = loadScaledBanner(500);
         if (bannerIcon != null) {
             JLabel bannerLabel = new JLabel(bannerIcon);
             bannerLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -79,7 +79,7 @@ public class AboutDialog extends AstrosoftDialog {
         descLabel.setForeground(new Color(60, 60, 60));
         descLabel.setAlignmentX(0.0f);
 
-        JLabel versionLabel = new JLabel("Version: " + Version.getVersion());
+        JLabel versionLabel = new JLabel("Version: " + Version.getDisplayVersion());
         versionLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
         versionLabel.setForeground(UIConsts.GREENISH_BLUE);
         versionLabel.setAlignmentX(0.0f);
