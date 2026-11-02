@@ -29,7 +29,8 @@ public class AshtavargaGuideDialogTest {
         dlg.getContentPane().paint(g2);
         g2.dispose();
 
-        File out = new File("/Users/mukunds100/.gemini/antigravity/brain/e51df240-e409-4ed2-87fb-a28dc0d811bf/guide_dialog_render.png");
+        File outDir = new File(System.getProperty("java.io.tmpdir"));
+        File out = new File(outDir, "guide_dialog_render.png");
         ImageIO.write(img, "png", out);
         System.out.println("Saved dialog render to " + out.getAbsolutePath());
 
@@ -51,7 +52,7 @@ public class AshtavargaGuideDialogTest {
         p.paint(gIcon);
         gIcon.dispose();
 
-        File iconOut = new File("/Users/mukunds100/.gemini/antigravity/brain/e51df240-e409-4ed2-87fb-a28dc0d811bf/ashtavarga_icon_visual.png");
+        File iconOut = new File(outDir, "ashtavarga_icon_visual.png");
         ImageIO.write(iconImg, "png", iconOut);
         System.out.println("Saved icon visual render to " + iconOut.getAbsolutePath());
     }

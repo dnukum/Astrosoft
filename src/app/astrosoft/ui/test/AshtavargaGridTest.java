@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,53 +30,29 @@ public class AshtavargaGridTest {
         check(asc != null, "Ascendant found: " + asc);
         check(moon != null, "Moon rasi found: " + moon);
 
-        JPanel panel = AshtavargaView.createAshtavargaPanel(h.getAshtaVarga(), asc, moon);
-        check(panel != null, "Ashtavarga panel created");
+        AshtavargaView view = new AshtavargaView(h.getTitle(), h.getAshtaVarga(), asc, moon, h.getPlanetRasis(), new java.awt.Point(0,0));
+        check(view != null, "AshtavargaView created");
 
-        JComboBox combo = findComponent(panel, JComboBox.class);
-        Chart currentChart = findComponent(panel, Chart.class);
+        app.astrosoft.ui.comp.AstrosoftTabbedPane tabbedPane = findComponent(view, app.astrosoft.ui.comp.AstrosoftTabbedPane.class);
+        check(tabbedPane != null, "AstrosoftTabbedPane found");
+        check(tabbedPane.getTabCount() == 8, "Expected 8 tabs in AshtavargaView, got " + tabbedPane.getTabCount());
 
-        check(combo != null, "Dropdown JComboBox found");
-        check(combo.getItemCount() == 8, "Expected 8 items in dropdown, got " + combo.getItemCount());
-        check(currentChart != null, "Initial Chart found");
-
-        String[] expectedCodes = {"SAV", "Su", "Mo", "Ma", "Me", "Ju", "Ve", "Sa"};
-        java.lang.reflect.Field field = Chart.class.getDeclaredField("chartData");
-        field.setAccessible(true);
-
-        java.lang.reflect.Field housePanelField = Chart.class.getDeclaredField("housePanel");
-        housePanelField.setAccessible(true);
-
-        // Verify Asc and Mo labels inside house cells
-        java.util.List<JPanel> houses = (java.util.List<JPanel>) housePanelField.get(currentChart);
-        JPanel ascHouse = houses.get(asc.ordinal());
-        JPanel moonHouse = houses.get(moon.ordinal());
-
-        JLabel ascLabel = findLabelWithText(ascHouse, "Asc");
-        check(ascLabel != null, "Asc label must be found in Ascendant house");
-
-        JLabel moonLabel = findLabelWithText(moonHouse, "Mo");
-        check(moonLabel != null, "Mo label must be found in Moon house");
-
-        // Test switching through each option in the dropdown
-        for (int i = 0; i < expectedCodes.length; i++) {
-            combo.setSelectedIndex(i);
-            Chart activeChart = findComponent(panel, Chart.class);
-            check(activeChart != null, "Active chart must exist at index " + i);
-            ChartData cd = (ChartData) field.get(activeChart);
-            check(expectedCodes[i].equals(cd.getChartName()), "Chart at index " + i + " must have code " + expectedCodes[i] + " but got " + cd.getChartName());
+        String[] expectedTabTitles = {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "SarvaAshtavarga"};
+        for (int i = 0; i < expectedTabTitles.length; i++) {
+            check(expectedTabTitles[i].equals(tabbedPane.getTitleAt(i)),
+                "Tab " + i + " must have title " + expectedTabTitles[i] + " but got " + tabbedPane.getTitleAt(i));
         }
 
         // Test pack and render
         JFrame frame = new JFrame();
-        frame.getContentPane().add(panel);
+        frame.getContentPane().add(view);
         frame.pack();
-        check(panel.getWidth() >= 400 && panel.getWidth() <= 460, "Panel width must be around 440 (snug around 360 chart), got " + panel.getWidth());
-        check(panel.getHeight() >= 350, "Panel height must be at least 350, got " + panel.getHeight());
+        check(view.getWidth() >= 700, "View width must be >= 700, got " + view.getWidth());
+        check(view.getHeight() >= 400, "View height must be >= 400, got " + view.getHeight());
 
-        BufferedImage img = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage img = new BufferedImage(view.getWidth(), view.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();
-        panel.paint(g);
+        view.paint(g);
         g.dispose();
         frame.dispose();
 
