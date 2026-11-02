@@ -1646,7 +1646,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public static Dimension getScreenSize(){
-
+		if (java.awt.GraphicsEnvironment.isHeadless()) {
+			return new Dimension(1280, 800);
+		}
 		return java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 		//return new Dimension(800,600);
 	}
