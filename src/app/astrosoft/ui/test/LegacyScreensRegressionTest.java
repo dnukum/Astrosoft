@@ -1,6 +1,7 @@
 package app.astrosoft.ui.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -123,11 +124,48 @@ public class LegacyScreensRegressionTest {
         String[] expectedTabs = {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "SarvaAshtavarga"};
         for (int i = 0; i < expectedTabs.length; i++) {
             assertEquals("Tab " + i + " title", expectedTabs[i], tabbedPane.getTitleAt(i));
+
+            Container tabContent = (Container) tabbedPane.getComponentAt(i);
+            assertNotNull("Tab content panel " + i, tabContent);
+            List<Chart> tabCharts = findComponents(tabContent, Chart.class);
+            List<AstrosoftTable> tabTables = findComponents(tabContent, AstrosoftTable.class);
+
+            // Every tab (Sun through Saturn and SarvaAshtavarga) has exactly 3 charts: Main, Trikona, Ekathipathya
+            assertEquals("Tab " + expectedTabs[i] + " must have 3 charts", 3, tabCharts.size());
+
+            // Chart 1 is Main (BAV for planets, SAV for SarvaAshtavarga)
+            Chart mainChart = tabCharts.get(0);
+            AshtaVargaChartData mainData = (AshtaVargaChartData) mainChart.getChartData();
+            assertTrue("Main chart must be marked BAV/SAV for coloring", mainData.isBAV());
+
+            // Trikona chart must NOT be marked BAV (no background color)
+            Chart trikonaChart = tabCharts.get(1);
+            AshtaVargaChartData trikonaData = (AshtaVargaChartData) trikonaChart.getChartData();
+            assertFalse("Trikona chart must not have background coloring", trikonaData.isBAV());
+
+            // Ekathipathya chart must NOT be marked BAV (no background color)
+            Chart ekathipathyaChart = tabCharts.get(2);
+            AshtaVargaChartData ekathipathyaData = (AshtaVargaChartData) ekathipathyaChart.getChartData();
+            assertFalse("Ekathipathya chart must not have background coloring", ekathipathyaData.isBAV());
+
+            if (i < 7) {
+                // Planetary BAV chart must have natal rasi set for circle marker
+                assertNotNull("BAV chart must have natal rasi set for circle marker", mainData.getNatalRasi());
+
+                // Each planet tab must have exactly 1 Guna table
+                assertEquals("Tab " + expectedTabs[i] + " must have 1 Guna table", 1, tabTables.size());
+            } else {
+                // SarvaAshtavarga tab has no natal planet circle and no Guna table
+                assertEquals("SarvaAshtavarga tab has no Guna table", 0, tabTables.size());
+            }
+
+            // Render each individual tab off-screen to ensure layout and drawing succeed
+            renderOffscreen(tabContent, 750, 380);
         }
 
-        // Verify that charts exist inside the view
-        List<Chart> charts = findComponents(view, Chart.class);
-        assertTrue("Must contain multiple charts (3 per planet tab)", charts.size() >= 21);
+        // Verify total charts across the entire view (8 tabs * 3 charts = 24 charts)
+        List<Chart> allCharts = findComponents(view, Chart.class);
+        assertEquals("Total charts in AshtavargaView must be 24 (3 charts across 8 tabs)", 24, allCharts.size());
 
         renderOffscreen(view, 750, 430);
     }
