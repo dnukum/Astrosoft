@@ -77,8 +77,20 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
 		return chartName != null && (chartName.equals("SAV") || chartName.startsWith("Sarva"));
 	}
 
+	public boolean isBAV() {
+		if (vargaName != null) {
+			return vargaName != AshtavargaName.Trikona && 
+			       vargaName != AshtavargaName.Ekathipathya && 
+			       vargaName != AshtavargaName.AshtaVarga;
+		}
+		if (chartName != null && (chartName.contains("Trikona") || chartName.contains("Ekathipathya") || chartName.contains("Ekadhipatya"))) {
+			return false;
+		}
+		return true;
+	}
+
 	public app.astrosoft.consts.AshtavargaStrength getStrength(Rasi house) {
-		if (varga == null) {
+		if (varga == null || !isBAV()) {
 			return app.astrosoft.consts.AshtavargaStrength.NEUTRAL;
 		}
 		Integer bindus = varga.get(house);

@@ -102,7 +102,7 @@ public class AshtavargaView extends AstrosoftView {
 
 	public AshtavargaView(String title, Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi, EnumMap<Planet, Rasi> planetRasis, Point loc) {
 		super(title, viewSize, loc);
-		add(createTabbedPane(ashtavarga), BorderLayout.CENTER);
+		add(createTabbedPane(ashtavarga, ascendant, moonRasi, planetRasis), BorderLayout.CENTER);
 	}
 
 	public static JPanel createAshtavargaPanel(final Ashtavarga ashtavarga) {
@@ -495,6 +495,10 @@ public class AshtavargaView extends AstrosoftView {
 	}
 
 	public static AstrosoftTabbedPane createTabbedPane(Ashtavarga ashtavarga) {
+		return createTabbedPane(ashtavarga, null, null, null);
+	}
+
+	public static AstrosoftTabbedPane createTabbedPane(Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi, EnumMap<Planet, Rasi> planetRasis) {
 		
 		AstrosoftTabbedPane tabbedPane = new AstrosoftTabbedPane(tabbedPaneSize);
 		Font font = UIUtil.getFont(Font.BOLD, 12, Font.BOLD, 10);
@@ -504,8 +508,25 @@ public class AshtavargaView extends AstrosoftView {
 			JPanel panel = new JPanel(new BorderLayout());
 			
 			JPanel vargaPanel = new JPanel();
-			
-			Chart ashtavargaChart = new Chart(new AshtaVargaChartData(name, ashtavarga.getAshtavarga(name)), tabChartSize);
+
+			Planet p = name.toPlanet();
+			Rasi natalRasi = (p != null && planetRasis != null) ? planetRasis.get(p) : (p == Planet.Moon ? moonRasi : null);
+
+			int count = Ashtavarga.getCount(name);
+			String displayName = name.toString(Language.ENGLISH);
+			if (count != -1) {
+				displayName = displayName + " ( " + count + " )";
+			}
+
+			AshtaVargaChartData ashtavargaData = new AshtaVargaChartData(
+				displayName,
+				ashtavarga.getAshtavarga(name),
+				ascendant,
+				moonRasi,
+				name,
+				natalRasi
+			);
+			Chart ashtavargaChart = new Chart(ashtavargaData, tabChartSize);
 			ashtavargaChart.setTitleFont(font);
 			
 			Chart trikonaChart = new Chart(new AshtaVargaChartData(AshtavargaName.Trikona, ashtavarga.getTrikona(name)), tabChartSize);
