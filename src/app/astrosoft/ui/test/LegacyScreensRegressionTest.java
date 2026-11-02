@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
@@ -245,11 +246,22 @@ public class LegacyScreensRegressionTest {
 
     @Test
     public void testLegacyYogaCombinationsView() {
-        YogaCombinationsView view = new YogaCombinationsView(h.getTitle(), h.getYogaCombinations(), h.getPlanetaryInfo());
+        app.astrosoft.xps.yoga.YogaResults yogas = h.getYogaCombinations();
+        assertNotNull("Yoga combinations must evaluate", yogas);
+        assertTrue("Must discover yoga combinations for horoscope", !yogas.getYogas().isEmpty());
+
+        YogaCombinationsView view = new YogaCombinationsView(h.getTitle(), yogas, h.getPlanetaryInfo());
         assertNotNull("YogaCombinationsView created", view);
 
         List<JList> lists = findComponents(view, JList.class);
         assertEquals("Must contain Yoga combinations list", 1, lists.size());
+        assertTrue("Yoga combinations list must be populated", lists.get(0).getModel().getSize() > 0);
+
+        List<JEditorPane> editors = findComponents(view, JEditorPane.class);
+        assertEquals("Must contain Yoga definition/results editor pane", 1, editors.size());
+        String htmlText = editors.get(0).getText();
+        assertTrue("Editor pane must display definition and results HTML",
+            htmlText != null && htmlText.contains("Definition") && htmlText.contains("Results"));
 
         renderOffscreen(view, 790, 470);
     }
