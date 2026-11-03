@@ -144,4 +144,144 @@ public class ModernBirthDataPanelTest {
 
         dlg.closeDialog();
     }
+
+    @Test
+    public void testManualModeToggle() {
+        ModernBirthDataPanel panel = new ModernBirthDataPanel();
+        assertNotNull(panel.getManualCoordCheck());
+        assertFalse(panel.getManualCoordCheck().isSelected());
+        assertFalse(panel.getLatDegField().isEditable());
+        assertFalse(panel.getLonDegField().isEditable());
+        assertFalse(panel.getLatDirCombo().isEnabled());
+        assertFalse(panel.getLonDirCombo().isEnabled());
+
+        panel.setManualCoordMode(true);
+        assertTrue(panel.getManualCoordCheck().isSelected());
+        assertTrue(panel.getLatDegField().isEditable());
+        assertTrue(panel.getLonDegField().isEditable());
+        assertTrue(panel.getLatDirCombo().isEnabled());
+        assertTrue(panel.getLonDirCombo().isEnabled());
+        assertTrue(panel.getTimeZoneCombo().isVisible());
+
+        panel.setManualCoordMode(false);
+        assertFalse(panel.getManualCoordCheck().isSelected());
+        assertFalse(panel.getLatDegField().isEditable());
+        assertFalse(panel.getLonDegField().isEditable());
+        assertFalse(panel.getLatDirCombo().isEnabled());
+        assertFalse(panel.getLonDirCombo().isEnabled());
+        assertFalse(panel.getTimeZoneCombo().isVisible());
+    }
+
+    @Test
+    public void testManualCoordinatesValidationRejection() {
+        ModernBirthDataPanel panel = new ModernBirthDataPanel();
+        panel.setPersonName("Validation Tester");
+        panel.setManualCoordMode(true);
+
+        // Blank latitude
+        panel.getLatDegField().setText("");
+        panel.getLonDegField().setText("80");
+        assertNull("Blank latitude degree should fail validation", panel.getBirthData());
+
+        // Non-numeric latitude
+        panel.getLatDegField().setText("abc");
+        assertNull("Non-numeric latitude should fail validation", panel.getBirthData());
+
+        // Latitude > 90
+        panel.getLatDegField().setText("95");
+        panel.getLatMinField().setText("0");
+        assertNull("Latitude > 90 should fail validation", panel.getBirthData());
+
+        // Latitude = 90 with minutes > 0
+        panel.getLatDegField().setText("90");
+        panel.getLatMinField().setText("15");
+        assertNull("Latitude 90° with >0 minutes should fail validation", panel.getBirthData());
+
+        // Latitude minutes > 59
+        panel.getLatDegField().setText("45");
+        panel.getLatMinField().setText("65");
+        assertNull("Latitude minutes > 59 should fail validation", panel.getBirthData());
+
+        // Valid latitude, but invalid longitude
+        panel.getLatDegField().setText("45");
+        panel.getLatMinField().setText("30");
+
+        // Blank longitude
+        panel.getLonDegField().setText("");
+        assertNull("Blank longitude degree should fail validation", panel.getBirthData());
+
+        // Longitude > 180
+        panel.getLonDegField().setText("185");
+        panel.getLonMinField().setText("0");
+        assertNull("Longitude > 180 should fail validation", panel.getBirthData());
+
+        // Longitude = 180 with minutes > 0
+        panel.getLonDegField().setText("180");
+        panel.getLonMinField().setText("10");
+        assertNull("Longitude 180° with >0 minutes should fail validation", panel.getBirthData());
+
+        // Longitude minutes > 59
+        panel.getLonDegField().setText("80");
+        panel.getLonMinField().setText("60");
+        assertNull("Longitude minutes > 59 should fail validation", panel.getBirthData());
+    }
+
+    @Test
+    public void testManualCoordinatesSuccessfulCreation() {
+        ModernBirthDataPanel panel = new ModernBirthDataPanel();
+        panel.setPersonName("San Francisco Native");
+        panel.setManualCoordMode(true);
+
+        panel.getPlaceCombo().getEditor().setItem("San Francisco, California, USA");
+        panel.getLatDegField().setText("37");
+        panel.getLatMinField().setText("46");
+        panel.getLatDirCombo().setSelectedItem(Place.Direction.NORTH);
+
+        panel.getLonDegField().setText("122");
+        panel.getLonMinField().setText("25");
+        panel.getLonDirCombo().setSelectedItem(Place.Direction.WEST);
+
+        app.astrosoft.util.AstrosoftTimeZone pacificTz = new app.astrosoft.util.AstrosoftTimeZone("America/Los_Angeles");
+        panel.getTimeZoneCombo().setSelectedItem(pacificTz);
+
+        BirthData bd = panel.getBirthData();
+        assertNotNull("Valid manual coordinates must produce BirthData", bd);
+        assertEquals("San Francisco Native", bd.name());
+
+        Place p = bd.getBirthPlace();
+        assertNotNull(p);
+        assertEquals("San Francisco", p.city());
+        assertEquals("California", p.state());
+        assertEquals("USA", p.country());
+        assertEquals(37, p.latitudeLocation().deg());
+        assertEquals(46, p.latitudeLocation().min());
+        assertEquals(Place.Direction.NORTH, p.latitudeLocation().dir());
+        assertEquals(122, p.longitudeLocation().deg());
+        assertEquals(25, p.longitudeLocation().min());
+        assertEquals(Place.Direction.WEST, p.longitudeLocation().dir());
+    }
+
+    @Test
+    public void testManualCoordinatesOptionalCityCountry() {
+        ModernBirthDataPanel panel = new ModernBirthDataPanel();
+        panel.setPersonName("Explorer");
+        panel.setManualCoordMode(true);
+
+        panel.getPlaceCombo().getEditor().setItem("");
+        panel.getLatDegField().setText("13");
+        panel.getLatMinField().setText("4");
+        panel.getLatDirCombo().setSelectedItem(Place.Direction.NORTH);
+
+        panel.getLonDegField().setText("80");
+        panel.getLonMinField().setText("15");
+        panel.getLonDirCombo().setSelectedItem(Place.Direction.EAST);
+
+        BirthData bd = panel.getBirthData();
+        assertNotNull("Empty city/country should default cleanly and pass", bd);
+        Place p = bd.getBirthPlace();
+        assertNotNull(p);
+        assertEquals("Custom", p.city());
+        assertEquals(13, p.latitudeLocation().deg());
+        assertEquals(4, p.latitudeLocation().min());
+    }
 }

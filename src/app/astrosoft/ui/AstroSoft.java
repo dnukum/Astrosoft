@@ -59,6 +59,7 @@ import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.comp.DateListener;
 import app.astrosoft.ui.dlg.AboutDialog;
 import app.astrosoft.ui.dlg.BirthInputDialog;
+import app.astrosoft.ui.dlg.ModernBirthInputDialog;
 import app.astrosoft.util.Version;
 import app.astrosoft.ui.dlg.CompatibilityInputDialog;
 import app.astrosoft.ui.dlg.ExportDialog;
@@ -891,7 +892,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (!promptSaveIfModified(h)) {
 			return;
 		}
-		new BirthInputDialog(this);
+		new ModernBirthInputDialog(this);
 	}
 
 	public void openHoroscope() {

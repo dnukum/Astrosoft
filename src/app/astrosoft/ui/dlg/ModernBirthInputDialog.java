@@ -28,7 +28,7 @@ import app.astrosoft.ui.util.UIConsts;
  */
 public class ModernBirthInputDialog extends AstrosoftDialog {
 
-    private static final Dimension DLG_SIZE = new Dimension(425, 395);
+    private static final Dimension DLG_SIZE = new Dimension(435, 425);
 
     private ModernBirthDataPanel birthDataPanel;
     private JButton okButton;

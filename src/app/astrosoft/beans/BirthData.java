@@ -144,6 +144,10 @@ public class BirthData {
 		return birthMinutes;
 	}
 
+    public int seconds() {
+		return birthSeconds;
+	}
+
 	public double latitude() {
 		return birthPlace.latitude();
 	}
