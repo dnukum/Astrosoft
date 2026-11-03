@@ -19,19 +19,20 @@ import app.astrosoft.beans.BirthData;
 import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.comp.modern.ModernBirthDataPanel;
+import app.astrosoft.ui.comp.modern.ModernButton;
 import app.astrosoft.ui.util.UIConsts;
 
 /**
  * Modern Birth Input Dialog.
- * Clean, beautifully proportioned dialog with Ok and Cancel buttons.
+ * Clean, beautifully proportioned dialog with modern rounded buttons aligned with Chart Themes.
  */
 public class ModernBirthInputDialog extends AstrosoftDialog {
 
-    private static final Dimension DLG_SIZE = new Dimension(420, 390);
+    private static final Dimension DLG_SIZE = new Dimension(425, 395);
 
     private ModernBirthDataPanel birthDataPanel;
-    private JButton okButton = new JButton(DisplayStrings.OK_STR.toString());
-    private JButton cancelButton = new JButton("Cancel");
+    private JButton okButton;
+    private JButton cancelButton;
     private boolean isEdit = false;
 
     public ModernBirthInputDialog(AstroSoft parent, BirthData birthData, boolean autoShow) {
@@ -60,24 +61,20 @@ public class ModernBirthInputDialog extends AstrosoftDialog {
         birthDataPanel.setBorder(BorderFactory.createEmptyBorder(10, 16, 4, 16));
         dlgPanel.add(birthDataPanel, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 8));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 10));
         buttonPanel.setBackground(UIConsts.THEME_CLR);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(2, 16, 12, 16));
 
-        // Ok button
-        okButton.setPreferredSize(new Dimension(90, 30));
-        okButton.setBackground(new Color(25, 118, 210));
-        okButton.setForeground(Color.WHITE);
-        okButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-        okButton.setFocusPainted(false);
-        okButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        Color primaryColor = UIConsts.getPrimaryAccentColor();
+
+        // Modern Primary Ok button
+        okButton = ModernButton.createPrimary(DisplayStrings.OK_STR.toString(), primaryColor);
+        okButton.setPreferredSize(new Dimension(95, 32));
         okButton.addActionListener(e -> onOk());
 
-        // Cancel button
-        cancelButton.setPreferredSize(new Dimension(90, 30));
-        cancelButton.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        cancelButton.setFocusPainted(false);
-        cancelButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // Modern Secondary Cancel button
+        cancelButton = ModernButton.createSecondary("Cancel");
+        cancelButton.setPreferredSize(new Dimension(95, 32));
         cancelButton.addActionListener(e -> closeDialog());
 
         buttonPanel.add(okButton);

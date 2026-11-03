@@ -235,6 +235,17 @@ public class UIConsts {
 		public Color getLabelColor() { return labelColor; }
 		public Color getNatalHighlightColor() { return natalHighlightColor; }
 
+		public Color getPrimaryAccentColor() {
+			switch (this) {
+				case WARM_IVORY: return new Color(180, 83, 9);       // #B45309 Rich Warm Amber
+				case SOFT_ALABASTER: return new Color(37, 99, 235);    // #2563EB Clean Royal Blue
+				case PALE_GOLD_MIST: return new Color(79, 70, 229);    // #4F46E5 Deep Indigo
+				case CALM_SAGE: return new Color(46, 90, 68);          // #2E5A44 Deep Forest Sage
+				case CLASSIC:
+				default: return new Color(25, 118, 210);               // #1976D2 Material Blue
+			}
+		}
+
 		public Border getBorder() {
 			if (this == CLASSIC) {
 				return BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.ORANGE, Color.WHITE);
@@ -258,6 +269,10 @@ public class UIConsts {
 		if (theme != null) {
 			currentChartTheme = theme;
 		}
+	}
+
+	public static Color getPrimaryAccentColor() {
+		return currentChartTheme.getPrimaryAccentColor();
 	}
 
 	public static Border getTitleBorder(Enum title){

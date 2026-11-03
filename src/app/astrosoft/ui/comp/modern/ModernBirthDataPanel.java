@@ -126,6 +126,11 @@ public class ModernBirthDataPanel extends JPanel {
         if (labelFont == null) labelFont = new Font("SansSerif", Font.PLAIN, 12);
         Font boldLabelFont = labelFont.deriveFont(Font.BOLD);
 
+        UIConsts.ChartTheme theme = UIConsts.getChartTheme();
+        Color primaryAccent = theme.getPrimaryAccentColor();
+        Color textColor = theme.getPlanetForeground();
+        Color borderColor = theme.getBorderColor();
+
         Border fieldBorder = BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(190, 195, 200), 1),
             BorderFactory.createEmptyBorder(2, 8, 2, 8)
@@ -140,7 +145,7 @@ public class ModernBirthDataPanel extends JPanel {
 
         // 1. Name
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formLabel(this, "Name", boldLabelFont, gbc);
+        formLabel(this, "Name", boldLabelFont, textColor, gbc);
 
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
         nameField = new JTextField(20);
@@ -154,7 +159,7 @@ public class ModernBirthDataPanel extends JPanel {
 
         // 2. Gender
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formLabel(this, "Gender", boldLabelFont, gbc);
+        formLabel(this, "Gender", boldLabelFont, textColor, gbc);
 
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
         JPanel genderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 0));
@@ -162,11 +167,13 @@ public class ModernBirthDataPanel extends JPanel {
 
         maleRadio = new JRadioButton("Male", true);
         maleRadio.setBackground(UIConsts.THEME_CLR);
+        maleRadio.setForeground(textColor);
         maleRadio.setFont(labelFont);
         maleRadio.setFocusPainted(false);
 
         femaleRadio = new JRadioButton("Female", false);
         femaleRadio.setBackground(UIConsts.THEME_CLR);
+        femaleRadio.setForeground(textColor);
         femaleRadio.setFont(labelFont);
         femaleRadio.setFocusPainted(false);
 
@@ -181,12 +188,13 @@ public class ModernBirthDataPanel extends JPanel {
 
         // 3. Date (Button that triggers modern DatePickerDialog)
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formLabel(this, "Date", boldLabelFont, gbc);
+        formLabel(this, "Date", boldLabelFont, textColor, gbc);
 
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
         dateButton = new JButton();
         dateButton.setFont(labelFont);
         dateButton.setBackground(Color.WHITE);
+        dateButton.setForeground(textColor);
         dateButton.setOpaque(true);
         dateButton.setBorder(fieldBorder);
         dateButton.setHorizontalAlignment(SwingConstants.LEFT);
@@ -199,12 +207,13 @@ public class ModernBirthDataPanel extends JPanel {
 
         // 4. Birth Time (Button that triggers modern TimePickerDialog)
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formLabel(this, "BirthTime", boldLabelFont, gbc);
+        formLabel(this, "BirthTime", boldLabelFont, textColor, gbc);
 
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
         timeButton = new JButton();
         timeButton.setFont(labelFont);
         timeButton.setBackground(Color.WHITE);
+        timeButton.setForeground(textColor);
         timeButton.setOpaque(true);
         timeButton.setBorder(fieldBorder);
         timeButton.setHorizontalAlignment(SwingConstants.LEFT);
@@ -217,7 +226,7 @@ public class ModernBirthDataPanel extends JPanel {
 
         // 5. Place (In-place expandable combo box with search button)
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formLabel(this, "Place", boldLabelFont, gbc);
+        formLabel(this, "Place", boldLabelFont, textColor, gbc);
 
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
         JPanel placePanel = new JPanel(new BorderLayout(4, 0));
@@ -274,7 +283,7 @@ public class ModernBirthDataPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = row; gbc.gridwidth = 2; gbc.weightx = 1.0;
         gbc.insets = new Insets(8, 4, 8, 4);
         JSeparator sep = new JSeparator(JSeparator.HORIZONTAL);
-        sep.setForeground(new Color(210, 215, 220));
+        sep.setForeground(borderColor);
         add(sep, gbc);
         row++;
         gbc.gridwidth = 1;
@@ -282,50 +291,50 @@ public class ModernBirthDataPanel extends JPanel {
 
         // 6. Latitude (Non-editable degree, minute, direction)
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formLabel(this, "Latitude", boldLabelFont, gbc);
+        formLabel(this, "Latitude", boldLabelFont, textColor, gbc);
 
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
         JPanel latPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
         latPanel.setBackground(UIConsts.THEME_CLR);
 
-        latDegField = createReadOnlyField(4);
-        latMinField = createReadOnlyField(4);
-        latDirField = createReadOnlyField(8);
+        latDegField = createReadOnlyField(4, theme);
+        latMinField = createReadOnlyField(4, theme);
+        latDirField = createReadOnlyField(8, theme);
 
         latPanel.add(latDegField);
-        latPanel.add(new JLabel("°"));
+        JLabel latDegLbl = new JLabel("°"); latDegLbl.setForeground(textColor); latPanel.add(latDegLbl);
         latPanel.add(latMinField);
-        latPanel.add(new JLabel("'"));
+        JLabel latMinLbl = new JLabel("'"); latMinLbl.setForeground(textColor); latPanel.add(latMinLbl);
         latPanel.add(latDirField);
         add(latPanel, gbc);
         row++;
 
         // 7. Longitude (Non-editable degree, minute, direction)
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formLabel(this, "Longitude", boldLabelFont, gbc);
+        formLabel(this, "Longitude", boldLabelFont, textColor, gbc);
 
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
         JPanel lonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
         lonPanel.setBackground(UIConsts.THEME_CLR);
 
-        lonDegField = createReadOnlyField(4);
-        lonMinField = createReadOnlyField(4);
-        lonDirField = createReadOnlyField(8);
+        lonDegField = createReadOnlyField(4, theme);
+        lonMinField = createReadOnlyField(4, theme);
+        lonDirField = createReadOnlyField(8, theme);
 
         lonPanel.add(lonDegField);
-        lonPanel.add(new JLabel("°"));
+        JLabel lonDegLbl = new JLabel("°"); lonDegLbl.setForeground(textColor); lonPanel.add(lonDegLbl);
         lonPanel.add(lonMinField);
-        lonPanel.add(new JLabel("'"));
+        JLabel lonMinLbl = new JLabel("'"); lonMinLbl.setForeground(textColor); lonPanel.add(lonMinLbl);
         lonPanel.add(lonDirField);
         add(lonPanel, gbc);
         row++;
 
         // 8. Time Zone (Non-editable field)
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        formLabel(this, "Time Zone", boldLabelFont, gbc);
+        formLabel(this, "Time Zone", boldLabelFont, textColor, gbc);
 
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
-        timeZoneField = createReadOnlyField(22);
+        timeZoneField = createReadOnlyField(22, theme);
         timeZoneField.setHorizontalAlignment(JTextField.LEFT);
         add(timeZoneField, gbc);
         row++;
@@ -335,22 +344,27 @@ public class ModernBirthDataPanel extends JPanel {
         add(Box.createVerticalGlue(), gbc);
     }
 
-    private void formLabel(JPanel parent, String text, Font font, GridBagConstraints gbc) {
+    private void formLabel(JPanel parent, String text, Font font, Color color, GridBagConstraints gbc) {
         JLabel label = new JLabel(text);
         label.setFont(font);
+        if (color != null) label.setForeground(color);
         parent.add(label, gbc);
     }
 
-    private JTextField createReadOnlyField(int columns) {
+    private JTextField createReadOnlyField(int columns, UIConsts.ChartTheme theme) {
         JTextField tf = new JTextField(columns);
         tf.setEditable(false);
         tf.setFocusable(false);
-        tf.setBackground(new Color(246, 247, 249));
-        tf.setForeground(new Color(40, 45, 55));
+        Color bg = (theme != null) ? theme.getBackground() : new Color(246, 247, 249);
+        Color fg = (theme != null) ? theme.getPlanetForeground() : new Color(40, 45, 55);
+        Color bc = (theme != null) ? theme.getBorderColor() : new Color(205, 210, 215);
+
+        tf.setBackground(bg);
+        tf.setForeground(fg);
         tf.setPreferredSize(new Dimension(tf.getPreferredSize().width, FIELD_HEIGHT));
         tf.setHorizontalAlignment(JTextField.CENTER);
         tf.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(205, 210, 215), 1),
+            BorderFactory.createLineBorder(bc, 1),
             BorderFactory.createEmptyBorder(2, 4, 2, 4)
         ));
         return tf;

@@ -33,20 +33,25 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import app.astrosoft.ui.util.UIConsts;
+
 /**
- * Modern, beautifully-proportioned Material Date Picker Panel.
- * Features pleasing high-contrast date cells with rounded card styling,
- * clear focus indication on the selected date, sleek navigation controls,
- * and custom painting immune to Look and Feel overrides.
+ * Modern, beautifully-proportioned Date Picker Panel.
+ * Aligned with Options -> Chart Themes (Warm Ivory, Soft Alabaster, Calm Sage, etc.),
+ * featuring high-contrast rounded cards, modern sleek buttons (no rigid boxes),
+ * and custom antialiased rendering immune to Look and Feel overrides.
  */
 public class DatePickerPanel extends JPanel {
 
     public static final int MIN_YEAR = 1800;
     public static final int MAX_YEAR = 2100;
 
-    private static final Color PRIMARY_BLUE = new Color(25, 118, 210); // #1976D2
-    private static final Color HEADER_TEXT_LIGHT = new Color(210, 228, 255);
-    private static final Color HOVER_BG = new Color(224, 242, 254);
+    private final UIConsts.ChartTheme theme;
+    private final Color primaryColor;
+    private final Color cellBg;
+    private final Color cellBorder;
+    private final Color cellText;
+    private final Color dowColor;
 
     private LocalDate selectedDate;
     private YearMonth viewYearMonth;
@@ -63,12 +68,19 @@ public class DatePickerPanel extends JPanel {
     private DayButton[] dayButtons = new DayButton[42];
 
     public DatePickerPanel(LocalDate initialDate) {
+        this.theme = UIConsts.getChartTheme();
+        this.primaryColor = theme.getPrimaryAccentColor();
+        this.cellBg = theme.getBackground();
+        this.cellBorder = theme.getBorderColor();
+        this.cellText = theme.getPlanetForeground();
+        this.dowColor = theme.getLabelColor();
+
         this.selectedDate = (initialDate != null) ? initialDate : LocalDate.now();
         this.viewYearMonth = YearMonth.of(selectedDate.getYear(), selectedDate.getMonth());
 
         initComponents();
         updateHeaderAndGrid();
-        setPreferredSize(new Dimension(310, 370));
+        setPreferredSize(new Dimension(315, 375));
     }
 
     public void setOnConfirmListener(Runnable r) {
@@ -103,14 +115,14 @@ public class DatePickerPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-        // 1. Top Header Banner
+        // 1. Top Header Banner styled with theme primary accent
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        headerPanel.setBackground(PRIMARY_BLUE);
+        headerPanel.setBackground(primaryColor);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
         headerYearLabel = new JLabel(String.valueOf(selectedDate.getYear()));
-        headerYearLabel.setForeground(HEADER_TEXT_LIGHT);
+        headerYearLabel.setForeground(new Color(255, 255, 255, 210));
         headerYearLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
 
         headerDateLabel = new JLabel(selectedDate.format(DateTimeFormatter.ofPattern("EEE, MMM d")));
@@ -137,7 +149,7 @@ public class DatePickerPanel extends JPanel {
         monthCombo = new JComboBox<>(Month.values());
         monthCombo.setFont(new Font("SansSerif", Font.PLAIN, 12));
         monthCombo.setBackground(Color.WHITE);
-        monthCombo.setForeground(new Color(30, 41, 59));
+        monthCombo.setForeground(cellText);
         monthCombo.setSelectedItem(viewYearMonth.getMonth());
         monthCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -146,11 +158,11 @@ public class DatePickerPanel extends JPanel {
                 l.setHorizontalAlignment(SwingConstants.CENTER);
                 l.setFont(new Font("SansSerif", Font.PLAIN, 12));
                 if (isSelected) {
-                    l.setBackground(PRIMARY_BLUE);
+                    l.setBackground(primaryColor);
                     l.setForeground(Color.WHITE);
                 } else {
                     l.setBackground(Color.WHITE);
-                    l.setForeground(new Color(30, 41, 59));
+                    l.setForeground(cellText);
                 }
                 return l;
             }
@@ -170,7 +182,7 @@ public class DatePickerPanel extends JPanel {
         yearCombo = new JComboBox<>(years);
         yearCombo.setFont(new Font("SansSerif", Font.PLAIN, 12));
         yearCombo.setBackground(Color.WHITE);
-        yearCombo.setForeground(new Color(30, 41, 59));
+        yearCombo.setForeground(cellText);
         yearCombo.setSelectedItem(viewYearMonth.getYear());
         yearCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -179,11 +191,11 @@ public class DatePickerPanel extends JPanel {
                 l.setHorizontalAlignment(SwingConstants.CENTER);
                 l.setFont(new Font("SansSerif", Font.PLAIN, 12));
                 if (isSelected) {
-                    l.setBackground(PRIMARY_BLUE);
+                    l.setBackground(primaryColor);
                     l.setForeground(Color.WHITE);
                 } else {
                     l.setBackground(Color.WHITE);
-                    l.setForeground(new Color(30, 41, 59));
+                    l.setForeground(cellText);
                 }
                 return l;
             }
@@ -217,7 +229,7 @@ public class DatePickerPanel extends JPanel {
         for (DayOfWeek dow : daysOfWeek) {
             JLabel dowLabel = new JLabel(dow.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).substring(0, 2), SwingConstants.CENTER);
             dowLabel.setFont(new Font("SansSerif", Font.BOLD, 11));
-            dowLabel.setForeground(new Color(100, 116, 139));
+            dowLabel.setForeground(dowColor);
             dowPanel.add(dowLabel);
         }
         calendarContainer.add(dowPanel, BorderLayout.NORTH);
@@ -246,12 +258,13 @@ public class DatePickerPanel extends JPanel {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        // 3. Bottom Action Bar (Today, Cancel, OK)
+        // 3. Bottom Action Bar (Today, Cancel, OK) styled with ModernButton
         JPanel bottomBar = new JPanel(new BorderLayout());
         bottomBar.setBackground(Color.WHITE);
         bottomBar.setBorder(BorderFactory.createEmptyBorder(6, 10, 10, 10));
 
-        JButton todayBtn = createSecondaryButton("Today");
+        ModernButton todayBtn = ModernButton.createSecondary("Today");
+        todayBtn.setPreferredSize(new Dimension(72, 28));
         todayBtn.addActionListener(e -> {
             LocalDate today = LocalDate.now();
             selectedDate = today;
@@ -263,13 +276,15 @@ public class DatePickerPanel extends JPanel {
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actionsPanel.setBackground(Color.WHITE);
 
-        JButton cancelBtn = createSecondaryButton("Cancel");
+        ModernButton cancelBtn = ModernButton.createSecondary("Cancel");
+        cancelBtn.setPreferredSize(new Dimension(72, 28));
         cancelBtn.addActionListener(e -> {
             confirmed = false;
             if (onCancelListener != null) onCancelListener.run();
         });
 
-        JButton okBtn = createPrimaryButton("Ok");
+        ModernButton okBtn = ModernButton.createPrimary("Ok", primaryColor);
+        okBtn.setPreferredSize(new Dimension(72, 28));
         okBtn.addActionListener(e -> {
             confirmed = true;
             if (onConfirmListener != null) onConfirmListener.run();
@@ -293,14 +308,15 @@ public class DatePickerPanel extends JPanel {
                 boolean pressed = getModel().isPressed();
                 boolean rollover = getModel().isRollover();
 
-                Color bg = pressed ? new Color(219, 234, 254) : (rollover ? new Color(241, 245, 249) : Color.WHITE);
+                Color bg = pressed ? new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 35)
+                                   : (rollover ? new Color(241, 245, 249) : Color.WHITE);
                 g2.setColor(bg);
-                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
+                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 8, 8);
 
-                g2.setColor(new Color(203, 213, 225));
-                g2.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
+                g2.setColor(rollover ? primaryColor : new Color(203, 213, 225));
+                g2.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 8, 8);
 
-                g2.setColor(new Color(30, 41, 59));
+                g2.setColor(rollover ? primaryColor : cellText);
                 g2.setFont(getFont());
                 FontMetrics fm = g2.getFontMetrics();
                 int tx = (getWidth() - fm.stringWidth(getText())) / 2;
@@ -310,77 +326,13 @@ public class DatePickerPanel extends JPanel {
             }
         };
         btn.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
         btn.setFocusPainted(false);
         btn.setFocusable(false);
+        btn.setOpaque(false);
         btn.setPreferredSize(new Dimension(30, 26));
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return btn;
-    }
-
-    private JButton createSecondaryButton(String text) {
-        JButton btn = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-                boolean pressed = getModel().isPressed();
-                boolean rollover = getModel().isRollover();
-
-                Color bg = pressed ? new Color(226, 232, 240) : (rollover ? new Color(241, 245, 249) : Color.WHITE);
-                g2.setColor(bg);
-                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
-
-                g2.setColor(new Color(203, 213, 225));
-                g2.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
-
-                g2.setColor(new Color(51, 65, 85));
-                g2.setFont(getFont());
-                FontMetrics fm = g2.getFontMetrics();
-                int tx = (getWidth() - fm.stringWidth(getText())) / 2;
-                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
-                g2.drawString(getText(), tx, ty);
-                g2.dispose();
-            }
-        };
-        btn.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        btn.setFocusPainted(false);
-        btn.setFocusable(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(72, 28));
-        return btn;
-    }
-
-    private JButton createPrimaryButton(String text) {
-        JButton btn = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-                boolean pressed = getModel().isPressed();
-                boolean rollover = getModel().isRollover();
-
-                Color bg = pressed ? new Color(21, 101, 192) : (rollover ? new Color(30, 136, 229) : PRIMARY_BLUE);
-                g2.setColor(bg);
-                g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 6, 6);
-
-                g2.setColor(Color.WHITE);
-                g2.setFont(getFont());
-                FontMetrics fm = g2.getFontMetrics();
-                int tx = (getWidth() - fm.stringWidth(getText())) / 2;
-                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
-                g2.drawString(getText(), tx, ty);
-                g2.dispose();
-            }
-        };
-        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
-        btn.setFocusPainted(false);
-        btn.setFocusable(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(72, 28));
         return btn;
     }
 
@@ -450,11 +402,11 @@ public class DatePickerPanel extends JPanel {
     }
 
     /**
-     * Custom Day Button that renders a pleasing rounded card cell with high contrast,
+     * Custom Day Button that renders a pleasing themed rounded card cell with high contrast,
      * beautiful hover, and unmistakable focus on the selected date.
-     * Does NOT call super.paintComponent() to completely bypass Look and Feel button background overrides.
+     * Aligned with Options -> Chart Themes.
      */
-    private static class DayButton extends JButton {
+    private class DayButton extends JButton {
         private boolean isSelectedDay = false;
         private boolean isToday = false;
         private boolean isHovered = false;
@@ -510,49 +462,53 @@ public class DatePickerPanel extends JPanel {
             Color textColor;
 
             if (isSelectedDay) {
-                // Focus: Solid rich royal blue card with subtle outer glow ring
-                g2.setColor(PRIMARY_BLUE);
+                // Focus: Solid theme primary accent card with outer glow ring
+                g2.setColor(primaryColor);
                 g2.fillRoundRect(2, 2, w - 4, h - 4, 8, 8);
 
                 // Focus accent ring
-                g2.setColor(new Color(147, 197, 253)); // Soft bright blue glow #93C5FD
+                Color glow = new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 110);
+                g2.setColor(glow);
                 g2.setStroke(new BasicStroke(1.5f));
                 g2.drawRoundRect(1, 1, w - 3, h - 3, 9, 9);
 
                 textColor = Color.WHITE;
                 g2.setFont(getFont().deriveFont(Font.BOLD, 13f));
             } else if (isHovered) {
-                // Delightful soft sky blue hover
-                g2.setColor(HOVER_BG);
+                // Delightful theme-tinted hover
+                Color hoverBg = new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 35);
+                g2.setColor(hoverBg);
                 g2.fillRoundRect(2, 2, w - 4, h - 4, 8, 8);
 
-                g2.setColor(new Color(56, 189, 248)); // #38BDF8
+                g2.setColor(primaryColor);
                 g2.setStroke(new BasicStroke(1.2f));
                 g2.drawRoundRect(2, 2, w - 5, h - 5, 8, 8);
 
-                textColor = new Color(3, 105, 161); // #0369A1
+                textColor = primaryColor;
                 g2.setFont(getFont().deriveFont(Font.BOLD, 12f));
             } else if (isToday) {
-                // Today: soft blue tinted cell with royal blue accent border
-                g2.setColor(new Color(239, 246, 255)); // #EFF6FF
+                // Today: soft theme-tinted cell with accent border
+                Color todayBg = new Color(primaryColor.getRed(), primaryColor.getGreen(), primaryColor.getBlue(), 20);
+                g2.setColor(todayBg);
                 g2.fillRoundRect(2, 2, w - 4, h - 4, 8, 8);
 
-                g2.setColor(new Color(37, 99, 235)); // #2563EB
+                g2.setColor(primaryColor);
                 g2.setStroke(new BasicStroke(1.5f));
                 g2.drawRoundRect(2, 2, w - 5, h - 5, 8, 8);
 
-                textColor = new Color(30, 64, 175); // #1E40AF
+                textColor = primaryColor;
                 g2.setFont(getFont().deriveFont(Font.BOLD, 12f));
             } else {
-                // Normal unselected day: crisp porcelain white with soft slate border
-                g2.setColor(Color.WHITE);
+                // Normal unselected day: themed card background & border
+                g2.setColor(cellBg);
                 g2.fillRoundRect(2, 2, w - 4, h - 4, 8, 8);
 
-                g2.setColor(new Color(226, 232, 240)); // #E2E8F0
+                Color borderSoft = new Color(cellBorder.getRed(), cellBorder.getGreen(), cellBorder.getBlue(), 120);
+                g2.setColor(borderSoft);
                 g2.setStroke(new BasicStroke(1.0f));
                 g2.drawRoundRect(2, 2, w - 5, h - 5, 8, 8);
 
-                textColor = new Color(30, 41, 59); // #1E293B deep charcoal slate
+                textColor = cellText;
                 g2.setFont(getFont().deriveFont(Font.PLAIN, 12f));
             }
 
@@ -564,7 +520,6 @@ public class DatePickerPanel extends JPanel {
             g2.drawString(text, tx, ty);
 
             g2.dispose();
-            // Note: DO NOT call super.paintComponent(g) to avoid Look & Feel beige background overwrite
         }
     }
 }
