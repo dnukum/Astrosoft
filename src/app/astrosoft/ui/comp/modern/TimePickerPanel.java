@@ -2,6 +2,7 @@ package app.astrosoft.ui.comp.modern;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -21,16 +22,21 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
+import app.astrosoft.ui.util.UIConsts;
+
 /**
- * Modern Material-inspired Time Picker Panel.
- * 4-column scrollable list (Hour, Min, Sec, AM/PM) with live preview and action buttons.
- * Headless-safe.
+ * Modern Time Picker Panel aligned with Options -> Chart Themes.
+ * Features 4-column scrollable lists (Hour, Min, Sec, AM/PM), live preview banner,
+ * and non-boxy modern rounded action buttons. Headless-safe.
  */
 public class TimePickerPanel extends JPanel {
 
-    private static final Color PRIMARY_BLUE = new Color(59, 89, 152);
-    private static final Color SELECTED_BLUE = new Color(51, 103, 214);
-    private static final Color HEADER_TEXT_LIGHT = new Color(200, 220, 255);
+    private final UIConsts.ChartTheme theme;
+    private final Color primaryAccent;
+    private final Color cellBg;
+    private final Color cellBorder;
+    private final Color cellText;
+    private final Color labelColor;
 
     private LocalTime selectedTime;
     private boolean confirmed = false;
@@ -47,11 +53,19 @@ public class TimePickerPanel extends JPanel {
     private JList<String> amPmList;
 
     public TimePickerPanel(LocalTime initialTime) {
+        this.theme = UIConsts.getChartTheme();
+        this.primaryAccent = theme.getPrimaryAccentColor();
+        this.cellBg = theme.getBackground();
+        this.cellBorder = theme.getBorderColor();
+        this.cellText = theme.getPlanetForeground();
+        this.labelColor = theme.getLabelColor();
+
         this.selectedTime = (initialTime != null) ? initialTime : LocalTime.now();
 
         initComponents();
         syncListsFromTime(this.selectedTime);
         updateHeader();
+        setPreferredSize(new Dimension(315, 360));
     }
 
     public void setOnConfirmListener(Runnable r) {
@@ -86,29 +100,29 @@ public class TimePickerPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-        // 1. Top Header Banner
+        // 1. Top Header Banner styled with active theme primary accent
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        headerPanel.setBackground(PRIMARY_BLUE);
+        headerPanel.setBackground(primaryAccent);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
         headerTitleLabel = new JLabel("Time");
-        headerTitleLabel.setForeground(HEADER_TEXT_LIGHT);
-        headerTitleLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        headerTitleLabel.setForeground(new Color(255, 255, 255, 215));
+        headerTitleLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
 
         headerTimePreviewLabel = new JLabel(formatTime(selectedTime));
         headerTimePreviewLabel.setForeground(Color.WHITE);
-        headerTimePreviewLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        headerTimePreviewLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
 
         headerPanel.add(headerTitleLabel);
-        headerPanel.add(Box.createVerticalStrut(4));
+        headerPanel.add(Box.createVerticalStrut(3));
         headerPanel.add(headerTimePreviewLabel);
         add(headerPanel, BorderLayout.NORTH);
 
         // 2. Center: 4 Column Pickers
         JPanel columnsPanel = new JPanel(new GridLayout(1, 4, 8, 0));
         columnsPanel.setBackground(Color.WHITE);
-        columnsPanel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        columnsPanel.setBorder(BorderFactory.createEmptyBorder(12, 14, 10, 14));
 
         // Hours Column (01 - 12)
         DefaultListModel<String> hourModel = new DefaultListModel<>();
@@ -149,31 +163,28 @@ public class TimePickerPanel extends JPanel {
 
         add(columnsPanel, BorderLayout.CENTER);
 
-        // 3. Bottom Action Bar (Now, Cancel, Ok)
+        // 3. Bottom Action Bar (Now, Cancel, Ok) with ModernButton (non-boxy)
         JPanel bottomBar = new JPanel(new BorderLayout());
         bottomBar.setBackground(Color.WHITE);
-        bottomBar.setBorder(BorderFactory.createEmptyBorder(8, 12, 10, 12));
+        bottomBar.setBorder(BorderFactory.createEmptyBorder(6, 12, 10, 12));
 
-        JButton nowBtn = new JButton("Now");
-        nowBtn.setFocusPainted(false);
+        ModernButton nowBtn = ModernButton.createSecondary("Now");
+        nowBtn.setPreferredSize(new Dimension(68, 28));
         nowBtn.addActionListener(e -> setSelectedTime(LocalTime.now()));
         bottomBar.add(nowBtn, BorderLayout.WEST);
 
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actionsPanel.setBackground(Color.WHITE);
 
-        JButton cancelBtn = new JButton("Cancel");
-        cancelBtn.setFocusPainted(false);
+        ModernButton cancelBtn = ModernButton.createSecondary("Cancel");
+        cancelBtn.setPreferredSize(new Dimension(72, 28));
         cancelBtn.addActionListener(e -> {
             confirmed = false;
             if (onCancelListener != null) onCancelListener.run();
         });
 
-        JButton okBtn = new JButton("Ok");
-        okBtn.setBackground(PRIMARY_BLUE);
-        okBtn.setForeground(Color.WHITE);
-        okBtn.setFont(new Font("SansSerif", Font.BOLD, 12));
-        okBtn.setFocusPainted(false);
+        ModernButton okBtn = ModernButton.createPrimary("Ok", primaryAccent);
+        okBtn.setPreferredSize(new Dimension(72, 28));
         okBtn.addActionListener(e -> {
             confirmed = true;
             if (onConfirmListener != null) onConfirmListener.run();
@@ -190,14 +201,29 @@ public class TimePickerPanel extends JPanel {
         JList<String> list = new JList<>(model);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setVisibleRowCount(6);
-        list.setFont(new Font("SansSerif", Font.BOLD, 16));
-        list.setSelectionBackground(SELECTED_BLUE);
+        list.setFont(new Font("SansSerif", Font.BOLD, 15));
+        list.setBackground(cellBg);
+        list.setForeground(cellText);
+        list.setSelectionBackground(primaryAccent);
         list.setSelectionForeground(Color.WHITE);
 
-        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
-        renderer.setHorizontalAlignment(SwingConstants.CENTER);
-        renderer.setBorder(BorderFactory.createEmptyBorder(6, 4, 6, 4));
-        list.setCellRenderer(renderer);
+        list.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> l, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel lbl = (JLabel) super.getListCellRendererComponent(l, value, index, isSelected, cellHasFocus);
+                lbl.setHorizontalAlignment(SwingConstants.CENTER);
+                lbl.setFont(new Font("SansSerif", Font.BOLD, 15));
+                lbl.setBorder(BorderFactory.createEmptyBorder(5, 4, 5, 4));
+                if (isSelected) {
+                    lbl.setBackground(primaryAccent);
+                    lbl.setForeground(Color.WHITE);
+                } else {
+                    lbl.setBackground(cellBg);
+                    lbl.setForeground(cellText);
+                }
+                return lbl;
+            }
+        });
 
         return list;
     }
@@ -208,12 +234,13 @@ public class TimePickerPanel extends JPanel {
 
         JLabel label = new JLabel(title, SwingConstants.CENTER);
         label.setFont(new Font("SansSerif", Font.BOLD, 11));
-        label.setForeground(Color.GRAY);
+        label.setForeground(labelColor);
         card.add(label, BorderLayout.NORTH);
 
         JScrollPane scroll = new JScrollPane(list);
-        scroll.setPreferredSize(new Dimension(60, 160));
-        scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
+        scroll.setPreferredSize(new Dimension(58, 150));
+        Color borderSoft = new Color(cellBorder.getRed(), cellBorder.getGreen(), cellBorder.getBlue(), 140);
+        scroll.setBorder(BorderFactory.createLineBorder(borderSoft, 1));
         card.add(scroll, BorderLayout.CENTER);
 
         return card;

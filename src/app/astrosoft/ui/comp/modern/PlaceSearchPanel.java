@@ -25,17 +25,17 @@ import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
 import app.astrosoft.beans.Place;
+import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.util.PlaceFinder;
 
 /**
- * Modern Searchable Place Picker Panel.
+ * Modern Searchable Place Picker Panel aligned with Options -> Chart Themes.
  * Self-contained panel for searching, browsing, and selecting places. Headless-safe.
  */
 public class PlaceSearchPanel extends JPanel {
 
-    private static final Color PRIMARY_BLUE = new Color(59, 89, 152);
-    private static final Color SELECTED_BLUE = new Color(51, 103, 214);
-    private static final Color HEADER_TEXT_LIGHT = new Color(200, 220, 255);
+    private final UIConsts.ChartTheme theme;
+    private final Color primaryAccent;
 
     private Place selectedPlace;
     private boolean confirmed = false;
@@ -53,6 +53,9 @@ public class PlaceSearchPanel extends JPanel {
     private SwingWorker<List<Place>, Void> searchWorker;
 
     public PlaceSearchPanel(Place initialPlace) {
+        this.theme = UIConsts.getChartTheme();
+        this.primaryAccent = theme.getPrimaryAccentColor();
+
         this.selectedPlace = (initialPlace != null) ? initialPlace : Place.getDefault();
 
         initComponents();
@@ -100,12 +103,12 @@ public class PlaceSearchPanel extends JPanel {
         // 1. Top Header Banner
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        headerPanel.setBackground(PRIMARY_BLUE);
+        headerPanel.setBackground(primaryAccent);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
 
         JLabel titleLabel = new JLabel("Place Search");
-        titleLabel.setForeground(HEADER_TEXT_LIGHT);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(255, 255, 255, 215));
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
 
         JLabel subtitleLabel = new JLabel("Search by city, town or state");
         subtitleLabel.setForeground(Color.WHITE);
@@ -139,11 +142,8 @@ public class PlaceSearchPanel extends JPanel {
             }
         });
 
-        searchButton = new JButton("Search");
-        searchButton.setBackground(PRIMARY_BLUE);
-        searchButton.setForeground(Color.WHITE);
-        searchButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-        searchButton.setFocusPainted(false);
+        searchButton = ModernButton.createPrimary("Search", primaryAccent);
+        searchButton.setPreferredSize(new Dimension(86, 32));
         searchButton.addActionListener(e -> performSearch());
 
         searchBar.add(searchField, BorderLayout.CENTER);
@@ -164,6 +164,8 @@ public class PlaceSearchPanel extends JPanel {
         resultsTable.setRowHeight(24);
         resultsTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
         resultsTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        resultsTable.setSelectionBackground(primaryAccent);
+        resultsTable.setSelectionForeground(Color.WHITE);
 
         resultsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -207,18 +209,15 @@ public class PlaceSearchPanel extends JPanel {
         bottomBar.setBackground(Color.WHITE);
         bottomBar.setBorder(BorderFactory.createEmptyBorder(4, 12, 10, 12));
 
-        JButton cancelBtn = new JButton("Cancel");
-        cancelBtn.setFocusPainted(false);
+        ModernButton cancelBtn = ModernButton.createSecondary("Cancel");
+        cancelBtn.setPreferredSize(new Dimension(84, 30));
         cancelBtn.addActionListener(e -> {
             confirmed = false;
             if (onCancelListener != null) onCancelListener.run();
         });
 
-        selectButton = new JButton("Select");
-        selectButton.setBackground(PRIMARY_BLUE);
-        selectButton.setForeground(Color.WHITE);
-        selectButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-        selectButton.setFocusPainted(false);
+        selectButton = ModernButton.createPrimary("Select", primaryAccent);
+        selectButton.setPreferredSize(new Dimension(84, 30));
         selectButton.setEnabled(false);
         selectButton.addActionListener(e -> {
             int selectedRow = resultsTable.getSelectedRow();
