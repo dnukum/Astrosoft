@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -108,16 +109,15 @@ public class HousePACViewTest {
 		rpv.setSize(530, 188);
 		rpv.doLayout();
 
-		// Verify 3 tabs exist and are on the same single row (no wrapping)
+		// Verify 2 clean tabs exist: Overview and Shadbala (Roles & Karakas retired)
 		List<JButton> allButtons = findButtons(rpv);
 		List<JButton> tabButtons = new ArrayList<>();
 		for (JButton b : allButtons) {
-			if ("Positions".equals(b.getText()) || "Roles & Karakas".equals(b.getText())
-					|| "Shadbala".equals(b.getText())) {
+			if ("Overview".equals(b.getText()) || "Shadbala".equals(b.getText())) {
 				tabButtons.add(b);
 			}
 		}
-		assertEquals("All 3 tab buttons must exist", 3, tabButtons.size());
+		assertEquals("Both tab buttons must exist", 2, tabButtons.size());
 
 		// Verify none wrapped to row 2
 		int firstY = tabButtons.get(0).getY();
@@ -126,7 +126,18 @@ public class HousePACViewTest {
 					firstY, tb.getY());
 		}
 
-		assertEquals(188, rpv.getCardHeight());
+		assertEquals(232, rpv.getCardHeight());
+	}
+
+	@Test
+	public void testPlanetDetailsDialog() {
+		app.astrosoft.ui.dlg.PlanetDetailsDialog dlg = new app.astrosoft.ui.dlg.PlanetDetailsDialog(
+				null, horoscope, null);
+		assertNotNull(dlg);
+		assertTrue("Dialog must be resizable", dlg.isResizable());
+		assertFalse("Dialog must be modeless", dlg.isModal());
+		assertNotNull(dlg.getPlanetView());
+		dlg.dispose();
 	}
 
 	@Test
@@ -152,6 +163,55 @@ public class HousePACViewTest {
 		assertNotNull(dlg.getPACView());
 		assertEquals(1, dlg.getPACView().getSelectedHouse());
 		dlg.dispose();
+	}
+
+	@Test
+	public void testOverviewKendraTrikonaAndFunctionalNatureSection() {
+		PlanetaryInfo pi = horoscope.getPlanetaryInfo();
+		RelativePlanetView rpv = new RelativePlanetView(pi, horoscope);
+		assertNotNull(rpv);
+		rpv.setSize(530, 232);
+		rpv.doLayout();
+
+		List<JLabel> labels = findLabels(rpv);
+		boolean foundKendra = false;
+		boolean foundTrikona = false;
+		boolean foundYogakaraka = false;
+		boolean foundBenefics = false;
+		boolean foundNeutrals = false;
+		boolean foundMalefics = false;
+
+		for (JLabel l : labels) {
+			String text = l.getText();
+			if (text != null) {
+				if (text.contains("Kendra (1,4,7,10):")) foundKendra = true;
+				if (text.contains("Trikona (1,5,9):")) foundTrikona = true;
+				if (text.contains("Yogakaraka:")) foundYogakaraka = true;
+				if (text.contains("Functional Benefics:")) foundBenefics = true;
+				if (text.contains("Functional Neutrals:")) foundNeutrals = true;
+				if (text.contains("Functional Malefics:")) foundMalefics = true;
+			}
+		}
+
+		assertTrue("Kendra lords label must exist in Overview", foundKendra);
+		assertTrue("Trikona lords label must exist in Overview", foundTrikona);
+		assertTrue("Yogakaraka label must exist in Overview", foundYogakaraka);
+		assertTrue("Functional Benefics label must exist in Overview", foundBenefics);
+		assertTrue("Functional Neutrals label must exist in Overview", foundNeutrals);
+		assertTrue("Functional Malefics label must exist in Overview", foundMalefics);
+	}
+
+	private static List<JLabel> findLabels(Container c) {
+		List<JLabel> list = new ArrayList<JLabel>();
+		for (Component comp : c.getComponents()) {
+			if (comp instanceof JLabel) {
+				list.add((JLabel) comp);
+			}
+			if (comp instanceof Container) {
+				list.addAll(findLabels((Container) comp));
+			}
+		}
+		return list;
 	}
 
 	private static HousePACView findHousePACView(Container c) {

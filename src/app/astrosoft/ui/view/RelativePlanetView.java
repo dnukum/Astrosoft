@@ -18,6 +18,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -25,21 +26,28 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Path2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -72,27 +80,30 @@ import app.astrosoft.util.AstroUtil;
 
 /**
  * Multi-tab "Planet Details" panel for the Horoscope Dashboard.
- * Provides 3 perspectives via subtle rounded pill tabs:
- * 1. Positions: Classical coordinates, signs, retrogrades, dignities, with Nakshatra, Pada, and Star Lord on hover tooltip.
- * 2. Roles & Karakas: Bhava placement, Dr. B.V. Raman functional role ([Yog], [Ben], [Mal], [Neu]), and Jaimini Chara Karaka (AK, AmK, BK, MK, PK, GK, DK).
- * 3. Shadbala: Colored horizontal strength bars with 100% threshold guideline and rich tooltips.
+ * Provides 2 clean perspectives via subtle rounded pill tabs:
+ * 1. Positions: Classical coordinates, signs, retrogrades, dignities, Nakshatra, Pada, Star Lord, and Jaimini Chara Karakas.
+ * 2. Shadbala: Colored horizontal strength bars with 100% threshold guideline and rich tooltips.
  */
 public class RelativePlanetView extends JPanel {
 
 	private final JLabel title;
 	private final JButton resizeBtn;
+	private final JButton popoutBtn;
 	private final PillTabBar pillBar;
 	private final CardLayout cardLayout;
 	private final JPanel contentCards;
 
+	private final PlanetaryInfo planetaryInfo;
+	private final Rasi ascendant;
+	private final ShadBala shadBala;
+
 	private static final int CARD_WIDTH = 530;
-	private static final int CARD_HEIGHT = 188;
+	private static final int CARD_HEIGHT = 232;
 	private static final int DEFAULT_HOUSES_HEIGHT = 380;
 	private int cardHeight = CARD_HEIGHT;
 	private boolean userCustomizedHeight = false;
 
 	private static final String TAB_POSITIONS = "POSITIONS";
-	private static final String TAB_ROLES = "ROLES";
 	private static final String TAB_SHADBALA = "SHADBALA";
 
 	private static final Planet[] NAK_LORDS = {
@@ -110,6 +121,10 @@ public class RelativePlanetView extends JPanel {
 	}
 
 	public RelativePlanetView(PlanetaryInfo planetaryInfo, Rasi ascendant, ShadBala shadBala) {
+		this.planetaryInfo = planetaryInfo;
+		this.ascendant = ascendant;
+		this.shadBala = shadBala;
+
 		setLayout(null);
 		setOpaque(false);
 
@@ -118,8 +133,8 @@ public class RelativePlanetView extends JPanel {
 		setMinimumSize(panelSize);
 		setMaximumSize(panelSize);
 
-		EnumMap<Planet, Rasi> planetRasi = planetaryInfo.getPlanetRasi();
-		final EnumMap<Planet, Double> planetPos = planetaryInfo.getPlanetPosition();
+		EnumMap<Planet, Rasi> planetRasi = planetaryInfo != null ? planetaryInfo.getPlanetRasi() : null;
+		final EnumMap<Planet, Double> planetPos = planetaryInfo != null ? planetaryInfo.getPlanetPosition() : null;
 
 		Rasi ascRasi = ascendant != null ? ascendant : (planetRasi != null ? planetRasi.get(Planet.Ascendant) : Rasi.Mesha);
 		int ascIndex = ascRasi.ordinal();
@@ -152,7 +167,7 @@ public class RelativePlanetView extends JPanel {
 		title = new JLabel("Planet Details", SwingConstants.LEFT);
 		title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
 		title.setForeground(UIConsts.TEXT_DARK_NAVY);
-		title.setBounds(20, 3, 90, 22);
+		title.setBounds(20, 3, 88, 22);
 		add(title);
 
 		// Header vertical expand/compact button [↕]
@@ -185,23 +200,55 @@ public class RelativePlanetView extends JPanel {
 		resizeBtn.setOpaque(false);
 		resizeBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		resizeBtn.setToolTipText("Expand / Compact card vertically (or drag the bottom border)");
-		resizeBtn.setBounds(112, 4, 18, 20);
+		resizeBtn.setBounds(110, 4, 18, 20);
 		resizeBtn.addActionListener(e -> toggleHeight());
 		add(resizeBtn);
+
+		// Header pop-out / float button [⧉]
+		popoutBtn = new JButton("⧉") {
+			@Override
+			protected void paintComponent(Graphics g) {
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				boolean isHover = getModel().isRollover();
+				int w = getWidth();
+				int h = getHeight();
+				g2.setColor(isHover ? new Color(228, 238, 250) : Color.WHITE);
+				g2.fillRoundRect(1, 1, w - 2, h - 2, 6, 6);
+				g2.setColor(new Color(180, 195, 215));
+				g2.drawRoundRect(1, 1, w - 3, h - 3, 6, 6);
+
+				FontMetrics fm = g2.getFontMetrics(getFont());
+				int tw = fm.stringWidth(getText());
+				int th = fm.getAscent();
+				g2.setColor(new Color(44, 82, 130));
+				g2.setFont(getFont());
+				g2.drawString(getText(), (w - tw) / 2, (h + th) / 2 - 2);
+				g2.dispose();
+			}
+		};
+		popoutBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+		popoutBtn.setFocusPainted(false);
+		popoutBtn.setBorderPainted(false);
+		popoutBtn.setContentAreaFilled(false);
+		popoutBtn.setOpaque(false);
+		popoutBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		popoutBtn.setToolTipText("Open in floating, resizable window");
+		popoutBtn.setBounds(132, 4, 18, 20);
+		popoutBtn.addActionListener(e -> openFloatingDialog());
+		add(popoutBtn);
 
 		// Multi-tab Card layout container
 		cardLayout = new CardLayout();
 		contentCards = new JPanel(cardLayout);
 		contentCards.setOpaque(false);
-		contentCards.setBounds(18, 30, 494, cardHeight - 38);
+		contentCards.setBounds(18, 30, CARD_WIDTH - 36, cardHeight - 38);
 
-		// Build the 4 perspective panels
-		JPanel positionsPanel = createPositionsPanel(planetaryInfo, sortedPlanets, planetRasi, planetPos);
-		JPanel rolesPanel = createRolesAndKarakasPanel(planetaryInfo, sortedPlanets, planetRasi, ascRasi, planetPos);
+		// Build the 2 clean perspective panels
+		JPanel positionsPanel = createPositionsPanel(planetaryInfo, sortedPlanets, planetRasi, planetPos, ascRasi);
 		JPanel shadbalaPanel = new ShadbalaBarPanel(shadBala);
 
 		contentCards.add(positionsPanel, TAB_POSITIONS);
-		contentCards.add(rolesPanel, TAB_ROLES);
 		contentCards.add(shadbalaPanel, TAB_SHADBALA);
 
 		add(contentCards);
@@ -213,14 +260,11 @@ public class RelativePlanetView extends JPanel {
 					cardLayout.show(contentCards, TAB_POSITIONS);
 					break;
 				case 1:
-					cardLayout.show(contentCards, TAB_ROLES);
-					break;
-				case 2:
 					cardLayout.show(contentCards, TAB_SHADBALA);
 					break;
 			}
 		});
-		pillBar.setBounds(180, 3, 332, 24);
+		pillBar.setBounds(CARD_WIDTH - 240, 3, 232, 24);
 		add(pillBar);
 
 		// Interactive bottom-edge drag to resize
@@ -261,12 +305,28 @@ public class RelativePlanetView extends JPanel {
 		}
 	}
 
+	public void setPopoutVisible(boolean visible) {
+		if (popoutBtn != null) {
+			popoutBtn.setVisible(visible);
+		}
+	}
+
+	public void openFloatingDialog() {
+		Window owner = SwingUtilities.getWindowAncestor(this);
+		app.astrosoft.ui.dlg.PlanetDetailsDialog.showDialog(owner, planetaryInfo, ascendant, shadBala, null);
+	}
+
 	@Override
 	public void doLayout() {
 		super.doLayout();
+		int currentW = getWidth();
+		if (currentW <= 0) currentW = CARD_WIDTH;
 		int currentH = getHeight();
 		if (currentH <= 0) currentH = cardHeight;
-		contentCards.setBounds(18, 30, 494, currentH - 38);
+		contentCards.setBounds(18, 30, currentW - 36, currentH - 38);
+		if (pillBar != null) {
+			pillBar.setBounds(currentW - 245, 3, 232, 24);
+		}
 	}
 
 	public void setCardHeight(int newHeight) {
@@ -311,10 +371,11 @@ public class RelativePlanetView extends JPanel {
 	// Tab 1: Positions (Coordinates, Signs, Dignities + Nakshatra Tooltips)
 	// -------------------------------------------------------------------------
 	private JPanel createPositionsPanel(PlanetaryInfo planetaryInfo, List<Planet> sortedPlanets,
-			EnumMap<Planet, Rasi> planetRasi, EnumMap<Planet, Double> planetPos) {
-		EnumMap<Planet, Boolean> planetDir = planetaryInfo.getPlanetDirection();
-		Map<Planet, PlanetStatus> planetStatus = PlanetLabels.statuses(planetaryInfo);
-		EnumMap<Planet, NakshathraPada> nakMap = planetaryInfo.getPlanetNakshathra();
+			EnumMap<Planet, Rasi> planetRasi, EnumMap<Planet, Double> planetPos, Rasi ascRasi) {
+		EnumMap<Planet, Boolean> planetDir = planetaryInfo != null ? planetaryInfo.getPlanetDirection() : null;
+		Map<Planet, PlanetStatus> planetStatus = planetaryInfo != null ? PlanetLabels.statuses(planetaryInfo) : Collections.emptyMap();
+		EnumMap<Planet, NakshathraPada> nakMap = planetaryInfo != null ? planetaryInfo.getPlanetNakshathra() : null;
+		EnumMap<Planet, Karaka> planetKaraka = planetaryInfo != null ? planetaryInfo.getPlanetKaraka() : null;
 
 		List<MapTableRow> rows = new ArrayList<MapTableRow>();
 		Map<String, String> tooltips = new HashMap<String, String>();
@@ -323,7 +384,7 @@ public class RelativePlanetView extends JPanel {
 		for (Planet p : sortedPlanets) {
 			MapTableRow row = new MapTableRow();
 			boolean isRetro = planetDir != null && planetDir.containsKey(p) && Boolean.TRUE.equals(planetDir.get(p));
-			boolean isCombust = planetaryInfo.getPlanetCombustion() != null
+			boolean isCombust = planetaryInfo != null && planetaryInfo.getPlanetCombustion() != null
 					&& planetaryInfo.getPlanetCombustion().containsKey(p)
 					&& Boolean.TRUE.equals(planetaryInfo.getPlanetCombustion().get(p));
 
@@ -337,6 +398,11 @@ public class RelativePlanetView extends JPanel {
 			Rasi r = (planetRasi != null) ? planetRasi.get(p) : null;
 			if (r != null) {
 				dms += " (" + r.toString() + ")";
+			}
+			Karaka k = (planetKaraka != null) ? planetKaraka.get(p) : null;
+			String kAbbr = getKarakaAbbr(k);
+			if (kAbbr != null && !kAbbr.isEmpty() && !"—".equals(kAbbr)) {
+				dms += "  " + kAbbr;
 			}
 			row.addColumn(AstrosoftTableColumn.Longitude, dms);
 			rows.add(row);
@@ -376,6 +442,11 @@ public class RelativePlanetView extends JPanel {
 				pt.append("Star Lord: ").append(starLord.name()).append("\n");
 			}
 
+			if (k != null) {
+				tt.append("<b>Jaimini Chara Karaka:</b> ").append(getKarakaSignification(k)).append("<br>");
+				pt.append("Jaimini Chara Karaka: ").append(getKarakaSignificationPlain(k)).append("\n");
+			}
+
 			List<String> states = new ArrayList<String>();
 			if (isRetro) states.add("Retrograde (Vakra)");
 			if (isCombust) states.add("Combust (Asta)");
@@ -399,167 +470,157 @@ public class RelativePlanetView extends JPanel {
 			copyTexts.put(name, pt.toString().trim());
 		}
 
-		return buildSplitTablePanel(rows, AstrosoftTableColumn.Longitude, 120, 117, tooltips, copyTexts);
+		JPanel tablePanel = buildSplitTablePanel(rows, AstrosoftTableColumn.Longitude, 105, 132, tooltips, copyTexts);
+
+		JPanel contentPanel = new JPanel(new BorderLayout(0, 2));
+		contentPanel.setOpaque(false);
+		contentPanel.add(tablePanel, BorderLayout.NORTH);
+		contentPanel.add(createFunctionalNaturePanel(ascRasi), BorderLayout.CENTER);
+
+		return contentPanel;
 	}
 
-	// -------------------------------------------------------------------------
-	// Tab 2: Roles & Karakas (Bhava, Raman Nature & Jaimini Chara Karaka)
-	// -------------------------------------------------------------------------
-	private JPanel createRolesAndKarakasPanel(PlanetaryInfo planetaryInfo, List<Planet> sortedPlanets,
-			EnumMap<Planet, Rasi> planetRasi, Rasi ascRasi, EnumMap<Planet, Double> planetPos) {
-		EnumMap<Planet, Karaka> planetKaraka = planetaryInfo.getPlanetKaraka();
-		List<MapTableRow> rows = new ArrayList<MapTableRow>();
-		Map<String, String> tooltips = new HashMap<String, String>();
-		Map<String, String> copyTexts = new HashMap<String, String>();
+	private JPanel createFunctionalNaturePanel(Rasi ascRasi) {
+		JPanel naturePanel = new JPanel();
+		naturePanel.setLayout(new BoxLayout(naturePanel, BoxLayout.Y_AXIS));
+		naturePanel.setOpaque(false);
 
-		for (Planet p : sortedPlanets) {
-			MapTableRow row = new MapTableRow();
-			row.addColumn(AstrosoftTableColumn.Planet, p.name());
-
-			String roleDesc;
-			if (p.isAsc()) {
-				roleDesc = "<html>1st House (Lagna)</html>";
-			} else {
-				Rasi r = (planetRasi != null) ? planetRasi.get(p) : null;
-				int bhava = (r != null && ascRasi != null) ? r.bhava(ascRasi) : 1;
-				String roleTag = formatPlanetFunctionalRoleTag(ascRasi, p);
-				Karaka k = (planetKaraka != null) ? planetKaraka.get(p) : null;
-				String kAbbr = getKarakaAbbr(k);
-
-				StringBuilder sb = new StringBuilder("<html>House ").append(bhava);
-				if (roleTag != null) {
-					sb.append("&nbsp;&nbsp;").append(roleTag);
-				}
-				if (!"—".equals(kAbbr)) {
-					sb.append("&nbsp;&nbsp;<font color=\"#1a365d\"><b>").append(kAbbr).append("</b></font>");
-				}
-				sb.append("</html>");
-				roleDesc = sb.toString();
+		// Horizontal Divider
+		JSeparator sep = new JSeparator() {
+			@Override
+			protected void paintComponent(Graphics g) {
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setColor(new Color(216, 210, 194));
+				g2.drawLine(0, getHeight() / 2, getWidth(), getHeight() / 2);
+				g2.dispose();
 			}
-			row.addColumn(AstrosoftTableColumn.Bhava, roleDesc);
-			rows.add(row);
+		};
+		sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 4));
+		sep.setPreferredSize(new Dimension(100, 4));
+		naturePanel.add(Box.createVerticalStrut(3));
+		naturePanel.add(sep);
+		naturePanel.add(Box.createVerticalStrut(4));
 
-			// Build rich HTML tooltip & plain text summary for Roles & Karakas (Layout 1)
-			StringBuilder tt = new StringBuilder("<html><div style='padding: 2px 4px;'>");
-			StringBuilder pt = new StringBuilder();
+		// Left Column: Kendra & Trikona Lords + Yogakaraka
+		List<Planet> kendraLords = getKendraLords(ascRasi);
+		List<Planet> trikonaLords = getTrikonaLords(ascRasi);
+		Planet yogakaraka = PlanetCharacter.getYogakaraka(ascRasi);
 
-			if (p.isAsc()) {
-				tt.append("<b style='color: #1a365d;'>Ascendant</b> &mdash; <b>1st House (Lagna / Tanu Bhava)</b><br>");
-				pt.append("Ascendant — 1st House (Lagna / Tanu Bhava)\n");
-				if (ascRasi != null) {
-					tt.append("<span style='color: #4a5568;'>Sign: ").append(ascRasi.name())
-					  .append(" (").append(ascRasi.toString()).append(")</span>");
-					pt.append("Sign: ").append(ascRasi.name()).append(" (").append(ascRasi.toString()).append(")\n");
-				}
-				tt.append("<hr style='border: 0; border-top: 1px solid #cbd5e0; margin: 3px 0;'>");
-				tt.append("Represents physical constitution, vitality, character, and foundational self.");
-				pt.append("Represents physical constitution, vitality, character, and foundational self.");
-			} else {
-				String lordText = getLordshipText(ascRasi, p);
-				String roleName = getFunctionalRoleName(ascRasi, p);
-				String roleColor = getFunctionalRoleColor(ascRasi, p);
+		String kendraStr = formatPlanetListNames(kendraLords);
+		String trikonaStr = formatPlanetListNames(trikonaLords);
+		String yogaStr = yogakaraka != null ? yogakaraka.name() : "None";
 
-				// Line 1: Identity, Lordship & Functional Nature
-				tt.append("<b style='color: #1a365d;'>").append(p.name()).append("</b>");
-				pt.append(p.name());
-				if (lordText != null) {
-					tt.append(" &bull; ").append(lordText);
-					pt.append(" • ").append(lordText);
-				}
-				if (roleName != null) {
-					tt.append(" (<span style='color: ").append(roleColor).append("; font-weight: bold;'>").append(roleName).append("</span>)");
-					pt.append(" (").append(roleName).append(")");
-				}
-				tt.append("<br>");
-				pt.append("\n");
+		Font lineFont = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
 
-				// Line 2: Placement & Sign Relationship
-				Rasi r = (planetRasi != null) ? planetRasi.get(p) : null;
-				int bhava = (r != null && ascRasi != null) ? r.bhava(ascRasi) : 1;
-				tt.append("<span style='color: #4a5568;'>Occupies <b>House ").append(bhava).append("</b>");
-				pt.append("Occupies House ").append(bhava);
-				if (r != null) {
-					tt.append(", <b>").append(r.toString()).append("</b>");
-					pt.append(", ").append(r.toString());
-					SignRelationship rel = PlanetStatusCalculator.signRelationship(p, r);
-					if (rel != null) {
-						tt.append(" (").append(rel.label()).append(" sign)");
-						pt.append(" (").append(rel.label()).append(" sign)");
-					}
-				}
-				tt.append("</span>");
-				tt.append("<hr style='border: 0; border-top: 1px solid #cbd5e0; margin: 3px 0;'>");
-				pt.append("\n");
+		JLabel kendraLabel = new JLabel("<html><font color='#1a365d'><b>Kendra (1,4,7,10):</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + kendraStr + "</font></html>");
+		kendraLabel.setFont(lineFont);
+		kendraLabel.setToolTipText("<html><b>Kendra Lords (Houses 1, 4, 7, 10)</b><br/>Vishnusthanas &mdash; Pillars of strength, worldly activity, and sustained support.</html>");
 
-				// Line 3: Jaimini Chara Karaka
-				Karaka k = (planetKaraka != null) ? planetKaraka.get(p) : null;
-				String kPlain = getKarakaSignificationPlain(k);
-				if (kPlain != null) {
-					Double deg = (planetPos != null && planetPos.containsKey(p)) ? (planetPos.get(p) % 30.0) : null;
-					String degHtml = (deg != null) ? (" (" + AstroUtil.twoDigit((int) (double) deg) + "&deg; in sign)") : "";
-					String degPlain = (deg != null) ? (" (" + AstroUtil.twoDigit((int) (double) deg) + "° in sign)") : "";
-					tt.append("<b>Jaimini Chara Karaka:</b> ").append(getKarakaSignification(k)).append(degHtml);
-					pt.append("Jaimini Chara Karaka: ").append(kPlain).append(degPlain);
-				} else if (p.isNode()) {
-					tt.append("<b>Jaimini Chara Karaka:</b> Excluded (Classical 7-Karaka scheme)");
-					pt.append("Jaimini Chara Karaka: Excluded (Classical 7-Karaka scheme)");
-				}
+		JLabel trikonaLabel = new JLabel("<html><font color='#5b21b6'><b>Trikona (1,5,9):</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + trikonaStr + "</font></html>");
+		trikonaLabel.setFont(lineFont);
+		trikonaLabel.setToolTipText("<html><b>Trikona Lords (Houses 1, 5, 9)</b><br/>Lakshmisthanas &mdash; Houses of dharma, fortune, purvapunya, and divine grace.</html>");
+
+		JLabel yogaLabel = new JLabel("<html><font color='#b45309'><b>Yogakaraka:</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + yogaStr + "</font></html>");
+		yogaLabel.setFont(lineFont);
+		yogaLabel.setToolTipText("<html><b>Yogakaraka</b><br/>Single planet simultaneously ruling a Kendra and a Trikona &mdash; confers supreme auspiciousness and Raja Yoga (B.V. Raman).</html>");
+
+		JPanel leftLines = new JPanel(new GridLayout(3, 1, 0, 2));
+		leftLines.setOpaque(false);
+		leftLines.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 2, 6));
+		leftLines.add(kendraLabel);
+		leftLines.add(trikonaLabel);
+		leftLines.add(yogaLabel);
+
+		// Right Column: Functional Nature (Benefics, Neutrals, Malefics)
+		Set<Planet> benefics = PlanetCharacter.getFunctionalBenefics(ascRasi);
+		Set<Planet> neutrals = PlanetCharacter.getFunctionalNeutrals(ascRasi);
+		Set<Planet> malefics = PlanetCharacter.getFunctionalMalefics(ascRasi);
+
+		String bStr = formatPlanetListNames(benefics);
+		String nStr = formatPlanetListNames(neutrals);
+		String mStr = formatPlanetListNames(malefics);
+
+		JLabel bLabel = new JLabel("<html><font color='#1b5e20'><b>Functional Benefics:</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + bStr + "</font></html>");
+		bLabel.setFont(lineFont);
+		bLabel.setToolTipText("<html><b>Functional Benefics</b><br/>Planets producing auspicious results for this Lagna based on house rulerships (Parasara / B.V. Raman).</html>");
+
+		JLabel nLabel = new JLabel("<html><font color='#4a5568'><b>Functional Neutrals:</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + nStr + "</font></html>");
+		nLabel.setFont(lineFont);
+		nLabel.setToolTipText("<html><b>Functional Neutrals</b><br/>Planets having neutral, mixed, or conditional functional influence for this Lagna.</html>");
+
+		JLabel mLabel = new JLabel("<html><font color='#b71c1c'><b>Functional Malefics:</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + mStr + "</font></html>");
+		mLabel.setFont(lineFont);
+		mLabel.setToolTipText("<html><b>Functional Malefics</b><br/>Planets producing adverse results for this Lagna due to trik (6, 8, 12) or adverse rulership.</html>");
+
+		JPanel rightLines = new JPanel(new GridLayout(3, 1, 0, 2));
+		rightLines.setOpaque(false);
+		rightLines.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 2, 2));
+		rightLines.add(bLabel);
+		rightLines.add(nLabel);
+		rightLines.add(mLabel);
+
+		// 2-Column layout with centered vertical divider
+		JPanel cols = new JPanel(new GridLayout(1, 2, 16, 0)) {
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setColor(new Color(216, 210, 194));
+				int midX = getWidth() / 2;
+				g2.drawLine(midX, 2, midX, getHeight() - 2);
+				g2.dispose();
 			}
-			tt.append("</div></html>");
-			tooltips.put(p.name(), tt.toString());
-			copyTexts.put(p.name(), pt.toString());
-		}
+		};
+		cols.setOpaque(false);
+		cols.setAlignmentX(Component.LEFT_ALIGNMENT);
+		cols.add(leftLines);
+		cols.add(rightLines);
 
-		return buildSplitTablePanel(rows, AstrosoftTableColumn.Bhava, 80, 155, tooltips, copyTexts);
+		naturePanel.add(cols);
+
+		return naturePanel;
 	}
 
-	private static String ordinal(int n) {
-		switch (n) {
-			case 1: return "1st";
-			case 2: return "2nd";
-			case 3: return "3rd";
-			default: return n + "th";
+	private static List<Planet> getKendraLords(Rasi ascRasi) {
+		if (ascRasi == null) {
+			return Collections.emptyList();
 		}
+		Set<Planet> lords = new LinkedHashSet<Planet>();
+		int[] kendras = {1, 4, 7, 10};
+		for (int h : kendras) {
+			lords.add(Rasi.values()[(ascRasi.ordinal() + h - 1) % 12].lord());
+		}
+		List<Planet> list = new ArrayList<Planet>(lords);
+		Collections.sort(list);
+		return list;
 	}
 
-	private static String getLordshipText(Rasi ascRasi, Planet p) {
-		if (p == null || p.isAsc() || p.isNode() || ascRasi == null) {
-			return null;
+	private static List<Planet> getTrikonaLords(Rasi ascRasi) {
+		if (ascRasi == null) {
+			return Collections.emptyList();
 		}
-		List<Integer> bhavas = new ArrayList<>();
-		for (Rasi r : Rasi.values()) {
-			if (p.isOwnerOf(r)) {
-				bhavas.add(r.bhava(ascRasi));
-			}
+		Set<Planet> lords = new LinkedHashSet<Planet>();
+		int[] trikonas = {1, 5, 9};
+		for (int h : trikonas) {
+			lords.add(Rasi.values()[(ascRasi.ordinal() + h - 1) % 12].lord());
 		}
-		Collections.sort(bhavas);
-		if (bhavas.isEmpty()) {
-			return null;
-		}
-		if (bhavas.size() == 1) {
-			return "Lord of " + ordinal(bhavas.get(0));
-		}
-		return "Lord of " + ordinal(bhavas.get(0)) + " & " + ordinal(bhavas.get(1));
+		List<Planet> list = new ArrayList<Planet>(lords);
+		Collections.sort(list);
+		return list;
 	}
 
-	private static String getFunctionalRoleName(Rasi ascendant, Planet p) {
-		if (p == null || p.isAsc() || ascendant == null) return null;
-		if (PlanetCharacter.isYogakaraka(ascendant, p)) return "Yogakaraka";
-		if (PlanetCharacter.isFunctionalBenefic(ascendant, p)) return "Functional Benefic";
-		if (PlanetCharacter.isFunctionalMalefic(ascendant, p)) return "Functional Malefic";
-		if (PlanetCharacter.isFunctionalNeutral(ascendant, p)) return "Functional Neutral";
-		return null;
-	}
-
-	private static String getFunctionalRoleColor(Rasi ascendant, Planet p) {
-		if (p == null || p.isAsc() || ascendant == null) return "#4a5568";
-		if (PlanetCharacter.isYogakaraka(ascendant, p) || PlanetCharacter.isFunctionalBenefic(ascendant, p)) {
-			return "#008000";
+	private static String formatPlanetListNames(Collection<Planet> planets) {
+		if (planets == null || planets.isEmpty()) {
+			return "None";
 		}
-		if (PlanetCharacter.isFunctionalMalefic(ascendant, p)) {
-			return "#cc0000";
+		List<Planet> list = new ArrayList<Planet>(planets);
+		Collections.sort(list);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < list.size(); i++) {
+			if (i > 0) sb.append(", ");
+			sb.append(list.get(i).name());
 		}
-		return "#666666";
+		return sb.toString();
 	}
 
 	private static String getKarakaAbbr(Karaka k) {
@@ -781,16 +842,6 @@ public class RelativePlanetView extends JPanel {
 	// Split 2-Column Table Panel Helper
 	// -------------------------------------------------------------------------
 	private JPanel buildSplitTablePanel(List<MapTableRow> rows, AstrosoftTableColumn valueColumn,
-			int col0Width, int col1Width) {
-		return buildSplitTablePanel(rows, valueColumn, col0Width, col1Width, null, null);
-	}
-
-	private JPanel buildSplitTablePanel(List<MapTableRow> rows, AstrosoftTableColumn valueColumn,
-			int col0Width, int col1Width, final Map<String, String> tooltips) {
-		return buildSplitTablePanel(rows, valueColumn, col0Width, col1Width, tooltips, null);
-	}
-
-	private JPanel buildSplitTablePanel(List<MapTableRow> rows, AstrosoftTableColumn valueColumn,
 			int col0Width, int col1Width, final Map<String, String> tooltips, final Map<String, String> copyTexts) {
 		JPanel panel = new JPanel(new GridLayout(1, 2, 16, 0));
 		panel.setOpaque(false);
@@ -907,7 +958,7 @@ public class RelativePlanetView extends JPanel {
 	// Subtle Rounded Pill Tabs Header Component
 	// -------------------------------------------------------------------------
 	private class PillTabBar extends JPanel {
-		private final String[] tabs = {"Positions", "Roles & Karakas", "Shadbala"};
+		private final String[] tabs = {"Overview", "Shadbala"};
 		private int selectedTab = 0;
 		private final Consumer<Integer> onTabSelected;
 		private final List<JButton> buttons = new ArrayList<JButton>();
@@ -1003,39 +1054,6 @@ public class RelativePlanetView extends JPanel {
 					onTabSelected.accept(idx);
 				}
 			}
-		}
-	}
-
-	private static String formatPlanetFunctionalRoleTag(Rasi ascendant, Planet p) {
-		if (p == null || p.isAsc() || ascendant == null) {
-			return null;
-		}
-		if (PlanetCharacter.isYogakaraka(ascendant, p)) {
-			return "<font color=\"green\"><b>[Yog]</b></font>";
-		} else if (PlanetCharacter.isFunctionalBenefic(ascendant, p)) {
-			return "<font color=\"green\"><b>[Ben]</b></font>";
-		} else if (PlanetCharacter.isFunctionalMalefic(ascendant, p)) {
-			return "<font color=\"red\"><b>[Mal]</b></font>";
-		} else if (PlanetCharacter.isFunctionalNeutral(ascendant, p)) {
-			return "<font color=\"#888888\">[Neu]</font>";
-		}
-		return null;
-	}
-
-	private static String formatPlanetShort(Planet p) {
-		if (p == null) return "";
-		switch (p) {
-			case Sun: return "Sun";
-			case Moon: return "Moon";
-			case Mars: return "Mars";
-			case Mercury: return "Mer";
-			case Jupiter: return "Jup";
-			case Venus: return "Ven";
-			case Saturn: return "Sat";
-			case Rahu: return "Rah";
-			case Ketu: return "Ket";
-			case Ascendant: return "Asc";
-			default: return p.name().substring(0, Math.min(3, p.name().length()));
 		}
 	}
 

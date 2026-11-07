@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Window;
+import java.util.EnumMap;
 import java.util.function.Consumer;
 
 import javax.swing.Box;
@@ -17,9 +18,15 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
+import app.astrosoft.core.Ashtavarga;
+import app.astrosoft.core.Horoscope;
+import app.astrosoft.core.ShadBala;
 import app.astrosoft.ui.comp.ChevronToggleButton;
+import app.astrosoft.ui.dlg.AshtavargaDialog;
 import app.astrosoft.ui.dlg.HouseDetailsDialog;
+import app.astrosoft.ui.dlg.PlanetDetailsDialog;
 import app.astrosoft.ui.util.UIConsts;
 
 /**
@@ -54,26 +61,47 @@ public class HoroscopeDashboard extends JPanel {
 	private final JPanel rightWrapper = new JPanel(new BorderLayout());
 	private final JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
 	private final ChevronToggleButton toggleButton = new ChevronToggleButton();
-	private final JCheckBox positionsCheck = checkBox("Planet Details", true);
+	private final JCheckBox positionsCheck = checkBox("Planet Details", false);
 	private final JCheckBox shadbalaCheck = checkBox("Shadbala", false);
 	private final JCheckBox ashtavargaCheck = checkBox("AshtaVarga", false);
 	private final JCheckBox houseDetailsCheck = checkBox("House Details", false);
 
 	private HouseDetailsDialog houseDetailsDialog;
+	private PlanetDetailsDialog planetDetailsDialog;
+	private AshtavargaDialog ashtavargaDialog;
 	private PlanetaryInfo planetaryInfo;
 	private Rasi ascendant;
+	private ShadBala shadBala;
+	private Ashtavarga ashtavarga;
+	private Rasi moonRasi;
+	private EnumMap<Planet, Rasi> planetRasis;
+	private Horoscope horoscope;
 
 	private boolean collapsed;
 
 	public HoroscopeDashboard(JComponent infoView, JComponent positionsView, JComponent shadbalaView,
 			JComponent chartsPanel, JComponent ashtavargaPanel, boolean collapsed,
 			Consumer<Boolean> collapseListener) {
-		this(infoView, positionsView, shadbalaView, chartsPanel, ashtavargaPanel, collapsed, collapseListener, null, null);
+		this(infoView, positionsView, shadbalaView, chartsPanel, ashtavargaPanel, collapsed, collapseListener, null, null, null);
 	}
 
 	public HoroscopeDashboard(JComponent infoView, JComponent positionsView, JComponent shadbalaView,
 			JComponent chartsPanel, JComponent ashtavargaPanel, boolean collapsed,
 			Consumer<Boolean> collapseListener, PlanetaryInfo planetaryInfo, Rasi ascendant) {
+		this(infoView, positionsView, shadbalaView, chartsPanel, ashtavargaPanel, collapsed, collapseListener, planetaryInfo, ascendant, null);
+	}
+
+	public HoroscopeDashboard(JComponent infoView, JComponent positionsView, JComponent shadbalaView,
+			JComponent chartsPanel, JComponent ashtavargaPanel, boolean collapsed,
+			Consumer<Boolean> collapseListener, PlanetaryInfo planetaryInfo, Rasi ascendant, ShadBala shadBala) {
+		this(infoView, positionsView, shadbalaView, chartsPanel, ashtavargaPanel, collapsed, collapseListener,
+				planetaryInfo, ascendant, shadBala, null, null, null, null);
+	}
+
+	public HoroscopeDashboard(JComponent infoView, JComponent positionsView, JComponent shadbalaView,
+			JComponent chartsPanel, JComponent ashtavargaPanel, boolean collapsed,
+			Consumer<Boolean> collapseListener, PlanetaryInfo planetaryInfo, Rasi ascendant, ShadBala shadBala,
+			Ashtavarga ashtavarga, Rasi moonRasi, EnumMap<Planet, Rasi> planetRasis, Horoscope horoscope) {
 		super(new BorderLayout(COLUMN_GAP, 0));
 		this.infoView = infoView;
 		this.positionsView = positionsView;
@@ -84,6 +112,17 @@ public class HoroscopeDashboard extends JPanel {
 		this.collapsed = collapsed;
 		this.planetaryInfo = planetaryInfo;
 		this.ascendant = ascendant;
+		this.shadBala = shadBala;
+		this.ashtavarga = ashtavarga;
+		this.moonRasi = moonRasi;
+		this.planetRasis = planetRasis;
+		this.horoscope = horoscope;
+
+		if (planetaryInfo == null) {
+			positionsCheck.setSelected(true);
+		} else {
+			positionsCheck.setSelected(false);
+		}
 
 		setOpaque(false);
 		for (JComponent c : new JComponent[] { infoView, positionsView, shadbalaView, chartsPanel, ashtavargaPanel }) {
@@ -118,9 +157,9 @@ public class HoroscopeDashboard extends JPanel {
 		controlsPanel.add(ashtavargaCheck);
 		controlsPanel.add(houseDetailsCheck);
 
-		positionsCheck.addActionListener(e -> relayout());
+		positionsCheck.addActionListener(e -> togglePlanetDetailsDialog());
 		shadbalaCheck.addActionListener(e -> relayout());
-		ashtavargaCheck.addActionListener(e -> relayout());
+		ashtavargaCheck.addActionListener(e -> toggleAshtavargaDialog());
 		houseDetailsCheck.addActionListener(e -> toggleHouseDetailsDialog());
 
 		relayout();
@@ -164,6 +203,76 @@ public class HoroscopeDashboard extends JPanel {
 		return houseDetailsDialog;
 	}
 
+	public PlanetDetailsDialog getPlanetDetailsDialog() {
+		return planetDetailsDialog;
+	}
+
+	public AshtavargaDialog getAshtavargaDialog() {
+		return ashtavargaDialog;
+	}
+
+	private void togglePlanetDetailsDialog() {
+		if (planetaryInfo != null) {
+			if (positionsCheck.isSelected()) {
+				if (planetDetailsDialog == null || !planetDetailsDialog.isDisplayable()) {
+					Window owner = SwingUtilities.getWindowAncestor(this);
+					planetDetailsDialog = new PlanetDetailsDialog(owner, planetaryInfo, ascendant, shadBala, () -> {
+						positionsCheck.setSelected(false);
+					});
+				}
+				planetDetailsDialog.setVisible(true);
+				planetDetailsDialog.toFront();
+			} else {
+				if (planetDetailsDialog != null) {
+					planetDetailsDialog.dispose();
+					planetDetailsDialog = null;
+				}
+			}
+		} else {
+			relayout();
+		}
+	}
+
+	private void toggleAshtavargaDialog() {
+		if (ashtavarga != null || horoscope != null) {
+			if (ashtavargaCheck.isSelected()) {
+				if (ashtavargaDialog == null || !ashtavargaDialog.isDisplayable()) {
+					Window owner = SwingUtilities.getWindowAncestor(this);
+					ashtavargaDialog = new AshtavargaDialog(owner, ashtavarga, ascendant, moonRasi, planetRasis, () -> {
+						ashtavargaCheck.setSelected(false);
+					});
+				}
+				ashtavargaDialog.setVisible(true);
+				ashtavargaDialog.toFront();
+			} else {
+				if (ashtavargaDialog != null) {
+					ashtavargaDialog.dispose();
+					ashtavargaDialog = null;
+				}
+			}
+		} else {
+			relayout();
+		}
+	}
+
+	public void setPlanetDetailsData(PlanetaryInfo planetaryInfo, Rasi ascendant, ShadBala shadBala) {
+		this.planetaryInfo = planetaryInfo;
+		this.ascendant = ascendant;
+		this.shadBala = shadBala;
+		if (planetDetailsDialog != null && planetDetailsDialog.isDisplayable()) {
+			boolean wasVisible = planetDetailsDialog.isVisible();
+			Window owner = planetDetailsDialog.getOwner();
+			planetDetailsDialog.dispose();
+			planetDetailsDialog = null;
+			if (wasVisible) {
+				planetDetailsDialog = new PlanetDetailsDialog(owner, planetaryInfo, ascendant, shadBala, () -> {
+					positionsCheck.setSelected(false);
+				});
+				planetDetailsDialog.setVisible(true);
+			}
+		}
+	}
+
 	private void toggleHouseDetailsDialog() {
 		if (houseDetailsCheck.isSelected()) {
 			if (houseDetailsDialog == null || !houseDetailsDialog.isDisplayable()) {
@@ -176,9 +285,28 @@ public class HoroscopeDashboard extends JPanel {
 			houseDetailsDialog.toFront();
 		} else {
 			if (houseDetailsDialog != null) {
-				houseDetailsDialog.setVisible(false);
+				houseDetailsDialog.dispose();
+				houseDetailsDialog = null;
 			}
 		}
+	}
+
+	public void disposeFloatingDialogs() {
+		if (planetDetailsDialog != null) {
+			planetDetailsDialog.dispose();
+			planetDetailsDialog = null;
+		}
+		if (houseDetailsDialog != null) {
+			houseDetailsDialog.dispose();
+			houseDetailsDialog = null;
+		}
+		if (ashtavargaDialog != null) {
+			ashtavargaDialog.dispose();
+			ashtavargaDialog = null;
+		}
+		positionsCheck.setSelected(false);
+		houseDetailsCheck.setSelected(false);
+		ashtavargaCheck.setSelected(false);
 	}
 
 	public void setHouseDetailsData(PlanetaryInfo planetaryInfo, Rasi ascendant) {
@@ -197,10 +325,29 @@ public class HoroscopeDashboard extends JPanel {
 		}
 	}
 
+	public void setAshtavargaData(Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi, EnumMap<Planet, Rasi> planetRasis) {
+		this.ashtavarga = ashtavarga;
+		this.ascendant = ascendant;
+		this.moonRasi = moonRasi;
+		this.planetRasis = planetRasis;
+		if (ashtavargaDialog != null && ashtavargaDialog.isDisplayable()) {
+			boolean wasVisible = ashtavargaDialog.isVisible();
+			Window owner = ashtavargaDialog.getOwner();
+			ashtavargaDialog.dispose();
+			ashtavargaDialog = null;
+			if (wasVisible) {
+				ashtavargaDialog = new AshtavargaDialog(owner, ashtavarga, ascendant, moonRasi, planetRasis, () -> {
+					ashtavargaCheck.setSelected(false);
+				});
+				ashtavargaDialog.setVisible(true);
+			}
+		}
+	}
+
 	private void relayout() {
 		boolean showPositions = positionsCheck.isSelected();
 		boolean showShadbala = shadbalaCheck.isSelected();
-		boolean showAshtavarga = ashtavargaCheck.isSelected();
+		boolean showAshtavarga = ashtavargaCheck.isSelected() && ashtavarga == null && horoscope == null;
 
 		leftPanel.removeAll();
 		rightContainer.removeAll();
@@ -215,7 +362,7 @@ public class HoroscopeDashboard extends JPanel {
 			leftPanel.add(themeSeparator());
 			leftPanel.add(Box.createVerticalStrut(9));
 			leftPanel.add(controlsPanel);
-			if (showPositions) {
+			if (showPositions && planetaryInfo == null) {
 				leftPanel.add(Box.createVerticalStrut(9));
 				leftPanel.add(themeSeparator());
 				leftPanel.add(Box.createVerticalStrut(12));
@@ -251,7 +398,7 @@ public class HoroscopeDashboard extends JPanel {
 				rightContainer.add(Box.createVerticalStrut(20));
 				rightContainer.add(shadbalaView);
 			}
-			if (showPositions) {
+			if (showPositions && planetaryInfo == null) {
 				rightContainer.add(Box.createVerticalStrut(showShadbala ? 12 : 20));
 				rightContainer.add(positionsView);
 			}

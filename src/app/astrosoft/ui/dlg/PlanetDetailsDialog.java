@@ -1,0 +1,135 @@
+/**
+ * PlanetDetailsDialog.java
+ *
+ * Floating, modeless, resizable dialog for Planet Details (Positions with
+ * Jaimini Karakas, and Shadbala strength bars).
+ */
+package app.astrosoft.ui.dlg;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import javax.swing.BorderFactory;
+import javax.swing.JDialog;
+
+import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.consts.Rasi;
+import app.astrosoft.core.Horoscope;
+import app.astrosoft.core.ShadBala;
+import app.astrosoft.ui.AstroSoft;
+import app.astrosoft.ui.util.UIConsts;
+import app.astrosoft.ui.view.RelativePlanetView;
+
+public class PlanetDetailsDialog extends JDialog {
+
+	private static final Dimension DEFAULT_SIZE = new Dimension(570, 290);
+	private static final Dimension MIN_SIZE = new Dimension(480, 230);
+
+	private static PlanetDetailsDialog activeDialog;
+
+	private final RelativePlanetView planetView;
+	private Runnable onCloseCallback;
+
+	public static PlanetDetailsDialog getActiveDialog() {
+		return activeDialog;
+	}
+
+	public static void closeActiveDialog() {
+		if (activeDialog != null) {
+			PlanetDetailsDialog dlg = activeDialog;
+			activeDialog = null;
+			dlg.dispose();
+		}
+	}
+
+	public static PlanetDetailsDialog showDialog(Window owner, Horoscope horoscope, Runnable onClose) {
+		PlanetDetailsDialog dlg = new PlanetDetailsDialog(owner, horoscope, onClose);
+		dlg.setVisible(true);
+		return dlg;
+	}
+
+	public static PlanetDetailsDialog showDialog(Window owner, PlanetaryInfo planetaryInfo, Rasi ascendant,
+			ShadBala shadBala, Runnable onClose) {
+		PlanetDetailsDialog dlg = new PlanetDetailsDialog(owner, planetaryInfo, ascendant, shadBala, onClose);
+		dlg.setVisible(true);
+		return dlg;
+	}
+
+	public PlanetDetailsDialog(Window owner, Horoscope horoscope, Runnable onClose) {
+		this(owner, horoscope != null ? horoscope.getPlanetaryInfo() : null,
+				horoscope != null ? horoscope.getAscendant() : null,
+				horoscope != null ? horoscope.getShadBala() : null, onClose);
+	}
+
+	public PlanetDetailsDialog(Window owner, PlanetaryInfo planetaryInfo, Rasi ascendant, ShadBala shadBala, Runnable onClose) {
+		super(owner != null ? owner : AstroSoft.getInstance(), "Planet Details - Overview & Shadbala", ModalityType.MODELESS);
+		this.onCloseCallback = onClose;
+
+		if (activeDialog != null && activeDialog != this) {
+			activeDialog.dispose();
+		}
+		activeDialog = this;
+
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setResizable(true);
+
+		planetView = new RelativePlanetView(planetaryInfo, ascendant, shadBala);
+		planetView.setPopoutVisible(false);
+		planetView.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+
+		getContentPane().setLayout(new BorderLayout());
+		getContentPane().setBackground(UIConsts.CANVAS_BACKGROUND);
+		getContentPane().add(planetView, BorderLayout.CENTER);
+
+		setPreferredSize(DEFAULT_SIZE);
+		setMinimumSize(MIN_SIZE);
+		pack();
+
+		if (owner != null) {
+			setLocationRelativeTo(owner);
+		} else {
+			Dimension screen = AstroSoft.getScreenSize();
+			setLocation((screen.width - getWidth()) / 2, (screen.height - getHeight()) / 2);
+		}
+
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				if (activeDialog == PlanetDetailsDialog.this) {
+					activeDialog = null;
+				}
+				if (onCloseCallback != null) {
+					onCloseCallback.run();
+				}
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				if (activeDialog == PlanetDetailsDialog.this) {
+					activeDialog = null;
+				}
+				if (onCloseCallback != null) {
+					onCloseCallback.run();
+				}
+			}
+		});
+	}
+
+	@Override
+	public void dispose() {
+		if (activeDialog == this) {
+			activeDialog = null;
+		}
+		super.dispose();
+	}
+
+	public void setOnCloseCallback(Runnable onCloseCallback) {
+		this.onCloseCallback = onCloseCallback;
+	}
+
+	public RelativePlanetView getPlanetView() {
+		return planetView;
+	}
+}

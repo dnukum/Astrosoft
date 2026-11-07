@@ -10,8 +10,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JTable;
-
 import org.junit.Test;
 
 import app.astrosoft.beans.PlanetaryInfo;
@@ -35,7 +33,7 @@ public class RelativePlanetViewTooltipTest {
 	}
 
 	@Test
-	public void testRolesAndKarakasTooltipLayout1() {
+	public void testPositionsTooltipContainsNakshatraAndJaiminiKaraka() {
 		Horoscope h = SampleHoroscopes.getMyHoroscope();
 		assertNotNull(h);
 		PlanetaryInfo pi = h.getPlanetaryInfo();
@@ -44,17 +42,13 @@ public class RelativePlanetViewTooltipTest {
 		RelativePlanetView view = new RelativePlanetView(pi, h);
 		assertNotNull(view);
 
-		// Switch to Roles & Karakas tab (index 1)
-		view.switchToTab(1);
-
 		List<AstrosoftTable> tables = findTables(view);
 		assertTrue("At least two tables found in view", tables.size() >= 2);
 
-		// Check tooltips for planets in Roles & Karakas tab (where column 1 is Bhava)
 		boolean foundAnyPlanetWithTooltip = false;
 		for (AstrosoftTable t : tables) {
 			if (t.getColumnModel().getColumnCount() > 1 &&
-				"Bhava".equals(t.getColumnModel().getColumn(1).getHeaderValue().toString())) {
+				"Longitude".equals(t.getColumnModel().getColumn(1).getHeaderValue().toString())) {
 				for (int row = 0; row < t.getRowCount(); row++) {
 					Point pt = t.getCellRect(row, 0, true).getLocation();
 					MouseEvent me = new MouseEvent(t, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 0, pt.x + 5, pt.y + 5, 0, false);
@@ -63,11 +57,12 @@ public class RelativePlanetViewTooltipTest {
 						foundAnyPlanetWithTooltip = true;
 						Object pVal = t.getValueAt(row, 0);
 						String pName = (pVal != null) ? pVal.toString() : "";
+						// Tooltips should contain Nakshatra, Pada, Star Lord
+						assertTrue("Tooltip for " + pName + " should contain Nakshatra: " + tt, tt.contains("Nakshatra"));
+						assertTrue("Tooltip for " + pName + " should contain Pada: " + tt, tt.contains("Pada"));
+						assertTrue("Tooltip for " + pName + " should contain Star Lord: " + tt, tt.contains("Star Lord"));
 						if (!"Ascendant".equals(pName) && !"Rahu".equals(pName) && !"Ketu".equals(pName)) {
-							// Should contain Layout 1 elements: Lord of, Occupies House, sign relationship
-							assertTrue("Tooltip for " + pName + " should contain Lord of: " + tt, tt.contains("Lord of"));
-							assertTrue("Tooltip for " + pName + " should contain Occupies House: " + tt, tt.contains("Occupies <b>House"));
-							assertTrue("Tooltip for " + pName + " should contain sign): " + tt, tt.contains("sign)"));
+							assertTrue("Tooltip for " + pName + " should contain Jaimini Chara Karaka: " + tt, tt.contains("Jaimini Chara Karaka"));
 						}
 					}
 				}

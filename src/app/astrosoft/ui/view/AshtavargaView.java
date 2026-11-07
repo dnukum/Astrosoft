@@ -184,6 +184,17 @@ public class AshtavargaView extends AstrosoftView {
 
 		final JPanel mainPanel = new JPanel(null) {
 			@Override
+			public void doLayout() {
+				int w = getWidth();
+				int h = getHeight();
+				Dimension hd = headerPanel.getPreferredSize();
+				headerPanel.setBounds((w - hd.width) / 2, 0, hd.width, 28);
+				int gx = Math.max(0, (w - gridW) / 2);
+				int gy = Math.max(26, (h - gridH + 14) / 2);
+				gridContainer.setBounds(gx, gy, gridW, gridH);
+			}
+
+			@Override
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
 				Graphics2D g2 = (Graphics2D) g.create();
@@ -192,10 +203,12 @@ public class AshtavargaView extends AstrosoftView {
 				int arc = 12;
 				int gap = 8;
 
+				int curWidth = getWidth();
+				int curHeight = getHeight();
 				int boxLeft = 2;
-				int boxRight = cardWidth - 2;
+				int boxRight = curWidth - 2;
 				int boxTop = 14;
-				int boxBottom = cardHeight - 4;
+				int boxBottom = curHeight - 4;
 
 				// Clean white card background
 				g2.setColor(Color.WHITE);
@@ -204,11 +217,14 @@ public class AshtavargaView extends AstrosoftView {
 				int headerX = headerPanel.getX();
 				int headerW = headerPanel.getWidth();
 
+				int curGridX = gridContainer.getX();
+				int curGridY = gridContainer.getY();
+
 				// Grid delineators (warm gold-ochre dividers across charts)
-				int x1 = gridX + miniChartSize.width + hgap / 2;
-				int x2 = gridX + 2 * miniChartSize.width + hgap + hgap / 2;
-				int x3 = gridX + 3 * miniChartSize.width + 2 * hgap + hgap / 2;
-				int yDiv = gridY + miniChartSize.height + vgap / 2;
+				int x1 = curGridX + miniChartSize.width + hgap / 2;
+				int x2 = curGridX + 2 * miniChartSize.width + hgap + hgap / 2;
+				int x3 = curGridX + 3 * miniChartSize.width + 2 * hgap + hgap / 2;
+				int yDiv = curGridY + miniChartSize.height + vgap / 2;
 
 				final Color dividerColor = UIConsts.ASHTAVARGA_DIVIDER_CLR;
 				g2.setColor(dividerColor);
@@ -263,7 +279,6 @@ public class AshtavargaView extends AstrosoftView {
 		mainPanel.setOpaque(false);
 		mainPanel.setPreferredSize(panelSize);
 		mainPanel.setMinimumSize(panelSize);
-		mainPanel.setMaximumSize(panelSize);
 
 		Dimension hd = headerPanel.getPreferredSize();
 		int headerX = (cardWidth - hd.width) / 2;

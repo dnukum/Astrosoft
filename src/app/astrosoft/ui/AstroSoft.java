@@ -508,6 +508,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			return;
 		}
 		log.info("exitForm proceeding to exit!");
+		cleanupChartFloatingDialogs();
         WindowPlacement.saveNow(this);
         if (exitHandler != null) {
             exitHandler.exit(0);
@@ -607,11 +608,24 @@ public class AstroSoft extends javax.swing.JFrame implements
 		}
 	}
 
+	private app.astrosoft.ui.view.HoroscopeDashboard currentDashboard;
+
+	public void cleanupChartFloatingDialogs() {
+		if (currentDashboard != null) {
+			currentDashboard.disposeFloatingDialogs();
+			currentDashboard = null;
+		}
+		app.astrosoft.ui.dlg.PlanetDetailsDialog.closeActiveDialog();
+		app.astrosoft.ui.dlg.HouseDetailsDialog.closeActiveDialog();
+		app.astrosoft.ui.dlg.AshtavargaDialog.closeActiveDialog();
+	}
+
 	public void computeHoroscope(BirthData birthData){
 		computeHoroscope(birthData, false);
 	}
 
 	public void computeHoroscope(BirthData birthData, boolean isEdit){
+		cleanupChartFloatingDialogs();
 		String prevFilePath = (isEdit && h != null) ? h.getFilePath() : null;
 		if (isEdit && birthData.getNotes() == null && h != null && h.getNotes() != null) {
 			birthData.setNotes(h.getNotes());
@@ -684,6 +698,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public JPanel createChartView() {
+		cleanupChartFloatingDialogs();
 
 		JPanel infoView = new InfoView(h.getHoroscopeInfo(), new Point(20,20));
 		
@@ -720,7 +735,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 				infoView, planetOffsetsView, shadbalaBarView, rasiNavamsaPanel, ashtavargaWrapper,
 				getPreferences().isLeftColumnCollapsed(),
 				collapsed -> getPreferences().setLeftColumnCollapsed(collapsed),
-				h.getPlanetaryInfo(), h.getAscendant());
+				h.getPlanetaryInfo(), h.getAscendant(), h.getShadBala(),
+				h.getAshtaVarga(), h.getRasi(), h.getPlanetRasis(), h);
+		this.currentDashboard = contentPanel;
 
 		final JPanel contentWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
 		contentWrapper.setOpaque(true);
@@ -893,6 +910,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (!promptSaveIfModified(h)) {
 			return;
 		}
+		cleanupChartFloatingDialogs();
 		new ModernBirthInputDialog(this);
 	}
 
@@ -947,6 +965,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			log.info("openMuhurta() cancelled by promptSaveIfModified on Muhurta document");
 			return;
 		}
+		cleanupChartFloatingDialogs();
 		MuhurtaDocument doc = MuhurtaDocument.createFromFile(file);
 		if (doc != null) {
 			doc.setFilePath(file);
@@ -976,6 +995,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 			log.info("openHoroscope(file) cancelled by promptSaveIfModified on Horoscope");
 			return;
 		}
+
+		cleanupChartFloatingDialogs();
 
 		h = Horoscope.createFromFile(horoscopeFile);
 
@@ -1170,6 +1191,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			if (compatibility != null && !promptSaveIfModified(compatibility)) {
 				return;
 			}
+			cleanupChartFloatingDialogs();
 			compatibility = Compatibility.createFromXML(fileName);
 		
 			if (compatibility != null){

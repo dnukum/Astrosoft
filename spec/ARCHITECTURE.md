@@ -37,13 +37,20 @@ The presentation layer is built exclusively with Java Swing.
 - **Components & Renderers:** Custom table models (`AstrosoftTableModel`), cell renderers (`LocalizedCellRenderer`, `ColoredCellRenderer`, `PlanetCellRenderer`), and specialized panels:
   - `ChartNotesPanel`: Dockable, resizable split-panel editor for taking persistent notes attached to chart metadata. Features WYSIWYG rich text controls (bold, italics, underline, timestamp stamp), Mac/Windows clipboard shortcuts, right-click context menu, and a pop-out floating tool window.
   - `BalamCalendarPanel`, `BirthDataPanel`, `PlaceChooser`.
-- **Dialogs:** Modal dialogs for user workflows:
+- **Dialogs & Floating Windows:** Model and modeless dialogs for user workflows and detailed astrological analysis:
+  - `PlanetDetailsDialog`: Modeless floating, resizable dialog hosting the modernized Planet Details panel with **Overview** (coordinates, dignities, Nakshatra, Pada, Star Lord, Jaimini Chara Karakas, two-column Kendra/Trikona lords with Yogakaraka and Functional Nature) and **Shadbala** (strength bar graphs).
+  - `HouseDetailsDialog`: Modeless floating, resizable dialog for comprehensive House PAC (Placement, Aspect, Conjunction) analysis across all 12 houses with house significations, lordships, occupants, and aspects.
+  - `AshtavargaDialog`: Modeless floating, resizable dialog displaying the 8-chart Ashtavarga grid (SAV + 7 planetary Bhinnashtakavargas) with responsive card borders, gold-ochre delineators, and integrated guide access.
+  - `AshtavargaGuideDialog`: Modal reference guide detailing Ashtakavarga bindu thresholds, kakshyas, and transit principles.
   - `MuhurtaConfigDialog`: In-place date, time, and location adjustment for Muhurta events.
   - `MuhurtaProfileDialog`: Quick entry or file selection for Person 1 / Person 2 in Muhurta evaluation.
   - `MuhurtaSummaryDialog`: Plaintext summary modal designed for easy copying and feeding to LLMs.
   - `AboutDialog`: Accessible via `Help -> About AstroSoft`, displaying application name, description, build timestamp version, and Java runtime version.
   - `PrintDialog`: Multi-format report printing options.
   - `BirthInputDialog`, `CompactibilityInputDialog`, `PlaceOptionDialog`.
+- **Horoscope Dashboard & Floating Dialog Lifecycle:**
+  - `HoroscopeDashboard`: Main chart screen orchestrator featuring a collapsible left profile column (via chevron toggle), controls strip (`Planet Details`, `AshtaVarga`, `House Details`), and side-by-side Rasi & Navamsha charts.
+  - **Single-Active-Instance & Teardown Rule:** All floating dialogs (`PlanetDetailsDialog`, `HouseDetailsDialog`, `AshtavargaDialog`) enforce single-active-instance tracking via static handles, bidirectional synchronization with toolbar checkboxes, and automated cleanup on horoscope load/switch (`cleanupChartFloatingDialogs`), preventing ghost windows and memory leaks.
 - **Window State Persistence:** Managed by `WindowPlacement.java`, persisting normal window bounds and maximized state across sessions in Java user preferences.
 - **Layout & Viewport Sizing Principle:**
   - Complex views (e.g., `MyMuhurtaView`, `MarriageMatchView`) maintain stable, fixed-dimension component footprints (astrological charts, data tables, profile panels) rather than dynamically stretching, squashing, or reflowing components when the application window is resized.

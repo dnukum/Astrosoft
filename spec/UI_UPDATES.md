@@ -34,37 +34,51 @@ This produces a bounded layout (maximum $1400 \times 900$) that never clips on s
 
 ---
 
-## 2. Main Screen (Horoscope View) On-Demand Controls (`AstroSoft.java`)
+## 2. Main Screen (Horoscope View) Modern Dashboard & Floating Dialogs (`HoroscopeDashboard.java`)
 
-Enhancements to the primary horoscope view (`createChartView`) providing on-demand controls for detailed astrological analysis without cluttering the initial display.
+Modernized primary horoscope dashboard providing on-demand floating tool windows for comprehensive astrological analysis while preserving an uncluttered main workspace.
 
 ```
 +-----------------------------------+---------------------------------------------------------+
-|  Left Panel (BorderLayout.NORTH)  |  Right Container (Scrollable)                           |
-|                                   |  +---------------------------+-----------------------+  |
+|  Left Column (Collapsible)        |  Right Container (Scrollable)                           |
+|  [<< Toggle]                      |  +---------------------------+-----------------------+  |
 |  [Birth Info (InfoView)]          |  | Rasi Chart (360x320)      | Navamsa Chart(360x320)|  |
 |  -------------------------------  |  +---------------------------+-----------------------+  |
-|  [x] Planet Offsets  [ ] AshtaVarga|                                                         |
-|  -------------------------------  |  (When AshtaVarga Checked)                              |
-|  (When Planet Offsets Checked)    |  +---------------------------------------------------+  |
-|  [Relative Planet Offsets Table]  |  | AshtaVarga Tabbed Pane (Embedded below charts)    |  |
-|  (Includes Astangata Combustion)  |  | - Bhinna, Sarva, Samudaya, Prasthara tabs         |  |
-|                                   |  +---------------------------------------------------+  |
+|  [ ] Planet Details  [ ] AshtaVarga  [ ] House Details                                      |
 +-----------------------------------+---------------------------------------------------------+
+       |                                      |                                    |
+       v                                      v                                    v
++-------------------------------+ +-----------------------+ +---------------------------------+
+| PlanetDetailsDialog (Floating)| | AshtavargaDialog      | | HouseDetailsDialog (Floating)   |
+| [Overview] [Shadbala]         | | (Floating, 8-Chart)   | | [House 1..12 Selector]          |
+| - Longitude, Nakshatra, Karaka| | - SAV + 7 Planets     | | - Significations & Lordships    |
+| - Kendra & Trikona Lords      | | - Delineators & Guide | | - Occupants & Aspecting Planets |
+| - Functional Benefic/Malefic  | | - Responsive scaling  | | - Classical Analysis Summary    |
++-------------------------------+ +-----------------------+ +---------------------------------+
 ```
 
-### 2.1 On-Demand Controls Strip
-Situated immediately below the birth info block (`InfoView`), styled with `DARK_BLUE` typography (Verdana 11pt):
-- **"Planet Offsets" Checkbox** (Selected by default):
-  - Toggles the display of `RelativePlanetView` below the birth info.
-  - When unchecked, hides the relative positions table, keeping the left panel compact.
-- **"AshtaVarga" Checkbox** (Unselected by default):
-  - Toggles the embedding of `AshtavargaView.createTabbedPane(h.getAshtaVarga())` directly beneath the Rasi and Navamsa charts in the right container.
-  - Dynamically resizes the right container from 320px to 725px height and enables vertical scrolling on demand (`VERTICAL_SCROLLBAR_AS_NEEDED`).
+### 2.1 Dashboard Controls Strip & Left Column Collapse
+Situated immediately below the birth info block (`InfoView`):
+- **Chevron Toggle Button (`<<` / `>>`)**:
+  - Toggles the left column to give Notes or wide charts additional breathing room without clipping.
+  - When collapsed, the controls row shifts smoothly into the right container header.
+- **"Planet Details" Checkbox**:
+  - Launches/toggles the floating, modeless, resizable `PlanetDetailsDialog`.
+  - **Overview Tab**: Displays planetary longitudes, retrogrades, combustions, dignities, Nakshatra, Pada, Star Lord, and Jaimini Chara Karakas. Beneath a horizontal separator, a two-column section with a vertical divider renders:
+    - *Left Column*: Kendra (1, 4, 7, 10) lords, Trikona (1, 5, 9) lords, and Yogakaraka.
+    - *Right Column*: Functional Benefics, Functional Neutrals, and Functional Malefics (B.V. Raman baseline).
+  - **Shadbala Tab**: Renders horizontal color-coded strength bars with a 100% minimum requirement threshold guideline and detailed component breakdown tooltips.
+- **"AshtaVarga" Checkbox**:
+  - Launches/toggles the floating, modeless, resizable `AshtavargaDialog`.
+  - Hosts the 8-chart grid (SAV + 7 planetary Bhinnashtakavargas) with warm gold-ochre delineators, interactive Ashtavarga guide dialog icon `(i)`, and responsive card geometry that dynamically adapts when the dialog is resized.
+- **"House Details" Checkbox**:
+  - Launches/toggles the floating, modeless, resizable `HouseDetailsDialog`.
+  - Provides PAC (Placement, Aspect, Conjunction) analysis across all 12 houses with house significations, lordships, occupants, aspecting planets, and a plaintext summary ready for LLMs or export.
 
-### 2.2 Vertical Layout Optimization
-- To prevent awkward vertical stretching on tall monitors, the left panel is wrapped in a `BorderLayout.NORTH` container (`leftWrapper`).
-- Birth info, controls strip, and planet offsets remain compactly anchored at the top regardless of window resizing or right-panel expansion.
+### 2.2 Floating Dialog Lifecycle & Memory Hygiene
+- **Single-Instance Enforcement**: Each dialog type (`PlanetDetailsDialog`, `HouseDetailsDialog`, `AshtavargaDialog`) maintains a static reference to the currently active instance. Opening a new instance or switching charts safely disposes of any prior window.
+- **Bidirectional Sync**: Closing a dialog via its OS window close button notifies the dashboard via callback to uncheck the corresponding toolbar checkbox.
+- **Automated Teardown**: `AstroSoft.cleanupChartFloatingDialogs()` is invoked on new chart creation or file open, preventing ghost windows across chart sessions.
 
 ---
 
@@ -145,5 +159,8 @@ To resolve platform-specific font rendering issues (notably missing Unicode glyp
 | `WindowPlacementTest` | 9 geometry checks: multi-monitor scaling, external screen cap ($1400 \times 900$), laptop usable bounds ($1296 \times 752$), topology changes, and negative origins. |
 | `ChartLongitudeTooltipTest` | Absolute degree preservation (`123.75` $\to$ `123:45`), 360 wrap (`000:00`), negative wrap (`-0.001` $\to$ `359:59`), seconds truncation, and non-finite handling (`NaN` $\to$ `null`). |
 | `ChartPlanetDetailsTooltipTest` | Integration test verifying JTable cell hover tooltip assembly with longitude, orb, and Nakshatra. |
+| `FloatingDialogsLifecycleTest` | Verifies single-active-instance enforcement and lifecycle teardown across `PlanetDetailsDialog`, `HouseDetailsDialog`, and `AshtavargaDialog`. |
+| `HousePACViewTest` | Verifies House PAC card generation, house switching, and the two-column Kendra/Trikona and Functional Nature layout in `RelativePlanetView`. |
+| `RelativePlanetViewTooltipTest` | Verifies rich hover tooltips for Nakshatras, dignities, and Jaimini Chara Karakas. |
 | `DocumentDirtyAndPromptIntegrationTest` | 23 integration tests verifying 225 pairwise view transitions, dirty prompt lifecycle, notes binding, and dynamic window titles. |
 | `MarriageMatchCompatibilityXmlTest` | 11 tests verifying dual-read compatibility (`<Compatibility>` & `<Compactibility>`), distinct print exporter types, PDF XML structure, and standard XSL-FO clearance. |
