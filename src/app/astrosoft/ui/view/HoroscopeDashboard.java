@@ -43,7 +43,7 @@ public class HoroscopeDashboard extends JPanel {
 	private final JPanel rightWrapper = new JPanel(new BorderLayout());
 	private final JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
 	private final ChevronToggleButton toggleButton = new ChevronToggleButton();
-	private final JCheckBox positionsCheck = checkBox("Planetary Positions", true);
+	private final JCheckBox positionsCheck = checkBox("Planet Details", true);
 	private final JCheckBox shadbalaCheck = checkBox("Shadbala", false);
 	private final JCheckBox ashtavargaCheck = checkBox("AshtaVarga", false);
 
@@ -90,7 +90,7 @@ public class HoroscopeDashboard extends JPanel {
 		controlsPanel.setMaximumSize(new Dimension(LEFT_WIDTH, 28));
 		controlsPanel.add(toggleButton);
 		controlsPanel.add(positionsCheck);
-		controlsPanel.add(shadbalaCheck);
+		// Shadbala option consolidated into multi-tab "Planet Details" card; shadbalaCheck retained for backward compatibility
 		controlsPanel.add(ashtavargaCheck);
 
 		positionsCheck.addActionListener(e -> relayout());

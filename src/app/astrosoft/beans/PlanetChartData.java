@@ -268,6 +268,10 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
 	public EnumMap<Planet, Boolean> getPlanetDir() {
 		return planetDir;
 	}
+
+	public Varga getVarga() {
+		return varga;
+	}
 	
 	private class ChartHouseTable implements Table{
 		

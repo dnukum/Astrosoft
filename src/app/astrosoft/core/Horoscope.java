@@ -26,9 +26,11 @@ import app.astrosoft.beans.NakshathraPada;
 import app.astrosoft.beans.NotesOwner;
 import app.astrosoft.beans.Place;
 import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.beans.PlanetCharacter;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.Ayanamsa;
 import app.astrosoft.consts.DisplayStrings;
+import app.astrosoft.consts.FunctionalRole;
 import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.Paksha;
 import app.astrosoft.consts.Planet;
@@ -420,6 +422,18 @@ public class Horoscope implements PreferenceChangeListener, Exportable, NotesOwn
 
 	public PlanetaryInfo getPlanetaryInfo() {
 		return planetaryInfo;
+	}
+
+	public PlanetCharacter getPlanetCharacter() {
+		return new PlanetCharacter(planetaryInfo.getPlanetCharacter(), getAscendant());
+	}
+
+	public FunctionalRole getFunctionalRole(Planet p) {
+		return PlanetCharacter.getFunctionalRole(getAscendant(), p);
+	}
+
+	public Planet getYogakaraka() {
+		return PlanetCharacter.getYogakaraka(getAscendant());
 	}
 
 	public EnumMap<Planet, Double> getPlanetaryPosition(){

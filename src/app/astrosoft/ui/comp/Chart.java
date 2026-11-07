@@ -44,12 +44,14 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
 import app.astrosoft.beans.ChartData;
+import app.astrosoft.beans.PlanetCharacter;
 import app.astrosoft.beans.PlanetChartData;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.consts.TableStyle;
+import app.astrosoft.consts.Varga;
 import app.astrosoft.ui.table.AstrosoftTable;
 import app.astrosoft.ui.table.AstrosoftTableModel;
 import app.astrosoft.ui.table.PlanetCellRenderer;
@@ -342,6 +344,14 @@ public class Chart extends JPanel{
                                     if (text.length() > 0) text.append(", ");
                                     text.append(nak.toString());
                                 }
+                                if (planetData.getVarga() == Varga.Rasi && chartData.getAscendant() != null && !planet.isAsc()) {
+                                    String roleTag = formatPlanetFunctionalRoleTag(chartData.getAscendant(), planet);
+                                    if (roleTag != null) {
+                                        if (text.length() > 0) text.append(" ");
+                                        text.append(roleTag);
+                                        return "<html>" + text.toString() + "</html>";
+                                    }
+                                }
                                 return text.length() == 0 ? null : text.toString();
                             }
                         }
@@ -406,10 +416,7 @@ public class Chart extends JPanel{
 	
 				if (isPlanetChart){
 					decoratePlanetChart(table, houseTable);
-					int startDeg = house.ordinal() * 30;
-					int endDeg = startDeg + 30;
-					String houseNumStr = (showHouseNumber && ascendant != null) ? " <br>House: " + house.bhava(ascendant) : "";
-					toolTip = "<html><b>" + house.toString(Language.ENGLISH) + "</b> (" + startDeg + "&deg; - " + endDeg + "&deg;)" + houseNumStr + "</html>";
+					toolTip = buildHouseToolTip(house);
 					houseTable.setToolTipText(toolTip);
 					toolTipManager.registerComponent(houseTable);
 				}
@@ -423,10 +430,7 @@ public class Chart extends JPanel{
 			add(panel, getConstrains(houseNo));
 			
 			if (isPlanetChart){
-				int startDeg = house.ordinal() * 30;
-				int endDeg = startDeg + 30;
-				String houseNumStr = (showHouseNumber && ascendant != null) ? " <br>House: " + house.bhava(ascendant) : "";
-				toolTip = "<html><b>" + house.toString(Language.ENGLISH) + "</b> (" + startDeg + "&deg; - " + endDeg + "&deg;)" + houseNumStr + "</html>";
+				toolTip = buildHouseToolTip(house);
 				panel.setToolTipText(toolTip);
 				toolTipManager.registerComponent(panel);
 			}
@@ -537,6 +541,79 @@ public class Chart extends JPanel{
 					}
 				}
 			}
+		}
+	}
+
+	private String buildHouseToolTip(Rasi house) {
+		int startDeg = house.ordinal() * 30;
+		int endDeg = startDeg + 30;
+		Rasi ascendant = chartData.getAscendant();
+		String houseNumStr = (showHouseNumber && ascendant != null) ? "<br>House: " + house.bhava(ascendant) : "";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html><b>").append(house.toString(Language.ENGLISH)).append("</b> (")
+		  .append(startDeg).append("&deg; - ").append(endDeg).append("&deg;)<br>")
+		  .append(house.classification()).append(houseNumStr);
+
+		// Functional nature display: strictly for D1 / Rasi charts
+		if (chartData instanceof PlanetChartData) {
+			PlanetChartData pcd = (PlanetChartData) chartData;
+			if (pcd.getVarga() == Varga.Rasi && ascendant != null) {
+				List<Planet> planets = pcd.getPlanetsInRasi() != null ? pcd.getPlanetsInRasi().get(house) : null;
+				if (planets != null && !planets.isEmpty()) {
+					sb.append("<br>Planets: ");
+					boolean first = true;
+					for (Planet p : planets) {
+						if (!first) {
+							sb.append(", ");
+						}
+						first = false;
+						sb.append(formatPlanetFunctional(ascendant, p));
+					}
+				}
+			}
+		}
+
+		sb.append("</html>");
+		return sb.toString();
+	}
+
+	private static String formatPlanetFunctional(Rasi ascendant, Planet p) {
+		String name = formatPlanetShort(p);
+		String roleTag = formatPlanetFunctionalRoleTag(ascendant, p);
+		return roleTag != null ? (name + " " + roleTag) : name;
+	}
+
+	private static String formatPlanetFunctionalRoleTag(Rasi ascendant, Planet p) {
+		if (p == null || p.isAsc() || ascendant == null) {
+			return null;
+		}
+		if (PlanetCharacter.isYogakaraka(ascendant, p)) {
+			return "<font color=\"green\"><b>[Yog]</b></font>";
+		} else if (PlanetCharacter.isFunctionalBenefic(ascendant, p)) {
+			return "<font color=\"green\"><b>[Ben]</b></font>";
+		} else if (PlanetCharacter.isFunctionalMalefic(ascendant, p)) {
+			return "<font color=\"red\"><b>[Mal]</b></font>";
+		} else if (PlanetCharacter.isFunctionalNeutral(ascendant, p)) {
+			return "<font color=\"#888888\">[Neu]</font>";
+		}
+		return null;
+	}
+
+	private static String formatPlanetShort(Planet p) {
+		if (p == null) return "";
+		switch (p) {
+			case Sun: return "Sun";
+			case Moon: return "Moon";
+			case Mars: return "Mars";
+			case Mercury: return "Mer";
+			case Jupiter: return "Jup";
+			case Venus: return "Ven";
+			case Saturn: return "Sat";
+			case Rahu: return "Rah";
+			case Ketu: return "Ket";
+			case Ascendant: return "Asc";
+			default: return p.name().substring(0, Math.min(3, p.name().length()));
 		}
 	}
 

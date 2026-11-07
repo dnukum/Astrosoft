@@ -6,9 +6,11 @@ import java.util.Map;
 import java.util.Set;
 
 import app.astrosoft.beans.PlanetStatus;
+import app.astrosoft.consts.AstroConsts;
 import app.astrosoft.consts.Dignity;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
+import app.astrosoft.consts.SignRelationship;
 
 /**
  * Pure planetary-status rules. No UI, no preferences, no I/O.
@@ -45,6 +47,43 @@ public final class PlanetStatusCalculator {
 			return Dignity.OWN;
 		}
 		return Dignity.NONE;
+	}
+
+	/**
+	 * Natural relationship (Kshetra Sambandha) of a planet with a zodiac sign.
+	 * Evaluates Exaltation, Debilitation, Ownership, or natural friendship with the sign lord:
+	 * Friendly (Mitra), Neutral (Sama), or Enemy (Satru).
+	 * Returns null for Nodes (Rahu/Ketu) and the Ascendant.
+	 */
+	public static SignRelationship signRelationship(Planet planet, Rasi sign) {
+		if (planet == null || sign == null) {
+			throw new IllegalArgumentException("planet and sign must not be null");
+		}
+		if (!CLASSICAL.contains(planet)) {
+			return null;
+		}
+		if (planet.isExaltedRasi(sign)) {
+			return SignRelationship.EXALTED;
+		}
+		if (planet.isDebilitatedRasi(sign)) {
+			return SignRelationship.DEBILITATED;
+		}
+		if (planet.isOwnerOf(sign)) {
+			return SignRelationship.OWN;
+		}
+		Planet lord = sign.owner();
+		if (lord == null) {
+			return null;
+		}
+		int rel = AstroConsts.permanentRel(planet, lord);
+		if (rel == 1) {
+			return SignRelationship.FRIENDLY;
+		} else if (rel == 0) {
+			return SignRelationship.NEUTRAL;
+		} else if (rel == -1) {
+			return SignRelationship.ENEMY;
+		}
+		return null;
 	}
 
 	/**

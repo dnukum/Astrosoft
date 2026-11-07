@@ -713,7 +713,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		ashtavargaWrapper.setMaximumSize(new Dimension(ashtavargaPane.getPreferredSize().width, ashtavargaPane.getPreferredSize().height + 25));
 		ashtavargaWrapper.add(ashtavargaPane);
 
-		final JPanel planetOffsetsView = new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo());
+		final JPanel planetOffsetsView = new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo(), h.getAscendant(), h.getShadBala());
 		final JPanel shadbalaBarView = new app.astrosoft.ui.view.ShadBalaBarView(h.getShadBala());
 
 		final app.astrosoft.ui.view.HoroscopeDashboard contentPanel = new app.astrosoft.ui.view.HoroscopeDashboard(
