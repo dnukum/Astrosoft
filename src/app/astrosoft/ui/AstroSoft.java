@@ -160,7 +160,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	private static SavePromptDelegate savePromptDelegate = (title, parent) -> {
 		Object[] options = new Object[] { "Save", "Don't Save", "Cancel" };
-		return JOptionPane.showOptionDialog(
+		return OptionDialog.showOptionDialog(
 				parent,
 				"Do you want to save changes to \"" + title + "\"?",
 				"Astrosoft 2.0",
@@ -380,7 +380,6 @@ public class AstroSoft extends javax.swing.JFrame implements
 			floatingNotesDialog = new JDialog(this, "Chart Notes", false);
 			floatingNotesDialog.setSize(380, 520);
 			floatingNotesDialog.setLocationRelativeTo(this);
-			floatingNotesDialog.setAlwaysOnTop(true);
 			floatingNotesDialog.addWindowListener(new java.awt.event.WindowAdapter() {
 				@Override
 				public void windowClosing(java.awt.event.WindowEvent e) {
@@ -402,6 +401,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 		chartNotesPanel.setDocked(true);
 		mainSplitPane.setRightComponent(chartNotesPanel);
 		unfoldNotes();
+	}
+
+	public JDialog getFloatingNotesDialog() {
+		return floatingNotesDialog;
 	}
 
 	private AstroSoft(String[] args){
@@ -610,6 +613,69 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	private app.astrosoft.ui.view.HoroscopeDashboard currentDashboard;
 
+	public app.astrosoft.ui.view.HoroscopeDashboard getCurrentDashboard() {
+		return currentDashboard;
+	}
+
+	public static boolean isHoroscopeView(View view) {
+		if (view == null) return false;
+		switch (view) {
+			case CHART_VIEW:
+			case DASAS_VIEW:
+			case PLANET_POS_VIEW:
+			case BHAVA_POS_VIEW:
+			case DIV_CHART_VIEW:
+			case ASHTAVARGA_VIEW:
+			case SHADBALA_VIEW:
+			case YOGA_COMBINATIONS_VIEW:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	public void hideChartFloatingDialogs() {
+		app.astrosoft.ui.dlg.PlanetDetailsDialog pd = app.astrosoft.ui.dlg.PlanetDetailsDialog.getActiveDialog();
+		if (pd != null && pd.isDisplayable()) {
+			pd.setVisible(false);
+		}
+		app.astrosoft.ui.dlg.HouseDetailsDialog hd = app.astrosoft.ui.dlg.HouseDetailsDialog.getActiveDialog();
+		if (hd != null && hd.isDisplayable()) {
+			hd.setVisible(false);
+		}
+		app.astrosoft.ui.dlg.AshtavargaDialog ad = app.astrosoft.ui.dlg.AshtavargaDialog.getActiveDialog();
+		if (ad != null && ad.isDisplayable()) {
+			ad.setVisible(false);
+		}
+	}
+
+	public void restoreChartFloatingDialogs(View targetHoroscopeView) {
+		app.astrosoft.ui.dlg.PlanetDetailsDialog pd = app.astrosoft.ui.dlg.PlanetDetailsDialog.getActiveDialog();
+		if (pd != null && pd.isDisplayable()) {
+			pd.setVisible(true);
+		}
+		app.astrosoft.ui.dlg.HouseDetailsDialog hd = app.astrosoft.ui.dlg.HouseDetailsDialog.getActiveDialog();
+		if (hd != null && hd.isDisplayable()) {
+			hd.setVisible(true);
+		}
+		app.astrosoft.ui.dlg.AshtavargaDialog ad = app.astrosoft.ui.dlg.AshtavargaDialog.getActiveDialog();
+		if (ad != null && ad.isDisplayable()) {
+			// Smart duplicate suppression on ASHTAVARGA_VIEW
+			ad.setVisible(targetHoroscopeView != View.ASHTAVARGA_VIEW);
+		}
+		if (currentDashboard != null) {
+			if (pd != null && pd.isDisplayable()) {
+				currentDashboard.getPositionsCheck().setSelected(pd.isVisible());
+			}
+			if (hd != null && hd.isDisplayable()) {
+				currentDashboard.getHouseDetailsCheck().setSelected(hd.isVisible());
+			}
+			if (ad != null && ad.isDisplayable()) {
+				currentDashboard.getAshtavargaCheck().setSelected(ad.isVisible());
+			}
+		}
+	}
+
 	public void cleanupChartFloatingDialogs() {
 		if (currentDashboard != null) {
 			currentDashboard.disposeFloatingDialogs();
@@ -698,8 +764,6 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public JPanel createChartView() {
-		cleanupChartFloatingDialogs();
-
 		JPanel infoView = new InfoView(h.getHoroscopeInfo(), new Point(20,20));
 		
 		final Chart rasi = new Chart(new PlanetChartData(Varga.Rasi, h.getPlanetaryInfo()), new Dimension(418, 365));
@@ -1044,7 +1108,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		int choice = (savePromptDelegate != null) ?
 				savePromptDelegate.askSave(title, this) :
-				JOptionPane.showOptionDialog(
+				OptionDialog.showOptionDialog(
 						this,
 						"Do you want to save changes to \"" + title + "\"?",
 						"Astrosoft 2.0",
@@ -1539,6 +1603,11 @@ public class AstroSoft extends javax.swing.JFrame implements
 	public void viewChanged(View view) {
 
 		currentView = view;
+		if (isHoroscopeView(view)) {
+			restoreChartFloatingDialogs(view);
+		} else {
+			hideChartFloatingDialogs();
+		}
 		switch(view){
 
 			case EPHEMERIS_VIEW:

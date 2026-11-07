@@ -28,6 +28,7 @@ public class HouseDetailsDialog extends JDialog {
 	private static final Dimension MIN_SIZE = new Dimension(620, 380);
 
 	private static HouseDetailsDialog activeDialog;
+	private static java.awt.Point lastLocation;
 
 	private final HousePACView pacView;
 	private Runnable onCloseCallback;
@@ -78,12 +79,23 @@ public class HouseDetailsDialog extends JDialog {
 		setMinimumSize(MIN_SIZE);
 		pack();
 
-		if (owner != null) {
+		if (lastLocation != null) {
+			setLocation(lastLocation);
+		} else if (owner != null) {
 			setLocationRelativeTo(owner);
 		} else {
 			Dimension screen = AstroSoft.getScreenSize();
 			setLocation((screen.width - getWidth()) / 2, (screen.height - getHeight()) / 2);
 		}
+
+		addComponentListener(new java.awt.event.ComponentAdapter() {
+			@Override
+			public void componentMoved(java.awt.event.ComponentEvent e) {
+				if (isShowing()) {
+					lastLocation = getLocation();
+				}
+			}
+		});
 
 		addWindowListener(new WindowAdapter() {
 			@Override

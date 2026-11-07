@@ -162,6 +162,25 @@ public class HoroscopeDashboard extends JPanel {
 		ashtavargaCheck.addActionListener(e -> toggleAshtavargaDialog());
 		houseDetailsCheck.addActionListener(e -> toggleHouseDetailsDialog());
 
+		PlanetDetailsDialog activePlanet = PlanetDetailsDialog.getActiveDialog();
+		if (activePlanet != null && activePlanet.isDisplayable()) {
+			this.planetDetailsDialog = activePlanet;
+			this.positionsCheck.setSelected(activePlanet.isVisible());
+			activePlanet.setOnCloseCallback(() -> positionsCheck.setSelected(false));
+		}
+		HouseDetailsDialog activeHouse = HouseDetailsDialog.getActiveDialog();
+		if (activeHouse != null && activeHouse.isDisplayable()) {
+			this.houseDetailsDialog = activeHouse;
+			this.houseDetailsCheck.setSelected(activeHouse.isVisible());
+			activeHouse.setOnCloseCallback(() -> houseDetailsCheck.setSelected(false));
+		}
+		AshtavargaDialog activeAsh = AshtavargaDialog.getActiveDialog();
+		if (activeAsh != null && activeAsh.isDisplayable()) {
+			this.ashtavargaDialog = activeAsh;
+			this.ashtavargaCheck.setSelected(activeAsh.isVisible());
+			activeAsh.setOnCloseCallback(() -> ashtavargaCheck.setSelected(false));
+		}
+
 		relayout();
 	}
 

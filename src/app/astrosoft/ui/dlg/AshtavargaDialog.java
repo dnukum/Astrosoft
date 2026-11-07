@@ -30,6 +30,7 @@ public class AshtavargaDialog extends JDialog {
 	private static final Dimension MIN_SIZE = new Dimension(870, 420);
 
 	private static AshtavargaDialog activeDialog;
+	private static java.awt.Point lastLocation;
 
 	private final JPanel ashtavargaPanel;
 	private Runnable onCloseCallback;
@@ -90,12 +91,23 @@ public class AshtavargaDialog extends JDialog {
 		setMinimumSize(MIN_SIZE);
 		pack();
 
-		if (owner != null) {
+		if (lastLocation != null) {
+			setLocation(lastLocation);
+		} else if (owner != null) {
 			setLocationRelativeTo(owner);
 		} else {
 			Dimension screen = AstroSoft.getScreenSize();
 			setLocation((screen.width - getWidth()) / 2, (screen.height - getHeight()) / 2);
 		}
+
+		addComponentListener(new java.awt.event.ComponentAdapter() {
+			@Override
+			public void componentMoved(java.awt.event.ComponentEvent e) {
+				if (isShowing()) {
+					lastLocation = getLocation();
+				}
+			}
+		});
 
 		addWindowListener(new WindowAdapter() {
 			@Override
