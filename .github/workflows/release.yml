@@ -1,0 +1,102 @@
+name: Release Distribution
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Release Tag (e.g. v20261107 or v2.0.0; leave blank to auto-generate timestamp tag)'
+        required: false
+        default: ''
+      release_notes:
+        description: 'Release Notes'
+        required: false
+        default: 'Astrosoft 2.0 Distribution Release'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Publish Release (Retain Last 2)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 21 LTS (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install Apache Ant
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ant
+
+      - name: Determine Release Tag
+        id: determine_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version_tag }}" ]; then
+            TAG="${{ github.event.inputs.version_tag }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${{ github.ref_name }}"
+          else
+            TAG="v$(date +'%Y%m%d.%H%M%S')"
+          fi
+          echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
+          echo "Building release for tag: ${TAG}"
+
+      - name: Run Headless Regression Tests
+        run: |
+          ant test -Djava.awt.headless=true
+
+      - name: Build Distribution Package
+        run: |
+          ant dist
+          mv release/Astrosoft.zip "release/Astrosoft-${RELEASE_TAG}.zip"
+
+      - name: Create GitHub Release & Upload Asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NOTES="${{ github.event.inputs.release_notes }}"
+          if [ -z "$NOTES" ]; then
+            NOTES="Astrosoft 2.0 Distribution - Build ${RELEASE_TAG}"
+          fi
+          
+          # If the tag does not exist locally yet (e.g. triggered via workflow_dispatch), tag the current HEAD
+          if ! git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
+            git tag "${RELEASE_TAG}"
+            git push origin "${RELEASE_TAG}"
+          fi
+
+          gh release create "${RELEASE_TAG}" "release/Astrosoft-${RELEASE_TAG}.zip" \
+            --title "Astrosoft ${RELEASE_TAG}" \
+            --notes "$NOTES" \
+            --latest
+
+      - name: Enforce Retention Policy (Retain Last 2 Distributions)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Checking releases to enforce 2-distribution archive limit..."
+          # gh release list returns releases sorted newest first
+          RELEASES=$(gh release list --limit 100 --json tagName --jq '.[].tagName')
+          
+          COUNT=0
+          for R_TAG in $RELEASES; do
+            COUNT=$((COUNT + 1))
+            if [ "$COUNT" -gt 2 ]; then
+              echo "Pruning older release: $R_TAG"
+              gh release delete "$R_TAG" --yes --cleanup-tag || true
+            else
+              echo "Preserving release #$COUNT: $R_TAG"
+            fi
+          done

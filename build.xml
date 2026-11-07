@@ -189,6 +189,8 @@ build.date=${tstamp.default}
 		</java>
 	</target>
 
+	<property name="testcase" value="app.astrosoft.ui.test.LegacyScreensRegressionTest" />
+
 	<target name="test" description="Runs JUnit tests" depends="build">
 		<java fork="true" classname="org.junit.runner.JUnitCore">
 			<classpath refid="classpath" />
@@ -209,7 +211,7 @@ build.date=${tstamp.default}
 		</java>
 	</target>
 
-	<target name="release" description="Creates a release package">
+	<target name="release" description="Creates a release package" depends="deploy">
 		<delete dir="${release_dir}" />
 		<mkdir dir="${release_dir}" />
 		<copy todir="${release_dir}/bin">
@@ -218,6 +220,19 @@ build.date=${tstamp.default}
 		<copy todir="${release_dir}/lib">
 			<fileset dir="${lib_dir}" />
 		</copy>
+		<copy todir="${release_dir}/resources">
+			<fileset dir="${resources_dir}" />
+		</copy>
+		<copy file="RunAstroSoft20.bat" todir="${release_dir}" />
+		<copy file="RunAstroSoft20.sh" todir="${release_dir}" />
+		<copy file="InstallMacApp.command" todir="${release_dir}" />
+		<copy file="README.md" todir="${release_dir}" failonerror="false" />
+		<chmod file="${release_dir}/InstallMacApp.command" perm="755" />
+		<chmod file="${release_dir}/RunAstroSoft20.sh" perm="755" />
+	</target>
+
+	<target name="dist" description="Creates a distribution zip package" depends="release">
+		<zip destfile="release/Astrosoft.zip" basedir="release" includes="AstroSoft/**" />
 	</target>
 
 </project>

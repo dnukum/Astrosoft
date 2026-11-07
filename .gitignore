@@ -12,6 +12,8 @@
 \.project$
 \.classpath$
 ^release$
+release/
+release/*
 ^lib-unused$
 deploy/
 *.bak
