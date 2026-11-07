@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Window;
 import java.util.function.Consumer;
 
 import javax.swing.Box;
@@ -13,8 +14,12 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
+import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.consts.Rasi;
 import app.astrosoft.ui.comp.ChevronToggleButton;
+import app.astrosoft.ui.dlg.HouseDetailsDialog;
 import app.astrosoft.ui.util.UIConsts;
 
 /**
@@ -38,7 +43,13 @@ public class HoroscopeDashboard extends JPanel {
 	private final Consumer<Boolean> collapseListener;
 
 	private final JPanel leftPanel = new JPanel();
-	private final JPanel leftWrapper = new JPanel(new BorderLayout());
+	private final JPanel leftWrapper = new JPanel(new BorderLayout()) {
+		@Override
+		public Dimension getPreferredSize() {
+			int h = Math.max(MIN_LEFT_HEIGHT, leftPanel.getPreferredSize().height);
+			return new Dimension(LEFT_WIDTH, h);
+		}
+	};
 	private final JPanel rightContainer = new JPanel();
 	private final JPanel rightWrapper = new JPanel(new BorderLayout());
 	private final JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
@@ -46,12 +57,23 @@ public class HoroscopeDashboard extends JPanel {
 	private final JCheckBox positionsCheck = checkBox("Planet Details", true);
 	private final JCheckBox shadbalaCheck = checkBox("Shadbala", false);
 	private final JCheckBox ashtavargaCheck = checkBox("AshtaVarga", false);
+	private final JCheckBox houseDetailsCheck = checkBox("House Details", false);
+
+	private HouseDetailsDialog houseDetailsDialog;
+	private PlanetaryInfo planetaryInfo;
+	private Rasi ascendant;
 
 	private boolean collapsed;
 
 	public HoroscopeDashboard(JComponent infoView, JComponent positionsView, JComponent shadbalaView,
 			JComponent chartsPanel, JComponent ashtavargaPanel, boolean collapsed,
 			Consumer<Boolean> collapseListener) {
+		this(infoView, positionsView, shadbalaView, chartsPanel, ashtavargaPanel, collapsed, collapseListener, null, null);
+	}
+
+	public HoroscopeDashboard(JComponent infoView, JComponent positionsView, JComponent shadbalaView,
+			JComponent chartsPanel, JComponent ashtavargaPanel, boolean collapsed,
+			Consumer<Boolean> collapseListener, PlanetaryInfo planetaryInfo, Rasi ascendant) {
 		super(new BorderLayout(COLUMN_GAP, 0));
 		this.infoView = infoView;
 		this.positionsView = positionsView;
@@ -60,6 +82,8 @@ public class HoroscopeDashboard extends JPanel {
 		this.ashtavargaPanel = ashtavargaPanel;
 		this.collapseListener = collapseListener;
 		this.collapsed = collapsed;
+		this.planetaryInfo = planetaryInfo;
+		this.ascendant = ascendant;
 
 		setOpaque(false);
 		for (JComponent c : new JComponent[] { infoView, positionsView, shadbalaView, chartsPanel, ashtavargaPanel }) {
@@ -92,10 +116,12 @@ public class HoroscopeDashboard extends JPanel {
 		controlsPanel.add(positionsCheck);
 		// Shadbala option consolidated into multi-tab "Planet Details" card; shadbalaCheck retained for backward compatibility
 		controlsPanel.add(ashtavargaCheck);
+		controlsPanel.add(houseDetailsCheck);
 
 		positionsCheck.addActionListener(e -> relayout());
 		shadbalaCheck.addActionListener(e -> relayout());
 		ashtavargaCheck.addActionListener(e -> relayout());
+		houseDetailsCheck.addActionListener(e -> toggleHouseDetailsDialog());
 
 		relayout();
 	}
@@ -128,6 +154,47 @@ public class HoroscopeDashboard extends JPanel {
 
 	public JCheckBox getAshtavargaCheck() {
 		return ashtavargaCheck;
+	}
+
+	public JCheckBox getHouseDetailsCheck() {
+		return houseDetailsCheck;
+	}
+
+	public HouseDetailsDialog getHouseDetailsDialog() {
+		return houseDetailsDialog;
+	}
+
+	private void toggleHouseDetailsDialog() {
+		if (houseDetailsCheck.isSelected()) {
+			if (houseDetailsDialog == null || !houseDetailsDialog.isDisplayable()) {
+				Window owner = SwingUtilities.getWindowAncestor(this);
+				houseDetailsDialog = new HouseDetailsDialog(owner, planetaryInfo, ascendant, () -> {
+					houseDetailsCheck.setSelected(false);
+				});
+			}
+			houseDetailsDialog.setVisible(true);
+			houseDetailsDialog.toFront();
+		} else {
+			if (houseDetailsDialog != null) {
+				houseDetailsDialog.setVisible(false);
+			}
+		}
+	}
+
+	public void setHouseDetailsData(PlanetaryInfo planetaryInfo, Rasi ascendant) {
+		this.planetaryInfo = planetaryInfo;
+		this.ascendant = ascendant;
+		if (houseDetailsDialog != null && houseDetailsDialog.isDisplayable()) {
+			boolean wasVisible = houseDetailsDialog.isVisible();
+			Window owner = houseDetailsDialog.getOwner();
+			houseDetailsDialog.dispose();
+			if (wasVisible) {
+				houseDetailsDialog = new HouseDetailsDialog(owner, planetaryInfo, ascendant, () -> {
+					houseDetailsCheck.setSelected(false);
+				});
+				houseDetailsDialog.setVisible(true);
+			}
+		}
 	}
 
 	private void relayout() {
@@ -168,8 +235,6 @@ public class HoroscopeDashboard extends JPanel {
 				rightContainer.add(ashtavargaPanel);
 			}
 
-			int leftH = Math.max(MIN_LEFT_HEIGHT, leftPanel.getPreferredSize().height);
-			leftWrapper.setPreferredSize(new Dimension(LEFT_WIDTH, leftH));
 			add(leftWrapper, BorderLayout.WEST);
 			add(rightWrapper, BorderLayout.CENTER);
 		} else {
@@ -193,6 +258,10 @@ public class HoroscopeDashboard extends JPanel {
 			add(rightWrapper, BorderLayout.CENTER);
 		}
 
+		updateLayout();
+	}
+
+	public void updateLayout() {
 		Dimension right = rightContainer.getPreferredSize();
 		int rightW = Math.max(CHART_WIDTH, right.width);
 		int totalW = collapsed ? rightW : LEFT_WIDTH + COLUMN_GAP + rightW;
@@ -201,6 +270,15 @@ public class HoroscopeDashboard extends JPanel {
 
 		revalidate();
 		repaint();
+	}
+
+	@Override
+	public Dimension getPreferredSize() {
+		Dimension right = rightContainer.getPreferredSize();
+		int rightW = Math.max(CHART_WIDTH, right.width);
+		int totalW = collapsed ? rightW : LEFT_WIDTH + COLUMN_GAP + rightW;
+		int totalH = collapsed ? right.height : Math.max(leftWrapper.getPreferredSize().height, right.height);
+		return new Dimension(totalW, totalH);
 	}
 
 	private static JCheckBox checkBox(String text, boolean selected) {

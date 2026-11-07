@@ -15,19 +15,19 @@ import app.astrosoft.util.Internalization;
 import app.astrosoft.util.Mod;
 
 public enum Rasi {
-	// Sign Lord Polarity Cardinality Element
-	Mesha("Ari", Planet.Mars, Polarity.Odd, Cardinality.Movable, Element.Fire),
-	Vrishabha("Tau", Planet.Venus, Polarity.Even, Cardinality.Fixed, Element.Earth),
-	Mithuna("Gem", Planet.Mercury, Polarity.Odd, Cardinality.Common, Element.Air),
-	Kataka("Can", Planet.Moon, Polarity.Even, Cardinality.Movable, Element.Water),
-	Simha("Leo", Planet.Sun, Polarity.Odd, Cardinality.Fixed, Element.Fire),
-	Kanya("Vir", Planet.Mercury, Polarity.Even, Cardinality.Common, Element.Earth),
-	Thula("Lib", Planet.Venus, Polarity.Odd, Cardinality.Movable, Element.Air),
-	Vrichika("Sco", Planet.Mars, Polarity.Even, Cardinality.Fixed, Element.Water),
-	Dhanus("Sag", Planet.Jupiter, Polarity.Odd, Cardinality.Common, Element.Fire),
-	Makara("Cap", Planet.Saturn, Polarity.Even, Cardinality.Movable, Element.Earth),
-	Kumbha("Aqu", Planet.Saturn, Polarity.Odd, Cardinality.Fixed, Element.Air),
-	Meena("Pis", Planet.Jupiter, Polarity.Even, Cardinality.Common, Element.Water);
+	// Sign Sym EnglishName Lord Polarity Cardinality Element
+	Mesha("Ari", "Aries", Planet.Mars, Polarity.Odd, Cardinality.Movable, Element.Fire),
+	Vrishabha("Tau", "Taurus", Planet.Venus, Polarity.Even, Cardinality.Fixed, Element.Earth),
+	Mithuna("Gem", "Gemini", Planet.Mercury, Polarity.Odd, Cardinality.Common, Element.Air),
+	Kataka("Can", "Cancer", Planet.Moon, Polarity.Even, Cardinality.Movable, Element.Water),
+	Simha("Leo", "Leo", Planet.Sun, Polarity.Odd, Cardinality.Fixed, Element.Fire),
+	Kanya("Vir", "Virgo", Planet.Mercury, Polarity.Even, Cardinality.Common, Element.Earth),
+	Thula("Lib", "Libra", Planet.Venus, Polarity.Odd, Cardinality.Movable, Element.Air),
+	Vrichika("Sco", "Scorpio", Planet.Mars, Polarity.Even, Cardinality.Fixed, Element.Water),
+	Dhanus("Sag", "Sagittarius", Planet.Jupiter, Polarity.Odd, Cardinality.Common, Element.Fire),
+	Makara("Cap", "Capricorn", Planet.Saturn, Polarity.Even, Cardinality.Movable, Element.Earth),
+	Kumbha("Aqu", "Aquarius", Planet.Saturn, Polarity.Odd, Cardinality.Fixed, Element.Air),
+	Meena("Pis", "Pisces", Planet.Jupiter, Polarity.Even, Cardinality.Common, Element.Water);
 
 	public enum Polarity {
 		Odd,
@@ -139,6 +139,7 @@ public enum Rasi {
 	}
 
 	private final String sym;
+	private final String englishName;
 	private final Planet owner;
 	private final Polarity polarity;
 	private final Cardinality cardinality;
@@ -146,8 +147,9 @@ public enum Rasi {
 
 	private static Rasi[] vals = values();
 
-	Rasi(String sym, Planet owner, Polarity polarity, Cardinality cardinality, Element element) {
+	Rasi(String sym, String englishName, Planet owner, Polarity polarity, Cardinality cardinality, Element element) {
 		this.sym = sym;
+		this.englishName = englishName;
 		this.owner = owner;
 		this.polarity = polarity;
 		this.cardinality = cardinality;
@@ -164,6 +166,14 @@ public enum Rasi {
 
 	public String sym() {
 		return sym;
+	}
+
+	public String englishName() {
+		return englishName;
+	}
+
+	public String english() {
+		return englishName;
 	}
 
 	public static Interval longitudeForRasi(Rasi rasi) {

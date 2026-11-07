@@ -22,4 +22,13 @@ public enum FunctionalRole {
 	public boolean isNeutral() {
 		return this == NEUTRAL;
 	}
+
+	public String displayName() {
+		switch (this) {
+			case BENEFIC: return "Functional Benefic";
+			case MALEFIC: return "Functional Malefic";
+			case NEUTRAL: return "Functional Neutral";
+			default: return name();
+		}
+	}
 }

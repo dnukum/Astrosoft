@@ -719,7 +719,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 		final app.astrosoft.ui.view.HoroscopeDashboard contentPanel = new app.astrosoft.ui.view.HoroscopeDashboard(
 				infoView, planetOffsetsView, shadbalaBarView, rasiNavamsaPanel, ashtavargaWrapper,
 				getPreferences().isLeftColumnCollapsed(),
-				collapsed -> getPreferences().setLeftColumnCollapsed(collapsed));
+				collapsed -> getPreferences().setLeftColumnCollapsed(collapsed),
+				h.getPlanetaryInfo(), h.getAscendant());
 
 		final JPanel contentWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
 		contentWrapper.setOpaque(true);

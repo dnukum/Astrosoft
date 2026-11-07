@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -79,12 +80,16 @@ import app.astrosoft.util.AstroUtil;
 public class RelativePlanetView extends JPanel {
 
 	private final JLabel title;
+	private final JButton resizeBtn;
 	private final PillTabBar pillBar;
 	private final CardLayout cardLayout;
 	private final JPanel contentCards;
 
 	private static final int CARD_WIDTH = 530;
 	private static final int CARD_HEIGHT = 188;
+	private static final int DEFAULT_HOUSES_HEIGHT = 380;
+	private int cardHeight = CARD_HEIGHT;
+	private boolean userCustomizedHeight = false;
 
 	private static final String TAB_POSITIONS = "POSITIONS";
 	private static final String TAB_ROLES = "ROLES";
@@ -147,16 +152,50 @@ public class RelativePlanetView extends JPanel {
 		title = new JLabel("Planet Details", SwingConstants.LEFT);
 		title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
 		title.setForeground(UIConsts.TEXT_DARK_NAVY);
-		title.setBounds(20, 3, 110, 22);
+		title.setBounds(20, 3, 90, 22);
 		add(title);
+
+		// Header vertical expand/compact button [↕]
+		resizeBtn = new JButton("↕") {
+			@Override
+			protected void paintComponent(Graphics g) {
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				boolean isHover = getModel().isRollover();
+				int w = getWidth();
+				int h = getHeight();
+				g2.setColor(isHover ? new Color(228, 238, 250) : Color.WHITE);
+				g2.fillRoundRect(1, 1, w - 2, h - 2, 6, 6);
+				g2.setColor(new Color(180, 195, 215));
+				g2.drawRoundRect(1, 1, w - 3, h - 3, 6, 6);
+
+				FontMetrics fm = g2.getFontMetrics(getFont());
+				int tw = fm.stringWidth(getText());
+				int th = fm.getAscent();
+				g2.setColor(new Color(44, 82, 130));
+				g2.setFont(getFont());
+				g2.drawString(getText(), (w - tw) / 2, (h + th) / 2 - 2);
+				g2.dispose();
+			}
+		};
+		resizeBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+		resizeBtn.setFocusPainted(false);
+		resizeBtn.setBorderPainted(false);
+		resizeBtn.setContentAreaFilled(false);
+		resizeBtn.setOpaque(false);
+		resizeBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		resizeBtn.setToolTipText("Expand / Compact card vertically (or drag the bottom border)");
+		resizeBtn.setBounds(112, 4, 18, 20);
+		resizeBtn.addActionListener(e -> toggleHeight());
+		add(resizeBtn);
 
 		// Multi-tab Card layout container
 		cardLayout = new CardLayout();
 		contentCards = new JPanel(cardLayout);
 		contentCards.setOpaque(false);
-		contentCards.setBounds(18, 30, 494, 150);
+		contentCards.setBounds(18, 30, 494, cardHeight - 38);
 
-		// Build the 3 perspective panels
+		// Build the 4 perspective panels
 		JPanel positionsPanel = createPositionsPanel(planetaryInfo, sortedPlanets, planetRasi, planetPos);
 		JPanel rolesPanel = createRolesAndKarakasPanel(planetaryInfo, sortedPlanets, planetRasi, ascRasi, planetPos);
 		JPanel shadbalaPanel = new ShadbalaBarPanel(shadBala);
@@ -170,13 +209,96 @@ public class RelativePlanetView extends JPanel {
 		// Header subtle rounded pill tab bar
 		pillBar = new PillTabBar(tabIndex -> {
 			switch (tabIndex) {
-				case 0: cardLayout.show(contentCards, TAB_POSITIONS); break;
-				case 1: cardLayout.show(contentCards, TAB_ROLES); break;
-				case 2: cardLayout.show(contentCards, TAB_SHADBALA); break;
+				case 0:
+					cardLayout.show(contentCards, TAB_POSITIONS);
+					break;
+				case 1:
+					cardLayout.show(contentCards, TAB_ROLES);
+					break;
+				case 2:
+					cardLayout.show(contentCards, TAB_SHADBALA);
+					break;
 			}
 		});
 		pillBar.setBounds(180, 3, 332, 24);
 		add(pillBar);
+
+		// Interactive bottom-edge drag to resize
+		addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && e.getY() >= getHeight() - 14) {
+					toggleHeight();
+				}
+			}
+		});
+
+		addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				if (e.getY() >= getHeight() - 14) {
+					setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
+				} else {
+					setCursor(Cursor.getDefaultCursor());
+				}
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				if (getCursor().getType() == Cursor.N_RESIZE_CURSOR) {
+					int newH = e.getY();
+					setCardHeight(newH, true);
+				}
+			}
+		});
+	}
+
+	public void toggleHeight() {
+		if (cardHeight > CARD_HEIGHT) {
+			setCardHeight(CARD_HEIGHT, true);
+		} else {
+			setCardHeight(DEFAULT_HOUSES_HEIGHT, true);
+		}
+	}
+
+	@Override
+	public void doLayout() {
+		super.doLayout();
+		int currentH = getHeight();
+		if (currentH <= 0) currentH = cardHeight;
+		contentCards.setBounds(18, 30, 494, currentH - 38);
+	}
+
+	public void setCardHeight(int newHeight) {
+		setCardHeight(newHeight, true);
+	}
+
+	public void setCardHeight(int newHeight, boolean fromUserDrag) {
+		this.cardHeight = Math.max(CARD_HEIGHT, Math.min(650, newHeight));
+		if (fromUserDrag) {
+			this.userCustomizedHeight = true;
+		}
+		Dimension d = new Dimension(CARD_WIDTH, this.cardHeight);
+		setPreferredSize(d);
+		setMinimumSize(d);
+		setMaximumSize(d);
+		contentCards.setBounds(18, 30, 494, this.cardHeight - 38);
+		revalidate();
+		repaint();
+
+		Container p = getParent();
+		while (p != null) {
+			if (p instanceof HoroscopeDashboard) {
+				((HoroscopeDashboard) p).updateLayout();
+			}
+			p.revalidate();
+			p.repaint();
+			p = p.getParent();
+		}
+	}
+
+	public int getCardHeight() {
+		return cardHeight;
 	}
 
 	public void switchToTab(int tabIndex) {
@@ -846,12 +968,15 @@ public class RelativePlanetView extends JPanel {
 				};
 
 				btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+				btn.setMargin(new java.awt.Insets(0, 0, 0, 0));
 				btn.setFocusPainted(false);
 				btn.setBorderPainted(false);
 				btn.setContentAreaFilled(false);
 				btn.setOpaque(false);
 				btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-				btn.setPreferredSize(new Dimension(btn.getPreferredSize().width + 12, 22));
+				FontMetrics fm = btn.getFontMetrics(btn.getFont());
+				int textW = fm.stringWidth(tabs[i]);
+				btn.setPreferredSize(new Dimension(textW + 16, 22));
 
 				btn.addActionListener(e -> {
 					selectedTab = idx;
@@ -976,6 +1101,14 @@ public class RelativePlanetView extends JPanel {
 		g2.setColor(UIConsts.getChartBorderColor());
 		g2.setStroke(new BasicStroke(1.5f));
 		g2.draw(p);
+
+		// Subtle bottom-center grip handle indicating vertical resizability
+		int gripW = 40;
+		int gripX = (currentW - gripW) / 2;
+		int gripY = boxBottom - 2;
+		g2.setColor(new Color(160, 180, 205));
+		g2.fillRoundRect(gripX, gripY - 1, gripW, 3, 2, 2);
+
 		g2.dispose();
 	}
 }
