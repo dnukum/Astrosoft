@@ -665,7 +665,8 @@ def build_all_cases():
 
 def main():
     cases, disagreements = build_all_cases()
-    out_dir = "/Users/mukunds100/Dev/Astrosoft-intellij/src/app/astrosoft/ui/test/resources"
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out_dir = os.path.join(project_root, "src", "app", "astrosoft", "ui", "test", "resources")
     os.makedirs(out_dir, exist_ok=True)
     out_path = os.path.join(out_dir, "planet_status_cases.json")
 

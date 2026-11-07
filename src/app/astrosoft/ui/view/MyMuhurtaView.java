@@ -45,6 +45,14 @@ import app.astrosoft.consts.Varga;
 import java.util.EnumMap;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
+import java.awt.Color;
+import java.awt.Font;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import app.astrosoft.util.AstrosoftFileFilter;
+import app.astrosoft.util.FileOps;
 
 public class MyMuhurtaView extends AstrosoftView {
 
@@ -541,30 +549,104 @@ public class MyMuhurtaView extends AstrosoftView {
         tb.setTitleFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 11));
         tb.setTitleColor(KEY_TEXT_CLR);
         bar.setBorder(tb);
-        person1Btn = createRoundedButton("Person 1: Select...", java.awt.Font.BOLD, new Dimension(190, 26));
-        person2Btn = createRoundedButton("Person 2: Select...", java.awt.Font.PLAIN, new Dimension(190, 26));
-        person1Btn.addActionListener(e -> selectPerson(true));
-        person2Btn.addActionListener(e -> selectPerson(false));
+        person1Btn = createRoundedButton("Person 1: Select... ▾", java.awt.Font.BOLD, new Dimension(205, 26));
+        person2Btn = createRoundedButton("Person 2: Select... ▾", java.awt.Font.PLAIN, new Dimension(205, 26));
+        person1Btn.addActionListener(e -> showPersonMenu(person1Btn, true));
+        person2Btn.addActionListener(e -> showPersonMenu(person2Btn, false));
         bar.add(person1Btn);
         bar.add(person2Btn);
         return bar;
     }
 
-    private void selectPerson(boolean person1) {
+    private void showPersonMenu(javax.swing.JButton sourceBtn, boolean person1) {
+        MuhurtaProfile current = person1 ? person1Profile : person2Profile;
+        String role = person1 ? "Person 1" : "Person 2";
+
+        JPopupMenu menu = new JPopupMenu();
+
+        // 1. Direct Browse Horoscope File (.ash)...
+        String browseText = (current != null && current.hasHoroscope())
+            ? "Change Horoscope File (.ash)..."
+            : "Browse Horoscope File (.ash)...";
+        JMenuItem browseItem = new JMenuItem(browseText);
+        browseItem.setFont(new Font("Verdana", Font.PLAIN, 12));
+        browseItem.addActionListener(e -> browsePersonHoroscope(person1));
+        menu.add(browseItem);
+
+        // 2. Quick Star Entry / Edit Star Details...
+        String starText = (current != null && !current.hasHoroscope())
+            ? "Edit Star Details..."
+            : "Quick Star Entry (Rasi & Nakshatra)...";
+        JMenuItem starItem = new JMenuItem(starText);
+        starItem.setFont(new Font("Verdana", Font.PLAIN, 12));
+        starItem.addActionListener(e -> openStarEntryDialog(person1));
+        menu.add(starItem);
+
+        // 3. Clear Profile
+        if (current != null) {
+            menu.addSeparator();
+            String profileName = (current.getName() != null && !current.getName().trim().isEmpty())
+                ? current.getName()
+                : role;
+            JMenuItem clearItem = new JMenuItem("Clear Profile (" + profileName + ")");
+            clearItem.setFont(new Font("Verdana", Font.PLAIN, 12));
+            clearItem.setForeground(new Color(180, 40, 40));
+            clearItem.addActionListener(e -> applyPersonProfile(person1, null));
+            menu.add(clearItem);
+        }
+
+        menu.show(sourceBtn, 0, sourceBtn.getHeight());
+    }
+
+    private void browsePersonHoroscope(boolean person1) {
+        String file = FileOps.openFileDialog(
+            SwingUtilities.getWindowAncestor(this),
+            FileOps.FileDialogMode.OPEN,
+            AstrosoftFileFilter.HOROSCOPE_EXTN
+        );
+        if (file == null) {
+            return;
+        }
+
+        Horoscope h = Horoscope.createFromFile(file);
+        if (h == null) {
+            JOptionPane.showMessageDialog(this,
+                "Unable to load horoscope file: " + file,
+                "Load Horoscope Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        applyPersonProfile(person1, new MuhurtaProfile(h));
+    }
+
+    private void openStarEntryDialog(boolean person1) {
         MuhurtaProfile current = person1 ? person1Profile : person2Profile;
         String label = person1 ? "Person 1" : "Person 2";
         MuhurtaProfileDialog dlg = new MuhurtaProfileDialog(
-            javax.swing.SwingUtilities.getWindowAncestor(this), label, current);
+            SwingUtilities.getWindowAncestor(this), label, current);
+
+        if (current == null || !current.hasHoroscope()) {
+            dlg.getTabbedPane().setSelectedIndex(1);
+        }
         dlg.setVisible(true);
         if (dlg.isApplied()) {
-            if (person1) {
-                person1Profile = dlg.getSelectedProfile();
-            } else {
-                person2Profile = dlg.getSelectedProfile();
-            }
-            notifyDocumentModified();
-            updateView();
+            applyPersonProfile(person1, dlg.getSelectedProfile());
         }
+    }
+
+    private void applyPersonProfile(boolean person1, MuhurtaProfile profile) {
+        if (person1) {
+            person1Profile = profile;
+        } else {
+            person2Profile = profile;
+        }
+        notifyDocumentModified();
+        updatePeopleButtons();
+        updateView();
+    }
+
+    public void selectPerson(boolean person1) {
+        openStarEntryDialog(person1);
     }
 
     private void updatePeopleButtons() {
@@ -576,18 +658,18 @@ public class MyMuhurtaView extends AstrosoftView {
 
     private String getButtonLabel(String role, MuhurtaProfile profile) {
         if (profile == null) {
-            return role + ": Select...";
+            return role + ": Select... ▾";
         }
         String name = profile.getName();
         if (name == null || name.trim().isEmpty()) {
             name = role;
         }
-        return role + ": " + name;
+        return role + ": " + name + " ▾";
     }
 
     private String getButtonTooltip(String role, MuhurtaProfile profile) {
         if (profile == null) {
-            return role + ": Select... — click to select full horoscope or quick entry";
+            return role + ": Select... — click for options (Browse file, Star entry, or Clear)";
         }
         StringBuilder sb = new StringBuilder();
         sb.append(profile.getName());
@@ -599,7 +681,7 @@ public class MyMuhurtaView extends AstrosoftView {
         } else {
             sb.append(" [Quick Entry]");
         }
-        sb.append(" — click to change or clear");
+        sb.append(" — click for options");
         return sb.toString();
     }
 

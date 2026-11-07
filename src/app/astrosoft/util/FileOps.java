@@ -147,32 +147,48 @@ public class FileOps {
         int value = 0;
 
         try {
+            java.io.InputStream is = FileOps.class.getResourceAsStream("/resources/" + filename);
+            if (is == null) {
+                is = FileOps.class.getResourceAsStream("/" + filename);
+            }
+            if (is == null && FileOps.class.getClassLoader() != null) {
+                is = FileOps.class.getClassLoader().getResourceAsStream("resources/" + filename);
+            }
+            if (is == null) {
+                java.io.File f = new java.io.File("resources/" + filename);
+                if (f.exists()) {
+                    is = new java.io.FileInputStream(f);
+                }
+            }
+            if (is == null) {
+                java.io.File f = new java.io.File("deploy/resources/" + filename);
+                if (f.exists()) {
+                    is = new java.io.FileInputStream(f);
+                }
+            }
+            if (is == null) {
+                return 0;
+            }
 
-            //File f = new File( getResourceURI("/resources/" + filename) );
-            //FileInputStream fis = new FileInputStream( f );
-            BufferedReader br =
-                new BufferedReader( new InputStreamReader( FileOps.class.getResourceAsStream("/resources/" + filename) ) );
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
             int lineno = 1;
 
             while ( lineno++ < row )
                 br.readLine(  );
 
-            //String []values = br.readLine().split(",");
             String[] values = new String[30];
             java.util.StringTokenizer st =
                 new java.util.StringTokenizer( br.readLine(  ), "," );
             int i = 0;
 
             while ( st.hasMoreTokens(  ) ) {
-
                 values[i++] = st.nextToken(  );
-
             }
 
             value = Integer.parseInt( values[col - 1] );
-            //fis.close(  );
+            br.close();
 
-        } catch ( IOException e ) {
+        } catch ( IOException | NumberFormatException e ) {
 
             e.printStackTrace(  );
 

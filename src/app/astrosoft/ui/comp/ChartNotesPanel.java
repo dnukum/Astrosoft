@@ -459,7 +459,15 @@ public class ChartNotesPanel extends JPanel {
         editor.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { syncToHoroscope(); }
             public void removeUpdate(DocumentEvent e) { syncToHoroscope(); }
-            public void changedUpdate(DocumentEvent e) { syncToHoroscope(); }
+            public void changedUpdate(DocumentEvent e) {
+                // Ignore asynchronous stylesheet/attribute change notifications from HTMLDocument parsing
+                for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
+                    if (elem.getClassName().contains("ChangeUpdateRunnable")) {
+                        return;
+                    }
+                }
+                syncToHoroscope();
+            }
         });
 
         JScrollPane scrollPane = new JScrollPane(editor);

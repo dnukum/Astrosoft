@@ -192,6 +192,9 @@ build.date=${tstamp.default}
 	<target name="test" description="Runs JUnit tests" depends="build">
 		<java fork="true" classname="org.junit.runner.JUnitCore">
 			<classpath refid="classpath" />
+			<jvmarg value="--add-exports=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-opens=java.desktop/sun.awt=ALL-UNNAMED" />
+			<jvmarg value="--add-exports=java.desktop/sun.awt.shell=ALL-UNNAMED" />
 			<arg value="${testcase}" />
 		</java>
 	</target>

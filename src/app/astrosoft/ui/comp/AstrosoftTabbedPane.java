@@ -7,7 +7,6 @@
 package app.astrosoft.ui.comp;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 
@@ -17,6 +16,10 @@ import javax.swing.JTabbedPane;
 
 public class AstrosoftTabbedPane extends JTabbedPane {
 	
+	public AstrosoftTabbedPane(){
+		super();
+	}
+
 	public AstrosoftTabbedPane(Dimension paneSize){
 		super();
 		setPreferredSize(paneSize);
@@ -24,13 +27,18 @@ public class AstrosoftTabbedPane extends JTabbedPane {
 	
 	@Override
 	public void addTab(String title, Component component) {
-		
-		JPanel panel = new JPanel();
-		panel.add(component);
+		addTab(title, component, false);
+	}
 
-		/*JPanel panel = new JPanel(new BorderLayout());
-		panel.add(component, BorderLayout.CENTER);*/
-
+	public void addTab(String title, Component component, boolean fill) {
+		JPanel panel;
+		if (fill) {
+			panel = new JPanel(new BorderLayout());
+			panel.add(component, BorderLayout.CENTER);
+		} else {
+			panel = new JPanel();
+			panel.add(component);
+		}
 		panel.setBorder(BorderFactory.createEtchedBorder());
 		super.addTab(title, panel);
 	}
