@@ -15,6 +15,7 @@ TEST_CLASSES=(
     "app.astrosoft.ui.test.AshtavargaMultiGridTest"
     "app.astrosoft.ui.test.TransitChartDialogTest"
     "app.astrosoft.ui.test.ModernBirthDataPanelTest"
+    "app.astrosoft.ui.test.FloatingDialogsLifecycleTest"
 )
 
 echo "============================================================"

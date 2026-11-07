@@ -40,7 +40,7 @@ public abstract class AstrosoftDialog extends javax.swing.JDialog {
     /** Creates a new instance of AstrosoftDialog */
     public AstrosoftDialog(AstroSoft parent, String title, Dimension size) {
         
-        super( parent, title, false );
+        super( parent, title, java.awt.Dialog.ModalityType.APPLICATION_MODAL );
         this.parent = parent;
         dlgPanel = new JPanel(new AbsoluteLayout());
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -54,6 +54,15 @@ public abstract class AstrosoftDialog extends javax.swing.JDialog {
             ( screenSize.width - size.width ) / 2, ( screenSize.height - size.height ) / 2, size.width,
             size.height );    
         this.setResizable(false);
+        this.setAlwaysOnTop(true);
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                toFront();
+                requestFocus();
+            }
+        });
 
         getRootPane().registerKeyboardAction(
             closeListener,
@@ -75,6 +84,17 @@ public abstract class AstrosoftDialog extends javax.swing.JDialog {
     public void closeDialog(){
         setVisible(false);
         dispose();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible) {
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                toFront();
+                requestFocus();
+            });
+        }
+        super.setVisible(visible);
     }
     
     public void resetSize(Dimension size){

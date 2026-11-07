@@ -43,6 +43,7 @@ import app.astrosoft.core.DasaTimelineEngine;
 import app.astrosoft.core.DasaTimelineEngine.ScopeFilter;
 import app.astrosoft.core.DasaTimelineEngine.WindowFilter;
 import app.astrosoft.core.DasaTimelineEngine.WindowType;
+import app.astrosoft.ui.dlg.OptionDialog;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.ui.table.DasaTimelineCellRenderer;
 import app.astrosoft.ui.table.DasaTimelineTableModel;
@@ -315,7 +316,7 @@ public class DasaTimelinePanel extends JPanel {
 			}
 		});
 
-		int res = JOptionPane.showConfirmDialog(this, panel, "Select Custom Year Range (" + minYear + " - " + maxYear + ")",
+		int res = OptionDialog.showConfirmDialog(this, panel, "Select Custom Year Range (" + minYear + " - " + maxYear + ")",
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
 		if (res == JOptionPane.OK_OPTION && startCombo.getSelectedItem() != null && endCombo.getSelectedItem() != null) {

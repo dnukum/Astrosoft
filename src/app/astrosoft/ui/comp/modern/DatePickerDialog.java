@@ -29,6 +29,7 @@ public class DatePickerDialog extends JDialog {
         add(panel, BorderLayout.CENTER);
         pack();
         setResizable(false);
+        setAlwaysOnTop(true);
         if (owner != null) {
             setLocationRelativeTo(owner);
         }
@@ -37,6 +38,10 @@ public class DatePickerDialog extends JDialog {
     public static LocalDate showDatePicker(Component parent, LocalDate initialDate) {
         Window owner = (parent instanceof Window) ? (Window) parent : SwingUtilities.getWindowAncestor(parent);
         DatePickerDialog dlg = new DatePickerDialog(owner, initialDate);
+        SwingUtilities.invokeLater(() -> {
+            dlg.toFront();
+            dlg.requestFocus();
+        });
         dlg.setVisible(true);
         return dlg.isConfirmed() ? dlg.getSelectedDate() : null;
     }

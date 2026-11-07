@@ -46,6 +46,11 @@ public class AshtavargaGuideDialog extends JDialog {
             owner = AstroSoft.getInstance();
         }
         AshtavargaGuideDialog dlg = new AshtavargaGuideDialog(owner);
+        dlg.setAlwaysOnTop(true);
+        SwingUtilities.invokeLater(() -> {
+            dlg.toFront();
+            dlg.requestFocus();
+        });
         dlg.setVisible(true);
     }
 

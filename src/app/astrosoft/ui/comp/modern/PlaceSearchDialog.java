@@ -28,6 +28,7 @@ public class PlaceSearchDialog extends JDialog {
         add(panel, BorderLayout.CENTER);
         pack();
         setMinimumSize(new Dimension(580, 420));
+        setAlwaysOnTop(true);
         if (owner != null) {
             setLocationRelativeTo(owner);
         }
@@ -36,6 +37,10 @@ public class PlaceSearchDialog extends JDialog {
     public static Place showPlacePicker(Component parent, Place initialPlace) {
         Window owner = (parent instanceof Window) ? (Window) parent : SwingUtilities.getWindowAncestor(parent);
         PlaceSearchDialog dlg = new PlaceSearchDialog(owner, initialPlace);
+        SwingUtilities.invokeLater(() -> {
+            dlg.toFront();
+            dlg.requestFocus();
+        });
         dlg.setVisible(true);
         return dlg.isConfirmed() ? dlg.getSelectedPlace() : null;
     }

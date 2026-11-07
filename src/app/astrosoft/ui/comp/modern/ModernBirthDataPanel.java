@@ -43,6 +43,7 @@ import javax.swing.border.Border;
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.Place;
 import app.astrosoft.beans.Place.Direction;
+import app.astrosoft.ui.dlg.OptionDialog;
 import app.astrosoft.beans.Place.Location;
 import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.consts.Sex;
@@ -592,7 +593,7 @@ public class ModernBirthDataPanel extends JPanel {
         String name = getPersonName();
         if (name == null || name.trim().isEmpty()) {
             if (!java.awt.GraphicsEnvironment.isHeadless()) {
-                JOptionPane.showMessageDialog(this,
+                OptionDialog.showMessageDialog(this,
                         "Person Name is required.\nPlease enter a name before proceeding.",
                         "Incomplete Birth Details",
                         JOptionPane.WARNING_MESSAGE);
@@ -658,7 +659,7 @@ public class ModernBirthDataPanel extends JPanel {
         } else {
             if (selectedPlace == null) {
                 if (!java.awt.GraphicsEnvironment.isHeadless()) {
-                    JOptionPane.showMessageDialog(this,
+                    OptionDialog.showMessageDialog(this,
                             "Birth Place is required.\nPlease select a valid place.",
                             "Incomplete Birth Details",
                             JOptionPane.WARNING_MESSAGE);
@@ -672,7 +673,7 @@ public class ModernBirthDataPanel extends JPanel {
 
     private void showValidationError(String message) {
         if (!java.awt.GraphicsEnvironment.isHeadless()) {
-            JOptionPane.showMessageDialog(this,
+            OptionDialog.showMessageDialog(this,
                     message,
                     "Invalid Coordinates",
                     JOptionPane.WARNING_MESSAGE);

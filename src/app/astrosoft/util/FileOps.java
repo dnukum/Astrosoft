@@ -45,7 +45,25 @@ public class FileOps {
     	
     	String initialFile = pref.getAstrosoftFilesDir();
     	
-        JFileChooser fd = new JFileChooser( initialFile );
+        JFileChooser fd = new JFileChooser( initialFile ) {
+            @Override
+            protected javax.swing.JDialog createDialog(Component parent) throws java.awt.HeadlessException {
+                javax.swing.JDialog dlg = super.createDialog(parent);
+                dlg.setAlwaysOnTop(true);
+                dlg.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowOpened(java.awt.event.WindowEvent e) {
+                        dlg.toFront();
+                        dlg.requestFocus();
+                    }
+                });
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    dlg.toFront();
+                    dlg.requestFocus();
+                });
+                return dlg;
+            }
+        };
         UIUtil.setPanelBackground(fd, UIConsts.THEME_CLR);
         fd.setOpaque(true);
         

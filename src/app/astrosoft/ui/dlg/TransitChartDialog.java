@@ -66,6 +66,7 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     public TransitChartDialog(AstroSoft parent, Date initInstant, Place initPlace, TransitChartComputation computation) {
         super(parent, "Transit Chart", DLG_SIZE);
+        setModalityType(ModalityType.MODELESS);
         this.computation = computation;
         this.currentPlace = initPlace != null ? initPlace : AstroSoft.getPreferences().getPlace();
         this.selectedInstant = initInstant != null ? initInstant : new Date();

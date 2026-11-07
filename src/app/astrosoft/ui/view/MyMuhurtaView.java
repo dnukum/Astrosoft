@@ -41,6 +41,7 @@ import app.astrosoft.ui.util.UIUtil;
 import app.astrosoft.beans.PlanetChartData;
 import app.astrosoft.beans.MuhurtaProfile;
 import app.astrosoft.ui.dlg.MuhurtaProfileDialog;
+import app.astrosoft.ui.dlg.OptionDialog;
 import app.astrosoft.consts.Varga;
 import java.util.EnumMap;
 import app.astrosoft.consts.Planet;
@@ -610,7 +611,7 @@ public class MyMuhurtaView extends AstrosoftView {
 
         Horoscope h = Horoscope.createFromFile(file);
         if (h == null) {
-            JOptionPane.showMessageDialog(this,
+            OptionDialog.showMessageDialog(this,
                 "Unable to load horoscope file: " + file,
                 "Load Horoscope Error", JOptionPane.ERROR_MESSAGE);
             return;

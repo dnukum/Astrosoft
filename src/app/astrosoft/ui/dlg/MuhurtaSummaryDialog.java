@@ -79,6 +79,14 @@ public class MuhurtaSummaryDialog extends JDialog {
 
         setSize(new Dimension(640, 520));
         setLocationRelativeTo(owner);
+        setAlwaysOnTop(true);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                toFront();
+                requestFocus();
+            }
+        });
     }
 
     public static String buildSummaryText(MyMuhurta muhurta, Place place, MuhurtaProfile person1, MuhurtaProfile person2) {

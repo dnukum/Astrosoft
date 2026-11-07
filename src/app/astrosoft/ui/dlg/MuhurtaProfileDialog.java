@@ -40,6 +40,7 @@ import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.ui.comp.AstrosoftTabbedPane;
+import app.astrosoft.ui.dlg.OptionDialog;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.util.AstrosoftFileFilter;
 import app.astrosoft.util.AstroUtil;
@@ -77,6 +78,14 @@ public class MuhurtaProfileDialog extends JDialog {
         initComponents();
         populateCurrent(currentProfile);
         pack();
+        setAlwaysOnTop(true);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowOpened(java.awt.event.WindowEvent e) {
+                toFront();
+                requestFocus();
+            }
+        });
         int width = Math.max(430, getWidth());
         int height = Math.max(285, getHeight());
         setSize(width, height);
@@ -302,7 +311,7 @@ public class MuhurtaProfileDialog extends JDialog {
 
         Horoscope h = Horoscope.createFromFile(file);
         if (h == null) {
-            JOptionPane.showMessageDialog(this, "Unable to load horoscope file.",
+            OptionDialog.showMessageDialog(this, "Unable to load horoscope file.",
                 "Load horoscope", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -341,7 +350,7 @@ public class MuhurtaProfileDialog extends JDialog {
         int selectedTab = tabbedPane.getSelectedIndex();
         if (selectedTab == 0) {
             if (loadedHoroscope == null) {
-                JOptionPane.showMessageDialog(this,
+                OptionDialog.showMessageDialog(this,
                     "Please browse and select a horoscope file,\nor switch to the Star tab for quick entry.",
                     "No Horoscope Selected", JOptionPane.WARNING_MESSAGE);
                 return;

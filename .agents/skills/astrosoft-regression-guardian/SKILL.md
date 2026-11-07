@@ -41,6 +41,7 @@ This validates:
 4. `AshtavargaMultiGridTest` (Modern 4x2 grid vs. legacy 8-tab compatibility)
 5. `TransitChartDialogTest` (Transit calculations and sign-change steppers)
 6. `ModernBirthDataPanelTest` (Modern inputs and validation)
+7. `FloatingDialogsLifecycleTest` (Window z-order, dialog modality, and floating palette scopes)
 
 ---
 
@@ -48,6 +49,7 @@ This validates:
 
 - [Legacy Screens Inventory & Structural Contracts](./references/legacy_screens_inventory.md): Details each of the 13 legacy views and their invariants.
 - [Headless Swing Testing Guide](./references/headless_testing_guide.md): Patterns for `renderOffscreen`, deep component traversal, and headless safety rules.
+- [Floating Windows Lifecycle Spec](../../../../spec/FLOATING_WINDOWS_LIFECYCLE_SPEC.md): Scope-based lifecycle and z-order contracts for companion palettes.
 
 ---
 
@@ -57,4 +59,8 @@ Before finalizing any UI changes, verify:
 - [ ] No changes to the 8-tab structure or 3-chart layout of legacy `AshtavargaView`.
 - [ ] Shared cell renderers (`PlanetCellRenderer`, `AstrosoftTableCellRenderer`) do not force modern status badges into legacy views unless explicitly enabled.
 - [ ] Font size changes auto-scale or respect cell boundaries without clipping text into ellipses (`...`).
+- [ ] All modal dialogs inherit `AstrosoftDialog` (`ModalityType.APPLICATION_MODAL`, `alwaysOnTop=true`, `windowOpened` toFront/requestFocus hooks).
+- [ ] Confirmation and warning prompts route through `OptionDialog` (never raw `JOptionPane.show...`).
+- [ ] All file pickers use `FileOps.openFileDialog()` (guaranteeing `createDialog` sets `alwaysOnTop=true`).
+- [ ] Modeless inspection palettes (`PlanetDetails`, `HouseDetails`, `Ashtavarga`, `Chart Notes`) keep `alwaysOnTop=false` to avoid occluding modal popups.
 - [ ] Headless tests pass completely with `BUILD SUCCESSFUL` and zero failures.

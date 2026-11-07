@@ -7,9 +7,14 @@
 package app.astrosoft.ui.dlg;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
+import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.util.UIConsts;
@@ -39,12 +44,7 @@ public class OptionDialog  {
 		}
 		
 		JOptionPane pane = new JOptionPane(message, messageType, optionType);
-		
-		JDialog dialog = pane.createDialog(pane, title);
-		
-		UIUtil.applyOptionPaneBackground(pane,UIConsts.OPTIONPANE_BACKGROUND);
-		
-		dialog.setVisible(true);
+		showPaneDialog(pane, null, title);
 		
 		Object selectedValue = pane.getValue();
 	    if(selectedValue instanceof Integer) {
@@ -52,5 +52,62 @@ public class OptionDialog  {
 		}
 	    return JOptionPane.CLOSED_OPTION;
 	}
-	
+
+	public static void showMessageDialog(Component parent, Object message, String title, int messageType) {
+		JOptionPane pane = new JOptionPane(message, messageType, JOptionPane.DEFAULT_OPTION);
+		showPaneDialog(pane, parent, title);
+	}
+
+	public static int showConfirmDialog(Component parent, Object message, String title, int optionType, int messageType) {
+		JOptionPane pane = new JOptionPane(message, messageType, optionType);
+		showPaneDialog(pane, parent, title);
+		Object selectedValue = pane.getValue();
+		if (selectedValue instanceof Integer) {
+			return ((Integer) selectedValue).intValue();
+		}
+		return JOptionPane.CLOSED_OPTION;
+	}
+
+	public static int showOptionDialog(Component parent, Object message, String title, int optionType, int messageType,
+			Icon icon, Object[] options, Object initialValue) {
+		JOptionPane pane = new JOptionPane(message, messageType, optionType, icon, options, initialValue);
+		showPaneDialog(pane, parent, title);
+		Object selectedValue = pane.getValue();
+		if (selectedValue == null) {
+			return JOptionPane.CLOSED_OPTION;
+		}
+		if (options == null) {
+			if (selectedValue instanceof Integer) {
+				return ((Integer) selectedValue).intValue();
+			}
+			return JOptionPane.CLOSED_OPTION;
+		}
+		for (int i = 0; i < options.length; i++) {
+			if (options[i].equals(selectedValue)) {
+				return i;
+			}
+		}
+		return JOptionPane.CLOSED_OPTION;
+	}
+
+	private static void showPaneDialog(JOptionPane pane, Component parent, String title) {
+		Component parentComp = (parent != null) ? parent : AstroSoft.getInstance();
+		JDialog dialog = pane.createDialog(parentComp, title);
+		dialog.setAlwaysOnTop(true);
+		dialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				dialog.toFront();
+				dialog.requestFocus();
+			}
+		});
+
+		UIUtil.applyOptionPaneBackground(pane, UIConsts.OPTIONPANE_BACKGROUND);
+
+		SwingUtilities.invokeLater(() -> {
+			dialog.toFront();
+			dialog.requestFocus();
+		});
+		dialog.setVisible(true);
+	}
 }

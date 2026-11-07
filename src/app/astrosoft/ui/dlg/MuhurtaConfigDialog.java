@@ -94,7 +94,7 @@ public class MuhurtaConfigDialog extends AstrosoftDialog {
                         dateChooser.getSelectedDate(), timeChooser.getSelectedDate(), selectedZone);
                     listener.configChanged(instant, instant, place);
                 } catch (IllegalArgumentException invalidTime) {
-                    javax.swing.JOptionPane.showMessageDialog(MuhurtaConfigDialog.this,
+                    OptionDialog.showMessageDialog(MuhurtaConfigDialog.this,
                         "This local date/time does not exist in the selected timezone. Choose another time.",
                         "Invalid local time", javax.swing.JOptionPane.ERROR_MESSAGE);
                     return;

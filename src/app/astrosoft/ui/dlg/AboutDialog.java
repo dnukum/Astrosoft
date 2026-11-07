@@ -31,7 +31,7 @@ public class AboutDialog extends AstrosoftDialog {
 
     public AboutDialog(AstroSoft parent) {
         super(parent, "About AstroSoft", new Dimension(540, 315));
-        setModal(true);
+        setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
     }
 

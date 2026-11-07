@@ -26,6 +26,7 @@ public class TimePickerDialog extends JDialog {
         add(panel, BorderLayout.CENTER);
         pack();
         setResizable(false);
+        setAlwaysOnTop(true);
         if (owner != null) {
             setLocationRelativeTo(owner);
         }
@@ -34,6 +35,10 @@ public class TimePickerDialog extends JDialog {
     public static LocalTime showTimePicker(Component parent, LocalTime initialTime) {
         Window owner = (parent instanceof Window) ? (Window) parent : SwingUtilities.getWindowAncestor(parent);
         TimePickerDialog dlg = new TimePickerDialog(owner, initialTime);
+        SwingUtilities.invokeLater(() -> {
+            dlg.toFront();
+            dlg.requestFocus();
+        });
         dlg.setVisible(true);
         return dlg.isConfirmed() ? dlg.getSelectedTime() : null;
     }
