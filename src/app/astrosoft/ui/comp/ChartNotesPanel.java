@@ -51,11 +51,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.StyledEditorKit;
@@ -87,6 +89,7 @@ public class ChartNotesPanel extends JPanel {
     private NotesOwner notesOwner;
     private Horoscope horoscope;
     private JTextPane editor;
+    private JScrollPane scrollPane;
     private JButton popOutBtn;
     private JButton foldBtn;
     private JButton boldBtn;
@@ -407,7 +410,13 @@ public class ChartNotesPanel extends JPanel {
         add(topContainer, BorderLayout.NORTH);
 
         // 3. Editor & Typography Document
-        editor = new JTextPane();
+        editor = new JTextPane() {
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                // Pin width strictly to the viewport to prevent horizontal reflow oscillations during fast scroll
+                return true;
+            }
+        };
         editor.setFocusTraversalKeysEnabled(false);
         editor.setContentType("text/html");
         editor.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
@@ -419,8 +428,8 @@ public class ChartNotesPanel extends JPanel {
 
         HTMLEditorKit kit = new NotesHTMLEditorKit();
         StyleSheet styleSheet = kit.getStyleSheet();
-        styleSheet.addRule("body { font-family: Arial, Helvetica, sans-serif; font-size: 13pt; line-height: 1.45; margin: 10px 12px; color: #1a1a1a; }");
-        styleSheet.addRule("p { margin-top: 0px; margin-bottom: 8px; line-height: 1.45; }");
+        styleSheet.addRule("body { font-family: Arial, Helvetica, sans-serif; font-size: 13pt; line-height: 20px; margin: 10px 12px; color: #1a1a1a; }");
+        styleSheet.addRule("p { margin-top: 0px; margin-bottom: 8px; line-height: 20px; }");
         styleSheet.addRule("b, strong { font-weight: bold; }");
         styleSheet.addRule("i, em { font-style: italic; }");
         styleSheet.addRule("u { text-decoration: underline; }");
@@ -470,13 +479,23 @@ public class ChartNotesPanel extends JPanel {
             }
         });
 
-        JScrollPane scrollPane = new JScrollPane(editor);
+        if (editor.getCaret() instanceof DefaultCaret) {
+            ((DefaultCaret) editor.getCaret()).setUpdatePolicy(DefaultCaret.UPDATE_WHEN_ON_EDT);
+        }
+
+        scrollPane = new JScrollPane(editor);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+        app.astrosoft.ui.comp.modern.ModernScrollBarUI.apply(scrollPane);
         add(scrollPane, BorderLayout.CENTER);
 
         setEnabledState(false);
+    }
+
+    public JScrollPane getScrollPane() {
+        return scrollPane;
     }
 
     public static String cleanAndSanitizeText(String raw) {

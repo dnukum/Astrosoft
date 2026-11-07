@@ -5,10 +5,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import javax.swing.JTextPane;
+import javax.swing.JViewport;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
 
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.test.SampleHoroscopes;
@@ -33,6 +37,29 @@ public class ChartNotesListTest {
     private String getDocText() throws Exception {
         Document doc = editor.getDocument();
         return doc.getText(0, doc.getLength());
+    }
+
+    @Test
+    public void testNotesScrollPaneViewportAndCaretPolicy() {
+        assertNotNull("scrollPane should not be null", panel.getScrollPane());
+        assertEquals("Viewport must be in SIMPLE_SCROLL_MODE to eliminate Retina bit-blit jitter",
+                JViewport.SIMPLE_SCROLL_MODE, panel.getScrollPane().getViewport().getScrollMode());
+        assertTrue("Editor must track viewport width unconditionally to eliminate reflow shaking",
+                editor.getScrollableTracksViewportWidth());
+        if (editor.getCaret() instanceof DefaultCaret) {
+            assertEquals("Caret update policy must be UPDATE_WHEN_ON_EDT to avoid scroll tug-of-war",
+                    DefaultCaret.UPDATE_WHEN_ON_EDT, ((DefaultCaret) editor.getCaret()).getUpdatePolicy());
+        }
+    }
+
+    @Test
+    public void testNotesModernScrollBarUIApplied() {
+        assertNotNull("scrollPane should not be null", panel.getScrollPane());
+        assertNotNull("verticalScrollBar should not be null", panel.getScrollPane().getVerticalScrollBar());
+        assertTrue("verticalScrollBar UI must be ModernScrollBarUI",
+                panel.getScrollPane().getVerticalScrollBar().getUI() instanceof app.astrosoft.ui.comp.modern.ModernScrollBarUI);
+        assertTrue("Modern scrollbar width should be at least 14px for comfortable grabbing",
+                panel.getScrollPane().getVerticalScrollBar().getPreferredSize().width >= 14);
     }
 
     @Test
