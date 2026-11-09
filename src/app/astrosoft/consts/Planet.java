@@ -91,6 +91,15 @@ public enum Planet {
 	public static Set<Planet> planetsAsc(){
 		return EnumSet.range(Sun, Ascendant);
 	}
+
+	/**
+	 * Returns the 8 Ashtakavarga point-contributors in B.V. Raman's canonical
+	 * Prasthara Chakra row sequence (descending order of orbital distance from Earth,
+	 * followed by Ascendant).
+	 */
+	public static List<Planet> prastharaContributors(){
+		return List.of(Saturn, Jupiter, Mars, Sun, Venus, Mercury, Moon, Ascendant);
+	}
 	
 	public static boolean isNode(Planet p){
 		return (p == Rahu || p == Ketu);

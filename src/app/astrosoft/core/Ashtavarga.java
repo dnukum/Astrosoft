@@ -35,70 +35,72 @@ public class Ashtavarga implements Exportable {
     private static int[] one =
         {
             0, 2, 6, 9, 11, 12, 18, 22, 23, 26, 27, 29, 30, 31, 32, 34, 35, 36,
-            39, 41, 45, 47, 48, 55
-        
+            39, 41, 45, 47, 48, 55,
+            58, 59, 60, 61, 62
         };
     private static int[] two =
         {
             0, 2, 6, 10, 18, 25, 26, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39, 41,
-            45, 47, 48
-        
+            45, 47, 48,
+            59, 60, 61
         };
     private static int[] three =
         {
             1, 3, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 19, 23, 27, 29, 32, 36,
-            38, 41, 42, 43, 45, 46, 47, 49, 50, 54, 55
-        
+            38, 41, 42, 43, 45, 46, 47, 49, 50, 54, 55,
+            56, 57, 58, 61, 62, 63
         };
     private static int[] four =
         {
             0, 2, 6, 7, 11, 12, 13, 18, 22, 25, 26, 29, 30, 31, 32, 34, 35, 36,
-            39, 41, 45, 46, 47, 48, 55
-        
+            39, 41, 45, 46, 47, 48, 55,
+            56, 59, 60, 61, 62
         };
     private static int[] five =
         {
             3, 4, 10, 11, 13, 14, 16, 19, 24, 27, 29, 33, 35, 37, 38, 39, 41, 42,
-            44, 43, 45, 46, 47, 52, 54, 50
-        
+            44, 43, 45, 46, 47, 52, 54, 50,
+            60, 61
         };
     private static int[] six =
         {
             1, 3, 4, 5, 7, 8, 9, 10, 14, 15, 16, 17, 19, 20, 21, 23, 24, 25, 27,
-            28, 31, 35, 37, 38, 39, 42, 43, 49, 50, 51, 52, 53, 54, 55
-        
+            28, 31, 35, 37, 38, 39, 42, 43, 49, 50, 51, 52, 53, 54, 55,
+            56, 57, 58, 59, 60, 62, 63
         };
     private static int[] seven =
-        { 0, 2, 5, 6, 8, 9, 11, 12, 13, 18, 22, 26, 30, 32, 33, 34, 36, 39, 48
+        { 0, 2, 5, 6, 8, 9, 11, 12, 13, 18, 22, 26, 30, 32, 33, 34, 36, 39, 48,
+          60
          };
     private static int[] eight =
         {
             0, 2, 6, 8, 11, 12, 18, 21, 22, 25, 26, 28, 29, 30, 31, 32, 34, 36,
-            40, 41, 44, 45, 46, 47, 48, 51
-        
+            40, 41, 44, 45, 46, 47, 48, 51,
+            59, 61
         };
     private static int[] nine =
         {
             0, 2, 3, 4, 6, 10, 13, 22, 24, 26, 27, 29, 30, 32, 33, 35, 37, 39,
-            41, 42, 43, 44, 45, 46, 47, 51
-        
+            41, 42, 43, 44, 45, 46, 47, 51,
+            60, 61
         };
     private static int[] ten =
         {
             0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 18, 20, 22, 23, 25,
-            26, 27, 30, 31, 32, 34, 35, 36, 37, 39, 44, 45, 46, 48, 50, 51, 55
-        
+            26, 27, 30, 31, 32, 34, 35, 36, 37, 39, 44, 45, 46, 48, 50, 51, 55,
+            56, 57, 58, 59, 60, 62, 63
         };
     private static int[] eleven =
         {
             0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
             20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 36, 37,
             39, 33, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
-            55
-        
+            55,
+            56, 57, 58, 59, 60, 62, 63
         };
     private static int[] twelve =
-        { 3, 5, 7, 12, 20, 21, 24, 27, 28, 38, 40, 41, 42, 51, 52, 53, 50
+        { 3, 5, 7, 12, 20, 21, 24, 27, 28, 38, 40, 41, 42, 51, 52, 53, 50,
+          56, 57
          };
     private static EnumMap<AshtavargaName, Integer> count;
     
@@ -111,6 +113,7 @@ public class Ashtavarga implements Exportable {
     Vector<int[]> v;
     
     private EnumMap<AshtavargaName, EnumMap<Rasi, Integer>> ashtavarga;
+    private EnumMap<AshtavargaName, EnumMap<Planet, EnumMap<Rasi, Integer>>> prasthara;
     private EnumMap<AshtavargaName, EnumMap<Rasi, Integer>> trikonaReduced;
     private EnumMap<AshtavargaName, EnumMap<Rasi, Integer>> ekathipathiyaReduced;
     
@@ -153,6 +156,7 @@ public class Ashtavarga implements Exportable {
     	count.put(AshtavargaName.Jupiter, 56);
     	count.put(AshtavargaName.Venus, 52);
     	count.put(AshtavargaName.Saturn, 39);
+    	count.put(AshtavargaName.Ascendant, 49);
 	}
 
 	private int getParal( int houseNo, int vargaNo ) {
@@ -177,27 +181,35 @@ public class Ashtavarga implements Exportable {
     private void computeAstavarga(  ) {
 
     	ashtavarga = new EnumMap<AshtavargaName, EnumMap<Rasi, Integer>> (AshtavargaName.class);
+    	prasthara = new EnumMap<AshtavargaName, EnumMap<Planet, EnumMap<Rasi, Integer>>> (AshtavargaName.class);
     	
         int diff = 0;
         int paral = 0;
         
-        for ( Planet planet : Planet.majorPlanets() ) {
+        for ( Planet planet : Planet.majorPlanetsAsc() ) {
 
         	EnumMap<Rasi, Integer> paralsInHouse = initParals();
+        	EnumMap<Planet, EnumMap<Rasi, Integer>> prastharaForPlanet = new EnumMap<Planet, EnumMap<Rasi, Integer>>(Planet.class);
+        	for ( Planet contributor : Planet.majorPlanetsAsc() ) {
+        		prastharaForPlanet.put(contributor, initParals());
+        	}
             for ( Rasi house : Rasi.values() ) {
 
             	int total = 0;
                 for ( Planet subpla : Planet.majorPlanetsAsc() ) {
 
                     diff = ( (house.ordinal() + 1) - planetPos.get(subpla) + 12 ) % 12;
-                    paral = getParal( diff, ( 8 * planet.ordinal() ) + subpla.ashtavargaNo() );
+                    paral = getParal( diff, ( 8 * planet.ashtavargaNo() ) + subpla.ashtavargaNo() );
 
+                    prastharaForPlanet.get(subpla).put(house, paral);
                     total = total + paral;
 
                 }
                 paralsInHouse.put(house, total);
              }
-            ashtavarga.put(AshtavargaName.ofPlanet(planet), paralsInHouse);
+            AshtavargaName vargaName = AshtavargaName.ofPlanet(planet);
+            ashtavarga.put(vargaName, paralsInHouse);
+            prasthara.put(vargaName, prastharaForPlanet);
         }
 
     }
@@ -501,6 +513,39 @@ public class Ashtavarga implements Exportable {
     public EnumMap<Rasi, Integer> getAshtavarga(AshtavargaName name) {
 		return ashtavarga.get(name);
 	}
+
+    /**
+     * Returns the 96-cell Prasthara Chakra matrix (8 contributor rows x 12 Rasi columns)
+     * for the given target planet or Ascendant.
+     */
+    public EnumMap<Planet, EnumMap<Rasi, Integer>> getPrasthara(AshtavargaName name) {
+    	return prasthara.get(name);
+    }
+
+    /**
+     * Returns the individual Prasthara bindu contribution (0 or 1) from {@code contributor}
+     * to {@code target} in the specified {@code rasi}.
+     */
+    public int getPrastharaBindu(AshtavargaName target, Planet contributor, Rasi rasi) {
+    	EnumMap<Planet, EnumMap<Rasi, Integer>> targetMap = prasthara.get(target);
+    	if (targetMap == null) {
+    		return 0;
+    	}
+    	EnumMap<Rasi, Integer> rowMap = targetMap.get(contributor);
+    	if (rowMap == null) {
+    		return 0;
+    	}
+    	Integer val = rowMap.get(rasi);
+    	return val != null ? val : 0;
+    }
+
+    /**
+     * Returns the ordered list of 8 Prasthara Chakra contributors in B.V. Raman's
+     * descending orbital distance sequence (Saturn, Jupiter, Mars, Sun, Venus, Mercury, Moon, Ascendant).
+     */
+    public static List<Planet> getPrastharaContributors() {
+    	return Planet.prastharaContributors();
+    }
     
     public EnumMap<Rasi, Integer> getTrikona(AshtavargaName name) {
 		return trikonaReduced.get(name);
