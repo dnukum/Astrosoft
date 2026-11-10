@@ -24,8 +24,8 @@ import app.astrosoft.ui.view.RelativePlanetView;
 
 public class PlanetDetailsDialog extends JDialog {
 
-	private static Dimension DEFAULT_SIZE = new Dimension(570, 290);
-	private static final Dimension MIN_SIZE = new Dimension(480, 230);
+	private static Dimension DEFAULT_SIZE = new Dimension(636, 268);
+	private static final Dimension MIN_SIZE = new Dimension(500, 236);
 
 	private static PlanetDetailsDialog activeDialog;
 	private static java.awt.Point lastLocation;
@@ -77,7 +77,7 @@ public class PlanetDetailsDialog extends JDialog {
 		setResizable(true);
 
 		planetView = new RelativePlanetView(planetaryInfo, ascendant, shadBala);
-		planetView.setPopoutVisible(false);
+		planetView.setFloatingMode(true);
 		planetView.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
 		getContentPane().setLayout(new BorderLayout());

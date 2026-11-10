@@ -186,6 +186,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		instance = this;
 		UIConsts.setChartTheme(preferences.getChartTheme());
+		UIConsts.setChartStyle(preferences.getChartStyle());
+		Chart.setChartZoomPercent(preferences.getChartZoom());
 		initComponents();
 
         // WindowPlacement controls outer startup bounds, not the display dimensions.
@@ -427,11 +429,6 @@ public class AstroSoft extends javax.swing.JFrame implements
 		setJMenuBar(mbar);
 
 		toolbar = new AstrosoftToolBar(actionMgr);
-		toolbar.setFontAdjustmentActions(
-			() -> adjustChartFontSize(1),
-			() -> adjustChartFontSize(-1),
-			() -> resetChartFontSize()
-		);
 
 		this.add(toolbar, BorderLayout.PAGE_START);
 
@@ -714,28 +711,30 @@ public class AstroSoft extends javax.swing.JFrame implements
 	private Chart currentRasiChart;
 	private Chart currentNavamsaChart;
 
-	public void adjustChartFontSize(int delta) {
-		Chart.adjustFontOffset(delta);
-		log.info("adjustChartFontSize: delta=" + delta + ", current fontOffset=" + Chart.getFontOffset());
-		refreshActiveModernScreenCharts();
-	}
-
-	public void resetChartFontSize() {
-		Chart.resetFontOffset();
-		log.info("resetChartFontSize: fontOffset reset to 0");
-		refreshActiveModernScreenCharts();
-	}
-
 	private void refreshActiveModernScreenCharts() {
+		int totalRebuilt = 0;
 		if (home.getComponentCount() > 0) {
 			java.awt.Component view = home.getComponent(0);
 			int count = rebuildChartsInComponent(view);
 			refreshViewsInComponent(view);
+			totalRebuilt += count;
 			log.info("refreshActiveModernScreenCharts: rebuilt " + count + " Chart instances in active view " + (view != null ? view.getClass().getSimpleName() : "null") + " (fontOffset=" + Chart.getFontOffset() + ")");
 			home.repaint();
 		} else {
 			log.info("refreshActiveModernScreenCharts: home has no components");
 		}
+		for (java.awt.Window win : java.awt.Window.getWindows()) {
+			if (win != this && win.isDisplayable()) {
+				int winCount = rebuildChartsInComponent(win);
+				if (winCount > 0) {
+					refreshViewsInComponent(win);
+					win.revalidate();
+					win.repaint();
+					totalRebuilt += winCount;
+				}
+			}
+		}
+		log.fine("refreshActiveModernScreenCharts: total rebuilt=" + totalRebuilt);
 	}
 
 	private void refreshViewsInComponent(java.awt.Component comp) {
@@ -772,24 +771,17 @@ public class AstroSoft extends javax.swing.JFrame implements
 		this.currentNavamsaChart = navamsa;
 		rasi.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
 		navamsa.setTitleBadge(UIConsts.NAVY_BADGE_BG, UIConsts.NAVY_BADGE_BG, Color.WHITE);
-		rasi.setBorder(UIConsts.getChartBorder());
-		navamsa.setBorder(UIConsts.getChartBorder());
 
-		final JPanel rasiNavamsaPanel = new JPanel(new GridLayout(1, 2, 22, 0));
-		rasiNavamsaPanel.setOpaque(false);
-		rasiNavamsaPanel.add(rasi);
-		rasiNavamsaPanel.add(navamsa);
-		rasiNavamsaPanel.setPreferredSize(new Dimension(858, 365));
-		rasiNavamsaPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+		final JPanel rasiNavamsaPanel = Chart.createDualChartsCard(rasi, navamsa);
 
 		final javax.swing.JComponent ashtavargaPane = app.astrosoft.ui.view.AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), h.getAscendant(), h.getRasi(), h.getPlanetRasis());
 
 		final JPanel ashtavargaWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		ashtavargaWrapper.setOpaque(false);
 		ashtavargaWrapper.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-		ashtavargaWrapper.setBorder(javax.swing.BorderFactory.createEmptyBorder(25, 0, 0, 0));
-		ashtavargaWrapper.setPreferredSize(new Dimension(ashtavargaPane.getPreferredSize().width, ashtavargaPane.getPreferredSize().height + 25));
-		ashtavargaWrapper.setMaximumSize(new Dimension(ashtavargaPane.getPreferredSize().width, ashtavargaPane.getPreferredSize().height + 25));
+		ashtavargaWrapper.setBorder(javax.swing.BorderFactory.createEmptyBorder(18, 0, 0, 0));
+		ashtavargaWrapper.setPreferredSize(new Dimension(ashtavargaPane.getPreferredSize().width, ashtavargaPane.getPreferredSize().height + 18));
+		ashtavargaWrapper.setMaximumSize(new Dimension(ashtavargaPane.getPreferredSize().width, ashtavargaPane.getPreferredSize().height + 18));
 		ashtavargaWrapper.add(ashtavargaPane);
 
 		final JPanel planetOffsetsView = new app.astrosoft.ui.view.RelativePlanetView(h.getPlanetaryInfo(), h.getAscendant(), h.getShadBala());
@@ -1687,6 +1679,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 		case ChartTheme:
 			optionThemeChanged((app.astrosoft.ui.util.UIConsts.ChartTheme) value);
 			break;
+		case ChartStyle:
+			optionStyleChanged((app.astrosoft.ui.util.UIConsts.ChartStyle) value);
+			break;
 		}
 
 
@@ -1695,7 +1690,20 @@ public class AstroSoft extends javax.swing.JFrame implements
 	private void optionThemeChanged(app.astrosoft.ui.util.UIConsts.ChartTheme theme) {
 		log.info("Chart Theme changed to: " + theme);
 		UIConsts.setChartTheme(theme);
+		refreshAllChartsAndCachedViews();
+	}
+
+	private void optionStyleChanged(app.astrosoft.ui.util.UIConsts.ChartStyle style) {
+		log.info("Chart Style changed to: " + style);
+		UIConsts.setChartStyle(style);
+		refreshAllChartsAndCachedViews();
+	}
+
+	public void refreshAllChartsAndCachedViews() {
 		refreshActiveModernScreenCharts();
+		if (myMuhurtaView != null && (home.getComponentCount() == 0 || home.getComponent(0) != myMuhurtaView)) {
+			rebuildChartsInComponent(myMuhurtaView);
+		}
 	}
 
 	public static AstrosoftPref getPreferences(){
@@ -1766,9 +1774,6 @@ public class AstroSoft extends javax.swing.JFrame implements
 			
 			refreshUI();
 			getContentPane().validate();
-			if (toolbar != null) {
-				toolbar.setChartFontControlsVisible(isModernScreen(view));
-			}
 			
 			if (isModernScreen(view)) {
 			    int viewW = home.getWidth();

@@ -26,6 +26,7 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
 	private Rasi moonRasi;
 	private AshtavargaName vargaName;
 	private Rasi natalRasi;
+	private Rasi orientationAscendant;
 	
 	public AshtaVargaChartData(AshtavargaName name, EnumMap<Rasi, Integer> varga) {
 		super();
@@ -68,6 +69,18 @@ public class AshtaVargaChartData extends AbstractChartData implements Exportable
 
 	public void setNatalRasi(Rasi natalRasi) {
 		this.natalRasi = natalRasi;
+	}
+
+	/**
+	 * Ascendant used to orient North Indian chart houses even when {@link #getAscendant()}
+	 * is kept null so South Indian charts do not render an extra Asc marker.
+	 */
+	public Rasi getOrientationAscendant() {
+		return ascendant != null ? ascendant : orientationAscendant;
+	}
+
+	public void setOrientationAscendant(Rasi orientationAscendant) {
+		this.orientationAscendant = orientationAscendant;
 	}
 
 	public boolean isSarvaAshtavarga() {

@@ -193,41 +193,48 @@ public class ChartFontSizeScalingTest {
                 frame.pack();
                 frame.doLayout();
 
-                for (Component c : chart.getComponents()) {
-                    if (c instanceof javax.swing.JPanel) {
-                        javax.swing.JPanel p = (javax.swing.JPanel) c;
-                        p.doLayout();
-                        for (Component sub : p.getComponents()) {
-                            if (sub instanceof JTable) {
-                                JTable table = (JTable) sub;
-                                table.doLayout();
-                                for (int r = 0; r < table.getRowCount(); r++) {
-                                    for (int col = 0; col < table.getColumnCount(); col++) {
-                                        Object val = table.getValueAt(r, col);
-                                        if (val instanceof Planet) {
-                                            Planet planet = (Planet) val;
-                                            TableCellRenderer rend = table.getCellRenderer(r, col);
-                                            Component comp = table.prepareRenderer(rend, r, col);
-                                            assert comp instanceof JLabel : "Renderer must be JLabel";
-                                            JLabel lbl = (JLabel) comp;
-                                            int colW = table.getColumnModel().getColumn(col).getWidth();
-                                            java.awt.Insets insets = lbl.getInsets();
-                                            java.awt.FontMetrics fm = lbl.getFontMetrics(lbl.getFont());
-                                            java.awt.Rectangle viewR = new java.awt.Rectangle(
-                                                insets.left, insets.top,
-                                                colW - insets.left - insets.right,
-                                                table.getRowHeight(r)
-                                            );
-                                            String clipped = SwingUtilities.layoutCompoundLabel(
-                                                lbl, fm, lbl.getText(), null,
-                                                lbl.getVerticalAlignment(), lbl.getHorizontalAlignment(),
-                                                lbl.getVerticalTextPosition(), lbl.getHorizontalTextPosition(),
-                                                viewR, new java.awt.Rectangle(), new java.awt.Rectangle(), 0
-                                            );
-                                            assert !"...".equals(clipped) && !"...".equals(clipped.trim()) : 
-                                                "Planet " + planet + " must not be clipped to ellipsis, was: " + clipped;
-                                            assert !clipped.contains("...") : 
-                                                "Planet " + planet + " label clipped to: " + clipped;
+                for (int zoom : new int[] { 100, 160 }) {
+                    Chart.setChartZoomPercent(zoom);
+                    chart.rebuild();
+                    frame.pack();
+                    frame.doLayout();
+
+                    for (Component c : chart.getComponents()) {
+                        if (c instanceof javax.swing.JPanel) {
+                            javax.swing.JPanel p = (javax.swing.JPanel) c;
+                            p.doLayout();
+                            for (Component sub : p.getComponents()) {
+                                if (sub instanceof JTable) {
+                                    JTable table = (JTable) sub;
+                                    table.doLayout();
+                                    for (int r = 0; r < table.getRowCount(); r++) {
+                                        for (int col = 0; col < table.getColumnCount(); col++) {
+                                            Object val = table.getValueAt(r, col);
+                                            if (val instanceof Planet) {
+                                                Planet planet = (Planet) val;
+                                                TableCellRenderer rend = table.getCellRenderer(r, col);
+                                                Component comp = table.prepareRenderer(rend, r, col);
+                                                assert comp instanceof JLabel : "Renderer must be JLabel";
+                                                JLabel lbl = (JLabel) comp;
+                                                int colW = table.getColumnModel().getColumn(col).getWidth();
+                                                java.awt.Insets insets = lbl.getInsets();
+                                                java.awt.FontMetrics fm = lbl.getFontMetrics(lbl.getFont());
+                                                java.awt.Rectangle viewR = new java.awt.Rectangle(
+                                                    insets.left, insets.top,
+                                                    colW - insets.left - insets.right,
+                                                    table.getRowHeight(r)
+                                                );
+                                                String clipped = SwingUtilities.layoutCompoundLabel(
+                                                    lbl, fm, lbl.getText(), null,
+                                                    lbl.getVerticalAlignment(), lbl.getHorizontalAlignment(),
+                                                    lbl.getVerticalTextPosition(), lbl.getHorizontalTextPosition(),
+                                                    viewR, new java.awt.Rectangle(), new java.awt.Rectangle(), 0
+                                                );
+                                                assert !"...".equals(clipped) && !"...".equals(clipped.trim()) :
+                                                    "Planet " + planet + " at " + zoom + "% must not be clipped to ellipsis, was: " + clipped;
+                                                assert !clipped.contains("...") :
+                                                    "Planet " + planet + " at " + zoom + "% label clipped to: " + clipped;
+                                            }
                                         }
                                     }
                                 }
@@ -235,6 +242,7 @@ public class ChartFontSizeScalingTest {
                         }
                     }
                 }
+                Chart.resetFontOffset();
                 frame.dispose();
                 System.out.println("testThreePlanetsNarrowColumnNoClipping PASSED: No planet labels clipped to ellipsis!");
             } catch (Throwable t) {

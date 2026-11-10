@@ -43,6 +43,7 @@ public class AstrosoftMenuBar extends JMenuBar
     JRadioButtonMenuItem[] nodeMenuItems;
     JRadioButtonMenuItem[] langMenuItems;
     JRadioButtonMenuItem[] themeMenuItems;
+    JRadioButtonMenuItem[] styleMenuItems;
     private JCheckBoxMenuItem notesMenuItem;
  	
     AstrosoftActionManager actionMgr;
@@ -191,6 +192,20 @@ public class AstrosoftMenuBar extends JMenuBar
         }
         menu.add( themeSubMenu );
 
+        // Option Chart Style Sub Menu
+        JMenu styleSubMenu = new JMenu( "Chart Style " );
+        ButtonGroup styleBtnGrp = new ButtonGroup(  );
+        EnumSet<Command> styleOptions = Command.styleOptions();
+        styleMenuItems = new JRadioButtonMenuItem[styleOptions.size()];
+        i = 0;
+        for ( Command style : styleOptions ) {
+            styleMenuItems[i] = new JRadioButtonMenuItem( actionMgr.getAction( style ) );
+            styleSubMenu.add( styleMenuItems[i] );
+            styleBtnGrp.add( styleMenuItems[i] );
+            i++;
+        }
+        menu.add( styleSubMenu );
+
         menu.addSeparator();
         
         //Rest of option menuitems
@@ -221,6 +236,10 @@ public class AstrosoftMenuBar extends JMenuBar
         app.astrosoft.ui.util.UIConsts.ChartTheme currentTheme = preferences.getChartTheme();
         if (currentTheme != null && currentTheme.ordinal() < themeMenuItems.length) {
             themeMenuItems[currentTheme.ordinal()].setSelected( true );
+        }
+        app.astrosoft.ui.util.UIConsts.ChartStyle currentStyle = preferences.getChartStyle();
+        if (currentStyle != null && currentStyle.ordinal() < styleMenuItems.length) {
+            styleMenuItems[currentStyle.ordinal()].setSelected( true );
         }
         
         addAllMenus();

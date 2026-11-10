@@ -15,6 +15,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.Toolkit;
@@ -40,12 +41,16 @@ import java.util.function.Consumer;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -100,8 +105,21 @@ public class RelativePlanetView extends JPanel {
 	private static final int CARD_WIDTH = 530;
 	private static final int CARD_HEIGHT = 232;
 	private static final int DEFAULT_HOUSES_HEIGHT = 380;
+
 	private int cardHeight = CARD_HEIGHT;
 	private boolean userCustomizedHeight = false;
+	private boolean floatingMode = false;
+
+	private final List<AstrosoftTable> overviewTables = new ArrayList<AstrosoftTable>();
+	private final List<JLabel> natureLabels = new ArrayList<JLabel>();
+	private JPanel splitTablePanel;
+	private JPanel positionsInnerPanel;
+	private JPanel natureColsPanel;
+	private JPanel leftNatureLines;
+	private JPanel rightNatureLines;
+	private ShadbalaBarPanel shadbalaBarPanel;
+	private JScrollPane positionsScroll;
+	private JScrollPane shadbalaScroll;
 
 	private static final String TAB_POSITIONS = "POSITIONS";
 	private static final String TAB_SHADBALA = "SHADBALA";
@@ -246,10 +264,13 @@ public class RelativePlanetView extends JPanel {
 
 		// Build the 2 clean perspective panels
 		JPanel positionsPanel = createPositionsPanel(planetaryInfo, sortedPlanets, planetRasi, planetPos, ascRasi);
-		JPanel shadbalaPanel = new ShadbalaBarPanel(shadBala);
+		shadbalaBarPanel = new ShadbalaBarPanel(shadBala);
 
-		contentCards.add(positionsPanel, TAB_POSITIONS);
-		contentCards.add(shadbalaPanel, TAB_SHADBALA);
+		positionsScroll = wrapBorderlessScroll(positionsPanel);
+		shadbalaScroll = wrapBorderlessScroll(shadbalaBarPanel);
+
+		contentCards.add(positionsScroll, TAB_POSITIONS);
+		contentCards.add(shadbalaScroll, TAB_SHADBALA);
 
 		add(contentCards);
 
@@ -267,11 +288,11 @@ public class RelativePlanetView extends JPanel {
 		pillBar.setBounds(CARD_WIDTH - 240, 3, 232, 24);
 		add(pillBar);
 
-		// Interactive bottom-edge drag to resize
+		// Interactive bottom-edge drag to resize (docked card only)
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2 && e.getY() >= getHeight() - 14) {
+				if (!floatingMode && e.getClickCount() == 2 && e.getY() >= getHeight() - 14) {
 					toggleHeight();
 				}
 			}
@@ -280,6 +301,12 @@ public class RelativePlanetView extends JPanel {
 		addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
+				if (floatingMode) {
+					if (getCursor().getType() != Cursor.DEFAULT_CURSOR) {
+						setCursor(Cursor.getDefaultCursor());
+					}
+					return;
+				}
 				if (e.getY() >= getHeight() - 14) {
 					setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
 				} else {
@@ -289,12 +316,24 @@ public class RelativePlanetView extends JPanel {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				if (getCursor().getType() == Cursor.N_RESIZE_CURSOR) {
+				if (!floatingMode && getCursor().getType() == Cursor.N_RESIZE_CURSOR) {
 					int newH = e.getY();
 					setCardHeight(newH, true);
 				}
 			}
 		});
+	}
+
+	private static JScrollPane wrapBorderlessScroll(JComponent comp) {
+		JScrollPane scroll = new JScrollPane(comp);
+		scroll.setBorder(null);
+		scroll.setOpaque(false);
+		scroll.getViewport().setOpaque(false);
+		scroll.getVerticalScrollBar().setUnitIncrement(16);
+		scroll.getHorizontalScrollBar().setUnitIncrement(16);
+		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		return scroll;
 	}
 
 	public void toggleHeight() {
@@ -311,6 +350,37 @@ public class RelativePlanetView extends JPanel {
 		}
 	}
 
+	/**
+	 * Configures this view for floating dialog presentation: hides docked resize/popout
+	 * controls and bottom drag grip and removes rigid card size bounds so the content
+	 * reflows smoothly across the resized window width and height.
+	 */
+	public void setFloatingMode(boolean floating) {
+		this.floatingMode = floating;
+		if (resizeBtn != null) {
+			resizeBtn.setVisible(!floating);
+		}
+		if (popoutBtn != null) {
+			popoutBtn.setVisible(!floating);
+		}
+		if (floating) {
+			setMinimumSize(null);
+			setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+			setCursor(Cursor.getDefaultCursor());
+		} else {
+			Dimension d = new Dimension(CARD_WIDTH, this.cardHeight);
+			setPreferredSize(d);
+			setMinimumSize(d);
+			setMaximumSize(d);
+		}
+		revalidate();
+		repaint();
+	}
+
+	public boolean isFloatingMode() {
+		return floatingMode;
+	}
+
 	public void openFloatingDialog() {
 		Window owner = SwingUtilities.getWindowAncestor(this);
 		app.astrosoft.ui.dlg.PlanetDetailsDialog.showDialog(owner, planetaryInfo, ascendant, shadBala, null);
@@ -323,10 +393,16 @@ public class RelativePlanetView extends JPanel {
 		if (currentW <= 0) currentW = CARD_WIDTH;
 		int currentH = getHeight();
 		if (currentH <= 0) currentH = cardHeight;
-		contentCards.setBounds(18, 30, currentW - 36, currentH - 38);
+
+		FontMetrics tfm = title.getFontMetrics(title.getFont());
+		int titleW = Math.max(88, tfm.stringWidth(title.getText()) + 8);
+		title.setBounds(20, 3, titleW, 22);
+		contentCards.setBounds(18, 30, Math.max(60, currentW - 36), Math.max(40, currentH - 38));
 		if (pillBar != null) {
-			pillBar.setBounds(currentW - 245, 3, 232, 24);
+			pillBar.setBounds(Math.max(titleW + 28, currentW - 245), 3, 232, 24);
+			pillBar.doLayout();
 		}
+		contentCards.validate();
 	}
 
 	public void setCardHeight(int newHeight) {
@@ -470,14 +546,57 @@ public class RelativePlanetView extends JPanel {
 			copyTexts.put(name, pt.toString().trim());
 		}
 
-		JPanel tablePanel = buildSplitTablePanel(rows, AstrosoftTableColumn.Longitude, 105, 132, tooltips, copyTexts);
+		splitTablePanel = buildSplitTablePanel(rows, AstrosoftTableColumn.Longitude, 105, 132, tooltips, copyTexts);
 
-		JPanel contentPanel = new JPanel(new BorderLayout(0, 2));
-		contentPanel.setOpaque(false);
-		contentPanel.add(tablePanel, BorderLayout.NORTH);
-		contentPanel.add(createFunctionalNaturePanel(ascRasi), BorderLayout.CENTER);
+		positionsInnerPanel = new JPanel(new BorderLayout(0, 2));
+		positionsInnerPanel.setOpaque(false);
+		positionsInnerPanel.add(splitTablePanel, BorderLayout.NORTH);
+		positionsInnerPanel.add(createFunctionalNaturePanel(ascRasi), BorderLayout.CENTER);
 
-		return contentPanel;
+		// Wrap inner content in NORTH of a scrollable container so Functional Nature stays
+		// compact below the tables instead of stretching lines apart when expanded vertically.
+		return new ScrollableNorthPanel(positionsInnerPanel);
+	}
+
+	private static class ScrollableNorthPanel extends JPanel implements Scrollable {
+		private final JPanel inner;
+
+		ScrollableNorthPanel(JPanel inner) {
+			super(new BorderLayout());
+			this.inner = inner;
+			setOpaque(false);
+			add(inner, BorderLayout.NORTH);
+		}
+
+		@Override
+		public Dimension getPreferredScrollableViewportSize() {
+			return getPreferredSize();
+		}
+
+		@Override
+		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return 16;
+		}
+
+		@Override
+		public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return 48;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportWidth() {
+			return true;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportHeight() {
+			return false;
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			return inner.getPreferredSize();
+		}
 	}
 
 	private JPanel createFunctionalNaturePanel(Rasi ascRasi) {
@@ -524,12 +643,12 @@ public class RelativePlanetView extends JPanel {
 		yogaLabel.setFont(lineFont);
 		yogaLabel.setToolTipText("<html><b>Yogakaraka</b><br/>Single planet simultaneously ruling a Kendra and a Trikona &mdash; confers supreme auspiciousness and Raja Yoga (B.V. Raman).</html>");
 
-		JPanel leftLines = new JPanel(new GridLayout(3, 1, 0, 2));
-		leftLines.setOpaque(false);
-		leftLines.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 2, 6));
-		leftLines.add(kendraLabel);
-		leftLines.add(trikonaLabel);
-		leftLines.add(yogaLabel);
+		leftNatureLines = new JPanel(new GridLayout(3, 1, 0, 2));
+		leftNatureLines.setOpaque(false);
+		leftNatureLines.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 2, 6));
+		leftNatureLines.add(kendraLabel);
+		leftNatureLines.add(trikonaLabel);
+		leftNatureLines.add(yogaLabel);
 
 		// Right Column: Functional Nature (Benefics, Neutrals, Malefics)
 		Set<Planet> benefics = PlanetCharacter.getFunctionalBenefics(ascRasi);
@@ -552,15 +671,22 @@ public class RelativePlanetView extends JPanel {
 		mLabel.setFont(lineFont);
 		mLabel.setToolTipText("<html><b>Functional Malefics</b><br/>Planets producing adverse results for this Lagna due to trik (6, 8, 12) or adverse rulership.</html>");
 
-		JPanel rightLines = new JPanel(new GridLayout(3, 1, 0, 2));
-		rightLines.setOpaque(false);
-		rightLines.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 2, 2));
-		rightLines.add(bLabel);
-		rightLines.add(nLabel);
-		rightLines.add(mLabel);
+		natureLabels.add(kendraLabel);
+		natureLabels.add(trikonaLabel);
+		natureLabels.add(yogaLabel);
+		natureLabels.add(bLabel);
+		natureLabels.add(nLabel);
+		natureLabels.add(mLabel);
+
+		rightNatureLines = new JPanel(new GridLayout(3, 1, 0, 2));
+		rightNatureLines.setOpaque(false);
+		rightNatureLines.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 2, 2));
+		rightNatureLines.add(bLabel);
+		rightNatureLines.add(nLabel);
+		rightNatureLines.add(mLabel);
 
 		// 2-Column layout with centered vertical divider
-		JPanel cols = new JPanel(new GridLayout(1, 2, 16, 0)) {
+		natureColsPanel = new JPanel(new GridLayout(1, 2, 16, 0)) {
 			@Override
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
@@ -571,12 +697,12 @@ public class RelativePlanetView extends JPanel {
 				g2.dispose();
 			}
 		};
-		cols.setOpaque(false);
-		cols.setAlignmentX(Component.LEFT_ALIGNMENT);
-		cols.add(leftLines);
-		cols.add(rightLines);
+		natureColsPanel.setOpaque(false);
+		natureColsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		natureColsPanel.add(leftNatureLines);
+		natureColsPanel.add(rightNatureLines);
 
-		naturePanel.add(cols);
+		naturePanel.add(natureColsPanel);
 
 		return naturePanel;
 	}
@@ -710,6 +836,12 @@ public class RelativePlanetView extends JPanel {
 					}
 				}
 			});
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			int prefH = START_Y + Math.max(1, items.size()) * ROW_HEIGHT + 8;
+			return new Dimension(420, prefH);
 		}
 
 		private int getRowAt(Point pt) {
@@ -916,7 +1048,7 @@ public class RelativePlanetView extends JPanel {
 			javax.swing.table.TableColumn pCol = table.getColumnModel().getColumn(0);
 			javax.swing.table.TableColumn vCol = table.getColumnModel().getColumn(1);
 			pCol.setPreferredWidth(col0Width);
-			pCol.setMaxWidth(col0Width + 15);
+			pCol.setMaxWidth(col0Width + 30);
 			vCol.setPreferredWidth(col1Width);
 
 			pCol.setCellRenderer(new DefaultTableCellRenderer() {
@@ -948,6 +1080,7 @@ public class RelativePlanetView extends JPanel {
 				}
 			});
 
+			overviewTables.add(table);
 			panel.add(table);
 		}
 
@@ -1007,9 +1140,8 @@ public class RelativePlanetView extends JPanel {
 
 						FontMetrics fm = g2.getFontMetrics(getFont());
 						int textW = fm.stringWidth(getText());
-						int textH = fm.getAscent();
 						int textX = (w - textW) / 2;
-						int textY = (h + textH) / 2 - 2;
+						int textY = (h + fm.getAscent() - fm.getDescent()) / 2;
 
 						g2.setColor(getForeground());
 						g2.setFont(getFont());
@@ -1120,12 +1252,14 @@ public class RelativePlanetView extends JPanel {
 		g2.setStroke(new BasicStroke(1.5f));
 		g2.draw(p);
 
-		// Subtle bottom-center grip handle indicating vertical resizability
-		int gripW = 40;
-		int gripX = (currentW - gripW) / 2;
-		int gripY = boxBottom - 2;
-		g2.setColor(new Color(160, 180, 205));
-		g2.fillRoundRect(gripX, gripY - 1, gripW, 3, 2, 2);
+		// Subtle bottom-center grip handle indicating vertical resizability (docked card only)
+		if (!floatingMode) {
+			int gripW = 40;
+			int gripX = (currentW - gripW) / 2;
+			int gripY = boxBottom - 2;
+			g2.setColor(new Color(160, 180, 205));
+			g2.fillRoundRect(gripX, gripY - 1, gripW, 3, 2, 2);
+		}
 
 		g2.dispose();
 	}

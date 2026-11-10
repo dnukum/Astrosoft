@@ -261,6 +261,38 @@ public class UIConsts {
 
 	private static ChartTheme currentChartTheme = ChartTheme.WARM_IVORY;
 
+	public enum ChartStyle {
+		SOUTH_INDIAN("South Indian"),
+		NORTH_INDIAN("North Indian");
+
+		private final String displayName;
+
+		ChartStyle(String displayName) {
+			this.displayName = displayName;
+		}
+
+		public String displayName() {
+			return displayName;
+		}
+
+		@Override
+		public String toString() {
+			return displayName;
+		}
+	}
+
+	private static ChartStyle currentChartStyle = ChartStyle.SOUTH_INDIAN;
+
+	public static ChartStyle getChartStyle() {
+		return currentChartStyle;
+	}
+
+	public static void setChartStyle(ChartStyle style) {
+		if (style != null) {
+			currentChartStyle = style;
+		}
+	}
+
 	public static ChartTheme getChartTheme() {
 		return currentChartTheme;
 	}
@@ -328,6 +360,80 @@ public class UIConsts {
 			default:
 				return getChartBackground();
 		}
+	}
+
+	/**
+	 * Per-planet foreground colors for North Indian charts, adjusted per theme to
+	 * guarantee a WCAG AA contrast ratio of at least 4.5:1 against the chart background.
+	 */
+	public static Color getNorthIndianPlanetColor(app.astrosoft.consts.Planet planet) {
+		Color base = baseNorthIndianPlanetColor(planet);
+		return ensureContrast(base, getChartBackground(), 4.5);
+	}
+
+	/** Soft tint applied to the 4 angular diamond houses (1, 4, 7, 10) in North Indian charts. */
+	public static Color getNorthIndianDiamondTint() {
+		Color border = getChartBorderColor();
+		return new Color(border.getRed(), border.getGreen(), border.getBlue(), 16);
+	}
+
+	private static Color baseNorthIndianPlanetColor(app.astrosoft.consts.Planet planet) {
+		if (planet == null) {
+			return getChartPlanetForeground();
+		}
+		switch (planet) {
+			case Ascendant: return new Color(0xB9, 0x1C, 0x1C);
+			case Sun:       return new Color(0xEA, 0x58, 0x0C);
+			case Moon:      return new Color(0xC0, 0x26, 0xD3);
+			case Mars:      return new Color(0xDC, 0x26, 0x26);
+			case Mercury:   return new Color(0x15, 0x80, 0x3D);
+			case Jupiter:   return new Color(0xB4, 0x53, 0x09);
+			case Venus:     return new Color(0xDB, 0x27, 0x77);
+			case Saturn:    return new Color(0x1D, 0x4E, 0xD8);
+			case Rahu:      return new Color(0x43, 0x38, 0xCA);
+			case Ketu:      return new Color(0x6B, 0x72, 0x80);
+			default:        return getChartPlanetForeground();
+		}
+	}
+
+	/** Adjusts {@code fg} toward darker (on light bg) or lighter (on dark bg) until contrast >= {@code minRatio}. */
+	public static Color ensureContrast(Color fg, Color bg, double minRatio) {
+		if (fg == null || bg == null) {
+			return fg;
+		}
+		if (contrastRatio(fg, bg) >= minRatio) {
+			return fg;
+		}
+		double bgLum = relativeLuminance(bg);
+		boolean darken = bgLum > 0.179;
+		float[] hsb = Color.RGBtoHSB(fg.getRed(), fg.getGreen(), fg.getBlue(), null);
+		for (int i = 1; i <= 40; i++) {
+			float t = i / 40.0f;
+			float b = darken ? Math.max(0.0f, hsb[2] * (1.0f - t)) : Math.min(1.0f, hsb[2] + (1.0f - hsb[2]) * t);
+			Color candidate = Color.getHSBColor(hsb[0], hsb[1], b);
+			if (contrastRatio(candidate, bg) >= minRatio) {
+				return candidate;
+			}
+		}
+		return darken ? Color.BLACK : Color.WHITE;
+	}
+
+	public static double contrastRatio(Color a, Color b) {
+		double la = relativeLuminance(a);
+		double lb = relativeLuminance(b);
+		double lighter = Math.max(la, lb);
+		double darker = Math.min(la, lb);
+		return (lighter + 0.05) / (darker + 0.05);
+	}
+
+	private static double relativeLuminance(Color c) {
+		return 0.2126 * linearizeChannel(c.getRed() / 255.0)
+			 + 0.7152 * linearizeChannel(c.getGreen() / 255.0)
+			 + 0.0722 * linearizeChannel(c.getBlue() / 255.0);
+	}
+
+	private static double linearizeChannel(double c) {
+		return (c <= 0.03928) ? (c / 12.92) : Math.pow((c + 0.055) / 1.055, 2.4);
 	}
 }
 

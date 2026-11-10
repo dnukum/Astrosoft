@@ -76,6 +76,8 @@ public enum Command {
 	THEME_PALE_GOLD_MIST ("Pale Gold Mist"),
 	THEME_CALM_SAGE ("Calm Sage"),
 	THEME_CLASSIC ("Classic (Original)"),
+	STYLE_SOUTH_INDIAN ("South Indian"),
+	STYLE_NORTH_INDIAN ("North Indian"),
 	Place (DisplayStrings.DEF_LOC_STR),
 	EphCalcTime(DisplayStrings.EPH_TIME_STR),
 	PanCalcTime(DisplayStrings.PAN_TIME_STR),
@@ -154,6 +156,10 @@ public enum Command {
 
 	public static EnumSet<Command> themeOptions(){
 		return EnumSet.range(THEME_WARM_IVORY, THEME_CLASSIC);
+	}
+
+	public static EnumSet<Command> styleOptions(){
+		return EnumSet.range(STYLE_SOUTH_INDIAN, STYLE_NORTH_INDIAN);
 	}
 
 	public static EnumSet<Command> fileMenuItems(){

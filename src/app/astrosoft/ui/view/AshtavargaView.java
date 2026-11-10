@@ -1080,10 +1080,14 @@ public class AshtavargaView extends AstrosoftView {
 			Chart ashtavargaChart = new Chart(ashtavargaData, tabChartSize);
 			ashtavargaChart.setTitleFont(font);
 			
-			Chart trikonaChart = new Chart(new AshtaVargaChartData(AshtavargaName.Trikona, ashtavarga.getTrikona(name)), tabChartSize);
+			AshtaVargaChartData trikonaData = new AshtaVargaChartData(AshtavargaName.Trikona, ashtavarga.getTrikona(name));
+			trikonaData.setOrientationAscendant(ascendant);
+			Chart trikonaChart = new Chart(trikonaData, tabChartSize);
 			trikonaChart.setTitleFont(font);
 			
-			Chart ekathipathyaChart = new Chart(new AshtaVargaChartData(AshtavargaName.Ekathipathya, ashtavarga.getEkathipathiya(name)), tabChartSize);
+			AshtaVargaChartData ekathipathyaData = new AshtaVargaChartData(AshtavargaName.Ekathipathya, ashtavarga.getEkathipathiya(name));
+			ekathipathyaData.setOrientationAscendant(ascendant);
+			Chart ekathipathyaChart = new Chart(ekathipathyaData, tabChartSize);
 			ekathipathyaChart.setTitleFont(font);
 			
 			vargaPanel.add(ashtavargaChart);

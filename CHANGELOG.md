@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [2.0.0] - 2026-10-27
 
 ### Added
+- **North Indian Chart Style:** Added a global **Options → Chart Style** setting (`South Indian` default / `North Indian`) persisted via `AstrosoftPref.ChartStyle` with instant live refresh across all screens. Implemented rectangular-capable `NorthIndianGeometry`, `HouseContentModel`, `NorthIndianChartCanvas`, per-planet contrast-adjusted colors across all 5 chart themes, tapered crowded-house fitting, full planet/house tooltip parity, and Ashtavarga orientation support.
+- **Unified Dual-Chart Card & Right-Click Chart Zoom:** Enclosed the dashboard's Rasi and Navamsha charts in a shared rounded `Charts` card (`Chart.createDualChartsCard`), replaced toolbar chart-font buttons with a per-chart right-click zoom context menu (`70..160%`, persisted via `AstrosoftPref.ChartZoom`), and added proportional resize scaling across both South Indian and North Indian Ashtavarga charts.
 - **Chart Notes Subsystem:** Persistent rich-text dockable editor (`ChartNotesPanel`) attached to chart metadata with bold, italic, underline, bullets, numbers, smart enter, and atomic undo/redo (`NotesUndoManager`).
 - **Spreadsheet Table Ingestion:** Seamless copy/paste preservation for Microsoft Excel, Google Sheets (`text/html`), and TSV tab-delimited plain-text tables into structured HTML notes with XML CDATA persistence.
 - **Universal NotesOwner Abstraction:** Unified notes contract across Horoscope (`.ash`), My Muhurta (`.muh`), and Marriage Match / Compatibility (`.asc`) documents.
@@ -15,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - **High-DPI Vector Icons:** Replaced font-dependent Unicode characters with Java2D anti-aliased vector stars (`StarIcon`) and ASCII transit transitions, resolving missing glyph boxes (`□`) on Windows.
 
 ### Fixed
+- **Planet Details Floating Layout & Reflow:** Fixed vertical stretching in `PlanetDetailsDialog` / `RelativePlanetView`, hid dock-only resize/popout controls when floating, and switched to horizontal reflow with comfortable default sizing (`636 × 268`).
 - **Compatibility Typo & Dual-Read Compatibility:** Modernized XML tag from `<Compactibility>` to `<Compatibility>`, while maintaining seamless dual-format reading and backward compatibility for older `.asc` files.
 - **PDF Export Missing Templates:** Fixed an issue where modern `<Compatibility>` tags produced 15-byte corrupted PDFs by updating `compactibility2pdf.xsl` to match both `<Compatibility | Compactibility>`.
 - **PDF Notes Header Overlap:** Resolved visual overlap where the Notes section title collided directly with the running page header by formatting it with `<fo:table width="500pt" margin-top="40">`.

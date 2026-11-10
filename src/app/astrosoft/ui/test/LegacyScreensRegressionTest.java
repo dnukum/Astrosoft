@@ -21,6 +21,7 @@ import javax.swing.JList;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -66,9 +67,12 @@ public class LegacyScreensRegressionTest {
     private static Ephemeris eph;
     private static Compatibility compatibility;
     private static Muhurtha muhurtha;
+    private static app.astrosoft.ui.util.UIConsts.ChartStyle originalStyle;
 
     @BeforeClass
     public static void setUp() {
+        originalStyle = app.astrosoft.ui.util.UIConsts.getChartStyle();
+        app.astrosoft.ui.util.UIConsts.setChartStyle(app.astrosoft.ui.util.UIConsts.ChartStyle.SOUTH_INDIAN);
         h = SampleHoroscopes.getHoroscope("samples/raja.ash");
         assertNotNull("Sample horoscope must load", h);
 
@@ -77,6 +81,13 @@ public class LegacyScreensRegressionTest {
         eph = new Ephemeris(AstroUtil.getCalendar(), Ephemeris.Mode.Daily);
         compatibility = new Compatibility(h, h);
         muhurtha = new Muhurtha(today, h.getRasi(), h.getNakshathra().getNak());
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        if (originalStyle != null) {
+            app.astrosoft.ui.util.UIConsts.setChartStyle(originalStyle);
+        }
     }
 
     private static void renderOffscreen(Component comp, int width, int height) {

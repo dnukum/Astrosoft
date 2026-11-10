@@ -138,4 +138,19 @@ public class ChartThemeTest {
         UIConsts.setChartTheme(ChartTheme.WARM_IVORY);
         assertEquals(new Color(100, 116, 139), UIConsts.getChartLabelColor());
     }
+
+    @Test
+    public void testNorthIndianPlanetColorsContrastAcrossAllThemes() {
+        for (ChartTheme theme : ChartTheme.values()) {
+            UIConsts.setChartTheme(theme);
+            Color bg = UIConsts.getChartBackground();
+            for (Planet p : Planet.planetsAsc()) {
+                Color fg = UIConsts.getNorthIndianPlanetColor(p);
+                assertNotNull("Planet color must not be null for " + p + " in " + theme, fg);
+                double ratio = UIConsts.contrastRatio(fg, bg);
+                assertTrue("Contrast ratio for " + p + " in " + theme + " must be >= 4.5, was " + ratio,
+                        ratio >= 4.5);
+            }
+        }
+    }
 }

@@ -109,6 +109,10 @@ public class AstrosoftAction extends AbstractAction {
 			handler.optionChanged(Preference.ChartTheme, app.astrosoft.ui.util.UIConsts.ChartTheme.CALM_SAGE);
 		} else if (cmd.equals(Command.THEME_CLASSIC)) {
 			handler.optionChanged(Preference.ChartTheme, app.astrosoft.ui.util.UIConsts.ChartTheme.CLASSIC);
+		} else if (cmd.equals(Command.STYLE_SOUTH_INDIAN)) {
+			handler.optionChanged(Preference.ChartStyle, app.astrosoft.ui.util.UIConsts.ChartStyle.SOUTH_INDIAN);
+		} else if (cmd.equals(Command.STYLE_NORTH_INDIAN)) {
+			handler.optionChanged(Preference.ChartStyle, app.astrosoft.ui.util.UIConsts.ChartStyle.NORTH_INDIAN);
 		} else if (Command.optionMenuItems().contains(cmd)) {
 			handler.optionChanged(Preference.valueOf(cmd.name()));
 		} else if (cmd.equals(Command.COMPUTE_NUMBER)){

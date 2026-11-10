@@ -29,7 +29,8 @@ public class AstrosoftPref {
 	public static enum Preference {
 
 		Language, PanCalcTime, EphCalcTime, Ayanamsa, RahuNode, Place, City, State, Country, Longitude, Latitude, TimeZone, IsInitialized,
-		AcrobatExe, AstrosoftFilesDir, ChartTheme, LeftColumnCollapsed;
+		AcrobatExe, AstrosoftFilesDir, ChartTheme, ChartStyle, LeftColumnCollapsed,
+		ChartZoom;
 	}
 
 	private static double defaultEphCalcTime = 0.0; // 12.00 AM
@@ -139,6 +140,8 @@ public class AstrosoftPref {
 		setAcrobatExecutable(defaultAcrobatExecutable);
 		setAstrosoftFilesDir(defaultAstrosoftFilesDir);
 		setChartTheme(app.astrosoft.ui.util.UIConsts.ChartTheme.WARM_IVORY);
+		setChartStyle(app.astrosoft.ui.util.UIConsts.ChartStyle.SOUTH_INDIAN);
+		setChartZoom(100);
 		
 	}
 
@@ -164,6 +167,41 @@ public class AstrosoftPref {
 			root.put(Preference.ChartTheme.name(), theme.name());
 			flush();
 		}
+	}
+
+	public app.astrosoft.ui.util.UIConsts.ChartStyle getChartStyle() {
+		String styleStr = root.get(Preference.ChartStyle.name(), app.astrosoft.ui.util.UIConsts.ChartStyle.SOUTH_INDIAN.name());
+		try {
+			return app.astrosoft.ui.util.UIConsts.ChartStyle.valueOf(styleStr);
+		} catch (Exception e) {
+			return app.astrosoft.ui.util.UIConsts.ChartStyle.SOUTH_INDIAN;
+		}
+	}
+
+	public void setChartStyle(app.astrosoft.ui.util.UIConsts.ChartStyle style) {
+		if (style != null) {
+			root.put(Preference.ChartStyle.name(), style.name());
+			flush();
+		}
+	}
+
+	public int getChartZoom() {
+		return getZoomPref(Preference.ChartZoom, 70, 160);
+	}
+
+	public void setChartZoom(int percent) {
+		setZoomPref(Preference.ChartZoom, percent, 70, 160);
+	}
+
+	private int getZoomPref(Preference pref, int min, int max) {
+		int val = root.getInt(pref.name(), 100);
+		return Math.max(min, Math.min(max, val));
+	}
+
+	private void setZoomPref(Preference pref, int percent, int min, int max) {
+		int clamped = Math.max(min, Math.min(max, percent));
+		root.putInt(pref.name(), clamped);
+		flush();
 	}
 	
 	/** Whether the Horoscope screen's left column (Profile, Planetary Positions) is collapsed. */
@@ -259,6 +297,9 @@ public class AstrosoftPref {
 			break;
 		case ChartTheme:
 			setChartTheme((app.astrosoft.ui.util.UIConsts.ChartTheme) value);
+			break;
+		case ChartStyle:
+			setChartStyle((app.astrosoft.ui.util.UIConsts.ChartStyle) value);
 			break;
 
 		case PanCalcTime:
