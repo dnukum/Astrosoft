@@ -69,7 +69,7 @@ public class AshtavargaDialog extends JDialog {
 
 	public AshtavargaDialog(Window owner, Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi,
 			EnumMap<Planet, Rasi> planetRasis, Runnable onClose) {
-		super(owner != null ? owner : AstroSoft.getInstance(), "Ashtavarga - 8-Chart Grid", ModalityType.MODELESS);
+		super(owner != null ? owner : AstroSoft.getInstance(), "Ashtavarga - Charts & Prasthara Chakra", ModalityType.MODELESS);
 		this.onCloseCallback = onClose;
 
 		if (activeDialog != null && activeDialog != this) {

@@ -707,6 +707,9 @@ public class Chart extends JPanel{
 	private static GridBagConstraints getConstrains(int house){
 
 		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1.0;
+		c.weighty = 1.0;
 
 		switch(house){
 			case 0: c.gridx = 1;
@@ -752,6 +755,8 @@ public class Chart extends JPanel{
 					 c.gridy = 1;
 					 c.gridwidth = 2;
 					 c.gridheight = 2;
+					 c.weightx = 2.0;
+					 c.weighty = 2.0;
 					 break;
 			default : throw new IllegalArgumentException("house > 12"); 
 		}

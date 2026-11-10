@@ -183,6 +183,94 @@ public class AshtavargaMultiGridTest {
         frame.dispose();
     }
 
+    @Test
+    public void testPrastharaMultiTabSwitchingAndRendering() throws Exception {
+        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        assertNotNull("Horoscope loaded", h);
+
+        Rasi asc = h.getAscendant();
+        Rasi moon = h.getRasi();
+        java.util.EnumMap<app.astrosoft.consts.Planet, Rasi> planetRasis = h.getPlanetRasis();
+
+        JPanel panel = AshtavargaView.createAshtavargaGridPanel(h.getAshtaVarga(), asc, moon, planetRasis);
+        assertNotNull("Grid panel created", panel);
+
+        // Locate PillTabBar ("SAV/BAV" | "Prasthara") and PrastharaCardPanel
+        List<AshtavargaView.PillTabBar> pillBars = findComponents(panel, AshtavargaView.PillTabBar.class);
+        assertEquals("Must contain 1 PillTabBar", 1, pillBars.size());
+        AshtavargaView.PillTabBar pillBar = pillBars.get(0);
+        assertEquals("PillTabBar must have 2 tabs (SAV/BAV | Prasthara)", 2, pillBar.getButtons().size());
+        assertEquals("SAV/BAV", pillBar.getButtons().get(0).getText());
+        assertEquals("Prasthara", pillBar.getButtons().get(1).getText());
+        assertEquals("Default tab must be SAV/BAV (0)", 0, pillBar.getSelectedTab());
+
+        List<AshtavargaView.PrastharaCardPanel> prastharaPanels = findComponents(panel, AshtavargaView.PrastharaCardPanel.class);
+        assertEquals("Must contain 1 PrastharaCardPanel", 1, prastharaPanels.size());
+        AshtavargaView.PrastharaCardPanel prastharaCard = prastharaPanels.get(0);
+        assertEquals("PrastharaCardPanel must have 8 target buttons (Su..Sa + Asc)", 8, prastharaCard.getTargetButtons().size());
+
+        String[] expectedTargetCodes = {"Su", "Mo", "Ma", "Me", "Ju", "Ve", "Sa", "Asc"};
+        app.astrosoft.consts.AshtavargaName[] expectedTargets = {
+            app.astrosoft.consts.AshtavargaName.Sun,
+            app.astrosoft.consts.AshtavargaName.Moon,
+            app.astrosoft.consts.AshtavargaName.Mars,
+            app.astrosoft.consts.AshtavargaName.Mercury,
+            app.astrosoft.consts.AshtavargaName.Jupiter,
+            app.astrosoft.consts.AshtavargaName.Venus,
+            app.astrosoft.consts.AshtavargaName.Saturn,
+            app.astrosoft.consts.AshtavargaName.Ascendant
+        };
+        int[] expectedCounts = {48, 49, 39, 54, 56, 52, 39, 49};
+
+        JFrame frame = new JFrame();
+        frame.getContentPane().add(panel);
+        frame.pack();
+
+        // Switch to Prasthara tab via pill bar button click
+        pillBar.getButtons().get(1).doClick();
+        assertEquals("Selected tab must be Prasthara (1)", 1, pillBar.getSelectedTab());
+
+        // Cycle through all 8 targets (including Ascendant) and render offscreen
+        for (int i = 0; i < expectedTargetCodes.length; i++) {
+            javax.swing.JButton targetBtn = prastharaCard.getTargetButtons().get(i);
+            assertEquals("Target button code", expectedTargetCodes[i], targetBtn.getText());
+            targetBtn.doClick();
+            assertEquals("Selected target must match", expectedTargets[i], prastharaCard.getSelectedTarget());
+
+            String badgeText = prastharaCard.getSummaryBadgeLabel().getText();
+            assertTrue("Summary badge must contain total bindus " + expectedCounts[i] + " for " + expectedTargets[i] + ", got: " + badgeText,
+                    badgeText.contains("Total Bindus: " + expectedCounts[i]));
+
+            BufferedImage img = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = img.createGraphics();
+            panel.paint(g);
+            g.dispose();
+        }
+
+        // Switch back to SAV/BAV tab
+        pillBar.getButtons().get(0).doClick();
+        assertEquals("Selected tab must return to SAV/BAV (0)", 0, pillBar.getSelectedTab());
+
+        // Verify that stretching the panel dynamically stretches the 8 mini-charts and their house cells
+        panel.setBounds(0, 0, 1200, 600);
+        panel.doLayout();
+        List<Chart> charts = findComponents(panel, Chart.class);
+        assertEquals("Must contain 8 mini-charts", 8, charts.size());
+        for (Chart chart : charts) {
+            chart.doLayout();
+            assertTrue("Mini-chart width must stretch beyond base 196px when panel is stretched to 1200px, got: " + chart.getWidth(),
+                    chart.getWidth() > 240);
+            assertTrue("Mini-chart height must stretch beyond base 162px when panel is stretched to 600px, got: " + chart.getHeight(),
+                    chart.getHeight() > 220);
+            Component firstHouse = chart.getComponent(0);
+            assertTrue("House cell width must stretch beyond base 49px when chart stretches, got: " + firstHouse.getWidth(),
+                    firstHouse.getWidth() > 60);
+            assertTrue("House cell height must stretch beyond base 40px when chart stretches, got: " + firstHouse.getHeight(),
+                    firstHouse.getHeight() > 55);
+        }
+        frame.dispose();
+    }
+
     @SuppressWarnings("unchecked")
     private static <T extends Component> List<T> findComponents(Container parent, Class<T> clazz) {
         List<T> list = new ArrayList<T>();
