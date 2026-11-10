@@ -33,6 +33,9 @@ public class TimePickerDialog extends JDialog {
     }
 
     public static LocalTime showTimePicker(Component parent, LocalTime initialTime) {
+        if (java.awt.GraphicsEnvironment.isHeadless()) {
+            return initialTime;
+        }
         Window owner = (parent instanceof Window) ? (Window) parent : SwingUtilities.getWindowAncestor(parent);
         TimePickerDialog dlg = new TimePickerDialog(owner, initialTime);
         SwingUtilities.invokeLater(() -> {

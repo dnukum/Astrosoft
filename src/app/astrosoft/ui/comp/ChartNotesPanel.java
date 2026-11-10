@@ -1086,7 +1086,12 @@ public class ChartNotesPanel extends JPanel {
         InputMap im = editor.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap am = editor.getActionMap();
 
-        int meta = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        int meta;
+        try {
+            meta = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        } catch (Throwable t) {
+            meta = java.awt.event.InputEvent.CTRL_DOWN_MASK;
+        }
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, meta), "font-bold");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_I, meta), "font-italic");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, meta), "font-underline");

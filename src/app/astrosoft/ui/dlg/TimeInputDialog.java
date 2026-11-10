@@ -7,95 +7,97 @@
 package app.astrosoft.ui.dlg;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.time.LocalTime;
+import java.util.Calendar;
 import java.util.Date;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.SpringLayout;
-
-import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.ui.AstroSoft;
-import app.astrosoft.ui.comp.CalendarChooser;
 import app.astrosoft.ui.comp.DateListener;
-import app.astrosoft.ui.comp.PlaceChooser;
-import app.astrosoft.ui.util.SpringUtilities;
+import app.astrosoft.ui.comp.modern.TimePickerPanel;
 import app.astrosoft.ui.util.UIConsts;
 
+/**
+ * Modern Time Input Dialog using TimePickerPanel.
+ * Replaces manual typing of time with scrollable Hour, Min, Sec, AM/PM lists.
+ */
 public class TimeInputDialog extends AstrosoftDialog {
 
-	private static final Dimension dlgSize = new Dimension(300,180);
-	private static final Dimension panelSize = new Dimension((int)(dlgSize.width * 0.80), (int)(dlgSize.height * 0.70));
-	
-	private JButton okButton = new JButton("Ok");
-	private JButton cancelButton = new JButton("Cancel");
-	
-	private CalendarChooser timeChooser;
-	
-	public TimeInputDialog( Enum title, AstroSoft parent, Date initialValue, final DateListener listener ) {
-	     super( parent, title.toString(), dlgSize );
-	     initComponents();
-	     timeChooser.setSelectedDate(initialValue);
-	     okButton.addActionListener(new ActionListener(){
+	private static final Dimension DLG_SIZE = new Dimension(335, 415);
 
-				public void actionPerformed(ActionEvent e) {
-					listener.dateChanged(timeChooser.getSelectedDate());
-					System.out.println("dlg -> " + timeChooser.getSelectedDate());				
-					closeDialog();
-				}
-			});
-	     setVisible(true);
-	}
-	
-	private void initComponents(){
-		
-		 timeChooser = CalendarChooser.getTimeChooser();
-	     dlgPanel.setLayout(new FlowLayout());
-	     dlgPanel.add(createTimeChooser());
-	     
-	     cancelButton.addActionListener(new ActionListener(){
+	private TimePickerPanel timePickerPanel;
 
-				public void actionPerformed(ActionEvent arg0) {
-					closeDialog();
-				}
-			});
-	     
-	     
-	     add(dlgPanel);
-	     setBackground(UIConsts.THEME_CLR);
+	public TimeInputDialog(Enum title, AstroSoft parent, Date initialValue, final DateListener listener) {
+		this(title, parent, initialValue, listener, true);
 	}
 
-	private JPanel createTimeChooser() {
-		
-		//JPanel panel = new JPanel();
-		
-		JPanel timePanel = new JPanel(new SpringLayout());
-		
-		JPanel chooser = timeChooser.getChooser(getTitle());
-		timePanel.add(chooser);
-		
-		JPanel buttonPanel = new JPanel();
-		
-		buttonPanel.add(okButton);
-		buttonPanel.add(cancelButton);
-		
-		timePanel.add(buttonPanel);
-		
-		SpringUtilities.makeCompactGrid(timePanel, 2, 1, 5,5,10,10);
-		
-		timePanel.setBorder(UIConsts.getTitleBorder(getTitle()));
-		
-		timePanel.setPreferredSize(panelSize);
-		
-		//timeChooser.setBackground(UIConsts.THEME_CLR);
-		//panel.add(timePanel);
-		
-		
-		return timePanel;
+	public TimeInputDialog(Enum title, AstroSoft parent, Date initialValue, final DateListener listener, boolean autoShow) {
+		super(parent, title.toString(), DLG_SIZE);
+		setModal(true);
+		initComponents(initialValue, listener);
+		if (autoShow) {
+			setVisible(true);
+		}
+	}
+
+	private void initComponents(final Date initialValue, final DateListener listener) {
+		LocalTime initTime;
+		if (initialValue != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(initialValue);
+			initTime = LocalTime.of(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+		} else {
+			initTime = LocalTime.now();
+		}
+
+		timePickerPanel = new TimePickerPanel(initTime);
+		timePickerPanel.setOnConfirmListener(() -> {
+			LocalTime selected = timePickerPanel.getSelectedTime();
+			Calendar cal = Calendar.getInstance();
+			if (initialValue != null) {
+				cal.setTime(initialValue);
+			}
+			cal.set(Calendar.HOUR_OF_DAY, selected.getHour());
+			cal.set(Calendar.MINUTE, selected.getMinute());
+			cal.set(Calendar.SECOND, selected.getSecond());
+			cal.set(Calendar.MILLISECOND, 0);
+			if (listener != null) {
+				listener.dateChanged(cal.getTime());
+			}
+			closeDialog();
+		});
+
+		timePickerPanel.setOnCancelListener(this::closeDialog);
+
+		dlgPanel.setLayout(new BorderLayout());
+		dlgPanel.add(timePickerPanel, BorderLayout.CENTER);
+		add(dlgPanel);
+		setBackground(UIConsts.THEME_CLR);
+		setResizable(false);
+	}
+
+	public TimePickerPanel getTimePickerPanel() {
+		return timePickerPanel;
+	}
+
+	public LocalTime getSelectedTime() {
+		return timePickerPanel != null ? timePickerPanel.getSelectedTime() : null;
+	}
+
+	public void setSelectedTime(LocalTime time) {
+		if (timePickerPanel != null && time != null) {
+			timePickerPanel.setSelectedTime(time);
+		}
+	}
+
+	public Date getSelectedDate() {
+		LocalTime selected = getSelectedTime();
+		if (selected == null) return null;
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, selected.getHour());
+		cal.set(Calendar.MINUTE, selected.getMinute());
+		cal.set(Calendar.SECOND, selected.getSecond());
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTime();
 	}
 }

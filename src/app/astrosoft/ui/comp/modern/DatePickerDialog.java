@@ -36,6 +36,9 @@ public class DatePickerDialog extends JDialog {
     }
 
     public static LocalDate showDatePicker(Component parent, LocalDate initialDate) {
+        if (java.awt.GraphicsEnvironment.isHeadless()) {
+            return initialDate;
+        }
         Window owner = (parent instanceof Window) ? (Window) parent : SwingUtilities.getWindowAncestor(parent);
         DatePickerDialog dlg = new DatePickerDialog(owner, initialDate);
         SwingUtilities.invokeLater(() -> {

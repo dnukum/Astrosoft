@@ -59,42 +59,22 @@ public class CompatibilityInputDialog extends AstrosoftDialog {
 
 	private boolean isMarriageMatch = false;
 
-	/*private boolean hasBirthData = false;
-	private boolean hasStarData = false;
-
-	private String bName;
-	private String gName;
-
-	private Rasi boyRasi;
-	private Rasi girlRasi;
-
-	private Nakshathra boyNak;
-	private Nakshathra girlNak;
-
-	private BirthData boyBirthData;
-	private BirthData girlBirthData;
-
-
-	private CompatibilityInputDialog(AstroSoft parent, boolean hasBirthData, boolean hasStarData){
-		super( parent, "Enter Birth Details", dlgSize );
-		this.hasBirthData= hasBirthData;
-		this.hasStarData = hasStarData;
-		initComponents();
-		addComponents();
-		setVisible(true);
-
-	}*/
-
 	public CompatibilityInputDialog(AstroSoft parent){
 		this(parent, false);
 	}
 
 	public CompatibilityInputDialog(AstroSoft parent, boolean isMarriageMatch){
+		this(parent, isMarriageMatch, true);
+	}
+
+	public CompatibilityInputDialog(AstroSoft parent, boolean isMarriageMatch, boolean autoShow){
 		super( parent, isMarriageMatch ? "Enter Birth Details - Marriage Match" : "Enter Birth Details - Marriage Compatibility", dlgSize );
 		this.isMarriageMatch = isMarriageMatch;
 		initComponents();
 		addComponents();
-		setVisible(true);
+		if (autoShow) {
+			setVisible(true);
+		}
 	}
 
 	public CompatibilityInputDialog(AstroSoft parent, String boyName, String girlName, Rasi boyRasi, Rasi girlRasi, Nakshathra boyNak, Nakshathra girlNak){
@@ -233,8 +213,12 @@ public class CompatibilityInputDialog extends AstrosoftDialog {
 		return p;
 	}
 
+	public BirthDataPanel getBoyDataPanel() {
+		return boyDataPanel;
+	}
+
+	public BirthDataPanel getGirlDataPanel() {
+		return girlDataPanel;
+	}
+
 }
-
-
-
-

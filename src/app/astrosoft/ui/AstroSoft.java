@@ -1350,7 +1350,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	public void editHoroscope() {
 
-		new BirthInputDialog(this, h.getBirthData());
+		new ModernBirthInputDialog(this, h.getBirthData());
 
 	}
 

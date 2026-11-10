@@ -413,7 +413,12 @@ public class ChartNotesXmlTest {
 
     @Test
     public void testCrossPlatformCommandShortcutsAndCollisions() {
-        int menuMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        int menuMask;
+        try {
+            menuMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        } catch (Throwable t) {
+            menuMask = java.awt.event.ActionEvent.CTRL_MASK;
+        }
         
         // 1. Verify Save accelerator matches platform menu mask (Cmd on Mac, Ctrl on Windows)
         javax.swing.KeyStroke saveKey = app.astrosoft.consts.Command.SAVE.key();
