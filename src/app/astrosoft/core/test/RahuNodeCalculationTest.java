@@ -116,13 +116,13 @@ public class RahuNodeCalculationTest {
     }
 
     @Test
-    public void testBoundaryChartSignFlipPramila() {
-        // P.PRAMILA: Jan 31, 1985
+    public void testBoundaryChartSignFlipAriesTaurus() {
+        // Jan 31, 1985:
         // Mean Rahu is in Mesha (Aries, ~29.88°)
         // True Rahu flips into Vrishabha (Taurus, ~0.52°)
-        String path = "tests/options/P.PRAMILA.ash";
+        String path = "tests/options/rahu_cusp_aries_taurus.ash";
         File file = new File(path);
-        assertTrue("tests/options/P.PRAMILA.ash must exist", file.exists());
+        assertTrue("tests/options/rahu_cusp_aries_taurus.ash must exist", file.exists());
 
         Horoscope h = Horoscope.createFromFile(path);
         assertNotNull("Horoscope should load successfully", h);
@@ -155,13 +155,13 @@ public class RahuNodeCalculationTest {
     }
 
     @Test
-    public void testBoundaryChartSignFlipHemalatha() {
-        // D.HEMALATHA: Feb 29, 1988
+    public void testBoundaryChartSignFlipPiscesAquarius() {
+        // Feb 29, 1988:
         // Mean Rahu is in Meena (Pisces, ~0.35°)
         // True Rahu flips into Kumbha (Aquarius, ~29.45°)
-        String path = "tests/options/D.HEMALATHA.ash";
+        String path = "tests/options/rahu_cusp_pisces_aquarius.ash";
         File file = new File(path);
-        assertTrue("tests/options/D.HEMALATHA.ash must exist", file.exists());
+        assertTrue("tests/options/rahu_cusp_pisces_aquarius.ash must exist", file.exists());
 
         Horoscope h = Horoscope.createFromFile(path);
         assertNotNull("Horoscope should load successfully", h);
