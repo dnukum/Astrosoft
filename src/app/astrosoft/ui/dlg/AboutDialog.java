@@ -30,7 +30,7 @@ import app.astrosoft.util.Version;
 public class AboutDialog extends AstrosoftDialog {
 
     public AboutDialog(AstroSoft parent) {
-        super(parent, "About AstroSoft", new Dimension(540, 315));
+        super(parent, "About AstroSoft", new Dimension(540, 330));
         setModalityType(ModalityType.APPLICATION_MODAL);
         initComponents();
     }
@@ -79,10 +79,24 @@ public class AboutDialog extends AstrosoftDialog {
         descLabel.setForeground(new Color(60, 60, 60));
         descLabel.setAlignmentX(0.0f);
 
-        JLabel versionLabel = new JLabel("Version: " + Version.getDisplayVersion());
-        versionLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
+        String displayVersion = Version.getDisplayVersion();
+        int buildIdx = displayVersion.indexOf(" (");
+        String versionText = buildIdx >= 0 ? displayVersion.substring(0, buildIdx) : displayVersion;
+        String builtOnText = buildIdx >= 0 ? displayVersion.substring(buildIdx + 1) : null;
+
+        Font versionFont = new Font(Font.MONOSPACED, Font.BOLD, 12);
+        JLabel versionLabel = new JLabel("Version: " + versionText);
+        versionLabel.setFont(versionFont);
         versionLabel.setForeground(UIConsts.GREENISH_BLUE);
         versionLabel.setAlignmentX(0.0f);
+
+        JLabel builtOnLabel = null;
+        if (builtOnText != null) {
+            builtOnLabel = new JLabel(builtOnText);
+            builtOnLabel.setFont(versionFont);
+            builtOnLabel.setForeground(UIConsts.GREENISH_BLUE);
+            builtOnLabel.setAlignmentX(0.0f);
+        }
 
         JLabel javaLabel = new JLabel("Java: " + System.getProperty("java.version"));
         javaLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
@@ -94,6 +108,10 @@ public class AboutDialog extends AstrosoftDialog {
         contentPanel.add(descLabel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         contentPanel.add(versionLabel);
+        if (builtOnLabel != null) {
+            contentPanel.add(Box.createRigidArea(new Dimension(0, 2)));
+            contentPanel.add(builtOnLabel);
+        }
         contentPanel.add(Box.createRigidArea(new Dimension(0, 3)));
         contentPanel.add(javaLabel);
 
