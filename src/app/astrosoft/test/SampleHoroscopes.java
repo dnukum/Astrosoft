@@ -23,22 +23,22 @@ public class SampleHoroscopes {
 	}
 	
 	public static Horoscope getMyHoroscope(){
-		return getHoroscope("c:/Astrosoft/samples/raja.ash");
+		return getHoroscope("tests/charts/sample_chart_1.ash");
 	}
 	
 	public static Horoscope getElangoHoroscope(){
-		return getHoroscope("c:/Astrosoft/samples/elango.ash");
+		return getHoroscope("tests/charts/sample_chart_4.ash");
 	}
 	
 	public static Horoscope getMuthuHoroscope(){
-		return getHoroscope("c:/Astrosoft/samples/muthu.ash");
+		return getHoroscope("tests/charts/sample_chart_3.ash");
 	}
 	
 	public static Horoscope getSubaHoroscope(){
-		return getHoroscope("c:/Astrosoft/samples/suba.ash");
+		return getHoroscope("tests/charts/sample_chart_2.ash");
 	}
 	
 	public static Horoscope getManiHoroscope(){
-		return getHoroscope("c:/Astrosoft/samples/mani.ash");
+		return getHoroscope("tests/charts/sample_chart_1.ash");
 	}
 }

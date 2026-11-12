@@ -15,6 +15,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import app.astrosoft.core.Horoscope;
+import app.astrosoft.export.AstrosoftExporter;
+import app.astrosoft.export.AstrosoftExporter.Type;
 import app.astrosoft.export.AstrosoftMarkdownExporter;
 
 public class AstrosoftMarkdownExporterTest extends TestCase {
@@ -40,10 +43,10 @@ public class AstrosoftMarkdownExporterTest extends TestCase {
     }
 
     public void testHoroscopeExportAndXmlEquivalence() throws Exception {
-        File xmlFile = new File("samples/Raja_Horoscope.xml");
+        File xmlFile = new File("tests/charts/sample_chart_1_horoscope.xml");
         assertTrue("Sample XML must exist", xmlFile.exists());
 
-        File mdFile = new File(tempDir, "Raja_Horoscope.md");
+        File mdFile = new File(tempDir, "sample_chart_1_horoscope.md");
         AstrosoftMarkdownExporter.exportToMarkdown(xmlFile.getAbsolutePath(), mdFile.getAbsolutePath());
         assertTrue("Markdown file must be generated", mdFile.exists() && mdFile.length() > 0);
 
@@ -54,21 +57,27 @@ public class AstrosoftMarkdownExporterTest extends TestCase {
     }
 
     public void testAllSampleHoroscopesBatch() throws Exception {
-        File samplesDir = new File("samples");
-        File[] xmlFiles = samplesDir.listFiles((dir, name) -> name.endsWith("_Horoscope.xml"));
-        assertNotNull("Sample files array must not be null", xmlFiles);
-        assertTrue("Should have multiple sample horoscopes", xmlFiles.length > 5);
+        File chartsDir = new File("tests/charts");
+        File[] ashFiles = chartsDir.listFiles((dir, name) -> name.endsWith(".ash"));
+        assertNotNull("Test chart files array must not be null", ashFiles);
+        assertTrue("Should have multiple test charts", ashFiles.length >= 5);
 
-        for (File xml : xmlFiles) {
-            File md = new File(tempDir, xml.getName() + ".md");
+        for (File ash : ashFiles) {
+            String base = new File(tempDir, ash.getName().replace(".ash", "")).getAbsolutePath();
+            File xml = new File(base + ".xml");
+            File md = new File(base + ".md");
             try {
+                Horoscope h = Horoscope.createFromFile(ash.getAbsolutePath());
+                AstrosoftExporter.export(Type.Horosocope, h, base, false, false, true).get();
+                assertTrue("Generated XML must exist for " + ash.getName(), xml.exists() && xml.length() > 0);
+
                 AstrosoftMarkdownExporter.exportToMarkdown(xml.getAbsolutePath(), md.getAbsolutePath());
-                assertTrue("Generated MD must exist and not be empty for " + xml.getName(), md.exists() && md.length() > 0);
+                assertTrue("Generated MD must exist and not be empty for " + ash.getName(), md.exists() && md.length() > 0);
 
                 String mdContent = readEntireFile(md);
                 verifyXmlEquivalence(xml, mdContent);
             } catch (Exception e) {
-                fail("Failed to export and verify " + xml.getName() + ": " + e.getMessage());
+                fail("Failed to export and verify " + ash.getName() + ": " + e.getMessage());
             }
         }
     }
