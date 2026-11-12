@@ -42,8 +42,8 @@
 
 	<target name="generate-version" description="Generates version properties with build timestamp">
 		<tstamp>
-			<format pattern="yyyyMMdd:HHmmss" property="build.version" />
-			<format pattern="MM/dd/yyyy HH:mm:ss" property="tstamp.default" />
+			<format pattern="yyyyMMdd:HHmmss-z" property="build.version" locale="en,US" />
+			<format pattern="MM/dd/yyyy HH:mm:ss z" property="tstamp.default" locale="en,US" />
 		</tstamp>
 		<echo file="${dist_resources_dir}/version.properties">build.version=${build.version}
 build.date=${tstamp.default}

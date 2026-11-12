@@ -32,7 +32,7 @@ public class Version {
 
     /**
      * Returns a human-friendly version string including formatted build date,
-     * e.g., "20261031:213849 (Built on Oct 31, 2026 at 21:38:49)" or "Development Build".
+     * e.g., "20261112:053924-PST (Built on Nov 12, 2026 at 05:39:24 PST)" or "Development Build".
      */
     public static synchronized String getDisplayVersion() {
         String ver = getVersion();
@@ -42,25 +42,40 @@ public class Version {
             return "Development Build";
         }
 
-        // Try formatting dateStr ("MM/dd/yyyy HH:mm:ss") into "MMM d, yyyy 'at' HH:mm:ss"
-        if (dateStr != null && !dateStr.trim().isEmpty()) {
+        String formatted = formatDisplay(ver, dateStr,
+                new String[] { "MM/dd/yyyy HH:mm:ss z", "MM/dd/yyyy HH:mm:ss" });
+        if (formatted != null) {
+            return formatted;
+        }
+
+        formatted = formatDisplay(ver, ver,
+                new String[] { "yyyyMMdd:HHmmss-z", "yyyyMMdd:HHmmss" });
+        if (formatted != null) {
+            return formatted;
+        }
+
+        return ver;
+    }
+
+    private static String formatDisplay(String ver, String raw, String[] inPatterns) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        String trimmed = raw.trim();
+        for (String inPattern : inPatterns) {
             try {
-                java.text.SimpleDateFormat inFmt = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
-                java.util.Date d = inFmt.parse(dateStr.trim());
-                java.text.SimpleDateFormat outFmt = new java.text.SimpleDateFormat("MMM d, yyyy 'at' HH:mm:ss", java.util.Locale.US);
+                java.text.SimpleDateFormat inFmt = new java.text.SimpleDateFormat(inPattern, java.util.Locale.US);
+                java.util.Date d = inFmt.parse(trimmed);
+                boolean hasTz = inPattern.endsWith("z");
+                String outPattern = hasTz ? "MMM d, yyyy 'at' HH:mm:ss z" : "MMM d, yyyy 'at' HH:mm:ss";
+                java.text.SimpleDateFormat outFmt = new java.text.SimpleDateFormat(outPattern, java.util.Locale.US);
+                if (hasTz) {
+                    outFmt.setTimeZone(inFmt.getTimeZone());
+                }
                 return ver + " (Built on " + outFmt.format(d) + ")";
             } catch (Exception ignored) {}
         }
-
-        // Fallback: parse from version itself (pattern "yyyyMMdd:HHmmss")
-        try {
-            java.text.SimpleDateFormat inFmt = new java.text.SimpleDateFormat("yyyyMMdd:HHmmss", java.util.Locale.US);
-            java.util.Date d = inFmt.parse(ver.trim());
-            java.text.SimpleDateFormat outFmt = new java.text.SimpleDateFormat("MMM d, yyyy 'at' HH:mm:ss", java.util.Locale.US);
-            return ver + " (Built on " + outFmt.format(d) + ")";
-        } catch (Exception ignored) {}
-
-        return ver;
+        return null;
     }
 
     private static void loadVersionInfo() {
