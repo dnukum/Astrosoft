@@ -91,6 +91,9 @@ public class OptionDialog  {
 	}
 
 	private static void showPaneDialog(JOptionPane pane, Component parent, String title) {
+		if (java.awt.GraphicsEnvironment.isHeadless() || Boolean.getBoolean("astrosoft.test.unattended")) {
+			return;
+		}
 		Component parentComp = (parent != null) ? parent : AstroSoft.getInstance();
 		JDialog dialog = pane.createDialog(parentComp, title);
 		dialog.setAlwaysOnTop(true);

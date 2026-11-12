@@ -81,7 +81,9 @@ public class MuhurthaInput extends AstrosoftDialog {
         // Add outer panel
         add(dlgPanel);
         setBackground(UIConsts.THEME_CLR);
-        setVisible(true);
+        if (!java.awt.GraphicsEnvironment.isHeadless() && !Boolean.getBoolean("astrosoft.test.unattended")) {
+            setVisible(true);
+        }
     }
     
     private void okButtonClicked(){
