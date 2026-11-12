@@ -63,4 +63,6 @@ Before finalizing any UI changes, verify:
 - [ ] Confirmation and warning prompts route through `OptionDialog` (never raw `JOptionPane.show...`).
 - [ ] All file pickers use `FileOps.openFileDialog()` (guaranteeing `createDialog` sets `alwaysOnTop=true`).
 - [ ] Modeless inspection palettes (`PlanetDetails`, `HouseDetails`, `Ashtavarga`, `Chart Notes`) keep `alwaysOnTop=false` to avoid occluding modal popups.
-- [ ] Headless tests pass completely with `BUILD SUCCESSFUL` and zero failures.
+- [ ] All test input files (`.ash`, `.xml`, etc.) are anonymized (no personal names) and live inside `tests/` (never `samples/` or external user directories).
+- [ ] Any blocking modal `setVisible(true)` exercised by tests is guarded for `GraphicsEnvironment.isHeadless()` and `Boolean.getBoolean("astrosoft.test.unattended")` so `ant test` runs completely unattended.
+- [ ] Unattended/headless tests pass completely with `BUILD SUCCESSFUL` and zero failures.
