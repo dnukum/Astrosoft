@@ -16,8 +16,11 @@ import org.junit.Test;
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.Place;
 import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.Sex;
 import app.astrosoft.core.Horoscope;
+import app.astrosoft.pref.AstrosoftPref;
+import app.astrosoft.pref.AstrosoftPref.Preference;
 import app.astrosoft.test.SampleHoroscopes;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.dlg.AshtavargaDialog;
@@ -275,5 +278,34 @@ public class FloatingDialogsLifecycleTest {
 		assertTrue("AboutDialog must have WindowListener for windowOpened toFront hook",
 				about.getWindowListeners().length > 0);
 		about.dispose();
+	}
+
+	@Test
+	public void testRahuNodeChangeRefreshesOpenFloatingDialogs() {
+		AstrosoftPref pref = AstroSoft.getPreferences();
+		RahuNode originalNode = pref.getRahuNode();
+		try {
+			pref.setRahuNode(RahuNode.MEAN);
+			AstroSoft frame = new AstroSoft();
+			frame.computeHoroscope(horoscope.getBirthData());
+
+			PlanetDetailsDialog pdBefore = PlanetDetailsDialog.showDialog(frame, frame.getHoroscope(), null);
+			HouseDetailsDialog hdBefore = HouseDetailsDialog.showDialog(frame, frame.getHoroscope(), null);
+			java.awt.Rectangle customBounds = new java.awt.Rectangle(120, 140, 640, 280);
+			pdBefore.setBounds(customBounds);
+
+			frame.optionChanged(Preference.RahuNode, RahuNode.TRUE);
+
+			PlanetDetailsDialog pdAfter = PlanetDetailsDialog.getActiveDialog();
+			HouseDetailsDialog hdAfter = HouseDetailsDialog.getActiveDialog();
+			assertNotNull("PlanetDetailsDialog must remain open after Lunar Node change", pdAfter);
+			assertNotNull("HouseDetailsDialog must remain open after Lunar Node change", hdAfter);
+			assertTrue("PlanetDetailsDialog must be rebuilt with fresh data", pdAfter != pdBefore);
+			assertTrue("HouseDetailsDialog must be rebuilt with fresh data", hdAfter != hdBefore);
+			assertTrue("Refreshed PlanetDetailsDialog must remain visible", pdAfter.isVisible());
+			assertEquals("Refreshed PlanetDetailsDialog must preserve bounds", customBounds, pdAfter.getBounds());
+		} finally {
+			pref.setRahuNode(originalNode);
+		}
 	}
 }

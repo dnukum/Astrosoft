@@ -1421,6 +1421,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		if (h != null) {
 			h.setAyanamsa(ayanamsa);
+			refreshChartFloatingDialogs();
 			viewManager.showView(View.CHART_VIEW);
 		}
 
@@ -1439,7 +1440,42 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		if (h != null) {
 			h.setRahuNode(rahuNode);
+			refreshChartFloatingDialogs();
 			viewManager.showView(View.CHART_VIEW);
+		}
+	}
+
+	/**
+	 * Rebuilds any currently open floating chart inspection dialogs with the
+	 * recalculated Horoscope while preserving their screen bounds.
+	 */
+	private void refreshChartFloatingDialogs() {
+		if (h == null) {
+			return;
+		}
+		app.astrosoft.ui.dlg.PlanetDetailsDialog pd = app.astrosoft.ui.dlg.PlanetDetailsDialog.getActiveDialog();
+		java.awt.Rectangle pdBounds = (pd != null && pd.isDisplayable() && pd.isVisible()) ? pd.getBounds() : null;
+
+		app.astrosoft.ui.dlg.HouseDetailsDialog hd = app.astrosoft.ui.dlg.HouseDetailsDialog.getActiveDialog();
+		java.awt.Rectangle hdBounds = (hd != null && hd.isDisplayable() && hd.isVisible()) ? hd.getBounds() : null;
+
+		app.astrosoft.ui.dlg.AshtavargaDialog ad = app.astrosoft.ui.dlg.AshtavargaDialog.getActiveDialog();
+		java.awt.Rectangle adBounds = (ad != null && ad.isDisplayable() && ad.isVisible()) ? ad.getBounds() : null;
+
+		if (pdBounds != null) {
+			app.astrosoft.ui.dlg.PlanetDetailsDialog.closeActiveDialog();
+			app.astrosoft.ui.dlg.PlanetDetailsDialog reopened = app.astrosoft.ui.dlg.PlanetDetailsDialog.showDialog(this, h, null);
+			reopened.setBounds(pdBounds);
+		}
+		if (hdBounds != null) {
+			app.astrosoft.ui.dlg.HouseDetailsDialog.closeActiveDialog();
+			app.astrosoft.ui.dlg.HouseDetailsDialog reopened = app.astrosoft.ui.dlg.HouseDetailsDialog.showDialog(this, h, null);
+			reopened.setBounds(hdBounds);
+		}
+		if (adBounds != null) {
+			app.astrosoft.ui.dlg.AshtavargaDialog.closeActiveDialog();
+			app.astrosoft.ui.dlg.AshtavargaDialog reopened = app.astrosoft.ui.dlg.AshtavargaDialog.showDialog(this, h, null);
+			reopened.setBounds(adBounds);
 		}
 	}
 
