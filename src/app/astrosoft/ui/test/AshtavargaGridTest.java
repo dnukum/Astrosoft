@@ -22,7 +22,7 @@ public class AshtavargaGridTest {
     }
 
     public static void main(String[] args) throws Exception {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         check(h != null, "Horoscope loaded");
 
         Rasi asc = h.getAscendant();

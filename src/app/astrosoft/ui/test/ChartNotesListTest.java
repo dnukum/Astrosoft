@@ -26,7 +26,7 @@ public class ChartNotesListTest {
     @Before
     public void setUp() throws Exception {
         panel = new ChartNotesPanel(null);
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/suba.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_2.ash");
         panel.bindNotesOwner(h);
 
         java.lang.reflect.Field f = ChartNotesPanel.class.getDeclaredField("editor");

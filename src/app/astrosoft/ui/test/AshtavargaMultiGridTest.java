@@ -28,7 +28,7 @@ public class AshtavargaMultiGridTest {
 
     @Test
     public void testAshtavargaMultiGridCreationAndRendering() throws Exception {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         assertNotNull("Horoscope loaded", h);
 
         Rasi asc = h.getAscendant();
@@ -122,7 +122,7 @@ public class AshtavargaMultiGridTest {
 
     @Test
     public void testAshtavargaNatalRasiHighlighting() throws Exception {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         assertNotNull("Horoscope loaded", h);
 
         Rasi asc = h.getAscendant();
@@ -185,7 +185,7 @@ public class AshtavargaMultiGridTest {
 
     @Test
     public void testPrastharaMultiTabSwitchingAndRendering() throws Exception {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         assertNotNull("Horoscope loaded", h);
 
         Rasi asc = h.getAscendant();

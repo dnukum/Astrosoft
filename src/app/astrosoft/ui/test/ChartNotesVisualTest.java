@@ -18,7 +18,7 @@ public class ChartNotesVisualTest {
             frame.setSize(400, 600);
             frame.setLayout(new BorderLayout());
 
-            Horoscope h = SampleHoroscopes.getHoroscope("samples/suba.ash");
+            Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_2.ash");
             if (h != null) {
                 h.setNotes("<html><body><p><b>Consultation Notes:</b></p><p>Analysis for Suba - Job transition during <i>Jupiter-Venus</i> dasha.</p><p><u>Remedies:</u> Chant Navagraha Stotram.</p></body></html>");
             }

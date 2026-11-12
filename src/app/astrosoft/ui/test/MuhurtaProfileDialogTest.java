@@ -33,7 +33,7 @@ public class MuhurtaProfileDialogTest {
 
     @BeforeClass
     public static void setUp() {
-        sampleHoroscope = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        sampleHoroscope = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         assertNotNull("Sample horoscope must load", sampleHoroscope);
     }
 

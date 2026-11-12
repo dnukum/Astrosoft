@@ -212,9 +212,9 @@ public class RahuNodeCalculationTest {
         // For non-boundary charts (~96.7% of all horoscopes), Rahu and Ketu remain in the
         // identical Rasi in both Mean and True modes, differing only by a minor perturbation (< 1.85°).
         String[] sampleFiles = {
-            "samples/Test.ash",
-            "samples/raja.ash",
-            "samples/A.Elango.ash"
+            "tests/charts/sample_chart_3.ash",
+            "tests/charts/sample_chart_1.ash",
+            "tests/charts/sample_chart_4.ash"
         };
 
         for (String samplePath : sampleFiles) {

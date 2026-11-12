@@ -73,7 +73,7 @@ public class LegacyScreensRegressionTest {
     public static void setUp() {
         originalStyle = app.astrosoft.ui.util.UIConsts.getChartStyle();
         app.astrosoft.ui.util.UIConsts.setChartStyle(app.astrosoft.ui.util.UIConsts.ChartStyle.SOUTH_INDIAN);
-        h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         assertNotNull("Sample horoscope must load", h);
 
         Calendar today = new GregorianCalendar();

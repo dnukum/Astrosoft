@@ -80,7 +80,7 @@ public class SurfaceZoomControlsTest {
 
     @Test
     public void testFixedChartRightClickZoomPopupAndRoundedCard() {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         for (ChartStyle style : ChartStyle.values()) {
             UIConsts.setChartStyle(style);
             Chart.setChartZoomPercent(100);
@@ -138,7 +138,7 @@ public class SurfaceZoomControlsTest {
 
     @Test
     public void testAshtavargaChartsHaveNoZoomPopupAndResizeProportionallyInBothStyles() {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
 
         // 1. North Indian: scales with container size and keeps all markers inside bounds
         UIConsts.setChartStyle(ChartStyle.NORTH_INDIAN);
@@ -185,7 +185,7 @@ public class SurfaceZoomControlsTest {
 
     @Test
     public void testFloatingRelativePlanetViewReflowsCleanlyWithoutVerticalStretch() {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         RelativePlanetView view = new RelativePlanetView(h.getPlanetaryInfo(), h.getAscendant(), h.getShadBala());
         view.setFloatingMode(true);
 

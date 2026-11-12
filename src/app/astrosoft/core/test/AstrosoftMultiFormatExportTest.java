@@ -20,7 +20,7 @@ public class AstrosoftMultiFormatExportTest extends TestCase {
         super.setUp();
         tempDir = new File(System.getProperty("java.io.tmpdir"), "astrosoft_multi_test_" + System.currentTimeMillis());
         tempDir.mkdirs();
-        horoscope = Horoscope.createFromFile("samples/suba.ash");
+        horoscope = Horoscope.createFromFile("tests/charts/sample_chart_2.ash");
         assertNotNull("Horoscope should be loaded from sample", horoscope);
     }
 

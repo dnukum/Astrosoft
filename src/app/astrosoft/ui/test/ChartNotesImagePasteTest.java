@@ -59,7 +59,7 @@ public class ChartNotesImagePasteTest {
 
     @Test
     public void testInsertImageAtCaretAndSyncToOwner() throws Exception {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         assertNotNull("Horoscope must load", h);
 
         ChartNotesPanel panel = new ChartNotesPanel();
@@ -83,7 +83,7 @@ public class ChartNotesImagePasteTest {
 
     @Test
     public void testCustomImageViewRendersBase64Image() throws Exception {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         ChartNotesPanel panel = new ChartNotesPanel();
         panel.setHoroscope(h);
 
@@ -148,7 +148,7 @@ public class ChartNotesImagePasteTest {
 
     @Test
     public void testPastingImageDoesNotClobberPrecedingLines() throws Exception {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         ChartNotesPanel panel = new ChartNotesPanel();
         panel.setHoroscope(h);
 

@@ -93,7 +93,7 @@ public class MarkdownParserTest {
 
     @Test
     public void testChartNotesPanelMarkdownPasteIntegration() throws Exception {
-        Horoscope h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         ChartNotesPanel panel = new ChartNotesPanel();
         panel.setHoroscope(h);
 

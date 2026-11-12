@@ -59,7 +59,7 @@ public class NorthIndianLegacyScreensTest {
     public static void setUpClass() {
         originalStyle = UIConsts.getChartStyle();
         UIConsts.setChartStyle(ChartStyle.NORTH_INDIAN);
-        h = SampleHoroscopes.getHoroscope("samples/raja.ash");
+        h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
         assertNotNull("Sample horoscope must load", h);
         Calendar today = new GregorianCalendar();
         pan = new Panchang(today);

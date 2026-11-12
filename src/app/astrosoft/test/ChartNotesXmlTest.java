@@ -39,13 +39,13 @@ public class ChartNotesXmlTest {
     @Test
     public void testBackwardCompatibilityWithOlderFilesWithoutNotes() {
         // Test loading sample file without notes tag
-        File sampleFile = new File("samples/suba.ash");
+        File sampleFile = new File("tests/charts/sample_chart_2.ash");
         if (sampleFile.exists()) {
-            Document doc = XMLHelper.parseXML("samples/suba.ash");
+            Document doc = XMLHelper.parseXML("tests/charts/sample_chart_2.ash");
             Assert.assertNotNull("Document should parse", doc);
             BirthData bd = BirthData.valueOfXMLNode(doc.getChildNodes().item(0));
             Assert.assertNotNull("BirthData should not be null", bd);
-            Assert.assertEquals("Name should be Suba", "Suba", bd.name());
+            Assert.assertEquals("Name should be Sample_Chart_2", "Sample_Chart_2", bd.name());
             Assert.assertNull("Notes should be null when missing in older file", bd.getNotes());
         }
     }
@@ -371,11 +371,11 @@ public class ChartNotesXmlTest {
         Assert.assertNull("New horoscope should not have an associated file path yet", h.getFilePath());
 
         // 2. Horoscope loaded from file tracks its file path
-        File sampleFile = new File("samples/suba.ash");
+        File sampleFile = new File("tests/charts/sample_chart_2.ash");
         if (sampleFile.exists()) {
-            Horoscope loaded = Horoscope.createFromFile("samples/suba.ash");
+            Horoscope loaded = Horoscope.createFromFile("tests/charts/sample_chart_2.ash");
             Assert.assertNotNull("Loaded horoscope should have file path populated", loaded.getFilePath());
-            Assert.assertTrue("File path should point to suba.ash", loaded.getFilePath().endsWith("samples/suba.ash"));
+            Assert.assertTrue("File path should point to sample_chart_2.ash", loaded.getFilePath().endsWith("tests/charts/sample_chart_2.ash"));
         }
 
         // 3. Saving to file updates getFilePath()

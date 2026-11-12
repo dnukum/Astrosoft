@@ -32,7 +32,7 @@ public class ChartHouseTooltipTest {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		System.setProperty("java.awt.headless", "true");
-		horoscope = SampleHoroscopes.getHoroscope("samples/raja.ash");
+		horoscope = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
 	}
 
 	@Test
