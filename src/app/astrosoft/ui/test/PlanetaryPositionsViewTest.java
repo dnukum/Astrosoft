@@ -23,13 +23,13 @@ import app.astrosoft.ui.view.RelativePlanetView;
 /**
  * Builds the real Planetary Positions views for a real chart and reads the text the user sees.
  * Chart: WA-Query-Career-Health (Mercury 29:53 Meena, Navamsa Meena => Db,V; Jupiter Meena, combust => C,Own;
- * Saturn retrograde in Kanya). The chart is read from the private Astrosoft-Horoscopes folder, not copied into the repo.
+ * Saturn retrograde in Kanya).
  * Override the folder with -Dastrosoft.horoscopes.dir=...; the tests skip when the file is absent.
  * Run with a display (Planet.toString loads the main window class).
  */
 public class PlanetaryPositionsViewTest {
 
-	private static final String DEFAULT_DIR = "/Users/mukunds100/MyDocs/Astrology/Astrosoft-Horoscopes/02-Bussiness-v-Job";
+	private static final String DEFAULT_DIR = "tests/charts";
 	private static final String CHART = "WA-Query-Career-Health.ash";
 
 	private static PlanetaryInfo info() {

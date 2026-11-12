@@ -120,11 +120,9 @@ public class RahuNodeCalculationTest {
         // P.PRAMILA: Jan 31, 1985
         // Mean Rahu is in Mesha (Aries, ~29.88°)
         // True Rahu flips into Vrishabha (Taurus, ~0.52°)
-        String path = "/Users/mukunds100/MyDocs/Astrology/Astrosoft-Horoscopes/00-samples/P.PRAMILA.ash";
+        String path = "tests/options/P.PRAMILA.ash";
         File file = new File(path);
-        if (!file.exists()) {
-            return; // Skip if external horoscopes directory is absent
-        }
+        assertTrue("tests/options/P.PRAMILA.ash must exist", file.exists());
 
         Horoscope h = Horoscope.createFromFile(path);
         assertNotNull("Horoscope should load successfully", h);
@@ -161,11 +159,9 @@ public class RahuNodeCalculationTest {
         // D.HEMALATHA: Feb 29, 1988
         // Mean Rahu is in Meena (Pisces, ~0.35°)
         // True Rahu flips into Kumbha (Aquarius, ~29.45°)
-        String path = "/Users/mukunds100/MyDocs/Astrology/Astrosoft-Horoscopes/00-samples/D.HEMALATHA.ash";
+        String path = "tests/options/D.HEMALATHA.ash";
         File file = new File(path);
-        if (!file.exists()) {
-            return; // Skip if external horoscopes directory is absent
-        }
+        assertTrue("tests/options/D.HEMALATHA.ash must exist", file.exists());
 
         Horoscope h = Horoscope.createFromFile(path);
         assertNotNull("Horoscope should load successfully", h);
@@ -182,15 +178,13 @@ public class RahuNodeCalculationTest {
     }
 
     @Test
-    public void testRahuMeanTestChartDownloads() {
+    public void testRahuMeanTestChart() {
         // Rahu_mean_Test: Mar 5, 1971 02:12 AM at Vijayawada (16N30, 80E38, IST)
         // True Node: Rahu = 00:01 Kumbha (Aquarius), Ketu = 00:01 Simha (Leo)
         // Mean Node: Rahu flips across 0° cusp into Makara (Capricorn 29° 10'), Ketu into Kataka (Cancer 29° 10')
-        String path = "/Users/mukunds100/Downloads/Rahu_mean_Test.ash";
+        String path = "tests/options/Rahu_mean_Test.ash";
         File file = new File(path);
-        if (!file.exists()) {
-            return;
-        }
+        assertTrue("tests/options/Rahu_mean_Test.ash must exist", file.exists());
 
         Horoscope h = Horoscope.createFromFile(path);
         assertNotNull("Rahu_mean_Test chart should load", h);

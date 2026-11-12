@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>Rahu_mean_Test</Name><Sex>Male</Sex><DateTime>Mar 05 1971, 02:12:00 AM</DateTime><Place><City>Vijayawada</City><State>Andhra Pradesh</State><Country>India</Country><Longitude dir="E">80.38</Longitude><Latitude dir="N">16.30</Latitude><TimeZone>IST</TimeZone></Place></BirthData>

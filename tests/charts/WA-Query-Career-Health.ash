@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><BirthData><Name>WA-Query-Career-Health</Name><DateTime>Mar 28 2011, 10:30:00 AM</DateTime><Place><City>Lucknow </City><Longitude dir="E">80.59</Longitude><Latitude dir="N">26.55</Latitude><TimeZone>IST</TimeZone></Place></BirthData>
