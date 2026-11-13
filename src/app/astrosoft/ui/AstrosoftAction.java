@@ -169,6 +169,9 @@ public class AstrosoftAction extends AbstractAction {
 		}else if(cmd.equals(Command.ABOUT)){
 			log.fine("ABOUT menu clicked");
 			handler.showAbout();
+		}else if(cmd.equals(Command.DIAGNOSTICS)){
+			log.fine("DIAGNOSTICS menu clicked");
+			handler.showDiagnostics();
 		}else if(cmd.equals(Command.TRANSIT_CHART)){
 			log.fine("TRANSIT_CHART menu clicked");
 			handler.showTransitChart();

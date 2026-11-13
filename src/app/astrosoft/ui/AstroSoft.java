@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -59,6 +60,7 @@ import app.astrosoft.ui.comp.AstrosoftToolBar;
 import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.comp.DateListener;
 import app.astrosoft.ui.dlg.AboutDialog;
+import app.astrosoft.ui.dlg.DiagnosticsDialog;
 import app.astrosoft.ui.dlg.BirthInputDialog;
 import app.astrosoft.ui.dlg.ModernBirthInputDialog;
 import app.astrosoft.util.Version;
@@ -1388,6 +1390,14 @@ public class AstroSoft extends javax.swing.JFrame implements
 	
 	public void showAbout(){
 		new AboutDialog(this).setVisible(true);
+	}
+
+	@Override
+	public void showDiagnostics(){
+		DiagnosticsDialog dlg = new DiagnosticsDialog(this);
+		if (!GraphicsEnvironment.isHeadless() && !Boolean.getBoolean("astrosoft.test.unattended")) {
+			dlg.setVisible(true);
+		}
 	}
 
 	@Override

@@ -119,7 +119,7 @@ public class UIUtil {
 					try (java.io.InputStream fontStream = in) {
 						Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
 						ge.registerFont(customFont);
-						log.info("Successfully registered custom font: " + customFont.getFontName() + " (" + customFont.getFamily() + ")");
+						log.fine("Successfully registered custom font: " + customFont.getFontName() + " (" + customFont.getFamily() + ")");
 					}
 				} else {
 					log.fine("Font file not found: " + fontFile);
@@ -142,30 +142,44 @@ public class UIUtil {
 
 		String testWord = "சூரியன்"; // Sample Tamil word to verify glyph coverage
 
-		// Candidate list in priority order:
-		// 1. Bundled universal Noto Sans Tamil (guaranteed Unicode coverage)
-		// 2. Windows built-in Indic font (Nirmala UI on Win 8/10/11)
-		// 3. Windows legacy Tamil fonts (Latha, Vijaya)
-		// 4. macOS built-in Tamil fonts (Tamil Sangam MN, Tamil MN)
-		// 5. Linux native Tamil fonts (Lohit Tamil)
-		// 6. Arial Unicode MS
-		String[] candidates = {
-			"Noto Sans Tamil",
-			"Nirmala UI",
-			"Latha",
-			"Vijaya",
-			"Tamil Sangam MN",
-			"Tamil MN",
-			"Lohit Tamil",
-			"Arial Unicode MS"
-		};
+		String os = System.getProperty("os.name", "").toLowerCase();
+		boolean isMac = os.contains("mac");
+		boolean isWindows = os.contains("win");
+
+		// Candidate list in priority order based on platform capability:
+		// On macOS, native 'Tamil Sangam MN' provides dual-script coverage (Latin + Tamil) without tofu.
+		// On Windows, 'Nirmala UI' (Win 8/10/11) provides dual-script, followed by bundled 'Noto Sans Tamil'.
+		String[] candidates;
+		if (isMac) {
+			candidates = new String[] {
+				"Tamil Sangam MN",
+				"Tamil MN",
+				"Noto Sans Tamil",
+				"Arial Unicode MS"
+			};
+		} else if (isWindows) {
+			candidates = new String[] {
+				"Nirmala UI",
+				"Noto Sans Tamil",
+				"Latha",
+				"Vijaya",
+				"Arial Unicode MS"
+			};
+		} else {
+			candidates = new String[] {
+				"Noto Sans Tamil",
+				"Lohit Tamil",
+				"Nirmala UI",
+				"Arial Unicode MS"
+			};
+		}
 
 		for (String candidate : candidates) {
 			if (families.contains(candidate)) {
 				Font f = new Font(candidate, Font.PLAIN, 12);
 				if (f.canDisplayUpTo(testWord) == -1) {
 					resolvedTamilFontName = candidate;
-					log.info("Resolved Tamil font: " + resolvedTamilFontName);
+					log.info("Resolved Tamil font: " + resolvedTamilFontName + " on " + System.getProperty("os.name"));
 					return resolvedTamilFontName;
 				}
 			}
@@ -176,7 +190,7 @@ public class UIUtil {
 			Font f = new Font(family, Font.PLAIN, 12);
 			if (f.canDisplayUpTo(testWord) == -1) {
 				resolvedTamilFontName = family;
-				log.info("Resolved fallback Tamil font: " + resolvedTamilFontName);
+				log.info("Resolved fallback Tamil font: " + resolvedTamilFontName + " on " + System.getProperty("os.name"));
 				return resolvedTamilFontName;
 			}
 		}

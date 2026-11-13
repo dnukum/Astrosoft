@@ -222,6 +222,10 @@ public class AstrosoftMenuBar extends JMenuBar
 
         // Help Menu
         JMenu helpMenu = new JMenu("Help");
+        JMenuItem diagnosticsMenuItem = new JMenuItem(actionMgr.getAction(Command.DIAGNOSTICS));
+        diagnosticsMenuItem.setIcon(null);
+        helpMenu.add(diagnosticsMenuItem);
+
         JMenuItem aboutMenuItem = new JMenuItem(actionMgr.getAction(Command.ABOUT));
         aboutMenuItem.setIcon(null);
         helpMenu.add(aboutMenuItem);

@@ -91,6 +91,7 @@ public enum Command {
 	EXPORT_HOROSCOPE_TO_PDF(DisplayStrings.EXPORT_HOROSCOPE_TO_PDF_STR),
 	EXPORT_COMPATIBILITY_TO_PDF(DisplayStrings.EXPORT_COMPATIBILITY_TO_PDF_STR),
 
+	DIAGNOSTICS("Diagnostics & Logs...", KeyEvent.VK_D),
 	ABOUT("About AstroSoft", KeyEvent.VK_A),
 	NOTES("Notes", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyMaskHelper.MENU_MASK))
 	;
