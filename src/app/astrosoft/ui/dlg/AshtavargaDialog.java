@@ -16,6 +16,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
+import app.astrosoft.consts.AshtavargaName;
 import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
@@ -150,5 +151,30 @@ public class AshtavargaDialog extends JDialog {
 
 	public JPanel getAshtavargaPanel() {
 		return ashtavargaPanel;
+	}
+
+	public int getSelectedTab() {
+		AshtavargaView.PillTabBar pillBar = AshtavargaView.getPillTabBar(ashtavargaPanel);
+		return (pillBar != null) ? pillBar.getSelectedTab() : 0;
+	}
+
+	public void setSelectedTab(int tabIndex) {
+		AshtavargaView.PillTabBar pillBar = AshtavargaView.getPillTabBar(ashtavargaPanel);
+		if (pillBar != null) {
+			pillBar.selectTab(tabIndex);
+		}
+	}
+
+	public AshtavargaName getSelectedTarget() {
+		AshtavargaView.PrastharaCardPanel prasthara = AshtavargaView.getPrastharaCardPanel(ashtavargaPanel);
+		return (prasthara != null) ? prasthara.getSelectedTarget() : null;
+	}
+
+	public void setSelectedTarget(AshtavargaName target) {
+		if (target == null) return;
+		AshtavargaView.PrastharaCardPanel prasthara = AshtavargaView.getPrastharaCardPanel(ashtavargaPanel);
+		if (prasthara != null) {
+			prasthara.selectTarget(target);
+		}
 	}
 }

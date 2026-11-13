@@ -33,6 +33,7 @@ import javax.swing.UIManager;
 import app.astrosoft.ui.comp.ChartNotesPanel;
 
 import app.astrosoft.beans.BirthData;
+import app.astrosoft.beans.Place;
 import app.astrosoft.beans.PlanetChartData;
 import app.astrosoft.beans.AshtaVargaChartData;
 import app.astrosoft.consts.AshtavargaName;
@@ -459,7 +460,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 				java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
 				if (desktop.isSupported(java.awt.Desktop.Action.APP_QUIT_HANDLER)) {
 					desktop.setQuitHandler((e, response) -> {
-						log.info("Desktop.setQuitHandler triggered by macOS!");
+						log.fine("Desktop.setQuitHandler triggered by macOS!");
 						if (canExit()) {
 							WindowPlacement.saveNow(AstroSoft.this);
 							response.performQuit();
@@ -474,7 +475,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	} // GEN-END:initComponents
 
 	public boolean canExit() {
-		log.info("canExit() invoked!");
+		log.fine("canExit() invoked!");
 		if (compatibility != null && !promptSaveIfModified(compatibility)) {
 			return false;
 		}
@@ -497,18 +498,18 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void exitApplication() {
-		log.info("exitApplication() invoked!");
+		log.fine("exitApplication() invoked!");
 		exitForm(null);
 	}
 
 	/** Exit the Application */
 	private void exitForm(java.awt.event.WindowEvent evt) { // GEN-FIRST:event_exitForm
-		log.info("exitForm invoked with evt=" + evt);
+		log.fine("exitForm invoked with evt=" + evt);
 		if (!canExit()) {
-			log.info("exitForm cancelled by canExit()");
+			log.fine("exitForm cancelled by canExit()");
 			return;
 		}
-		log.info("exitForm proceeding to exit!");
+		log.fine("exitForm proceeding to exit!");
 		cleanupChartFloatingDialogs();
         WindowPlacement.saveNow(this);
         if (exitHandler != null) {
@@ -721,10 +722,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 			int count = rebuildChartsInComponent(view);
 			refreshViewsInComponent(view);
 			totalRebuilt += count;
-			log.info("refreshActiveModernScreenCharts: rebuilt " + count + " Chart instances in active view " + (view != null ? view.getClass().getSimpleName() : "null") + " (fontOffset=" + Chart.getFontOffset() + ")");
+			log.fine("refreshActiveModernScreenCharts: rebuilt " + count + " Chart instances in active view " + (view != null ? view.getClass().getSimpleName() : "null") + " (fontOffset=" + Chart.getFontOffset() + ")");
 			home.repaint();
 		} else {
-			log.info("refreshActiveModernScreenCharts: home has no components");
+			log.fine("refreshActiveModernScreenCharts: home has no components");
 		}
 		for (java.awt.Window win : java.awt.Window.getWindows()) {
 			if (win != this && win.isDisplayable()) {
@@ -974,21 +975,21 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void openHoroscope() {
-		log.info("openHoroscope() invoked - launching open file dialog");
+		log.fine("openHoroscope() invoked - launching open file dialog");
 		String selectedFile = FileOps.openFileDialog(this, FileOps.FileDialogMode.OPEN,
 				AstrosoftFileFilter.ALL_ASTROSOFT,
 				AstrosoftFileFilter.HOROSCOPE_EXTN,
 				AstrosoftFileFilter.MUHURTA_EXTN,
 				AstrosoftFileFilter.COMPACTIBILITY_EXTN);
 		
-		log.info("File selected from open dialog: " + selectedFile);
+		log.fine("File selected from open dialog: " + selectedFile);
 		if (selectedFile != null) {
 			openDocument(selectedFile);
 		}
 	}
 
 	public void openDocument(String file) {
-		log.info("openDocument() invoked for: " + file);
+		log.fine("openDocument() invoked for: " + file);
 		if (file == null) return;
 		String lower = file.toLowerCase();
 		if (lower.endsWith(".asm")) {
@@ -1015,13 +1016,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void openMuhurta(String file) {
-		log.info("openMuhurta() invoked for: " + file);
+		log.fine("openMuhurta() invoked for: " + file);
 		if (currentView != View.MY_MUHURTA_VIEW && h != null && !promptSaveIfModified(h)) {
-			log.info("openMuhurta() cancelled by promptSaveIfModified on Horoscope document");
+			log.fine("openMuhurta() cancelled by promptSaveIfModified on Horoscope document");
 			return;
 		}
 		if (myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
-			log.info("openMuhurta() cancelled by promptSaveIfModified on Muhurta document");
+			log.fine("openMuhurta() cancelled by promptSaveIfModified on Muhurta document");
 			return;
 		}
 		cleanupChartFloatingDialogs();
@@ -1045,13 +1046,13 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void openHoroscope(String horoscopeFile) {
-		log.info("openHoroscope(file) invoked for: " + horoscopeFile);
+		log.fine("openHoroscope(file) invoked for: " + horoscopeFile);
 		if (currentView == View.MY_MUHURTA_VIEW && myMuhurtaView != null && !promptSaveIfModified(myMuhurtaView.getDocument())) {
-			log.info("openHoroscope(file) cancelled by promptSaveIfModified on Muhurta document");
+			log.fine("openHoroscope(file) cancelled by promptSaveIfModified on Muhurta document");
 			return;
 		}
 		if (!promptSaveIfModified(h)) {
-			log.info("openHoroscope(file) cancelled by promptSaveIfModified on Horoscope");
+			log.fine("openHoroscope(file) cancelled by promptSaveIfModified on Horoscope");
 			return;
 		}
 
@@ -1090,7 +1091,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			chartNotesPanel.flushToOwner();
 		}
 
-		log.info("promptSaveIfModified for " + owner.getNotesOwnerTitle() + ", isModified=" + owner.isModified());
+		log.fine("promptSaveIfModified for " + owner.getNotesOwnerTitle() + ", isModified=" + owner.isModified());
 
 		if (!owner.isModified()) {
 			return true;
@@ -1170,7 +1171,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (currentFile != null && !currentFile.trim().isEmpty()) {
 			h.saveToFile(currentFile);
 			setTitle("Astrosoft 2.0 - " + new File(currentFile).getName());
-			log.info("Saved horoscope directly to: " + currentFile);
+			log.fine("Saved horoscope directly to: " + currentFile);
 			return true;
 		} else {
 			return saveAsHoroscopeDirect();
@@ -1204,7 +1205,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (currentFile != null && !currentFile.trim().isEmpty()) {
 			doc.saveToFile(currentFile);
 			updateMuhurtaTitle();
-			log.info("Saved Muhurta directly to: " + currentFile);
+			log.fine("Saved Muhurta directly to: " + currentFile);
 			return true;
 		} else {
 			return saveAsMuhurtaDirect();
@@ -1301,7 +1302,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			String currentFile = compatibility.getFilePath();
 			if (currentFile != null && !currentFile.trim().isEmpty()) {
 				compatibility.saveToXML(currentFile);
-				log.info("Saved compatibility directly to: " + currentFile);
+				log.fine("Saved compatibility directly to: " + currentFile);
 				if (currentView == View.MARRIAGE_MATCH_VIEW) {
 					updateMarriageMatchTitle();
 				} else {
@@ -1409,101 +1410,181 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return transitChartDialog;
 	}
 	
+	private void refreshActiveView() {
+		if (currentView != null) {
+			if (isHoroscopeView(currentView)) {
+				if (h != null) {
+					viewManager.showView(currentView);
+				}
+			} else if (currentView == View.EPHEMERIS_VIEW) {
+				if (eph != null) {
+					viewManager.showView(currentView);
+				}
+			} else if (currentView == View.PANCHANG_VIEW) {
+				if (pan != null) {
+					viewManager.showView(currentView);
+				}
+			} else if (currentView == View.FIND_NAME_VIEW) {
+				viewManager.showView(currentView);
+			} else if (currentView == View.MY_MUHURTA_VIEW) {
+				if (myMuhurtaView != null) {
+					viewManager.showView(currentView);
+				}
+			} else if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPATIBILITY_VIEW) {
+				if (compatibility != null) {
+					viewManager.showView(currentView);
+				}
+			} else if (currentView == View.MUHURTHA_VIEW) {
+				if (muhurtha != null) {
+					viewManager.showView(currentView);
+				}
+			}
+		}
+	}
+
 	private void optionAyanamsaChanged(Ayanamsa ayanamsa) {
 
 		if (eph != null) {
-
 			eph.setAyanamsa(ayanamsa);
-			viewManager.showView(View.EPHEMERIS_VIEW);
 		}
 
 		if (pan != null) {
-
-			viewManager.showView(View.PANCHANG_VIEW);
+			pan = new Panchang(pan.getDate());
 		}
 
 		if (h != null) {
 			h.setAyanamsa(ayanamsa);
-			refreshChartFloatingDialogs();
-			viewManager.showView(View.CHART_VIEW);
 		}
 
+		refreshActiveView();
+		refreshAllChartsAndCachedViews();
+		refreshChartFloatingDialogs();
 	}
 
 	private void optionRahuNodeChanged(RahuNode rahuNode) {
 
 		if (eph != null) {
 			eph.setRahuNode(rahuNode);
-			viewManager.showView(View.EPHEMERIS_VIEW);
 		}
 
 		if (pan != null) {
-			viewManager.showView(View.PANCHANG_VIEW);
+			pan = new Panchang(pan.getDate());
 		}
 
 		if (h != null) {
 			h.setRahuNode(rahuNode);
-			refreshChartFloatingDialogs();
-			viewManager.showView(View.CHART_VIEW);
 		}
+
+		refreshActiveView();
+		refreshAllChartsAndCachedViews();
+		refreshChartFloatingDialogs();
 	}
 
 	/**
 	 * Rebuilds any currently open floating chart inspection dialogs with the
-	 * recalculated Horoscope while preserving their screen bounds.
+	 * recalculated Horoscope or updated settings while preserving their screen bounds.
 	 */
 	private void refreshChartFloatingDialogs() {
-		if (h == null) {
-			return;
-		}
-		app.astrosoft.ui.dlg.PlanetDetailsDialog pd = app.astrosoft.ui.dlg.PlanetDetailsDialog.getActiveDialog();
-		java.awt.Rectangle pdBounds = (pd != null && pd.isDisplayable() && pd.isVisible()) ? pd.getBounds() : null;
+		if (h != null) {
+			app.astrosoft.ui.dlg.PlanetDetailsDialog pd = app.astrosoft.ui.dlg.PlanetDetailsDialog.getActiveDialog();
+			java.awt.Rectangle pdBounds = (pd != null && pd.isDisplayable() && pd.isVisible()) ? pd.getBounds() : null;
+			int pdTab = (pd != null && pd.isDisplayable()) ? pd.getSelectedTab() : 0;
 
-		app.astrosoft.ui.dlg.HouseDetailsDialog hd = app.astrosoft.ui.dlg.HouseDetailsDialog.getActiveDialog();
-		java.awt.Rectangle hdBounds = (hd != null && hd.isDisplayable() && hd.isVisible()) ? hd.getBounds() : null;
+			app.astrosoft.ui.dlg.HouseDetailsDialog hd = app.astrosoft.ui.dlg.HouseDetailsDialog.getActiveDialog();
+			java.awt.Rectangle hdBounds = (hd != null && hd.isDisplayable() && hd.isVisible()) ? hd.getBounds() : null;
+			int hdHouse = (hd != null && hd.isDisplayable()) ? hd.getSelectedHouse() : 1;
 
-		app.astrosoft.ui.dlg.AshtavargaDialog ad = app.astrosoft.ui.dlg.AshtavargaDialog.getActiveDialog();
-		java.awt.Rectangle adBounds = (ad != null && ad.isDisplayable() && ad.isVisible()) ? ad.getBounds() : null;
+			app.astrosoft.ui.dlg.AshtavargaDialog ad = app.astrosoft.ui.dlg.AshtavargaDialog.getActiveDialog();
+			java.awt.Rectangle adBounds = (ad != null && ad.isDisplayable() && ad.isVisible()) ? ad.getBounds() : null;
+			int adTab = (ad != null && ad.isDisplayable()) ? ad.getSelectedTab() : 0;
+			AshtavargaName adTarget = (ad != null && ad.isDisplayable()) ? ad.getSelectedTarget() : null;
 
-		if (pdBounds != null) {
-			app.astrosoft.ui.dlg.PlanetDetailsDialog.closeActiveDialog();
-			app.astrosoft.ui.dlg.PlanetDetailsDialog reopened = app.astrosoft.ui.dlg.PlanetDetailsDialog.showDialog(this, h, null);
-			reopened.setBounds(pdBounds);
+			if (pdBounds != null) {
+				app.astrosoft.ui.dlg.PlanetDetailsDialog.closeActiveDialog();
+				Runnable onClose = () -> {
+					if (currentDashboard != null) {
+						currentDashboard.getPositionsCheck().setSelected(false);
+					}
+				};
+				app.astrosoft.ui.dlg.PlanetDetailsDialog reopened = app.astrosoft.ui.dlg.PlanetDetailsDialog.showDialog(this, h, onClose);
+				reopened.setBounds(pdBounds);
+				reopened.setSelectedTab(pdTab);
+				if (currentDashboard != null) {
+					currentDashboard.getPositionsCheck().setSelected(true);
+				}
+			}
+			if (hdBounds != null) {
+				app.astrosoft.ui.dlg.HouseDetailsDialog.closeActiveDialog();
+				Runnable onClose = () -> {
+					if (currentDashboard != null) {
+						currentDashboard.getHouseDetailsCheck().setSelected(false);
+					}
+				};
+				app.astrosoft.ui.dlg.HouseDetailsDialog reopened = app.astrosoft.ui.dlg.HouseDetailsDialog.showDialog(this, h, onClose);
+				reopened.setBounds(hdBounds);
+				reopened.setSelectedHouse(hdHouse);
+				if (currentDashboard != null) {
+					currentDashboard.getHouseDetailsCheck().setSelected(true);
+				}
+			}
+			if (adBounds != null) {
+				app.astrosoft.ui.dlg.AshtavargaDialog.closeActiveDialog();
+				Runnable onClose = () -> {
+					if (currentDashboard != null) {
+						currentDashboard.getAshtavargaCheck().setSelected(false);
+					}
+				};
+				app.astrosoft.ui.dlg.AshtavargaDialog reopened = app.astrosoft.ui.dlg.AshtavargaDialog.showDialog(this, h, onClose);
+				reopened.setBounds(adBounds);
+				reopened.setSelectedTab(adTab);
+				if (adTarget != null) {
+					reopened.setSelectedTarget(adTarget);
+				}
+				if (currentDashboard != null) {
+					currentDashboard.getAshtavargaCheck().setSelected(true);
+				}
+			}
+			if (currentView != null) {
+				restoreChartFloatingDialogs(currentView);
+			}
 		}
-		if (hdBounds != null) {
-			app.astrosoft.ui.dlg.HouseDetailsDialog.closeActiveDialog();
-			app.astrosoft.ui.dlg.HouseDetailsDialog reopened = app.astrosoft.ui.dlg.HouseDetailsDialog.showDialog(this, h, null);
-			reopened.setBounds(hdBounds);
-		}
-		if (adBounds != null) {
-			app.astrosoft.ui.dlg.AshtavargaDialog.closeActiveDialog();
-			app.astrosoft.ui.dlg.AshtavargaDialog reopened = app.astrosoft.ui.dlg.AshtavargaDialog.showDialog(this, h, null);
-			reopened.setBounds(adBounds);
+
+		if (transitChartDialog != null && transitChartDialog.isDisplayable() && transitChartDialog.isVisible()) {
+			java.awt.Rectangle tdBounds = transitChartDialog.getBounds();
+			Date instant = transitChartDialog.getSelectedInstant();
+			Place place = transitChartDialog.getCurrentPlace();
+			boolean expanded = transitChartDialog.isExpanded();
+
+			transitChartDialog.dispose();
+			TransitChartDialog newTransitDlg = new TransitChartDialog(this, instant, place);
+			newTransitDlg.addWindowListener(new java.awt.event.WindowAdapter() {
+				@Override
+				public void windowClosed(java.awt.event.WindowEvent e) {
+					transitChartDialog = null;
+				}
+			});
+			if (expanded) {
+				newTransitDlg.setExpanded(true);
+			}
+			newTransitDlg.setBounds(tdBounds);
+			newTransitDlg.setVisible(true);
+			this.transitChartDialog = newTransitDlg;
 		}
 	}
 
 	private void optionLangChanged(String lang) {
 
-		if (eph != null) {
-
-			viewManager.showView(View.EPHEMERIS_VIEW);
-
-		}
-
 		if (pan != null) {
-
-			viewManager.showView(View.PANCHANG_VIEW);
-
+			pan = new Panchang(pan.getDate());
 		}
 
 		if (h != null) {
-
 			h.languageChanged();
-			viewManager.showView(View.CHART_VIEW);
-
 		}
 
+		refreshActiveView();
 		refreshAllChartsAndCachedViews();
+		refreshChartFloatingDialogs();
 
 	}
 
@@ -1729,15 +1810,17 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	private void optionThemeChanged(app.astrosoft.ui.util.UIConsts.ChartTheme theme) {
-		log.info("Chart Theme changed to: " + theme);
+		log.fine("Chart Theme changed to: " + theme);
 		UIConsts.setChartTheme(theme);
 		refreshAllChartsAndCachedViews();
+		refreshChartFloatingDialogs();
 	}
 
 	private void optionStyleChanged(app.astrosoft.ui.util.UIConsts.ChartStyle style) {
-		log.info("Chart Style changed to: " + style);
+		log.fine("Chart Style changed to: " + style);
 		UIConsts.setChartStyle(style);
 		refreshAllChartsAndCachedViews();
+		refreshChartFloatingDialogs();
 	}
 
 	public void refreshAllChartsAndCachedViews() {
@@ -1753,6 +1836,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 	public View getCurrentView() {
 		return currentView;
+	}
+
+	public JPanel getHome() {
+		return home;
 	}
 
    /**

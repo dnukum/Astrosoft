@@ -16,6 +16,8 @@ import org.junit.Test;
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.Place;
 import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.consts.Ayanamsa;
+import app.astrosoft.consts.Language;
 import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.Sex;
 import app.astrosoft.core.Horoscope;
@@ -26,6 +28,7 @@ import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.dlg.AshtavargaDialog;
 import app.astrosoft.ui.dlg.HouseDetailsDialog;
 import app.astrosoft.ui.dlg.PlanetDetailsDialog;
+import app.astrosoft.ui.dlg.TransitChartDialog;
 import app.astrosoft.ui.view.HoroscopeDashboard;
 import app.astrosoft.ui.view.ViewManager.View;
 
@@ -306,6 +309,244 @@ public class FloatingDialogsLifecycleTest {
 			assertEquals("Refreshed PlanetDetailsDialog must preserve bounds", customBounds, pdAfter.getBounds());
 		} finally {
 			pref.setRahuNode(originalNode);
+		}
+	}
+
+	@Test
+	public void testLanguageChangeRefreshesOpenFloatingDialogs() {
+		AstrosoftPref pref = AstroSoft.getPreferences();
+		Language origLang = pref.getLanguage();
+		AstroSoft frame = null;
+		try {
+			pref.setLanguage(Language.TAMIL);
+			frame = new AstroSoft();
+			frame.computeHoroscope(horoscope.getBirthData());
+
+			PlanetDetailsDialog pdBefore = PlanetDetailsDialog.showDialog(frame, frame.getHoroscope(), null);
+			HouseDetailsDialog hdBefore = HouseDetailsDialog.showDialog(frame, frame.getHoroscope(), null);
+			AshtavargaDialog adBefore = AshtavargaDialog.showDialog(frame, frame.getHoroscope(), null);
+			frame.showTransitChart();
+			TransitChartDialog tdBefore = frame.getTransitChartDialog();
+
+			java.awt.Rectangle pdBounds = new java.awt.Rectangle(100, 100, 680, 320);
+			java.awt.Rectangle hdBounds = new java.awt.Rectangle(120, 120, 660, 430);
+			java.awt.Rectangle adBounds = new java.awt.Rectangle(140, 140, 930, 470);
+			java.awt.Rectangle tdBounds = new java.awt.Rectangle(160, 160, 380, 420);
+
+			pdBefore.setBounds(pdBounds);
+			hdBefore.setBounds(hdBounds);
+			adBefore.setBounds(adBounds);
+			tdBefore.setBounds(tdBounds);
+
+			assertEquals("கிரக விவரங்கள் - பார்வை & ஷட்பலம்", pdBefore.getTitle());
+			assertEquals("பாவ விவரங்கள் - PAC ஆய்வு", hdBefore.getTitle());
+			assertEquals("அஷ்டவர்க்கம்", adBefore.getTitle());
+			assertEquals("கோசார ராசி", tdBefore.getTitle());
+			assertEquals("மாற்று...", tdBefore.getEditButton().getText());
+
+			// Switch language to ENGLISH
+			frame.optionChanged(Preference.Language, Language.ENGLISH);
+
+			PlanetDetailsDialog pdAfter = PlanetDetailsDialog.getActiveDialog();
+			HouseDetailsDialog hdAfter = HouseDetailsDialog.getActiveDialog();
+			AshtavargaDialog adAfter = AshtavargaDialog.getActiveDialog();
+			TransitChartDialog tdAfter = frame.getTransitChartDialog();
+
+			assertNotNull("PlanetDetailsDialog must remain open after language change", pdAfter);
+			assertNotNull("HouseDetailsDialog must remain open after language change", hdAfter);
+			assertNotNull("AshtavargaDialog must remain open after language change", adAfter);
+			assertNotNull("TransitChartDialog must remain open after language change", tdAfter);
+
+			assertTrue("PlanetDetailsDialog must be rebuilt", pdAfter != pdBefore);
+			assertTrue("HouseDetailsDialog must be rebuilt", hdAfter != hdBefore);
+			assertTrue("AshtavargaDialog must be rebuilt", adAfter != adBefore);
+			assertTrue("TransitChartDialog must be rebuilt", tdAfter != tdBefore);
+
+			assertTrue("PlanetDetailsDialog must be visible", pdAfter.isVisible());
+			assertTrue("HouseDetailsDialog must be visible", hdAfter.isVisible());
+			assertTrue("AshtavargaDialog must be visible", adAfter.isVisible());
+			assertTrue("TransitChartDialog must be visible", tdAfter.isVisible());
+
+			assertEquals("PlanetDetailsDialog bounds preserved", pdBounds, pdAfter.getBounds());
+			assertEquals("HouseDetailsDialog bounds preserved", hdBounds, hdAfter.getBounds());
+			assertEquals("AshtavargaDialog bounds preserved", adBounds, adAfter.getBounds());
+			assertEquals("TransitChartDialog bounds preserved", tdBounds, tdAfter.getBounds());
+
+			assertEquals("Planet Details - Overview & Shadbala", pdAfter.getTitle());
+			assertEquals("House Details - PAC Analysis", hdAfter.getTitle());
+			assertEquals("Ashtavarga", adAfter.getTitle());
+			assertEquals("Transit Chart", tdAfter.getTitle());
+			assertEquals("Edit...", tdAfter.getEditButton().getText());
+		} finally {
+			pref.setLanguage(origLang);
+			PlanetDetailsDialog.closeActiveDialog();
+			HouseDetailsDialog.closeActiveDialog();
+			AshtavargaDialog.closeActiveDialog();
+			if (frame != null && frame.getTransitChartDialog() != null) {
+				frame.getTransitChartDialog().dispose();
+			}
+			if (frame != null) {
+				frame.dispose();
+			}
+		}
+	}
+
+	@Test
+	public void testOptionChangesPreserveActiveScreen() throws Exception {
+		AstroSoft frame = null;
+		AstrosoftPref pref = AstroSoft.getPreferences();
+		Language origLang = pref.getLanguage();
+		Ayanamsa origAyanamsa = pref.getAyanamsa();
+		RahuNode origRahuNode = pref.getRahuNode();
+
+		try {
+			frame = new AstroSoft();
+			frame.computeHoroscope(horoscope.getBirthData());
+			assertEquals(View.CHART_VIEW, frame.getCurrentView());
+
+			// 1. Switch to Dasa view
+			frame.viewChanged(View.DASAS_VIEW);
+			assertEquals(View.DASAS_VIEW, frame.getCurrentView());
+			assertTrue("Mounted view should be VimDasaView", frame.getHome().getComponent(0) instanceof app.astrosoft.ui.view.VimDasaView);
+
+			// 2. Change Language to Tamil while on Dasa view
+			frame.optionChanged(Preference.Language, Language.TAMIL);
+			assertEquals("Current view must remain DASAS_VIEW after language change", View.DASAS_VIEW, frame.getCurrentView());
+			assertTrue("Mounted view should remain VimDasaView after language change", frame.getHome().getComponent(0) instanceof app.astrosoft.ui.view.VimDasaView);
+
+			// 3. Change Ayanamsa to RAMAN while on Dasa view
+			frame.optionChanged(Preference.Ayanamsa, Ayanamsa.RAMAN);
+			assertEquals("Current view must remain DASAS_VIEW after ayanamsa change", View.DASAS_VIEW, frame.getCurrentView());
+			assertTrue("Mounted view should remain VimDasaView after ayanamsa change", frame.getHome().getComponent(0) instanceof app.astrosoft.ui.view.VimDasaView);
+
+			// 4. Change RahuNode to TRUE while on Dasa view
+			frame.optionChanged(Preference.RahuNode, RahuNode.TRUE);
+			assertEquals("Current view must remain DASAS_VIEW after rahu node change", View.DASAS_VIEW, frame.getCurrentView());
+			assertTrue("Mounted view should remain VimDasaView after rahu node change", frame.getHome().getComponent(0) instanceof app.astrosoft.ui.view.VimDasaView);
+
+			// 5. Switch to Ephemeris view
+			frame.viewChanged(View.EPHEMERIS_VIEW);
+			assertEquals(View.EPHEMERIS_VIEW, frame.getCurrentView());
+			assertTrue("Mounted view should be EphemerisView", frame.getHome().getComponent(0) instanceof app.astrosoft.ui.view.EphemerisView);
+
+			// 6. Change Language back to English while on Ephemeris view
+			frame.optionChanged(Preference.Language, Language.ENGLISH);
+			assertEquals("Current view must remain EPHEMERIS_VIEW after language change", View.EPHEMERIS_VIEW, frame.getCurrentView());
+			assertTrue("Mounted view should remain EphemerisView after language change", frame.getHome().getComponent(0) instanceof app.astrosoft.ui.view.EphemerisView);
+
+			// 7. Test navigating to SHADBALA_VIEW
+			frame.viewChanged(View.SHADBALA_VIEW);
+			assertEquals(View.SHADBALA_VIEW, frame.getCurrentView());
+			assertTrue("Mounted view should be ShadBalaView", frame.getHome().getComponent(0) instanceof app.astrosoft.ui.view.ShadBalaView);
+
+			// 8. Test navigating to ASHTAVARGA_VIEW
+			frame.viewChanged(View.ASHTAVARGA_VIEW);
+			assertEquals(View.ASHTAVARGA_VIEW, frame.getCurrentView());
+			assertTrue("Mounted view should be AshtavargaView", frame.getHome().getComponent(0) instanceof app.astrosoft.ui.view.AshtavargaView);
+		} finally {
+			pref.setLanguage(origLang);
+			pref.setAyanamsa(origAyanamsa);
+			pref.setRahuNode(origRahuNode);
+			if (frame != null) {
+				frame.dispose();
+			}
+		}
+	}
+
+	@Test
+	public void testFloatingDialogTabAndSelectionStatePreservedOnOptionChanges() throws Exception {
+		AstroSoft frame = null;
+		AstrosoftPref pref = AstroSoft.getPreferences();
+		Language origLang = pref.getLanguage();
+		Ayanamsa origAyanamsa = pref.getAyanamsa();
+		RahuNode origRahuNode = pref.getRahuNode();
+
+		try {
+			frame = new AstroSoft();
+			frame.computeHoroscope(horoscope.getBirthData());
+
+			// Open all 3 floating palettes
+			PlanetDetailsDialog pd = PlanetDetailsDialog.showDialog(frame, horoscope, null);
+			HouseDetailsDialog hd = HouseDetailsDialog.showDialog(frame, horoscope, null);
+			AshtavargaDialog ad = AshtavargaDialog.showDialog(frame, horoscope, null);
+
+			// Set specific non-default tabs and selections
+			pd.setSelectedTab(1); // Shadbala tab
+			hd.setSelectedHouse(9); // House 9 (Dharma bhava)
+			ad.setSelectedTab(1); // Prasthara tab
+			ad.setSelectedTarget(app.astrosoft.consts.AshtavargaName.Jupiter); // Jupiter target
+
+			assertEquals(1, pd.getSelectedTab());
+			assertEquals(9, hd.getSelectedHouse());
+			assertEquals(1, ad.getSelectedTab());
+			assertEquals(app.astrosoft.consts.AshtavargaName.Jupiter, ad.getSelectedTarget());
+
+			// Switch to Dasa view (floating palettes remain alive)
+			frame.viewChanged(View.DASAS_VIEW);
+			assertTrue(pd.isVisible());
+			assertTrue(hd.isVisible());
+			assertTrue(ad.isVisible());
+
+			// 1. Change Language to Tamil
+			frame.optionChanged(Preference.Language, Language.TAMIL);
+
+			PlanetDetailsDialog pdReopened = PlanetDetailsDialog.getActiveDialog();
+			HouseDetailsDialog hdReopened = HouseDetailsDialog.getActiveDialog();
+			AshtavargaDialog adReopened = AshtavargaDialog.getActiveDialog();
+
+			assertNotNull("PlanetDetailsDialog should be recreated", pdReopened);
+			assertNotNull("HouseDetailsDialog should be recreated", hdReopened);
+			assertNotNull("AshtavargaDialog should be recreated", adReopened);
+
+			assertEquals("PlanetDetailsDialog tab 1 (Shadbala) must be preserved after language change", 1, pdReopened.getSelectedTab());
+			assertEquals("HouseDetailsDialog selected house 9 must be preserved after language change", 9, hdReopened.getSelectedHouse());
+			assertEquals("AshtavargaDialog tab 1 (Prasthara) must be preserved after language change", 1, adReopened.getSelectedTab());
+			assertEquals("AshtavargaDialog target (Jupiter) must be preserved after language change", app.astrosoft.consts.AshtavargaName.Jupiter, adReopened.getSelectedTarget());
+
+			// 2. Change Ayanamsa to RAMAN
+			frame.optionChanged(Preference.Ayanamsa, Ayanamsa.RAMAN);
+
+			pdReopened = PlanetDetailsDialog.getActiveDialog();
+			hdReopened = HouseDetailsDialog.getActiveDialog();
+			adReopened = AshtavargaDialog.getActiveDialog();
+
+			assertEquals("PlanetDetailsDialog tab 1 must be preserved after ayanamsa change", 1, pdReopened.getSelectedTab());
+			assertEquals("HouseDetailsDialog house 9 must be preserved after ayanamsa change", 9, hdReopened.getSelectedHouse());
+			assertEquals("AshtavargaDialog tab 1 must be preserved after ayanamsa change", 1, adReopened.getSelectedTab());
+			assertEquals("AshtavargaDialog target (Jupiter) must be preserved after ayanamsa change", app.astrosoft.consts.AshtavargaName.Jupiter, adReopened.getSelectedTarget());
+
+			// 3. Test horoscope view transitions (SHADBALA_VIEW, DASAS_VIEW, etc.)
+			frame.viewChanged(View.SHADBALA_VIEW);
+			assertTrue("PlanetDetailsDialog should remain visible on SHADBALA_VIEW", pdReopened.isVisible());
+			assertTrue("HouseDetailsDialog should remain visible on SHADBALA_VIEW", hdReopened.isVisible());
+			assertTrue("AshtavargaDialog should remain visible on SHADBALA_VIEW", adReopened.isVisible());
+
+			// 4. Test duplicate suppression on ASHTAVARGA_VIEW
+			frame.viewChanged(View.ASHTAVARGA_VIEW);
+			assertTrue("PlanetDetailsDialog should be visible on ASHTAVARGA_VIEW", pdReopened.isVisible());
+			assertTrue("HouseDetailsDialog should remain visible on ASHTAVARGA_VIEW", hdReopened.isVisible());
+			assertFalse("AshtavargaDialog must be suppressed on ASHTAVARGA_VIEW", adReopened.isVisible());
+
+			// 5. Return to CHART_VIEW: all should be visible with preserved selections
+			frame.viewChanged(View.CHART_VIEW);
+			assertTrue("PlanetDetailsDialog visible on CHART_VIEW", pdReopened.isVisible());
+			assertTrue("HouseDetailsDialog visible on CHART_VIEW", hdReopened.isVisible());
+			assertTrue("AshtavargaDialog visible on CHART_VIEW", adReopened.isVisible());
+
+			assertEquals(1, pdReopened.getSelectedTab());
+			assertEquals(9, hdReopened.getSelectedHouse());
+			assertEquals(1, adReopened.getSelectedTab());
+			assertEquals(app.astrosoft.consts.AshtavargaName.Jupiter, adReopened.getSelectedTarget());
+		} finally {
+			pref.setLanguage(origLang);
+			pref.setAyanamsa(origAyanamsa);
+			pref.setRahuNode(origRahuNode);
+			PlanetDetailsDialog.closeActiveDialog();
+			HouseDetailsDialog.closeActiveDialog();
+			AshtavargaDialog.closeActiveDialog();
+			if (frame != null) {
+				frame.dispose();
+			}
 		}
 	}
 }

@@ -149,4 +149,14 @@ public class PlanetDetailsDialog extends JDialog {
 	public RelativePlanetView getPlanetView() {
 		return planetView;
 	}
+
+	public int getSelectedTab() {
+		return (planetView != null) ? planetView.getSelectedTab() : 0;
+	}
+
+	public void setSelectedTab(int tabIndex) {
+		if (planetView != null) {
+			planetView.setSelectedTab(tabIndex);
+		}
+	}
 }

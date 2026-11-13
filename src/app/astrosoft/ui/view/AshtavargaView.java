@@ -368,8 +368,30 @@ public class AshtavargaView extends AstrosoftView {
 		mainPanel.add(infoButton);
 		mainPanel.add(pillBar);
 		mainPanel.add(contentCards);
+		mainPanel.putClientProperty("pillBar", pillBar);
+		mainPanel.putClientProperty("prastharaCard", prastharaCard);
 
 		return mainPanel;
+	}
+
+	public static PillTabBar getPillTabBar(JPanel gridPanel) {
+		if (gridPanel != null) {
+			Object p = gridPanel.getClientProperty("pillBar");
+			if (p instanceof PillTabBar) {
+				return (PillTabBar) p;
+			}
+		}
+		return null;
+	}
+
+	public static PrastharaCardPanel getPrastharaCardPanel(JPanel gridPanel) {
+		if (gridPanel != null) {
+			Object p = gridPanel.getClientProperty("prastharaCard");
+			if (p instanceof PrastharaCardPanel) {
+				return (PrastharaCardPanel) p;
+			}
+		}
+		return null;
 	}
 
 	/**

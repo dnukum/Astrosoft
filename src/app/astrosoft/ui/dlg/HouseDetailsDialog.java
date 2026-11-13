@@ -138,4 +138,14 @@ public class HouseDetailsDialog extends JDialog {
 	public HousePACView getPACView() {
 		return pacView;
 	}
+
+	public int getSelectedHouse() {
+		return (pacView != null) ? pacView.getSelectedHouse() : 1;
+	}
+
+	public void setSelectedHouse(int houseNum) {
+		if (pacView != null) {
+			pacView.selectHouse(houseNum);
+		}
+	}
 }

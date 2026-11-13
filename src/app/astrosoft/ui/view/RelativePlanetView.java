@@ -1227,6 +1227,20 @@ public class RelativePlanetView extends JPanel {
 				}
 			}
 		}
+
+		public int getSelectedTab() {
+			return selectedTab;
+		}
+	}
+
+	public int getSelectedTab() {
+		return (pillBar != null) ? pillBar.getSelectedTab() : 0;
+	}
+
+	public void setSelectedTab(int tabIndex) {
+		if (pillBar != null) {
+			pillBar.selectTab(tabIndex);
+		}
 	}
 
 	@Override
