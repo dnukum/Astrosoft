@@ -48,9 +48,9 @@ public class BirthDataPanel extends JPanel {
 	
 	private static final Logger log = Logger.getLogger(BirthDataPanel.class.getName());
 	
-	private JLabel l_name = new JLabel(DisplayStrings.NAME_STR.toString(Language.ENGLISH));
-	private JLabel l_date = new JLabel(DisplayStrings.DATE_STR.toString(Language.ENGLISH));
-	private JLabel l_time = new JLabel(DisplayStrings.BIRTH_TIME_STR.toString(Language.ENGLISH));
+	private JLabel l_name = new JLabel(DisplayStrings.NAME_STR.toString());
+	private JLabel l_date = new JLabel(DisplayStrings.DATE_STR.toString());
+	private JLabel l_time = new JLabel(DisplayStrings.BIRTH_TIME_STR.toString());
 
 	private JTextField name = new JTextField();
 	private JButton openButton = new JButton(UIUtil.createImageIcon(Command.OPEN.name()));
@@ -164,6 +164,11 @@ public class BirthDataPanel extends JPanel {
 
 		updateDateButtonText();
 		updateTimeButtonText();
+
+		Font lblFont = UIUtil.getFont(Font.BOLD, 12);
+		l_name.setFont(lblFont);
+		l_date.setFont(lblFont);
+		l_time.setFont(lblFont);
 		
 		birthPanel.add(l_name);
 		birthPanel.add(namePanel);

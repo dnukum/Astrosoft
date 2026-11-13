@@ -16,6 +16,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
 import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.ui.AstroSoft;
@@ -57,7 +58,9 @@ public class HouseDetailsDialog extends JDialog {
 	}
 
 	public HouseDetailsDialog(Window owner, PlanetaryInfo planetaryInfo, Rasi ascendant, Runnable onClose) {
-		super(owner != null ? owner : AstroSoft.getInstance(), "House Details - PAC Analysis", ModalityType.MODELESS);
+		super(owner != null ? owner : AstroSoft.getInstance(),
+				AstroSoft.getPreferences().getLanguage() == Language.TAMIL ? "பாவ விவரங்கள் - PAC ஆய்வு" : "House Details - PAC Analysis",
+				ModalityType.MODELESS);
 		this.onCloseCallback = onClose;
 
 		if (activeDialog != null && activeDialog != this) {

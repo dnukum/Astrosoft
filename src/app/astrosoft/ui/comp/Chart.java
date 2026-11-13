@@ -69,6 +69,7 @@ import app.astrosoft.ui.comp.chart.ChartTooltips;
 import app.astrosoft.ui.comp.chart.HouseContentModel;
 import app.astrosoft.ui.comp.chart.NorthIndianChartCanvas;
 import app.astrosoft.ui.util.UIConsts;
+import app.astrosoft.ui.util.UIUtil;
 import app.astrosoft.ui.window.AstrosoftWindow;
 import app.astrosoft.ui.window.DefaultWindowLabelModel;
 import app.astrosoft.ui.window.WindowLabelModel;
@@ -264,7 +265,7 @@ public class Chart extends JPanel{
 
 	private JLabel createSubtitleLabel() {
 		JLabel subTitleLabel = new JLabel(subtitle, javax.swing.SwingConstants.CENTER);
-		subTitleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+		subTitleLabel.setFont(UIUtil.getFont(Font.BOLD, 11));
 		subTitleLabel.setForeground(UIConsts.getChartScoreColor());
 		return subTitleLabel;
 	}
@@ -314,7 +315,7 @@ public class Chart extends JPanel{
 		};
 		badge.setOpaque(false);
 		badge.setBorder(BorderFactory.createEmptyBorder(4, 14, 4, 14));
-		title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		title.setFont(UIUtil.getFont(Font.BOLD, 12));
 		title.setForeground(badgeTextColor != null ? badgeTextColor : Color.WHITE);
 		badge.add(title);
 		return badge;
@@ -509,7 +510,7 @@ public class Chart extends JPanel{
                 };
 				panel.add(houseTable, getConstrains(houseNo));
 
-				houseTable.setFont(new Font(Font.SANS_SERIF, Font.BOLD, uniformFontSize));
+				houseTable.setFont(UIUtil.getFont(Font.BOLD, uniformFontSize));
 				if (houseSize.height < 68) {
 					houseTable.setRowMargin(1);
 				}
@@ -821,7 +822,7 @@ public class Chart extends JPanel{
 		navamsa.setBorder(null);
 
 		final JLabel headerLabel = new JLabel("Charts", SwingConstants.LEFT);
-		headerLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		headerLabel.setFont(UIUtil.getFont(Font.BOLD, 12));
 		headerLabel.setToolTipText("Right-click anywhere on a chart to zoom text size");
 		headerLabel.setInheritsPopupMenu(true);
 

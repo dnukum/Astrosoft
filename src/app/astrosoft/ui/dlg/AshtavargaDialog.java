@@ -16,6 +16,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
+import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.core.Ashtavarga;
@@ -69,7 +70,9 @@ public class AshtavargaDialog extends JDialog {
 
 	public AshtavargaDialog(Window owner, Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi,
 			EnumMap<Planet, Rasi> planetRasis, Runnable onClose) {
-		super(owner != null ? owner : AstroSoft.getInstance(), "Ashtavarga", ModalityType.MODELESS);
+		super(owner != null ? owner : AstroSoft.getInstance(),
+				AstroSoft.getPreferences().getLanguage() == Language.TAMIL ? "அஷ்டவர்க்கம்" : "Ashtavarga",
+				ModalityType.MODELESS);
 		this.onCloseCallback = onClose;
 
 		if (activeDialog != null && activeDialog != this) {

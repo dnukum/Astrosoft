@@ -7,7 +7,7 @@
 package app.astrosoft.consts;
 
 public enum Language {
-	ENGLISH("en", "Arial"),TAMIL("ta", "TSCArial");
+	ENGLISH("en", "Arial"), TAMIL("ta", "SansSerif");
 	
 	private String isoLangCode;
 	private String fontName;

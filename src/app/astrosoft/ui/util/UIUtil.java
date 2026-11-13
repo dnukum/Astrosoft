@@ -75,8 +75,53 @@ public class UIUtil {
 		return new Cell(row, model.getColumn(col));
 	}
 
+	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(UIUtil.class.getName());
+
+	private static boolean customFontsRegistered = false;
+
+	public static synchronized void registerCustomFonts() {
+		if (customFontsRegistered) {
+			return;
+		}
+		customFontsRegistered = true;
+		try {
+			java.io.InputStream in = UIUtil.class.getResourceAsStream("/resources/fonts/tscarial.ttf");
+			if (in == null) {
+				in = UIUtil.class.getResourceAsStream("/fonts/tscarial.ttf");
+			}
+			if (in == null && classLoader != null) {
+				in = classLoader.getResourceAsStream("resources/fonts/tscarial.ttf");
+			}
+			if (in == null && classLoader != null) {
+				in = classLoader.getResourceAsStream("fonts/tscarial.ttf");
+			}
+			if (in == null) {
+				java.io.File f = new java.io.File("resources/fonts/tscarial.ttf");
+				if (!f.exists()) {
+					f = new java.io.File("fonts/tscarial.ttf");
+				}
+				if (f.exists()) {
+					in = new java.io.FileInputStream(f);
+				}
+			}
+			if (in != null) {
+				try (java.io.InputStream fontStream = in) {
+					Font tscFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+					java.awt.GraphicsEnvironment ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
+					ge.registerFont(tscFont);
+					log.info("Successfully registered custom font: " + tscFont.getFontName());
+				}
+			} else {
+				log.warning("Could not find tscarial.ttf in classpath or filesystem.");
+			}
+		} catch (Exception e) {
+			log.log(java.util.logging.Level.WARNING, "Failed to register custom font tscarial.ttf", e);
+		}
+	}
+
 	/** Returns font depending on prefered language option. * */
 	public static Font getFont(int style, int size) {
+		registerCustomFonts();
 		Language language = AstroSoft.getPreferences().getLanguage();
 		Font font = new Font(language.font(), style, size);
 		return font;
@@ -110,6 +155,7 @@ public class UIUtil {
 	 * @return
 	 */
 	public static Font getFont(String name, int style, int size) {
+		registerCustomFonts();
 		Language language = AstroSoft.getPreferences().getLanguage();
 		if (language == Language.TAMIL) {
 			return new Font(language.font(), style, size);
@@ -125,6 +171,7 @@ public class UIUtil {
 	 * @return
 	 */
 	public static Font getFont(String name, int style, int en_size, int ta_size) {
+		registerCustomFonts();
 		Language language = AstroSoft.getPreferences().getLanguage();
 		if (language == Language.TAMIL) {
 			return new Font(language.font(), style, ta_size);
@@ -134,6 +181,7 @@ public class UIUtil {
 
 	public static Font getFont(int en_style, int en_size, int ta_style,
 			int ta_size) {
+		registerCustomFonts();
 		Language language = AstroSoft.getPreferences().getLanguage();
 		if (language == Language.TAMIL) {
 			return new Font(language.font(), ta_style, ta_size);
@@ -148,6 +196,7 @@ public class UIUtil {
 	 */
 
 	public static Font getFont(Language lang, int style, int size) {
+		registerCustomFonts();
 		return new Font(lang.font(), style, size);
 	}
 

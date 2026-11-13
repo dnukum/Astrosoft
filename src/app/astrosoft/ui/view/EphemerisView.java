@@ -40,12 +40,13 @@ import app.astrosoft.ui.table.AstrosoftTableModel;
 import app.astrosoft.ui.table.Table;
 import app.astrosoft.ui.util.UIUtil;
 import app.astrosoft.util.AstroUtil;
+import app.astrosoft.util.Internalization;
 
 public class EphemerisView extends AstrosoftView {
 
-	private static final Dimension viewSize = new Dimension(750, 450);
+	private static final Dimension viewSize = new Dimension(780, 480);
 	private static final Dimension dailyTableSize = new Dimension(viewSize.width, viewSize.height);
-	private static final Dimension monthyTableSize = new Dimension(viewSize.width, 288);
+	private static final Dimension monthyTableSize = new Dimension(viewSize.width, 310);
 	
 	private AstrosoftTable ephTable;
 	private AstrosoftTableModel tableModel;
@@ -67,7 +68,7 @@ public class EphemerisView extends AstrosoftView {
 			tableModel = new AstrosoftTableModel(eph.getEphemerisTable());
 			ephTable = new AstrosoftTable(tableModel, TableStyle.SCROLL_SINGLE_ROW_SELECT);
 			
-			ephTable.setColumnWidth(60, AstrosoftTableColumn.Sun, AstrosoftTableColumn.Moon, AstrosoftTableColumn.Rahu, AstrosoftTableColumn.Ketu);
+			setEphemerisColumnWidths();
 			
 			monthChooser = CalendarChooser.getMonthChooser();
 			
@@ -88,12 +89,22 @@ public class EphemerisView extends AstrosoftView {
 			});
 	}
 	
+	private void setEphemerisColumnWidths() {
+		ephTable.setRowHeight(24);
+		ephTable.setColumnWidth(45, AstrosoftTableColumn.Date);
+		ephTable.setColumnWidth(72,
+				AstrosoftTableColumn.Sun, AstrosoftTableColumn.Moon, AstrosoftTableColumn.Mars,
+				AstrosoftTableColumn.Mercury, AstrosoftTableColumn.Jupiter, AstrosoftTableColumn.Venus,
+				AstrosoftTableColumn.Saturn, AstrosoftTableColumn.Rahu, AstrosoftTableColumn.Ketu);
+	}
+
 	private void updateEphTable(){
 	
 		Table table = new Ephemeris(ephDate, ephMode).getEphemerisTable();
 		
 		tableModel.updateColumns(table.getColumnMetaData());
 		tableModel.updateData(table.getTableData());
+		setEphemerisColumnWidths();
 	}
 	
 	private JPanel createEphModeSelector(Color bgClr, Color fgClr){
@@ -126,7 +137,8 @@ public class EphemerisView extends AstrosoftView {
 		ButtonGroup bg = new ButtonGroup();
 		
 		for(Mode m : Mode.values()){
-			JRadioButton button = new JRadioButton(m.toString());
+			JRadioButton button = new JRadioButton(Internalization.getString(m.name()));
+			button.setFont(UIUtil.getFont(Font.PLAIN, 12));
 			bg.add(button);
 			button.setActionCommand(m.name());
 			button.addActionListener(modeListener);
@@ -148,16 +160,18 @@ public class EphemerisView extends AstrosoftView {
 		
 		JPanel panel = new JPanel();
 		AstrosoftPref preferences = AstroSoft.getPreferences();
+		boolean isTamil = preferences.getLanguage() == Language.TAMIL;
 		StringBuilder text = new StringBuilder(DisplayStrings.EPHEMERIS_STR.toString());
-		text.append(" For ");
-		text.append(preferences.getPlace().city());
-		text.append(" at ");
-		text.append(AstroUtil.timeFormat(preferences.getEphCalcTime()));
+		if (isTamil) {
+			text.append(" - ").append(preferences.getPlace().city()).append(" நேரம் ").append(AstroUtil.timeFormat(preferences.getEphCalcTime()));
+		} else {
+			text.append(" For ").append(preferences.getPlace().city()).append(" at ").append(AstroUtil.timeFormat(preferences.getEphCalcTime()));
+		}
 		
 		JLabel title = new TitleLabel(text.toString());
 		panel.add(title);
 		
-		title.setFont(UIUtil.getFont(Language.ENGLISH, Font.BOLD, 12));
+		title.setFont(UIUtil.getFont(Font.BOLD, 12));
 		title.setForeground(fgClr);
 		panel.setBackground(bgClr);
 		

@@ -45,11 +45,13 @@ import javax.swing.JPanel;
 import app.astrosoft.beans.AshtaVargaChartData;
 import app.astrosoft.consts.AshtavargaName;
 import app.astrosoft.consts.AshtavargaStrength;
+import app.astrosoft.consts.DisplayFormat;
 import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.consts.TableStyle;
 import app.astrosoft.core.Ashtavarga;
+import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.comp.AstrosoftTabbedPane;
 import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.table.AstrosoftTable;
@@ -531,9 +533,12 @@ public class AshtavargaView extends AstrosoftView {
 			stripPanel.setOpaque(false);
 			stripPanel.setPreferredSize(new Dimension(400, 24));
 
+			boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
 			for (int i = 0; i < TARGETS.length; i++) {
 				final int idx = i;
-				JButton btn = new JButton(TARGET_CODES[i]) {
+				Planet p = TARGETS[i].toPlanet();
+				String btnText = (isTamil && p != null) ? p.toString(DisplayFormat.SYMBOL) : TARGET_CODES[i];
+				JButton btn = new JButton(btnText) {
 					@Override
 					protected void paintComponent(Graphics g) {
 						Graphics2D g2 = (Graphics2D) g.create();
@@ -655,13 +660,17 @@ public class AshtavargaView extends AstrosoftView {
 		}
 
 		private void updateSummaryBadge() {
+			boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
 			AshtavargaName target = TARGETS[selectedTargetIndex];
 			Planet targetPlanet = target.toPlanet();
 			Rasi natal = resolveNatalRasi(targetPlanet);
 			int totalCount = Ashtavarga.getCount(target);
-			String natalStr = natal != null ? ("  •  Natal: " + natal.name() + " (" + natal.sym() + ")") : "";
-			String countStr = totalCount > 0 ? ("  •  Total Bindus: " + totalCount) : "";
-			summaryBadgeLabel.setText(TARGET_FULL_NAMES[selectedTargetIndex] + natalStr + countStr);
+			String targetName = isTamil ? (targetPlanet != null ? targetPlanet.toString() : target.name()) : TARGET_FULL_NAMES[selectedTargetIndex];
+			String natalPrefix = isTamil ? "  •  பிறப்பு: " : "  •  Natal: ";
+			String totalPrefix = isTamil ? "  •  மொத்த பரல்கள்: " : "  •  Total Bindus: ";
+			String natalStr = natal != null ? (natalPrefix + natal.toString() + " (" + natal.sym() + ")") : "";
+			String countStr = totalCount > 0 ? (totalPrefix + totalCount) : "";
+			summaryBadgeLabel.setText(targetName + natalStr + countStr);
 		}
 
 		/**
@@ -767,21 +776,22 @@ public class AshtavargaView extends AstrosoftView {
 				Rasi targetNatalRasi = resolveNatalRasi(targetPlanet);
 				EnumMap<Rasi, Integer> bavMap = (ashtavarga != null) ? ashtavarga.getAshtavarga(target) : null;
 
-				Font headerFont = new Font(Font.SANS_SERIF, Font.BOLD, 11);
-				Font markerFont = new Font(Font.SANS_SERIF, Font.BOLD, 8);
-				Font contributorFont = new Font(Font.SANS_SERIF, Font.BOLD, 11);
-				Font contributorSubFont = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
-				Font binduOneFont = new Font(Font.SANS_SERIF, Font.BOLD, 12);
-				Font binduZeroFont = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
-				Font totalRowFont = new Font(Font.SANS_SERIF, Font.BOLD, 12);
+				Font headerFont = UIUtil.getFont(Font.BOLD, 11);
+				Font markerFont = UIUtil.getFont(Font.BOLD, 8);
+				Font contributorFont = UIUtil.getFont(Font.BOLD, 11);
+				Font contributorSubFont = UIUtil.getFont(Font.PLAIN, 10);
+				Font binduOneFont = UIUtil.getFont(Font.BOLD, 12);
+				Font binduZeroFont = UIUtil.getFont(Font.PLAIN, 11);
+				Font totalRowFont = UIUtil.getFont(Font.BOLD, 12);
 
+				boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
 				// 1. Paint Row 0: Header Row
 				g2.setColor(new Color(241, 245, 249));
 				g2.fillRect(0, 0, gridW, rowH);
 
 				g2.setFont(headerFont);
 				g2.setColor(UIConsts.TEXT_DARK_NAVY);
-				drawCenteredString(g2, "Contributor", 0, 0, contributorColW, rowH);
+				drawCenteredString(g2, isTamil ? "கிரகம்" : "Contributor", 0, 0, contributorColW, rowH);
 
 				for (int c = 0; c < 12; c++) {
 					Rasi r = rasis[c];
@@ -815,7 +825,7 @@ public class AshtavargaView extends AstrosoftView {
 				int totalColX = contributorColW + 12 * rasiColW;
 				g2.setFont(headerFont);
 				g2.setColor(UIConsts.TEXT_DARK_NAVY);
-				drawCenteredString(g2, "Total", totalColX, 0, totalColW, rowH);
+				drawCenteredString(g2, isTamil ? "மொத்தம்" : "Total", totalColX, 0, totalColW, rowH);
 
 				// 2. Paint Rows 1..8: The 8 Contributors in B.V. Raman's descending orbital order
 				int grandTotal = 0;
@@ -831,7 +841,7 @@ public class AshtavargaView extends AstrosoftView {
 					// Contributor label + natal sign tag in Col 0
 					g2.setFont(contributorFont);
 					g2.setColor(UIConsts.TEXT_DARK_NAVY);
-					String cLabel = contributor == Planet.Ascendant ? "Ascendant" : contributor.name();
+					String cLabel = contributor.toString();
 					FontMetrics cfm = g2.getFontMetrics();
 					int textY = ry + (rowH + cfm.getAscent() - cfm.getDescent()) / 2;
 					g2.drawString(cLabel, 8, textY);
@@ -880,7 +890,7 @@ public class AshtavargaView extends AstrosoftView {
 				g2.fillRect(0, totalRowY, contributorColW, rowH);
 				g2.setFont(totalRowFont);
 				g2.setColor(UIConsts.TEXT_DARK_NAVY);
-				drawCenteredString(g2, "Total (BAV)", 0, totalRowY, contributorColW, rowH);
+				drawCenteredString(g2, isTamil ? "மொத்தம் (BAV)" : "Total (BAV)", 0, totalRowY, contributorColW, rowH);
 
 				for (int c = 0; c < 12; c++) {
 					Rasi rasi = rasis[c];
@@ -1048,6 +1058,7 @@ public class AshtavargaView extends AstrosoftView {
 		
 		AstrosoftTabbedPane tabbedPane = new AstrosoftTabbedPane(tabbedPaneSize);
 		Font font = UIUtil.getFont(Font.BOLD, 12, Font.BOLD, 10);
+		tabbedPane.setFont(font);
 		
 		for (AshtavargaName name : AshtavargaName.ashtavargas()) {
 		
@@ -1059,7 +1070,7 @@ public class AshtavargaView extends AstrosoftView {
 			Rasi natalRasi = (p != null && planetRasis != null) ? planetRasis.get(p) : (p == Planet.Moon ? moonRasi : null);
 
 			int count = Ashtavarga.getCount(name);
-			String displayName = name.toString(Language.ENGLISH);
+			String displayName = name.toString();
 			if (count != -1) {
 				displayName = displayName + " ( " + count + " )";
 			}
@@ -1099,7 +1110,7 @@ public class AshtavargaView extends AstrosoftView {
 			panel.add(vargaPanel, BorderLayout.CENTER);
 			panel.add(gunaPanel, BorderLayout.PAGE_END);
 			
-			tabbedPane.addTab(name.toString(Language.ENGLISH), panel);
+			tabbedPane.addTab(name.toString(), panel);
 		}
 		
 		return tabbedPane;

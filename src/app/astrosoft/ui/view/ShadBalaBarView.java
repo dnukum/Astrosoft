@@ -29,6 +29,7 @@ import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Roman;
 import app.astrosoft.core.ShadBala;
 import app.astrosoft.ui.util.UIConsts;
+import app.astrosoft.ui.util.UIUtil;
 
 public class ShadBalaBarView extends JPanel {
 
@@ -133,7 +134,7 @@ public class ShadBalaBarView extends JPanel {
 		setMaximumSize(panelSize);
 
 		title = new JLabel("Planetary Strength (Shadbala)", SwingConstants.CENTER);
-		title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		title.setFont(UIUtil.getFont(Font.BOLD, 12));
 		title.setForeground(UIConsts.TEXT_DARK_NAVY);
 		title.setBounds(0, 0, CARD_WIDTH, 20);
 		add(title);

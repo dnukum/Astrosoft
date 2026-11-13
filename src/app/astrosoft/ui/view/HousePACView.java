@@ -44,10 +44,13 @@ import app.astrosoft.beans.HousePACData.LordPlacement;
 import app.astrosoft.beans.HousePACData.OccupantInfo;
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.FunctionalRole;
+import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
+import app.astrosoft.consts.SignRelationship;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.HousePACCalculator;
+import app.astrosoft.ui.AstroSoft;
 
 public class HousePACView extends JPanel {
 
@@ -82,15 +85,21 @@ public class HousePACView extends JPanel {
 		JPanel topContainer = new JPanel(new BorderLayout(10, 0));
 		topContainer.setOpaque(false);
 
+		boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+
 		// Action buttons: "Copy House" and "Copy All 12"
 		JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
 		actionsPanel.setOpaque(false);
 
-		copyBtn = createActionButton("Copy House", "Copy current House PAC summary to clipboard", 84);
+		copyBtn = createActionButton(
+				isTamil ? "நகலெடு" : "Copy House",
+				isTamil ? "தேர்ந்தெடுக்கப்பட்ட பாவ சுருக்கத்தை நகலெடு" : "Copy current House PAC summary to clipboard", 84);
 		copyBtn.addActionListener(e -> copyCurrentHouseSummary());
 		actionsPanel.add(copyBtn);
 
-		copyAllBtn = createActionButton("Copy All 12", "Copy all 12 houses PAC report to clipboard", 88);
+		copyAllBtn = createActionButton(
+				isTamil ? "12 பாவங்கள்" : "Copy All 12",
+				isTamil ? "அனைத்து 12 பாவ அறிக்கையையும் நகலெடு" : "Copy all 12 houses PAC report to clipboard", 88);
 		copyAllBtn.addActionListener(e -> copyAllHousesSummary());
 		actionsPanel.add(copyAllBtn);
 
@@ -103,7 +112,7 @@ public class HousePACView extends JPanel {
 
 		for (int h = 1; h <= 12; h++) {
 			final int houseNum = h;
-			String labelText = "H" + houseNum;
+			String labelText = (isTamil ? "பா" : "H") + houseNum;
 
 			JButton btn = new JButton(labelText) {
 				@Override
@@ -153,7 +162,7 @@ public class HousePACView extends JPanel {
 			btn.setContentAreaFilled(false);
 			btn.setOpaque(false);
 			btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			btn.setToolTipText("View House " + houseNum + " PAC analysis");
+			btn.setToolTipText(isTamil ? (houseNum + "-ம் பாவம் PAC ஆய்வு") : ("View House " + houseNum + " PAC analysis"));
 			btn.addActionListener(e -> selectHouse(houseNum));
 
 			houseButtons.add(btn);
@@ -175,7 +184,7 @@ public class HousePACView extends JPanel {
 
 		// Attach Right-Click Context Menu for Copy
 		JPopupMenu contextMenu = new JPopupMenu();
-		JMenuItem copyItem = new JMenuItem("Copy House Summary");
+		JMenuItem copyItem = new JMenuItem(isTamil ? "பாவ சுருக்கத்தை நகலெடு" : "Copy House Summary");
 		copyItem.addActionListener(e -> copyCurrentHouseSummary());
 		contextMenu.add(copyItem);
 
@@ -231,8 +240,10 @@ public class HousePACView extends JPanel {
 
 	private void updatePACCard() {
 		HousePACData data = getHouseData(selectedHouse);
+		boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
 		if (data == null) {
-			pacCardPane.setText("<html><body style='font-family: sans-serif; font-size: 10px; color: #718096; padding: 10px;'>No chart data available.</body></html>");
+			pacCardPane.setText("<html><body style='font-family: sans-serif; font-size: 10px; color: #718096; padding: 10px;'>"
+					+ (isTamil ? "ஜாதகத் தரவு கிடைக்கவில்லை." : "No chart data available.") + "</body></html>");
 			return;
 		}
 
@@ -241,13 +252,23 @@ public class HousePACView extends JPanel {
 
 		// Header Banner
 		html.append("<div style='background-color: #ebf8ff; border: 1px solid #bee3f8; border-radius: 6px; padding: 6px 12px; margin-bottom: 8px;'>");
-		html.append("<b style='font-size: 13px; color: #1a365d;'>HOUSE ").append(data.getHouseNum()).append(": ");
-		html.append(data.getRasi().englishName().toUpperCase()).append(" (").append(data.getRasi().name()).append(")</b>");
+		if (isTamil) {
+			html.append("<b style='font-size: 13px; color: #1a365d;'>").append(data.getHouseNum()).append("-ம் பாவம்: ");
+			html.append(data.getRasi().toString(Language.TAMIL)).append(" (").append(data.getRasi().englishName()).append(")</b>");
+		} else {
+			html.append("<b style='font-size: 13px; color: #1a365d;'>HOUSE ").append(data.getHouseNum()).append(": ");
+			html.append(data.getRasi().englishName().toUpperCase()).append(" (").append(data.getRasi().name()).append(")</b>");
+		}
 		if (!data.getClassifications().isEmpty()) {
-			html.append("<span style='color: #4a5568;'> — ").append(String.join(", ", data.getClassifications())).append("</span>");
+			List<String> formattedClass = new ArrayList<>();
+			for (String cl : data.getClassifications()) {
+				formattedClass.add(formatClassification(cl, isTamil));
+			}
+			html.append("<span style='color: #4a5568;'> — ").append(String.join(", ", formattedClass)).append("</span>");
 		}
 		html.append("<span style='color: #718096;'> | </span>");
-		html.append("<b>Lord:</b> <span style='color: #2b6cb0; font-weight: bold;'>").append(data.getLord().name()).append("</span>");
+		html.append("<b>").append(isTamil ? "அதிபதி:" : "Lord:").append("</b> <span style='color: #2b6cb0; font-weight: bold;'>")
+		    .append(isTamil ? data.getLord().toString() : data.getLord().name()).append("</span>");
 		html.append("</div>");
 
 		// 3-Column Cards Table (Option 1 Layout)
@@ -258,40 +279,61 @@ public class HousePACView extends JPanel {
 		// -------------------------------------------------------------
 		html.append("<td width='33%' valign='top'>");
 		html.append("<div style='background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 10px; min-height: 280px;'>");
-		html.append("<div style='font-size: 11px; font-weight: bold; color: #2c5282; border-bottom: 2px solid #3182ce; padding-bottom: 4px; margin-bottom: 8px;'>[P] PLACEMENT</div>");
+		html.append("<div style='font-size: 11px; font-weight: bold; color: #2c5282; border-bottom: 2px solid #3182ce; padding-bottom: 4px; margin-bottom: 8px;'>")
+		    .append(isTamil ? "[P] நிலை (இருப்பிடம்)" : "[P] PLACEMENT").append("</div>");
 
 		LordPlacement lp = data.getLordPlacement();
 		if (lp != null) {
 			html.append("<div style='margin-bottom: 6px;'>");
-			html.append("• <b>Lord Placement:</b> ").append(lp.getLord().name());
-			if (lp.isRetrograde()) html.append(" [R]");
-			if (lp.isCombust()) html.append(" [C]");
-			html.append(", ").append(app.astrosoft.core.HousePACCalculator.ordinal(lp.getRuledHouse()))
-			    .append(" lord, is placed in ").append(app.astrosoft.core.HousePACCalculator.ordinal(lp.getHouse()))
-			    .append(" house");
-			if (lp.getRasi() != null) {
-				html.append(" (").append(lp.getRasi().englishName());
-				if (lp.getDignity() != null) {
-					html.append(", ").append(lp.getDignity().label()).append(" sign");
+			if (isTamil) {
+				html.append("• <b>அதிபதி நிலை:</b> ").append(lp.getLord().toString());
+				if (lp.isRetrograde()) html.append(" [வ]");
+				if (lp.isCombust()) html.append(" [அ]");
+				html.append(", ").append(lp.getRuledHouse()).append("-ம் அதிபதி, ")
+				    .append(lp.getHouse()).append("-ம் வீட்டில் உள்ளார்");
+				if (lp.getRasi() != null) {
+					html.append(" (").append(lp.getRasi().toString(Language.TAMIL));
+					if (lp.getDignity() != null) {
+						html.append(" - ").append(formatDignity(lp.getDignity(), true));
+					}
+					html.append(")");
 				}
-				html.append(")");
+			} else {
+				html.append("• <b>Lord Placement:</b> ").append(lp.getLord().name());
+				if (lp.isRetrograde()) html.append(" [R]");
+				if (lp.isCombust()) html.append(" [C]");
+				html.append(", ").append(app.astrosoft.core.HousePACCalculator.ordinal(lp.getRuledHouse()))
+				    .append(" lord, is placed in ").append(app.astrosoft.core.HousePACCalculator.ordinal(lp.getHouse()))
+				    .append(" house");
+				if (lp.getRasi() != null) {
+					html.append(" (").append(lp.getRasi().englishName());
+					if (lp.getDignity() != null) {
+						html.append(", ").append(lp.getDignity().label()).append(" sign");
+					}
+					html.append(")");
+				}
 			}
-			html.append("<br/>&nbsp;&nbsp;&nbsp;— ").append(formatRoleBadge(lp.isYogakaraka(), lp.getFunctionalRole()));
+			html.append("<br/>&nbsp;&nbsp;&nbsp;— ").append(formatRoleBadge(lp.isYogakaraka(), lp.getFunctionalRole(), isTamil));
 			html.append("</div>");
 		}
 		if (data.getOccupants().isEmpty()) {
-			html.append("• <b>Occupants:</b> <span style='color: #718096;'>None (Empty house)</span>");
+			html.append("• <b>").append(isTamil ? "உள்ள கிரகங்கள்:" : "Occupants:").append("</b> <span style='color: #718096;'>")
+			    .append(isTamil ? "எதுவுமில்லை (காலி பாவம்)" : "None (Empty house)").append("</span>");
 		} else {
-			html.append("• <b>Occupants:</b>");
+			html.append("• <b>").append(isTamil ? "உள்ள கிரகங்கள்:" : "Occupants:").append("</b>");
 			for (OccupantInfo occ : data.getOccupants()) {
 				html.append("<div style='margin-left: 14px; margin-top: 3px;'>");
-				html.append("• <b>").append(occ.getPlanet().name());
-				if (occ.isRetrograde()) html.append(" [R]");
-				if (occ.isCombust()) html.append(" [C]");
+				html.append("• <b>").append(isTamil ? occ.getPlanet().toString() : occ.getPlanet().name());
+				if (occ.isRetrograde()) html.append(isTamil ? " [வ]" : " [R]");
+				if (occ.isCombust()) html.append(isTamil ? " [அ]" : " [C]");
 				html.append(":</b> ");
-				html.append(formatRoleBadge(occ.isYogakaraka(), occ.getFunctionalRole()));
+				html.append(formatRoleBadge(occ.isYogakaraka(), occ.getFunctionalRole(), isTamil));
 				if (occ.getDignity() != null) {
-					html.append(" in ").append(occ.getDignity().label().toLowerCase()).append(" sign");
+					if (isTamil) {
+						html.append(" (").append(formatDignity(occ.getDignity(), true)).append(")");
+					} else {
+						html.append(" in ").append(occ.getDignity().label().toLowerCase()).append(" sign");
+					}
 				}
 				html.append("</div>");
 			}
@@ -303,19 +345,27 @@ public class HousePACView extends JPanel {
 		// -------------------------------------------------------------
 		html.append("<td width='33%' valign='top'>");
 		html.append("<div style='background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 10px; min-height: 280px;'>");
-		html.append("<div style='font-size: 11px; font-weight: bold; color: #2c5282; border-bottom: 2px solid #3182ce; padding-bottom: 4px; margin-bottom: 8px;'>[A] ASPECTS</div>");
+		html.append("<div style='font-size: 11px; font-weight: bold; color: #2c5282; border-bottom: 2px solid #3182ce; padding-bottom: 4px; margin-bottom: 8px;'>")
+		    .append(isTamil ? "[A] பார்வை" : "[A] ASPECTS").append("</div>");
 
 		if (data.getAspects().isEmpty()) {
-			html.append("• <span style='color: #718096;'>None (No planetary aspects on this house)</span>");
+			html.append("• <span style='color: #718096;'>")
+			    .append(isTamil ? "எதுவுமில்லை (கிரகப் பார்வை இல்லை)" : "None (No planetary aspects on this house)").append("</span>");
 		} else {
 			boolean firstAsp = true;
 			for (AspectInfo asp : data.getAspects()) {
 				if (!firstAsp) html.append("<div style='margin-top: 6px;'></div>");
-				html.append("• Aspected by <b>").append(asp.getPlanet().name()).append("</b> from House ")
-				    .append(asp.getFromHouse()).append(" via ").append(asp.getAspectName());
-				String roleText = formatRoleBadge(asp.isYogakaraka(), asp.getFunctionalRole());
+				if (isTamil) {
+					html.append("• <b>").append(asp.getPlanet().toString()).append("</b> பார்வை (")
+					    .append(asp.getFromHouse()).append("-ம் வீட்டில் இருந்து ").append(formatAspectName(asp.getAspectName(), true)).append(")");
+				} else {
+					html.append("• Aspected by <b>").append(asp.getPlanet().name()).append("</b> from House ")
+					    .append(asp.getFromHouse()).append(" via ").append(asp.getAspectName());
+				}
+				String roleText = formatRoleBadge(asp.isYogakaraka(), asp.getFunctionalRole(), isTamil);
 				if (asp.isOwnLord()) {
-					html.append("<br/>&nbsp;&nbsp;&nbsp;(").append(roleText).append(" <span style='color: #718096;'>- Own House Lord</span>)");
+					html.append("<br/>&nbsp;&nbsp;&nbsp;(").append(roleText).append(" <span style='color: #718096;'>- ")
+					    .append(isTamil ? "ஆட்சி அதிபதி" : "Own House Lord").append("</span>)");
 				} else {
 					html.append("<br/>&nbsp;&nbsp;&nbsp;(").append(roleText).append(")");
 				}
@@ -329,10 +379,11 @@ public class HousePACView extends JPanel {
 		// -------------------------------------------------------------
 		html.append("<td width='34%' valign='top'>");
 		html.append("<div style='background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; padding: 10px; min-height: 280px;'>");
-		html.append("<div style='font-size: 11px; font-weight: bold; color: #2c5282; border-bottom: 2px solid #3182ce; padding-bottom: 4px; margin-bottom: 8px;'>[C] CONJUNCTIONS &amp; YOGAS</div>");
+		html.append("<div style='font-size: 11px; font-weight: bold; color: #2c5282; border-bottom: 2px solid #3182ce; padding-bottom: 4px; margin-bottom: 8px;'>")
+		    .append(isTamil ? "[C] சேர்க்கை & யோகங்கள்" : "[C] CONJUNCTIONS &amp; YOGAS").append("</div>");
 
 		if (data.getConjunctions().isEmpty() && data.getYogas().isEmpty()) {
-			html.append("• <span style='color: #718096;'>None</span>");
+			html.append("• <span style='color: #718096;'>").append(isTamil ? "எதுவுமில்லை" : "None").append("</span>");
 		} else {
 			for (String c : data.getConjunctions()) {
 				html.append("<div style='margin-bottom: 4px;'>• ").append(c).append("</div>");
@@ -354,6 +405,51 @@ public class HousePACView extends JPanel {
 		html.append("</body></html>");
 		pacCardPane.setText(html.toString());
 		pacCardPane.setCaretPosition(0);
+	}
+
+	private static String formatClassification(String c, boolean isTamil) {
+		if (!isTamil || c == null) return c;
+		switch (c.trim()) {
+			case "Dharma": return "தர்மம்";
+			case "Artha": return "அர்த்தம்";
+			case "Kama": return "காமம்";
+			case "Moksha": return "மோட்சம்";
+			case "Kendra": return "கேந்திரம்";
+			case "Trikona": return "திரிகோணம்";
+			case "Panapara": return "பணபரம்";
+			case "Apoklima": return "அபோக்லிமம்";
+			case "Upachaya": return "உபசயம்";
+			case "Dusthana": return "துஸ்தானம்";
+			case "Maraka": return "மாரகம்";
+			default: return c;
+		}
+	}
+
+	private static String formatDignity(SignRelationship dignity, boolean isTamil) {
+		if (dignity == null) return "";
+		if (!isTamil) return dignity.label();
+		switch (dignity) {
+			case EXALTED: return "உச்சம்";
+			case DEBILITATED: return "நீசம்";
+			case OWN: return "ஆட்சி";
+			case FRIENDLY: return "நட்பு";
+			case NEUTRAL: return "சமம்";
+			case ENEMY: return "பகை";
+			default: return dignity.label();
+		}
+	}
+
+	private static String formatAspectName(String aspectName, boolean isTamil) {
+		if (aspectName == null) return "";
+		if (!isTamil) return aspectName;
+		if (aspectName.contains("3rd")) return "3-ம் பார்வை";
+		if (aspectName.contains("4th")) return "4-ம் பார்வை";
+		if (aspectName.contains("5th")) return "5-ம் பார்வை";
+		if (aspectName.contains("7th")) return "7-ம் பார்வை";
+		if (aspectName.contains("8th")) return "8-ம் பார்வை";
+		if (aspectName.contains("9th")) return "9-ம் பார்வை";
+		if (aspectName.contains("10th")) return "10-ம் பார்வை";
+		return aspectName;
 	}
 
 	private JButton createActionButton(String text, String tooltip, int width) {
@@ -390,18 +486,18 @@ public class HousePACView extends JPanel {
 		return btn;
 	}
 
-	private static String formatRoleBadge(boolean isYk, FunctionalRole role) {
+	private static String formatRoleBadge(boolean isYk, FunctionalRole role, boolean isTamil) {
 		if (isYk) {
-			return "<font color='#276749'><b>Yogakaraka</b></font>";
+			return "<font color='#276749'><b>" + (isTamil ? "யோககாரகன்" : "Yogakaraka") + "</b></font>";
 		}
 		if (role == null) return "";
 		switch (role) {
 			case BENEFIC:
-				return "<font color='#276749'><b>Functional Benefic</b></font>";
+				return "<font color='#276749'><b>" + (isTamil ? "சுப கிரகம்" : "Functional Benefic") + "</b></font>";
 			case MALEFIC:
-				return "<font color='#9b2c2c'><b>Functional Malefic</b></font>";
+				return "<font color='#9b2c2c'><b>" + (isTamil ? "அசுப கிரகம்" : "Functional Malefic") + "</b></font>";
 			case NEUTRAL:
-				return "<font color='#718096'>Functional Neutral</font>";
+				return "<font color='#718096'>" + (isTamil ? "சம கிரகம்" : "Functional Neutral") + "</font>";
 			default:
 				return role.name();
 		}
@@ -409,18 +505,20 @@ public class HousePACView extends JPanel {
 
 	public void copyCurrentHouseSummary() {
 		HousePACData data = getHouseData(selectedHouse);
+		boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
 		if (data != null) {
 			StringSelection selection = new StringSelection(data.toPlainText());
 			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
 
-			copyBtn.setText("Copied!");
-			Timer timer = new Timer(1500, e -> copyBtn.setText("Copy House"));
+			copyBtn.setText(isTamil ? "நகலெடுக்கப்பட்டது!" : "Copied!");
+			Timer timer = new Timer(1500, e -> copyBtn.setText(isTamil ? "நகலெடு" : "Copy House"));
 			timer.setRepeats(false);
 			timer.start();
 		}
 	}
 
 	public void copyAllHousesSummary() {
+		boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
 		StringBuilder all = new StringBuilder();
 		all.append("==================================================\n");
 		all.append("ASTROSOFT - COMPLETE 12 HOUSES PAC ANALYSIS\n");
@@ -434,8 +532,8 @@ public class HousePACView extends JPanel {
 		StringSelection selection = new StringSelection(all.toString());
 		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
 
-		copyAllBtn.setText("Copied 12!");
-		Timer timer = new Timer(1500, e -> copyAllBtn.setText("Copy All 12"));
+		copyAllBtn.setText(isTamil ? "12 நகலெடுக்கப்பட்டது!" : "Copied 12!");
+		Timer timer = new Timer(1500, e -> copyAllBtn.setText(isTamil ? "12 பாவங்கள்" : "Copy All 12"));
 		timer.setRepeats(false);
 		timer.start();
 	}

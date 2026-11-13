@@ -16,6 +16,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.ShadBala;
@@ -66,7 +67,9 @@ public class PlanetDetailsDialog extends JDialog {
 	}
 
 	public PlanetDetailsDialog(Window owner, PlanetaryInfo planetaryInfo, Rasi ascendant, ShadBala shadBala, Runnable onClose) {
-		super(owner != null ? owner : AstroSoft.getInstance(), "Planet Details - Overview & Shadbala", ModalityType.MODELESS);
+		super(owner != null ? owner : AstroSoft.getInstance(),
+				AstroSoft.getPreferences().getLanguage() == Language.TAMIL ? "கிரக விவரங்கள் - பார்வை & ஷட்பலம்" : "Planet Details - Overview & Shadbala",
+				ModalityType.MODELESS);
 		this.onCloseCallback = onClose;
 
 		if (activeDialog != null && activeDialog != this) {

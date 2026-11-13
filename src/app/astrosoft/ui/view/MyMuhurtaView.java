@@ -19,6 +19,7 @@ import javax.swing.table.TableCellRenderer;
 
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.DisplayStrings;
+import app.astrosoft.consts.Language;
 import app.astrosoft.consts.TableStyle;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.Panchang;
@@ -490,7 +491,10 @@ public class MyMuhurtaView extends AstrosoftView {
         Chart muhurtaRasiChart = new Chart(new app.astrosoft.beans.PlanetChartData(
             app.astrosoft.consts.Varga.Rasi,
             muhurta.getEventHoroscope().getPlanetaryInfo()) {
-            public String getChartName() { return "<html><center>Muhurta<br>Rasi</center></html>"; }
+            public String getChartName() {
+                boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+                return isTamil ? "<html><center>முகூர்த்த<br>ராசி</center></html>" : "<html><center>Muhurta<br>Rasi</center></html>";
+            }
         }, currentChartDim);
         chartsPanel.add(muhurtaRasiChart);
 

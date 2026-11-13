@@ -55,13 +55,13 @@ public class CompatibilityView extends AstrosoftView {
 		super(title, viewSize, loc);
 		this.c = c;
 		AstrosoftTabbedPane tabbedPane = new AstrosoftTabbedPane(tabbedPaneSize);
-		//Font font = UIUtil.getFont();
-		//tabbedPane.setFont(font);
+		Font font = UIUtil.getFont(Font.BOLD, 12);
+		tabbedPane.setFont(font);
 		
-		tabbedPane.addTab(DisplayStrings.KUTA_STR.toString(Language.ENGLISH), createKutaPanel());
+		tabbedPane.addTab(DisplayStrings.KUTA_STR.toString(), createKutaPanel());
 		
 		if (c.hasHoroscope()){
-			tabbedPane.addTab(DisplayStrings.DOSHA_STR.toString(Language.ENGLISH), createDoshaPanel());
+			tabbedPane.addTab(DisplayStrings.DOSHA_STR.toString(), createDoshaPanel());
 			tabbedPane.addTab(DisplayStrings.BOY_HOR_STR, createBoyChart());
 			tabbedPane.addTab(DisplayStrings.GIRL_HOR_STR, createGirlChart());
 		}

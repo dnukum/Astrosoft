@@ -19,6 +19,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import app.astrosoft.consts.DisplayFormat;
+import app.astrosoft.consts.Language;
+import app.astrosoft.ui.util.UIUtil;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -65,7 +68,7 @@ public class TransitChartDialog extends AstrosoftDialog {
     }
 
     public TransitChartDialog(AstroSoft parent, Date initInstant, Place initPlace, TransitChartComputation computation) {
-        super(parent, "Transit Chart", DLG_SIZE);
+        super(parent, AstroSoft.getPreferences().getLanguage() == Language.TAMIL ? "கோசார ராசி" : "Transit Chart", DLG_SIZE);
         setModalityType(ModalityType.MODELESS);
         this.computation = computation;
         this.currentPlace = initPlace != null ? initPlace : AstroSoft.getPreferences().getPlace();
@@ -110,7 +113,10 @@ public class TransitChartDialog extends AstrosoftDialog {
         contentPanel.add(buttonBar);
 
         // Expandable table with 3 columns: Planet, Sign Change, Date Change
-        String[] columnNames = {"Planet", "Sign Change", "Date Change"};
+        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+        String[] columnNames = isTamil
+                ? new String[]{"கிரகம்", "ராசி மாற்றம்", "தேதி மாற்றம்"}
+                : new String[]{"Planet", "Sign Change", "Date Change"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -119,8 +125,8 @@ public class TransitChartDialog extends AstrosoftDialog {
         };
         detailsTable = new JTable(tableModel);
         detailsTable.setRowHeight(20);
-        detailsTable.setFont(new Font("Verdana", Font.PLAIN, 11));
-        detailsTable.getTableHeader().setFont(new Font("Verdana", Font.BOLD, 11));
+        detailsTable.setFont(UIUtil.getFont("Verdana", Font.PLAIN, 11));
+        detailsTable.getTableHeader().setFont(UIUtil.getFont("Verdana", Font.BOLD, 11));
         detailsTable.getTableHeader().setReorderingAllowed(false);
         detailsTable.setRowSelectionAllowed(true);
         detailsTable.setColumnSelectionAllowed(false);
@@ -291,8 +297,10 @@ public class TransitChartDialog extends AstrosoftDialog {
                 ? sdf.format(roundedAscDate)
                 : "—";
 
+        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+        String ascLabel = isTamil ? Planet.Ascendant.toString(DisplayFormat.SYMBOL) : "ASC";
         rowTransitionDates.add(roundedAscDate);
-        tableModel.addRow(new Object[]{"ASC", ascSignChangeStr, ascDateChangeStr});
+        tableModel.addRow(new Object[]{ascLabel, ascSignChangeStr, ascDateChangeStr});
 
         // 2. Grahas (Sun, Moon, etc.)
         for (Planet p : Planet.allPlanets()) {

@@ -71,6 +71,7 @@ import app.astrosoft.ui.dlg.PrintDialog;
 import app.astrosoft.ui.dlg.TimeInputDialog;
 import app.astrosoft.ui.dlg.TransitChartDialog;
 import app.astrosoft.ui.util.UIConsts;
+import app.astrosoft.ui.util.UIUtil;
 import app.astrosoft.ui.view.AshtavargaView;
 import app.astrosoft.ui.view.BhavaView;
 import app.astrosoft.ui.view.CompatibilityView;
@@ -580,6 +581,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	private static void setUIDefaults() {
+
+		UIUtil.registerCustomFonts();
 
 		try {
 			UIManager.setLookAndFeel(UIConsts.getLookAndFeel());
@@ -1499,6 +1502,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 			viewManager.showView(View.CHART_VIEW);
 
 		}
+
+		refreshAllChartsAndCachedViews();
 
 	}
 

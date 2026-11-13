@@ -53,7 +53,7 @@ public class MuhurthaInput extends AstrosoftDialog {
     public void initComponents(){
         
         //Init controls
-        nakPanel = new RasiNakshathraChooser(DisplayStrings.NAK_STR.toString(Language.ENGLISH), nakChooserSize);
+        nakPanel = new RasiNakshathraChooser(DisplayStrings.NAK_STR.toString(), nakChooserSize);
         JPanel filterPanel = new JPanel(new AbsoluteLayout());
         chandraFilter = new JCheckBox(DisplayStrings.FILTER_BY_CHANDRA_STR.toString(), true);
         nakFilter = new JCheckBox(DisplayStrings.FILTER_BY_MUHURTHA_STR.toString());

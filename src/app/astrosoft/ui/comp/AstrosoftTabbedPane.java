@@ -9,20 +9,25 @@ package app.astrosoft.ui.comp;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import app.astrosoft.ui.util.UIUtil;
+
 public class AstrosoftTabbedPane extends JTabbedPane {
 	
 	public AstrosoftTabbedPane(){
 		super();
+		setFont(UIUtil.getFont(Font.BOLD, 12));
 	}
 
 	public AstrosoftTabbedPane(Dimension paneSize){
 		super();
 		setPreferredSize(paneSize);
+		setFont(UIUtil.getFont(Font.BOLD, 12));
 	}
 	
 	@Override

@@ -9,6 +9,7 @@ package app.astrosoft.ui.dlg;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +24,7 @@ import javax.swing.SpringLayout;
 
 import app.astrosoft.beans.BirthData;
 import app.astrosoft.consts.DisplayStrings;
+import app.astrosoft.ui.util.UIUtil;
 import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Rasi;
@@ -184,14 +186,18 @@ public class CompatibilityInputDialog extends AstrosoftDialog {
 		JPanel gNamePanel = new JPanel();
 
 
-		bNamePanel.add(new JLabel("  " + DisplayStrings.NAME_STR.toString(Language.ENGLISH) + "                      "));
+		JLabel bNameLabel = new JLabel("  " + DisplayStrings.NAME_STR.toString() + "                      ");
+		bNameLabel.setFont(UIUtil.getFont(Font.BOLD, 12));
+		bNamePanel.add(bNameLabel);
 		bNamePanel.add(boyName);
 
 		boyPanel.add(bNamePanel, BorderLayout.PAGE_START);
 		boyPanel.add(bRasiNakChooser, BorderLayout.CENTER);
 
 
-		gNamePanel.add(new JLabel("  " + DisplayStrings.NAME_STR.toString(Language.ENGLISH)+ "                      "));
+		JLabel gNameLabel = new JLabel("  " + DisplayStrings.NAME_STR.toString() + "                      ");
+		gNameLabel.setFont(UIUtil.getFont(Font.BOLD, 12));
+		gNamePanel.add(gNameLabel);
 		gNamePanel.add(girlName);
 
 		//SpringUtilities.makeGrid(bNamePanel, 1, 2, 5,5,0,0);

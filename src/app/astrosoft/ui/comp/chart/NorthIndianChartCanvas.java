@@ -193,7 +193,7 @@ public class NorthIndianChartCanvas extends JComponent {
 		Shape shape = lastGeometry.getHouseShape(hl.house);
 		MarkerPlacement fallback = null;
 		for (int pt = targetSize; pt >= 5; pt--) {
-			Font candidateFont = new Font(Font.SANS_SERIF, Font.BOLD, pt);
+			Font candidateFont = app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, pt);
 			FontMetrics mfm = getFontMetrics(candidateFont);
 			List<Rectangle2D.Double> boxes = computeMarkerBoxes(hl, entry, s, compact, mfm, scoreZone);
 			boolean fits = markersFitInHouse(shape, hl.signBounds, scoreZone, boxes);
@@ -816,7 +816,7 @@ public class NorthIndianChartCanvas extends JComponent {
 	private HouseLayout tryPlacePlanets(int house, Rasi rasi, List<PlanetItem> planets,
 			int cols, int fontSize,
 			Rectangle2D.Double signBounds, double signBaselineX, double signBaselineY) {
-		Font planetFont = new Font(Font.SANS_SERIF, Font.BOLD, fontSize);
+		Font planetFont = app.astrosoft.ui.util.UIUtil.getFont(Font.SANS_SERIF, Font.BOLD, fontSize);
 		FontMetrics pfm = getFontMetrics(planetFont);
 
 		int n = planets.size();
@@ -902,7 +902,7 @@ public class NorthIndianChartCanvas extends JComponent {
 	 */
 	private HouseLayout tryTriangleTapered(int house, Rasi rasi, List<PlanetItem> planets,
 			int fontSize, Rectangle2D.Double signBounds, double signBaselineX, double signBaselineY) {
-		Font planetFont = new Font(Font.SANS_SERIF, Font.BOLD, fontSize);
+		Font planetFont = app.astrosoft.ui.util.UIUtil.getFont(Font.SANS_SERIF, Font.BOLD, fontSize);
 		FontMetrics pfm = getFontMetrics(planetFont);
 		Shape houseShape = lastGeometry.getHouseShape(house);
 		Rectangle2D sb = houseShape.getBounds2D();

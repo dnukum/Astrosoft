@@ -28,6 +28,7 @@ import app.astrosoft.core.ShadBala;
 import app.astrosoft.ui.comp.AstrosoftTabbedPane;
 import app.astrosoft.ui.comp.TitledTable;
 import app.astrosoft.ui.table.AstrosoftTable;
+import app.astrosoft.ui.util.UIUtil;
 import app.astrosoft.ui.table.AstrosoftTableModel;
 import app.astrosoft.ui.table.SortableTable;
 import app.astrosoft.ui.table.SortableTableModel;
@@ -66,14 +67,15 @@ public class ShadBalaView extends AstrosoftView {
 				planetBalaTableSize);
 
 		AstrosoftTabbedPane tabbedPane = new AstrosoftTabbedPane(tabbedPaneSize);
+		tabbedPane.setFont(UIUtil.getFont(Font.BOLD, 12));
 
-		tabbedPane.addTab(AstrosoftTableColumn.ShadBala.toString(Language.ENGLISH),
+		tabbedPane.addTab(AstrosoftTableColumn.ShadBala.toString(),
 				shadBalaTablePanel);
-		tabbedPane.addTab(AstrosoftTableColumn.SthanaBala.toString(Language.ENGLISH),
+		tabbedPane.addTab(AstrosoftTableColumn.SthanaBala.toString(),
 				sthanaBalaTablePanel);
-		tabbedPane.addTab(AstrosoftTableColumn.KalaBala.toString(Language.ENGLISH),
+		tabbedPane.addTab(AstrosoftTableColumn.KalaBala.toString(),
 				kalaBalaTablePanel);
-		tabbedPane.addTab(AstrosoftTableColumn.BhavaBala.toString(Language.ENGLISH),
+		tabbedPane.addTab(AstrosoftTableColumn.BhavaBala.toString(),
 				bhavaBalaTablePanel);
 
 		add(tabbedPane, BorderLayout.CENTER);

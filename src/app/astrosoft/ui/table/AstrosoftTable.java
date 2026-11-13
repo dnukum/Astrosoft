@@ -50,8 +50,8 @@ public class AstrosoftTable extends JTable {
     
     private static final int rowHeight = 22; //includes margin
     private static final int rowMargin = 2;
-    private Font headerFont = UIUtil.getFont(Language.ENGLISH, Font.BOLD, 12);
-    private Font tableFont = new Font("Verdana", Font.PLAIN, 11);
+    private Font headerFont = UIUtil.getFont(Font.BOLD, 12);
+    private Font tableFont = UIUtil.getFont("Verdana", Font.PLAIN, 11);
     
     TableStyle tableStyle;
     

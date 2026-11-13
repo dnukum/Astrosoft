@@ -134,6 +134,7 @@ public class UIConsts {
 	public static Border getTitleBorder(String title){
 		TitledBorder border = new TitledBorder(new EtchedBorder(), title);
 		border.setTitleColor(UIConsts.DARK_GREEN);
+		border.setTitleFont(UIUtil.getFont(Font.BOLD, 12));
 		return border;
 	}
 	

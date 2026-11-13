@@ -64,6 +64,9 @@ build.date=${tstamp.default}
 		<copy todir="${dist_resources_dir}">
 			<fileset dir="${resources_dir}" />
 		</copy>
+		<copy todir="${dist_resources_dir}/fonts" failonerror="false">
+			<fileset dir="fonts" erroronmissingdir="false" />
+		</copy>
 		<copy todir="${deploy_dir}">
 			<fileset dir="${etc_dir}" />
 		</copy>

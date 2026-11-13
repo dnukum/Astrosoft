@@ -23,6 +23,7 @@ import app.astrosoft.beans.PlanetStatus;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.ui.util.PlanetStatusCodes;
 import app.astrosoft.ui.util.UIConsts;
+import app.astrosoft.ui.util.UIUtil;
 
 public class PlanetCellRenderer implements TableCellRenderer {
 
@@ -74,7 +75,7 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			
 			Font tblFont = (table != null) ? table.getFont() : null;
 			int targetSize = (tblFont != null) ? tblFont.getSize() : c.getFont().getSize();
-			l.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, targetSize));
+			l.setFont(UIUtil.getFont(Font.BOLD, targetSize));
 			l.setText(p.toString(planetFormat));
 
 			int colW = (table != null && column >= 0 && column < table.getColumnCount())
@@ -96,7 +97,7 @@ public class PlanetCellRenderer implements TableCellRenderer {
 				int fitSize = targetSize;
 				while (textW > availW && fitSize > 8) {
 					fitSize--;
-					Font fitFont = new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, fitSize);
+					Font fitFont = UIUtil.getFont(Font.BOLD, fitSize);
 					textW = l.getFontMetrics(fitFont).stringWidth(l.getText());
 					l.setFont(fitFont);
 				}

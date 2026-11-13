@@ -170,9 +170,10 @@ public class MyMuhurta {
             tzStr = selectedPlace.astrosoftTimeZone().toString(eventInstant);
         }
         
+        boolean isTamil = app.astrosoft.ui.AstroSoft.getPreferences().getLanguage() == app.astrosoft.consts.Language.TAMIL;
         rows.add(helper.createRow(app.astrosoft.consts.DisplayStrings.DATE_STR, dateStr));
-        rows.add(helper.createRow("Time", timeStr + "," + tzStr));
-        rows.add(helper.createRow("Location", placeStr));
+        rows.add(helper.createRow(isTamil ? "நேரம்" : "Time", timeStr + "," + tzStr));
+        rows.add(helper.createRow(isTamil ? "இடம்" : "Location", placeStr));
         
         TableData<MapTableRow> panchangRows = pan.getPanchangTableData(true);
         for (String sunLabel : new String[] {app.astrosoft.consts.DisplayStrings.SUNRISE_STR.toString(),
@@ -196,7 +197,8 @@ public class MyMuhurta {
                 WeekDay curDay = pan.getWeekday();
                 WeekDay prevDay = curDay.prev();
                 String riseTime = AstroUtil.timeFormat(pan.getSunrise());
-                rows.add(helper.createRow("Vara (Solar Day)", prevDay + " -> (" + riseTime + ") " + curDay));
+                String varaLabel = isTamil ? "சூரிய கிழமை" : "Vara (Solar Day)";
+                rows.add(helper.createRow(varaLabel, prevDay + " -> (" + riseTime + ") " + curDay));
             }
             if(key.startsWith(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString()) && dailyTimings.isEmpty()){
                 rows.add(helper.createRow("Abhijit Muhurta","Unavailable: invalid solar event ordering"));
@@ -205,8 +207,10 @@ public class MyMuhurta {
             if(key.startsWith(app.astrosoft.consts.DisplayStrings.AUS_TIME_STR.toString()))
                 for(MuhurtaWindowsCalculator.Window timing:dailyTimings)
                     if(!timing.kind.equals("Subha Hora"))rows.add(helper.createRow(timing.kind,MuhurtaWindowsCalculator.format(timing,tz)));
-            if (key.startsWith(app.astrosoft.consts.DisplayStrings.YOGA_STR.toString()))
-                rows.add(helper.createRow("Amirthathi Yoga", amirthathiDetails));
+            if (key.startsWith(app.astrosoft.consts.DisplayStrings.YOGA_STR.toString())) {
+                String amirLabel = isTamil ? "அமிர்தாதி யோகம்" : "Amirthathi Yoga";
+                rows.add(helper.createRow(amirLabel, amirthathiDetails));
+            }
         }
 
         if (userProfile != null && userProfile.getNakshathra() != null && userProfile.getRasi() != null) {

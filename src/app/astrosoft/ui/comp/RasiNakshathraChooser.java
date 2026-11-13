@@ -97,10 +97,10 @@ public class RasiNakshathraChooser extends JPanel {
         comboSize = new Dimension((compSize.width * 80 * 60)/10000, 20);
         LocationGenerator locGen = new LocationGenerator(origin, labelSize.width + hgap,labelSize.height + vgap);
         
-        JLabel lRasiStr = new JLabel(DisplayStrings.RASI_STR.toString(Language.ENGLISH));
-        JLabel lNakStr = new JLabel(DisplayStrings.NAK_STR.toString(Language.ENGLISH));
-        //lRasiStr.setFont(font);
-        //lNakStr.setFont(font);
+        JLabel lRasiStr = new JLabel(DisplayStrings.RASI_STR.toString());
+        JLabel lNakStr = new JLabel(DisplayStrings.NAK_STR.toString());
+        lRasiStr.setFont(font);
+        lNakStr.setFont(font);
         
         add(lRasiStr, new AbsoluteConstraints(locGen.getNextRow(), labelSize));
         add(rasiCombo, new AbsoluteConstraints(locGen.getNextColumn(), comboSize));

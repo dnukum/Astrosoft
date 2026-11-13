@@ -64,6 +64,7 @@ import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.Dignity;
 import app.astrosoft.consts.FunctionalRole;
 import app.astrosoft.consts.Karaka;
+import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
@@ -73,6 +74,7 @@ import app.astrosoft.consts.TableStyle;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.PlanetStatusCalculator;
 import app.astrosoft.core.ShadBala;
+import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.table.AstrosoftTable;
 import app.astrosoft.ui.table.AstrosoftTableModel;
 import app.astrosoft.ui.table.DefaultColumnMetaData;
@@ -81,6 +83,7 @@ import app.astrosoft.ui.table.MapTableRow;
 import app.astrosoft.ui.table.TableDataFactory;
 import app.astrosoft.ui.util.PlanetLabels;
 import app.astrosoft.ui.util.UIConsts;
+import app.astrosoft.ui.util.UIUtil;
 import app.astrosoft.util.AstroUtil;
 
 /**
@@ -183,7 +186,7 @@ public class RelativePlanetView extends JPanel {
 
 		// Header title
 		title = new JLabel("Planet Details", SwingConstants.LEFT);
-		title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+		title.setFont(UIUtil.getFont(Font.BOLD, 12));
 		title.setForeground(UIConsts.TEXT_DARK_NAVY);
 		title.setBounds(20, 3, 88, 22);
 		add(title);
@@ -465,7 +468,7 @@ public class RelativePlanetView extends JPanel {
 					&& Boolean.TRUE.equals(planetaryInfo.getPlanetCombustion().get(p));
 
 			PlanetStatus status = p.isAsc() ? null : planetStatus.get(p);
-			String name = PlanetLabels.label(p.name(), isRetro, isCombust, status);
+			String name = PlanetLabels.label(p.toString(), isRetro, isCombust, status);
 			row.addColumn(AstrosoftTableColumn.Planet, name);
 
 			double offset = (planetPos != null && planetPos.containsKey(p)) ? (planetPos.get(p) % 30.0) : 0.0;
@@ -624,21 +627,29 @@ public class RelativePlanetView extends JPanel {
 		List<Planet> trikonaLords = getTrikonaLords(ascRasi);
 		Planet yogakaraka = PlanetCharacter.getYogakaraka(ascRasi);
 
+		boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
 		String kendraStr = formatPlanetListNames(kendraLords);
 		String trikonaStr = formatPlanetListNames(trikonaLords);
-		String yogaStr = yogakaraka != null ? yogakaraka.name() : "None";
+		String yogaStr = yogakaraka != null ? yogakaraka.toString() : (isTamil ? "இல்லை" : "None");
 
-		Font lineFont = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+		Font lineFont = UIUtil.getFont(Font.PLAIN, 11);
 
-		JLabel kendraLabel = new JLabel("<html><font color='#1a365d'><b>Kendra (1,4,7,10):</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + kendraStr + "</font></html>");
+		String kendraTitle = isTamil ? "கேந்திரம் (1,4,7,10):" : "Kendra (1,4,7,10):";
+		String trikonaTitle = isTamil ? "திரிகோணம் (1,5,9):" : "Trikona (1,5,9):";
+		String yogaTitle = isTamil ? "யோககாரகன்:" : "Yogakaraka:";
+		String bTitle = isTamil ? "சுப கிரகங்கள்:" : "Functional Benefics:";
+		String nTitle = isTamil ? "சம கிரகங்கள்:" : "Functional Neutrals:";
+		String mTitle = isTamil ? "அசுப கிரகங்கள்:" : "Functional Malefics:";
+
+		JLabel kendraLabel = new JLabel("<html><font color='#1a365d'><b>" + kendraTitle + "</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + kendraStr + "</font></html>");
 		kendraLabel.setFont(lineFont);
 		kendraLabel.setToolTipText("<html><b>Kendra Lords (Houses 1, 4, 7, 10)</b><br/>Vishnusthanas &mdash; Pillars of strength, worldly activity, and sustained support.</html>");
 
-		JLabel trikonaLabel = new JLabel("<html><font color='#5b21b6'><b>Trikona (1,5,9):</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + trikonaStr + "</font></html>");
+		JLabel trikonaLabel = new JLabel("<html><font color='#5b21b6'><b>" + trikonaTitle + "</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + trikonaStr + "</font></html>");
 		trikonaLabel.setFont(lineFont);
 		trikonaLabel.setToolTipText("<html><b>Trikona Lords (Houses 1, 5, 9)</b><br/>Lakshmisthanas &mdash; Houses of dharma, fortune, purvapunya, and divine grace.</html>");
 
-		JLabel yogaLabel = new JLabel("<html><font color='#b45309'><b>Yogakaraka:</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + yogaStr + "</font></html>");
+		JLabel yogaLabel = new JLabel("<html><font color='#b45309'><b>" + yogaTitle + "</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + yogaStr + "</font></html>");
 		yogaLabel.setFont(lineFont);
 		yogaLabel.setToolTipText("<html><b>Yogakaraka</b><br/>Single planet simultaneously ruling a Kendra and a Trikona &mdash; confers supreme auspiciousness and Raja Yoga (B.V. Raman).</html>");
 
@@ -658,15 +669,15 @@ public class RelativePlanetView extends JPanel {
 		String nStr = formatPlanetListNames(neutrals);
 		String mStr = formatPlanetListNames(malefics);
 
-		JLabel bLabel = new JLabel("<html><font color='#1b5e20'><b>Functional Benefics:</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + bStr + "</font></html>");
+		JLabel bLabel = new JLabel("<html><font color='#1b5e20'><b>" + bTitle + "</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + bStr + "</font></html>");
 		bLabel.setFont(lineFont);
 		bLabel.setToolTipText("<html><b>Functional Benefics</b><br/>Planets producing auspicious results for this Lagna based on house rulerships (Parasara / B.V. Raman).</html>");
 
-		JLabel nLabel = new JLabel("<html><font color='#4a5568'><b>Functional Neutrals:</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + nStr + "</font></html>");
+		JLabel nLabel = new JLabel("<html><font color='#4a5568'><b>" + nTitle + "</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + nStr + "</font></html>");
 		nLabel.setFont(lineFont);
 		nLabel.setToolTipText("<html><b>Functional Neutrals</b><br/>Planets having neutral, mixed, or conditional functional influence for this Lagna.</html>");
 
-		JLabel mLabel = new JLabel("<html><font color='#b71c1c'><b>Functional Malefics:</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + mStr + "</font></html>");
+		JLabel mLabel = new JLabel("<html><font color='#b71c1c'><b>" + mTitle + "</b></font>&nbsp;&nbsp;<font color='#2d3748'>" + mStr + "</font></html>");
 		mLabel.setFont(lineFont);
 		mLabel.setToolTipText("<html><b>Functional Malefics</b><br/>Planets producing adverse results for this Lagna due to trik (6, 8, 12) or adverse rulership.</html>");
 
@@ -743,7 +754,7 @@ public class RelativePlanetView extends JPanel {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < list.size(); i++) {
 			if (i > 0) sb.append(", ");
-			sb.append(list.get(i).name());
+			sb.append(list.get(i).toString());
 		}
 		return sb.toString();
 	}
@@ -1073,7 +1084,7 @@ public class RelativePlanetView extends JPanel {
 				@Override
 				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
 					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
-					comp.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+					comp.setFont(UIUtil.getFont(Font.BOLD, 11));
 					String text = (val != null) ? val.toString() : "";
 					if (text.startsWith("Ascendant")) {
 						comp.setForeground(UIConsts.getChartAscendantColor());
@@ -1091,7 +1102,7 @@ public class RelativePlanetView extends JPanel {
 				@Override
 				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
 					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
-					comp.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+					comp.setFont(UIUtil.getFont(Font.PLAIN, 11));
 					comp.setForeground(UIConsts.TEXT_DARK_NAVY);
 					setOpaque(false);
 					return comp;
@@ -1102,7 +1113,7 @@ public class RelativePlanetView extends JPanel {
 				@Override
 				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
 					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
-					comp.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+					comp.setFont(UIUtil.getFont(Font.PLAIN, 11));
 					comp.setForeground(new Color(74, 85, 104));
 					setOpaque(false);
 					return comp;
