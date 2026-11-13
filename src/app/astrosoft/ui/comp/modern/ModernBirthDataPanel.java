@@ -46,6 +46,7 @@ import app.astrosoft.beans.Place.Direction;
 import app.astrosoft.ui.dlg.OptionDialog;
 import app.astrosoft.beans.Place.Location;
 import app.astrosoft.consts.DisplayStrings;
+import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Sex;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.util.UIConsts;
@@ -143,6 +144,8 @@ public class ModernBirthDataPanel extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        boolean isTamil = AstroSoft.getPreferences() != null && AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+
         int row = 0;
 
         // 1. Name
@@ -167,13 +170,13 @@ public class ModernBirthDataPanel extends JPanel {
         JPanel genderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 0));
         genderPanel.setBackground(UIConsts.THEME_CLR);
 
-        maleRadio = new JRadioButton("Male", true);
+        maleRadio = new JRadioButton(isTamil ? "ஆண்" : "Male", true);
         maleRadio.setBackground(UIConsts.THEME_CLR);
         maleRadio.setForeground(textColor);
         maleRadio.setFont(labelFont);
         maleRadio.setFocusPainted(false);
 
-        femaleRadio = new JRadioButton("Female", false);
+        femaleRadio = new JRadioButton(isTamil ? "பெண்" : "Female", false);
         femaleRadio.setBackground(UIConsts.THEME_CLR);
         femaleRadio.setForeground(textColor);
         femaleRadio.setFont(labelFont);
@@ -271,7 +274,7 @@ public class ModernBirthDataPanel extends JPanel {
             searchButton.setText("🔍");
         }
         searchButton.setPreferredSize(new Dimension(FIELD_HEIGHT, FIELD_HEIGHT));
-        searchButton.setToolTipText("Search Place");
+        searchButton.setToolTipText(isTamil ? "ஊரைத் தேடுக" : "Search Place");
         searchButton.setFocusPainted(false);
         searchButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         searchButton.addActionListener(e -> performPlaceSearch());
@@ -283,7 +286,7 @@ public class ModernBirthDataPanel extends JPanel {
 
         // Manual Coordinates Checkbox (placed below Place field, above coordinates divider)
         gbc.gridx = 1; gbc.gridy = row; gbc.weightx = 1.0;
-        manualCoordCheck = new JCheckBox("Manual Coordinates");
+        manualCoordCheck = new JCheckBox(isTamil ? "கைமுறை ஆயத்தொலைவுகள்" : "Manual Coordinates");
         manualCoordCheck.setBackground(UIConsts.THEME_CLR);
         manualCoordCheck.setForeground(textColor);
         manualCoordCheck.setFont(labelFont);
@@ -425,6 +428,22 @@ public class ModernBirthDataPanel extends JPanel {
     }
 
     private void formLabel(JPanel parent, String text, Font font, Color color, GridBagConstraints gbc) {
+        boolean isTamil = AstroSoft.getPreferences() != null && AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+        if (isTamil) {
+            switch (text) {
+                case "Name": text = "பெயர்"; break;
+                case "Gender": text = "பாலினம்"; break;
+                case "Date": text = "தேதி"; break;
+                case "BirthTime": case "Birth Time": text = "பிறந்த நேரம்"; break;
+                case "Place": text = "பிறந்த இடம்"; break;
+                case "Latitude": text = "அட்சரேகை"; break;
+                case "Longitude": text = "தீர்க்கரேகை"; break;
+                case "Time Zone": text = "நேர மண்டலம்"; break;
+            }
+            if (font != null) {
+                font = UIUtil.getFont(font.getStyle(), font.getSize());
+            }
+        }
         JLabel label = new JLabel(text);
         label.setFont(font);
         if (color != null) label.setForeground(color);
@@ -838,6 +857,18 @@ public class ModernBirthDataPanel extends JPanel {
         } else {
             maleRadio.setSelected(true);
         }
+    }
+
+    public JRadioButton getMaleRadio() {
+        return maleRadio;
+    }
+
+    public JRadioButton getFemaleRadio() {
+        return femaleRadio;
+    }
+
+    public JButton getSearchButton() {
+        return searchButton;
     }
 
     public JTextField getNameField() {

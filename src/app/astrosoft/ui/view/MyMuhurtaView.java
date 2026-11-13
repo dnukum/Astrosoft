@@ -498,8 +498,9 @@ public class MyMuhurtaView extends AstrosoftView {
         }, currentChartDim);
         chartsPanel.add(muhurtaRasiChart);
 
-        addPersonChart("Person 1", person1Profile != null ? person1Profile.getHoroscope() : null);
-        addPersonChart("Person 2", person2Profile != null ? person2Profile.getHoroscope() : null);
+        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+        addPersonChart(isTamil ? "நபர் 1" : "Person 1", person1Profile != null ? person1Profile.getHoroscope() : null);
+        addPersonChart(isTamil ? "நபர் 2" : "Person 2", person2Profile != null ? person2Profile.getHoroscope() : null);
         if (chartControls != null) {
             chartControls.setPreferredSize(new Dimension(currentChartDim.width, 30));
         }
@@ -547,15 +548,18 @@ public class MyMuhurtaView extends AstrosoftView {
     private JPanel createPeopleToolbar() {
         JPanel bar = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 8, 3));
         bar.setBackground(java.awt.Color.WHITE);
+        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
         javax.swing.border.TitledBorder tb = BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(SUB_BORDER_CLR, 1),
-            "Personal horoscopes"
+            isTamil ? "தனிப்பட்ட ஜாதகங்கள்" : "Personal horoscopes"
         );
-        tb.setTitleFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 11));
+        tb.setTitleFont(UIUtil.getFont(java.awt.Font.BOLD, 11));
         tb.setTitleColor(KEY_TEXT_CLR);
         bar.setBorder(tb);
-        person1Btn = createRoundedButton("Person 1: Select... ▾", java.awt.Font.BOLD, new Dimension(205, 26));
-        person2Btn = createRoundedButton("Person 2: Select... ▾", java.awt.Font.PLAIN, new Dimension(205, 26));
+        String p1Label = isTamil ? "நபர் 1: தேர்வு செய்..." : "Person 1: Select... ▾";
+        String p2Label = isTamil ? "நபர் 2: தேர்வு செய்..." : "Person 2: Select... ▾";
+        person1Btn = createRoundedButton(p1Label, java.awt.Font.BOLD, new Dimension(205, 26));
+        person2Btn = createRoundedButton(p2Label, java.awt.Font.PLAIN, new Dimension(205, 26));
         person1Btn.addActionListener(e -> showPersonMenu(person1Btn, true));
         person2Btn.addActionListener(e -> showPersonMenu(person2Btn, false));
         bar.add(person1Btn);
@@ -655,15 +659,19 @@ public class MyMuhurtaView extends AstrosoftView {
     }
 
     private void updatePeopleButtons() {
-        person1Btn.setText(getButtonLabel("Person 1", person1Profile));
-        person2Btn.setText(getButtonLabel("Person 2", person2Profile));
-        person1Btn.setToolTipText(getButtonTooltip("Person 1", person1Profile));
-        person2Btn.setToolTipText(getButtonTooltip("Person 2", person2Profile));
+        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+        String r1 = isTamil ? "நபர் 1" : "Person 1";
+        String r2 = isTamil ? "நபர் 2" : "Person 2";
+        person1Btn.setText(getButtonLabel(r1, person1Profile));
+        person2Btn.setText(getButtonLabel(r2, person2Profile));
+        person1Btn.setToolTipText(getButtonTooltip(r1, person1Profile));
+        person2Btn.setToolTipText(getButtonTooltip(r2, person2Profile));
     }
 
     private String getButtonLabel(String role, MuhurtaProfile profile) {
+        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
         if (profile == null) {
-            return role + ": Select... ▾";
+            return role + (isTamil ? ": தேர்வு செய்..." : ": Select... ▾");
         }
         String name = profile.getName();
         if (name == null || name.trim().isEmpty()) {
@@ -696,8 +704,8 @@ public class MyMuhurtaView extends AstrosoftView {
             new DefaultColumnMetaData(AstrosoftTableColumn.keyvalCols())
         ));
         
-        final java.awt.Font keyFont = new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 11);
-        final java.awt.Font valFont = new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.PLAIN, 11);
+        final java.awt.Font keyFont = UIUtil.getFont(java.awt.Font.BOLD, 11);
+        final java.awt.Font valFont = UIUtil.getFont(java.awt.Font.PLAIN, 11);
 
         table = new AstrosoftTable(tableModel, TableStyle.GRID) {
             TableCellRenderer multiLineRenderer = new DefaultTableCellRenderer() {
@@ -858,8 +866,16 @@ public class MyMuhurtaView extends AstrosoftView {
         button.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         button.setMargin(new java.awt.Insets(2, 6, 2, 6));
         button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        button.setFont(new java.awt.Font("SansSerif", fontStyle, 11));
+        button.setFont(UIUtil.getFont(fontStyle, 11));
         button.setPreferredSize(preferredSize);
         return button;
+    }
+
+    public javax.swing.JButton getPerson1Btn() {
+        return person1Btn;
+    }
+
+    public javax.swing.JButton getPerson2Btn() {
+        return person2Btn;
     }
 }

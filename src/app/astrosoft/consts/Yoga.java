@@ -7,6 +7,7 @@
 package app.astrosoft.consts;
 
 import static app.astrosoft.consts.AstroConsts.nakLength;
+import app.astrosoft.util.Internalization;
 
 public enum Yoga {
 
@@ -46,6 +47,15 @@ public enum Yoga {
 
 	public static Yoga ofDeg(double sun, double moon) {
 		return ofIndex((int) ((sun + moon) / nakLength));
+	}
+
+	@Override
+	public String toString() {
+		return Internalization.getString(this.name());
+	}
+
+	public String toString(Language language) {
+		return Internalization.getString(language, this.name());
 	}
 
 }

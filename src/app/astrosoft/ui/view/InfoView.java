@@ -36,6 +36,7 @@ import app.astrosoft.ui.table.MapTableRow;
 import app.astrosoft.ui.table.Table;
 import app.astrosoft.ui.table.TableDataFactory;
 import app.astrosoft.ui.util.UIConsts;
+import app.astrosoft.ui.util.UIUtil;
 
 public class InfoView extends AstrosoftView {
 
@@ -181,7 +182,7 @@ public class InfoView extends AstrosoftView {
     			public Component getTableCellRendererComponent(JTable table, Object value,
     					boolean isSelected, boolean hasFocus, int row, int column) {
     				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-    				c.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+    				c.setFont(UIUtil.getFont(Font.PLAIN, 11));
     				c.setForeground(UIConsts.getChartLabelColor());
     				if (c instanceof JLabel) {
     					((JLabel) c).setVerticalAlignment(SwingConstants.TOP);
@@ -196,7 +197,7 @@ public class InfoView extends AstrosoftView {
     			public Component getTableCellRendererComponent(JTable table, Object value,
     					boolean isSelected, boolean hasFocus, int row, int column) {
     				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-    				c.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+    				c.setFont(UIUtil.getFont(Font.BOLD, 11));
     				java.awt.Color fg = UIConsts.getChartPlanetForeground();
     				c.setForeground(fg);
     				if (c instanceof JLabel) {

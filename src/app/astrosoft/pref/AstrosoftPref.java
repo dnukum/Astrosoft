@@ -66,7 +66,7 @@ public class AstrosoftPref {
 
 		if (root.getBoolean(Preference.IsInitialized.name(),
 				defaultIsInitialized) == false) {
-			log.info("Initializing Astrosoft Preferences ");
+			log.fine("Initializing Astrosoft Preferences ");
 			setDefaults();
 		}
 	}

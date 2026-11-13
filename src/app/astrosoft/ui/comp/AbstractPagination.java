@@ -92,7 +92,7 @@ public abstract class AbstractPagination<E extends TableRowData> implements Pagi
 
 	private TableData<E> getPage(){
 		
-		log.info("Showing Page ( " + currentPage + " )");
+		log.fine("Showing Page ( " + currentPage + " )");
 		
 		TableData<E> data = getData(( (currentPage - 1) * pageLength)  , pageLength);
 		

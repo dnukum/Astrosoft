@@ -55,7 +55,7 @@ public class AstrosoftAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 
 		Command cmd = Command.valueOf(e.getActionCommand());
-		log.info("Action performed: " + cmd);
+		log.fine("Action performed: " + cmd);
 
 		if (cmd.equals(Command.NEW)) {
 			handler.newHoroscope();

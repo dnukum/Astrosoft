@@ -37,6 +37,29 @@ public class Internalization {
 		}
 	}
 
+	private static final java.util.Set<String> reportedMissingKeys = java.util.concurrent.ConcurrentHashMap.newKeySet();
+	private static final java.io.File MISSING_LOG_FILE = new java.io.File("logs/missing_translations.log");
+
+	private static void logMissingTranslation(Language language, String key, String fallback) {
+		String id = (language != null ? language.name() : "null") + ":" + key;
+		if (reportedMissingKeys.add(id)) {
+			log.fine("Missing localization for [" + language + "]: " + key + " -> falling back to '" + fallback + "'");
+			try {
+				java.io.File parent = MISSING_LOG_FILE.getParentFile();
+				if (parent != null && !parent.exists()) {
+					parent.mkdirs();
+				}
+				String entry = String.format("%s [%s] key=%s fallback=%s%n",
+						java.time.Instant.now().toString(), language, key, fallback);
+				java.nio.file.Files.writeString(
+						MISSING_LOG_FILE.toPath(),
+						entry,
+						java.nio.file.StandardOpenOption.CREATE,
+						java.nio.file.StandardOpenOption.APPEND);
+			} catch (Throwable ignored) {}
+		}
+	}
+
 	public static String getString(Language language, String key) {
 		if (key == null) {
 			return "";
@@ -60,11 +83,14 @@ public class Internalization {
 				try {
 					msg = enBundle.getString(key);
 				} catch (java.util.MissingResourceException ex) {
+					logMissingTranslation(language, key, key);
 					return key;
 				}
 			} else {
+				logMissingTranslation(language, key, key);
 				return key;
 			}
+			logMissingTranslation(language, key, msg);
 		}
 		return msg != null ? msg : key;
 	}

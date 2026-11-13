@@ -6,6 +6,7 @@
 package app.astrosoft.ui.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -14,6 +15,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.util.Date;
 import java.util.EnumMap;
 
 import javax.swing.JLabel;
@@ -24,6 +27,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import app.astrosoft.core.Horoscope;
+import app.astrosoft.beans.Place;
 import app.astrosoft.beans.PlanetChartData;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.DisplayFormat;
@@ -31,13 +36,20 @@ import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
+import app.astrosoft.consts.Thithi;
+import app.astrosoft.consts.Yoga;
+import app.astrosoft.consts.AmirthathiYoga;
 import app.astrosoft.consts.Varga;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.comp.AstrosoftTabbedPane;
 import app.astrosoft.ui.comp.Chart;
+import app.astrosoft.ui.comp.modern.ModernBirthDataPanel;
+import app.astrosoft.ui.dlg.DefaultTransitChartComputation;
+import app.astrosoft.ui.dlg.TransitChartDialog;
 import app.astrosoft.ui.table.PlanetCellRenderer;
 import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.ui.util.UIUtil;
+import app.astrosoft.ui.view.MyMuhurtaView;
 import app.astrosoft.util.Internalization;
 
 public class TamilFontSupportTest {
@@ -170,5 +182,150 @@ public class TamilFontSupportTest {
         Font borderFont = ((javax.swing.border.TitledBorder) b).getTitleFont();
         assertNotNull(borderFont);
         assertEquals(-1, borderFont.canDisplayUpTo("சோதனை"));
+    }
+
+    @Test
+    public void testTransitChartDialogTamilAndEnglishLocalization() {
+        AstroSoft frame = new AstroSoft();
+        Place place = AstroSoft.getPreferences().getPlace();
+
+        try {
+            // 1. Tamil Mode
+            AstroSoft.getPreferences().setLanguage(Language.TAMIL);
+            TransitChartDialog dialogTa = new TransitChartDialog(frame, new Date(), place, new DefaultTransitChartComputation());
+            assertEquals("மாற்று...", dialogTa.getEditButton().getText());
+            assertEquals("விரிவாக்கு...", dialogTa.getMoreButton().getText());
+            assertEquals("புதுப்பி", dialogTa.getUpdateButton().getText());
+            assertEquals("கோசார ராசி", dialogTa.getChart().getChartData().getChartName());
+
+            // Check glyph rendering capability
+            Font font = dialogTa.getEditButton().getFont();
+            assertEquals(-1, font.canDisplayUpTo(dialogTa.getEditButton().getText()));
+            assertEquals(-1, font.canDisplayUpTo(dialogTa.getMoreButton().getText()));
+            assertEquals(-1, font.canDisplayUpTo(dialogTa.getUpdateButton().getText()));
+            assertEquals(-1, font.canDisplayUpTo(dialogTa.getChart().getChartData().getChartName()));
+
+            dialogTa.toggleMore();
+            assertEquals("சுருக்கு...", dialogTa.getMoreButton().getText());
+            assertEquals(-1, font.canDisplayUpTo(dialogTa.getMoreButton().getText()));
+            dialogTa.dispose();
+
+            // 2. English Mode
+            AstroSoft.getPreferences().setLanguage(Language.ENGLISH);
+            TransitChartDialog dialogEn = new TransitChartDialog(frame, new Date(), place, new DefaultTransitChartComputation());
+            assertEquals("Edit...", dialogEn.getEditButton().getText());
+            assertEquals("More...", dialogEn.getMoreButton().getText());
+            assertEquals("Update", dialogEn.getUpdateButton().getText());
+            assertEquals("Transit (D1)", dialogEn.getChart().getChartData().getChartName());
+
+            dialogEn.toggleMore();
+            assertEquals("Less...", dialogEn.getMoreButton().getText());
+            dialogEn.dispose();
+        } finally {
+            frame.dispose();
+            AstroSoft.getPreferences().setLanguage(originalLanguage);
+        }
+    }
+
+    @Test
+    public void testMyMuhurtaViewTamilAndEnglishLocalization() {
+        try {
+            // 1. Tamil Mode
+            AstroSoft.getPreferences().setLanguage(Language.TAMIL);
+            MyMuhurtaView viewTa = new MyMuhurtaView(new Point(0, 0), (Horoscope) null);
+            assertNotNull(viewTa.getPerson1Btn());
+            assertNotNull(viewTa.getPerson2Btn());
+            assertEquals("நபர் 1: தேர்வு செய்...", viewTa.getPerson1Btn().getText());
+            assertEquals("நபர் 2: தேர்வு செய்...", viewTa.getPerson2Btn().getText());
+            Font btnFont = viewTa.getPerson1Btn().getFont();
+            assertEquals(-1, btnFont.canDisplayUpTo(viewTa.getPerson1Btn().getText()));
+            assertEquals(-1, btnFont.canDisplayUpTo(viewTa.getPerson2Btn().getText()));
+
+            // 2. English Mode
+            AstroSoft.getPreferences().setLanguage(Language.ENGLISH);
+            MyMuhurtaView viewEn = new MyMuhurtaView(new Point(0, 0), (Horoscope) null);
+            assertEquals("Person 1: Select... ▾", viewEn.getPerson1Btn().getText());
+            assertEquals("Person 2: Select... ▾", viewEn.getPerson2Btn().getText());
+        } finally {
+            AstroSoft.getPreferences().setLanguage(originalLanguage);
+        }
+    }
+
+    @Test
+    public void testModernBirthDataPanelTamilAndEnglishLocalization() {
+        try {
+            // 1. Tamil Mode
+            AstroSoft.getPreferences().setLanguage(Language.TAMIL);
+            ModernBirthDataPanel panelTa = new ModernBirthDataPanel();
+            assertEquals("ஆண்", panelTa.getMaleRadio().getText());
+            assertEquals("பெண்", panelTa.getFemaleRadio().getText());
+            assertEquals("கைமுறை ஆயத்தொலைவுகள்", panelTa.getManualCoordCheck().getText());
+            assertEquals("ஊரைத் தேடுக", panelTa.getSearchButton().getToolTipText());
+
+            Font radioFont = panelTa.getMaleRadio().getFont();
+            assertEquals(-1, radioFont.canDisplayUpTo(panelTa.getMaleRadio().getText()));
+            assertEquals(-1, radioFont.canDisplayUpTo(panelTa.getFemaleRadio().getText()));
+            assertEquals(-1, radioFont.canDisplayUpTo(panelTa.getManualCoordCheck().getText()));
+            assertEquals(-1, radioFont.canDisplayUpTo(panelTa.getSearchButton().getToolTipText()));
+
+            // 2. English Mode
+            AstroSoft.getPreferences().setLanguage(Language.ENGLISH);
+            ModernBirthDataPanel panelEn = new ModernBirthDataPanel();
+            assertEquals("Male", panelEn.getMaleRadio().getText());
+            assertEquals("Female", panelEn.getFemaleRadio().getText());
+            assertEquals("Manual Coordinates", panelEn.getManualCoordCheck().getText());
+            assertEquals("Search Place", panelEn.getSearchButton().getToolTipText());
+        } finally {
+            AstroSoft.getPreferences().setLanguage(originalLanguage);
+        }
+    }
+
+    @Test
+    public void testPanchangEnumsTamilAndEnglishLocalization() {
+        Font tamilFont = UIUtil.getFont(Language.TAMIL, Font.PLAIN, 12);
+        try {
+            // 1. Tamil Mode
+            AstroSoft.getPreferences().setLanguage(Language.TAMIL);
+            for (Thithi t : Thithi.values()) {
+                String ta = t.toString();
+                assertNotNull("Tamil Thithi must not be null for " + t, ta);
+                assertFalse("Tamil Thithi must not match enum name for " + t, ta.equals(t.name()));
+                assertEquals("Glyphs in Thithi '" + ta + "' must display cleanly", -1, tamilFont.canDisplayUpTo(ta));
+            }
+
+            for (Yoga y : Yoga.values()) {
+                String ta = y.toString();
+                assertNotNull("Tamil Yoga must not be null for " + y, ta);
+                assertFalse("Tamil Yoga must not match enum name for " + y, ta.equals(y.name()));
+                assertEquals("Glyphs in Yoga '" + ta + "' must display cleanly", -1, tamilFont.canDisplayUpTo(ta));
+            }
+
+            for (AmirthathiYoga ay : AmirthathiYoga.values()) {
+                String ta = ay.toString();
+                assertNotNull("Tamil AmirthathiYoga must not be null for " + ay, ta);
+                assertFalse("Tamil AmirthathiYoga must not match enum name for " + ay, ta.equals(ay.name()));
+                assertEquals("Glyphs in AmirthathiYoga '" + ta + "' must display cleanly", -1, tamilFont.canDisplayUpTo(ta));
+            }
+
+            // 2. English Mode
+            AstroSoft.getPreferences().setLanguage(Language.ENGLISH);
+            assertEquals("Prathama", Thithi.Prathamai.toString());
+            assertEquals("Amavasya", Thithi.Amavasya.toString());
+            assertEquals("Vishakambha", Yoga.Vishakambha.toString());
+            assertEquals("Amrita", AmirthathiYoga.Amirtha.toString());
+            assertEquals("Prabalarishta", AmirthathiYoga.Prabalarshta.toString());
+        } finally {
+            AstroSoft.getPreferences().setLanguage(originalLanguage);
+        }
+    }
+
+    @Test
+    public void testMissingTranslationOfflineLogger() {
+        String nonExistentKey = "NonExistentKey_XYZ_12345";
+        String result = Internalization.getString(Language.TAMIL, nonExistentKey);
+        assertEquals("Missing key must return key string fallback", nonExistentKey, result);
+
+        java.io.File logFile = new java.io.File("logs/missing_translations.log");
+        assertTrue("missing_translations.log must exist after missing key lookup", logFile.exists());
     }
 }

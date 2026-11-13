@@ -6,6 +6,8 @@
 
 package app.astrosoft.consts;
 
+import app.astrosoft.util.Internalization;
+
 public enum Thithi {
 
 	Prathamai,
@@ -56,5 +58,14 @@ public enum Thithi {
         }
         return thithi;
     }
+
+	@Override
+	public String toString() {
+		return Internalization.getString(this.name());
+	}
+
+	public String toString(Language language) {
+		return Internalization.getString(language, this.name());
+	}
 
 }

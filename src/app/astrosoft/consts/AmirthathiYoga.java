@@ -1,5 +1,6 @@
 package app.astrosoft.consts;
 
+import app.astrosoft.util.Internalization;
 import app.astrosoft.util.Tuple;
 import java.util.HashMap;
 import java.util.Map;
@@ -107,4 +108,13 @@ public enum AmirthathiYoga {
     }
     public static AmirthathiYoga findByCode(char code) { return yogasByCode.get(code); }
     public char getCode() { return code; }
+
+    @Override
+    public String toString() {
+        return Internalization.getString("Amirthathi_" + name());
+    }
+
+    public String toString(Language language) {
+        return Internalization.getString(language, "Amirthathi_" + name());
+    }
 }

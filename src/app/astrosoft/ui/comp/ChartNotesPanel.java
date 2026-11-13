@@ -80,6 +80,8 @@ import org.jsoup.nodes.TextNode;
 
 public class ChartNotesPanel extends JPanel {
 
+    public static final String NOTES_FONT_FAMILY = "Arial, 'Nirmala UI', 'Noto Sans Tamil', 'Tamil Sangam MN', Helvetica, sans-serif";
+
     public interface NotesListener {
         void onFold();
         void onTogglePopOut(boolean isPopOut);
@@ -428,7 +430,7 @@ public class ChartNotesPanel extends JPanel {
 
         HTMLEditorKit kit = new NotesHTMLEditorKit();
         StyleSheet styleSheet = kit.getStyleSheet();
-        styleSheet.addRule("body { font-family: Arial, Helvetica, sans-serif; font-size: 13pt; line-height: 20px; margin: 10px 12px; color: #1a1a1a; }");
+        styleSheet.addRule("body { font-family: " + NOTES_FONT_FAMILY + "; font-size: 13pt; line-height: 20px; margin: 10px 12px; color: #1a1a1a; }");
         styleSheet.addRule("p { margin-top: 0px; margin-bottom: 8px; line-height: 20px; }");
         styleSheet.addRule("b, strong { font-weight: bold; }");
         styleSheet.addRule("i, em { font-style: italic; }");
@@ -1256,7 +1258,7 @@ public class ChartNotesPanel extends JPanel {
         editor.setFont(new Font("Arial", Font.PLAIN, currentSize));
         if (editor.getEditorKit() instanceof HTMLEditorKit) {
             HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
-            String rule = "body, p, td, th, li { font-size: " + currentSize + "pt; }";
+            String rule = "body, p, td, th, li { font-family: " + NOTES_FONT_FAMILY + "; font-size: " + currentSize + "pt; }";
             kit.getStyleSheet().addRule(rule);
             if (editor.getDocument() instanceof HTMLDocument) {
                 ((HTMLDocument) editor.getDocument()).getStyleSheet().addRule(rule);

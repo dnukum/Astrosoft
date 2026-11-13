@@ -254,7 +254,7 @@ public class MyMuhurta {
                 .ofWeekdayAndNakshatra(segment.vara, segment.nak, false).getFirst();
             if (current != previous) {
                 if (text.length() > 0) text.append(" → (").append(time.format(segment.start)).append(") ");
-                text.append(current.name()); previous = current;
+                text.append(current.toString()); previous = current;
             }
         }
         return text.toString();

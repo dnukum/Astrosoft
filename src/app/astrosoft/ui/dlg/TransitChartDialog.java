@@ -102,18 +102,21 @@ public class TransitChartDialog extends AstrosoftDialog {
         buttonBar.setBackground(UIConsts.THEME_CLR);
         buttonBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
-        editButton = new JButton("Edit...");
+        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+
+        editButton = new JButton(isTamil ? "மாற்று..." : "Edit...");
+        editButton.setFont(UIUtil.getFont(Font.PLAIN, 12));
         editButton.addActionListener(e -> openEditDialog());
         buttonBar.add(editButton);
 
-        moreButton = new JButton("More...");
+        moreButton = new JButton(isTamil ? "விரிவாக்கு..." : "More...");
+        moreButton.setFont(UIUtil.getFont(Font.PLAIN, 12));
         moreButton.addActionListener(e -> toggleMore());
         buttonBar.add(moreButton);
 
         contentPanel.add(buttonBar);
 
         // Expandable table with 3 columns: Planet, Sign Change, Date Change
-        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
         String[] columnNames = isTamil
                 ? new String[]{"கிரகம்", "ராசி மாற்றம்", "தேதி மாற்றம்"}
                 : new String[]{"Planet", "Sign Change", "Date Change"};
@@ -181,7 +184,8 @@ public class TransitChartDialog extends AstrosoftDialog {
         prevButton.addActionListener(e -> onPrevClicked());
         updateButtonBar.add(prevButton);
 
-        updateButton = new JButton("Update");
+        updateButton = new JButton(isTamil ? "புதுப்பி" : "Update");
+        updateButton.setFont(UIUtil.getFont(Font.PLAIN, 12));
         updateButton.setEnabled(false);
         updateButton.addActionListener(e -> onUpdateClicked());
         updateButtonBar.add(updateButton);
@@ -212,7 +216,8 @@ public class TransitChartDialog extends AstrosoftDialog {
 
     public void setExpanded(boolean expanded) {
         this.isExpanded = expanded;
-        moreButton.setText(isExpanded ? "Less..." : "More...");
+        boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+        moreButton.setText(isExpanded ? (isTamil ? "சுருக்கு..." : "Less...") : (isTamil ? "விரிவாக்கு..." : "More..."));
         detailsScrollPane.setVisible(isExpanded);
         updateButtonBar.setVisible(isExpanded);
         if (isExpanded) {
@@ -252,7 +257,9 @@ public class TransitChartDialog extends AstrosoftDialog {
         try {
             tableInstant = selectedInstant;
             PlanetaryInfo planetaryInfo = computation.compute(getSelectedInstant(), currentPlace);
-            PlanetChartData chartData = new PlanetChartData(CHART_TITLE, Varga.Rasi, planetaryInfo);
+            boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+            String effectiveChartTitle = isTamil ? "கோசார ராசி" : CHART_TITLE;
+            PlanetChartData chartData = new PlanetChartData(effectiveChartTitle, Varga.Rasi, planetaryInfo);
             String subtitle = formatSubtitle(getSelectedInstant(), currentPlace);
 
             if (chart == null) {
