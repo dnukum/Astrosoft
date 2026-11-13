@@ -78,125 +78,156 @@ public class UIUtil {
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(UIUtil.class.getName());
 
 	private static boolean customFontsRegistered = false;
+	private static String resolvedTamilFontName = null;
 
 	public static synchronized void registerCustomFonts() {
 		if (customFontsRegistered) {
 			return;
 		}
 		customFontsRegistered = true;
-		try {
-			java.io.InputStream in = UIUtil.class.getResourceAsStream("/resources/fonts/tscarial.ttf");
-			if (in == null) {
-				in = UIUtil.class.getResourceAsStream("/fonts/tscarial.ttf");
-			}
-			if (in == null && classLoader != null) {
-				in = classLoader.getResourceAsStream("resources/fonts/tscarial.ttf");
-			}
-			if (in == null && classLoader != null) {
-				in = classLoader.getResourceAsStream("fonts/tscarial.ttf");
-			}
-			if (in == null) {
-				java.io.File f = new java.io.File("resources/fonts/tscarial.ttf");
-				if (!f.exists()) {
-					f = new java.io.File("fonts/tscarial.ttf");
+
+		String[] fontFiles = {
+			"NotoSansTamil-Regular.ttf",
+			"NotoSansTamil-Bold.ttf",
+			"tscarial.ttf"
+		};
+
+		java.awt.GraphicsEnvironment ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
+
+		for (String fontFile : fontFiles) {
+			try {
+				java.io.InputStream in = UIUtil.class.getResourceAsStream("/resources/fonts/" + fontFile);
+				if (in == null) {
+					in = UIUtil.class.getResourceAsStream("/fonts/" + fontFile);
 				}
-				if (f.exists()) {
-					in = new java.io.FileInputStream(f);
+				if (in == null && classLoader != null) {
+					in = classLoader.getResourceAsStream("resources/fonts/" + fontFile);
 				}
-			}
-			if (in != null) {
-				try (java.io.InputStream fontStream = in) {
-					Font tscFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-					java.awt.GraphicsEnvironment ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
-					ge.registerFont(tscFont);
-					log.info("Successfully registered custom font: " + tscFont.getFontName());
+				if (in == null && classLoader != null) {
+					in = classLoader.getResourceAsStream("fonts/" + fontFile);
 				}
-			} else {
-				log.warning("Could not find tscarial.ttf in classpath or filesystem.");
+				if (in == null) {
+					java.io.File f = new java.io.File("resources/fonts/" + fontFile);
+					if (!f.exists()) {
+						f = new java.io.File("fonts/" + fontFile);
+					}
+					if (f.exists()) {
+						in = new java.io.FileInputStream(f);
+					}
+				}
+				if (in != null) {
+					try (java.io.InputStream fontStream = in) {
+						Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+						ge.registerFont(customFont);
+						log.info("Successfully registered custom font: " + customFont.getFontName() + " (" + customFont.getFamily() + ")");
+					}
+				} else {
+					log.fine("Font file not found: " + fontFile);
+				}
+			} catch (Exception e) {
+				log.log(java.util.logging.Level.WARNING, "Failed to register custom font " + fontFile, e);
 			}
-		} catch (Exception e) {
-			log.log(java.util.logging.Level.WARNING, "Failed to register custom font tscarial.ttf", e);
 		}
+	}
+
+	public static synchronized String getTamilFontName() {
+		if (resolvedTamilFontName != null) {
+			return resolvedTamilFontName;
+		}
+		registerCustomFonts();
+
+		java.awt.GraphicsEnvironment ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
+		String[] fontFamilies = ge.getAvailableFontFamilyNames();
+		java.util.Set<String> families = new java.util.HashSet<String>(java.util.Arrays.asList(fontFamilies));
+
+		String testWord = "சூரியன்"; // Sample Tamil word to verify glyph coverage
+
+		// Candidate list in priority order:
+		// 1. Bundled universal Noto Sans Tamil (guaranteed Unicode coverage)
+		// 2. Windows built-in Indic font (Nirmala UI on Win 8/10/11)
+		// 3. Windows legacy Tamil fonts (Latha, Vijaya)
+		// 4. macOS built-in Tamil fonts (Tamil Sangam MN, Tamil MN)
+		// 5. Linux native Tamil fonts (Lohit Tamil)
+		// 6. Arial Unicode MS
+		String[] candidates = {
+			"Noto Sans Tamil",
+			"Nirmala UI",
+			"Latha",
+			"Vijaya",
+			"Tamil Sangam MN",
+			"Tamil MN",
+			"Lohit Tamil",
+			"Arial Unicode MS"
+		};
+
+		for (String candidate : candidates) {
+			if (families.contains(candidate)) {
+				Font f = new Font(candidate, Font.PLAIN, 12);
+				if (f.canDisplayUpTo(testWord) == -1) {
+					resolvedTamilFontName = candidate;
+					log.info("Resolved Tamil font: " + resolvedTamilFontName);
+					return resolvedTamilFontName;
+				}
+			}
+		}
+
+		// Fallback: search all registered font families for any that can display Tamil
+		for (String family : fontFamilies) {
+			Font f = new Font(family, Font.PLAIN, 12);
+			if (f.canDisplayUpTo(testWord) == -1) {
+				resolvedTamilFontName = family;
+				log.info("Resolved fallback Tamil font: " + resolvedTamilFontName);
+				return resolvedTamilFontName;
+			}
+		}
+
+		resolvedTamilFontName = "SansSerif";
+		log.warning("No font with Tamil Unicode glyph coverage found; falling back to SansSerif");
+		return resolvedTamilFontName;
 	}
 
 	/** Returns font depending on prefered language option. * */
 	public static Font getFont(int style, int size) {
-		registerCustomFonts();
 		Language language = AstroSoft.getPreferences().getLanguage();
-		Font font = new Font(language.font(), style, size);
-		return font;
+		if (language == Language.TAMIL) {
+			return new Font(getTamilFontName(), style, size);
+		}
+		return new Font(language.font(), style, size);
 	}
-
-	/*
-	 * public static Font getFont(int size){ return getFont(Font.BOLD, size); }
-	 */
 
 	public static Font getFont() {
 		return getFont(Font.BOLD, 12);
 	}
 
-	/**
-	 * If prefered language is tamil returns tamil font, else returns font
-	 * passed as argument
-	 * 
-	 * @param f
-	 * @return
-	 */
-	/*
-	 * public static Font getFont(String name){ return getFont(name, Font.BOLD,
-	 * 12); }
-	 */
-
-	/**
-	 * If prefered language is tamil returns tamil font, else returns font
-	 * passed as argument
-	 * 
-	 * @param f
-	 * @return
-	 */
 	public static Font getFont(String name, int style, int size) {
-		registerCustomFonts();
 		Language language = AstroSoft.getPreferences().getLanguage();
 		if (language == Language.TAMIL) {
-			return new Font(language.font(), style, size);
+			return new Font(getTamilFontName(), style, size);
 		}
 		return new Font(name, style, size);
 	}
 
-	/**
-	 * If prefered language is tamil returns tamil font, else returns font
-	 * passed as argument
-	 * 
-	 * @param f
-	 * @return
-	 */
 	public static Font getFont(String name, int style, int en_size, int ta_size) {
-		registerCustomFonts();
 		Language language = AstroSoft.getPreferences().getLanguage();
 		if (language == Language.TAMIL) {
-			return new Font(language.font(), style, ta_size);
+			return new Font(getTamilFontName(), style, ta_size);
 		}
 		return new Font(name, style, en_size);
 	}
 
 	public static Font getFont(int en_style, int en_size, int ta_style,
 			int ta_size) {
-		registerCustomFonts();
 		Language language = AstroSoft.getPreferences().getLanguage();
 		if (language == Language.TAMIL) {
-			return new Font(language.font(), ta_style, ta_size);
+			return new Font(getTamilFontName(), ta_style, ta_size);
 		}
 		return new Font(language.font(), en_style, en_size);
 	}
 
-	/*
-	 * public static Font getFont(Font font) {
-	 * 
-	 * return getFont(font.getName(), font.getStyle(), font.getSize()); }
-	 */
-
 	public static Font getFont(Language lang, int style, int size) {
-		registerCustomFonts();
+		if (lang == Language.TAMIL) {
+			return new Font(getTamilFontName(), style, size);
+		}
 		return new Font(lang.font(), style, size);
 	}
 

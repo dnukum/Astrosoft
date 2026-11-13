@@ -61,6 +61,8 @@ public class TamilFontSupportTest {
         Font tamilFont = UIUtil.getFont(Language.TAMIL, Font.PLAIN, 12);
         assertNotNull("Resolved Tamil font must not be null", tamilFont);
         assertEquals(-1, tamilFont.canDisplayUpTo("சூரியன்"));
+        String resolvedName = UIUtil.getTamilFontName();
+        assertNotNull("Resolved Tamil font name must not be null", resolvedName);
     }
 
     @Test
