@@ -56,6 +56,7 @@ This validates:
 ## Invariant Checklist
 
 Before finalizing any UI changes, verify:
+- [ ] **Bug Investigation First**: Never start coding fixes immediately when an issue is reported; provide thorough RCA and obtain explicit user approval first.
 - [ ] No changes to the 8-tab structure or 3-chart layout of legacy `AshtavargaView`.
 - [ ] Shared cell renderers (`PlanetCellRenderer`, `AstrosoftTableCellRenderer`) do not force modern status badges into legacy views unless explicitly enabled.
 - [ ] Font size changes auto-scale or respect cell boundaries without clipping text into ellipses (`...`).

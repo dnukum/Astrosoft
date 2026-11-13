@@ -48,5 +48,6 @@ pure2.json
 
 # Scratch directories and cache
 scratch/
+logs/
 __pycache__/
 tests/__pycache__/

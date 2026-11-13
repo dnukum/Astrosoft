@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.swing.JEditorPane;
 import javax.swing.JList;
+import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 
@@ -38,6 +39,8 @@ import app.astrosoft.core.Muhurtha;
 import app.astrosoft.core.Panchang;
 import app.astrosoft.test.SampleHoroscopes;
 import app.astrosoft.util.AstroUtil;
+import app.astrosoft.ui.AstroSoft;
+import app.astrosoft.ui.view.ViewManager.View;
 import app.astrosoft.ui.comp.AstrosoftTabbedPane;
 import app.astrosoft.ui.comp.Chart;
 import app.astrosoft.ui.table.AstrosoftTable;
@@ -299,7 +302,26 @@ public class LegacyScreensRegressionTest {
         List<AstrosoftTable> tables = findComponents(view, AstrosoftTable.class);
         assertEquals("Must contain Ephemeris table", 1, tables.size());
 
-        renderOffscreen(view, 750, 450);
+        renderOffscreen(view, 780, 480);
+
+        // Exercise mode switching: Daily -> Monthly -> Daily
+        List<JRadioButton> radioButtons = findComponents(view, JRadioButton.class);
+        assertTrue("Must contain mode radio buttons", radioButtons.size() >= 2);
+        for (JRadioButton rb : radioButtons) {
+            if ("Monthly".equalsIgnoreCase(rb.getActionCommand())) {
+                rb.doClick();
+                break;
+            }
+        }
+        renderOffscreen(view, 780, 480);
+
+        for (JRadioButton rb : radioButtons) {
+            if ("Daily".equalsIgnoreCase(rb.getActionCommand())) {
+                rb.doClick();
+                break;
+            }
+        }
+        renderOffscreen(view, 780, 480);
     }
 
     @Test
@@ -358,5 +380,73 @@ public class LegacyScreensRegressionTest {
         assertNotNull("Dashboard created", dashboard);
 
         renderOffscreen(dashboard, 1428, 900);
+    }
+
+    @Test
+    public void testLegacyViewsMountingViaViewManager() throws Exception {
+        AstroSoft frame = null;
+        try {
+            frame = new AstroSoft();
+            frame.computeHoroscope(h.getBirthData());
+
+            // 1. View -> Chart
+            frame.viewChanged(View.CHART_VIEW);
+            assertEquals("Current view must be CHART_VIEW", View.CHART_VIEW, frame.getCurrentView());
+            assertNotNull("HoroscopeDashboard must be mounted", frame.getCurrentDashboard());
+
+            // 2. View -> Dasa
+            frame.viewChanged(View.DASAS_VIEW);
+            assertEquals("Current view must be DASAS_VIEW", View.DASAS_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be VimDasaView", frame.getHome().getComponent(0) instanceof VimDasaView);
+
+            // 3. View -> Planetary Position
+            frame.viewChanged(View.PLANET_POS_VIEW);
+            assertEquals("Current view must be PLANET_POS_VIEW", View.PLANET_POS_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be PlanetView", frame.getHome().getComponent(0) instanceof PlanetView);
+
+            // 4. View -> House Position
+            frame.viewChanged(View.BHAVA_POS_VIEW);
+            assertEquals("Current view must be BHAVA_POS_VIEW", View.BHAVA_POS_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be BhavaView", frame.getHome().getComponent(0) instanceof BhavaView);
+
+            // 5. View -> Divisional Charts
+            frame.viewChanged(View.DIV_CHART_VIEW);
+            assertEquals("Current view must be DIV_CHART_VIEW", View.DIV_CHART_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be VargaChartView", frame.getHome().getComponent(0) instanceof VargaChartView);
+
+            // 6. View -> Ashtavarga
+            frame.viewChanged(View.ASHTAVARGA_VIEW);
+            assertEquals("Current view must be ASHTAVARGA_VIEW", View.ASHTAVARGA_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be AshtavargaView", frame.getHome().getComponent(0) instanceof AshtavargaView);
+
+            // 7. View -> Shadbala
+            frame.viewChanged(View.SHADBALA_VIEW);
+            assertEquals("Current view must be SHADBALA_VIEW", View.SHADBALA_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be ShadBalaView", frame.getHome().getComponent(0) instanceof ShadBalaView);
+
+            // 8. View -> Yoga Combinations
+            frame.viewChanged(View.YOGA_COMBINATIONS_VIEW);
+            assertEquals("Current view must be YOGA_COMBINATIONS_VIEW", View.YOGA_COMBINATIONS_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be YogaCombinationsView", frame.getHome().getComponent(0) instanceof YogaCombinationsView);
+
+            // 9. View -> Ephemeris
+            frame.viewChanged(View.EPHEMERIS_VIEW);
+            assertEquals("Current view must be EPHEMERIS_VIEW", View.EPHEMERIS_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be EphemerisView", frame.getHome().getComponent(0) instanceof EphemerisView);
+
+            // 10. View -> Panchang
+            frame.viewChanged(View.PANCHANG_VIEW);
+            assertEquals("Current view must be PANCHANG_VIEW", View.PANCHANG_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be PanchangView", frame.getHome().getComponent(0) instanceof PanchangView);
+
+            // 11. Numerology -> Find Name
+            frame.viewChanged(View.FIND_NAME_VIEW);
+            assertEquals("Current view must be FIND_NAME_VIEW", View.FIND_NAME_VIEW, frame.getCurrentView());
+            assertTrue("Mounted view must be FindNameView", frame.getHome().getComponent(0) instanceof FindNameView);
+        } finally {
+            if (frame != null) {
+                frame.dispose();
+            }
+        }
     }
 }

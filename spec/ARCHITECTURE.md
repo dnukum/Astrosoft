@@ -23,7 +23,8 @@ At its core, Astrosoft relies on the **Swiss Ephemeris** (via a Java port) for h
 ## 2. Core Layers
 
 ### 2.1 Presentation Layer (UI)
-The presentation layer is built exclusively with Java Swing.
+The presentation layer is built exclusively with Java Swing. For comprehensive contracts on window tiers, modeless companion palettes, scope lifecycles, and event propagation, see [UI Architecture Spec](file:///Users/mukunds100/Dev/Astrosoft2/spec/UI_ARCHITECTURE.md).
+
 - **Main Shell:** `AstroSoft.java` acts as the primary application frame and orchestrator, managing the application lifecycle, menu bars, toolbars, and global view transitions.
 - **Views:** The application is modularized into specialized view panels implementing or managed by `ViewManager`:
   - `HoroscopeView`: Rasi, Navamsa, and divisional charts.
