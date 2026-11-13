@@ -91,7 +91,11 @@ public class EphemerisView extends AstrosoftView {
 	
 	private void setEphemerisColumnWidths() {
 		ephTable.setRowHeight(24);
-		ephTable.setColumnWidth(45, AstrosoftTableColumn.Date);
+		if (ephMode != null && ephMode.isMonthly()) {
+			ephTable.setColumnWidth(55, AstrosoftTableColumn.Month);
+		} else {
+			ephTable.setColumnWidth(45, AstrosoftTableColumn.Date);
+		}
 		ephTable.setColumnWidth(72,
 				AstrosoftTableColumn.Sun, AstrosoftTableColumn.Moon, AstrosoftTableColumn.Mars,
 				AstrosoftTableColumn.Mercury, AstrosoftTableColumn.Jupiter, AstrosoftTableColumn.Venus,

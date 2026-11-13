@@ -84,6 +84,58 @@ public class AstrosoftTable extends JTable {
         localizeColumns();
     }
     
+    @Override
+    protected JTableHeader createDefaultTableHeader() {
+        return new JTableHeader(columnModel) {
+            @Override
+            public String getToolTipText(MouseEvent e) {
+                int col = columnAtPoint(e.getPoint());
+                if (col >= 0 && col < getColumnModel().getColumnCount()) {
+                    TableColumn tc = getColumnModel().getColumn(col);
+                    Object val = tc.getHeaderValue();
+                    if (val != null) {
+                        String text = val.toString().trim();
+                        if (!text.isEmpty()) {
+                            return text;
+                        }
+                    }
+                }
+                return super.getToolTipText(e);
+            }
+        };
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        Point p = event.getPoint();
+        int row = rowAtPoint(p);
+        int col = columnAtPoint(p);
+        if (row >= 0 && row < getRowCount() && col >= 0 && col < getColumnCount()) {
+            TableCellRenderer renderer = getCellRenderer(row, col);
+            Component c = prepareRenderer(renderer, row, col);
+            if (c instanceof javax.swing.JComponent) {
+                String tip = ((javax.swing.JComponent) c).getToolTipText();
+                if (tip != null && !tip.trim().isEmpty()) {
+                    return tip;
+                }
+            }
+            if (c instanceof javax.swing.JLabel) {
+                String text = ((javax.swing.JLabel) c).getText();
+                if (text != null && !text.trim().isEmpty()) {
+                    return text.trim();
+                }
+            }
+            Object val = getValueAt(row, col);
+            if (val != null) {
+                String text = val.toString().trim();
+                if (!text.isEmpty()) {
+                    return text;
+                }
+            }
+        }
+        return super.getToolTipText(event);
+    }
+
     private void setHeaderProperties(){
         JTableHeader header = getTableHeader();
         header.setFont(headerFont);
@@ -113,7 +165,9 @@ public class AstrosoftTable extends JTable {
     	
     	for(AstrosoftTableColumn col : cols){
     		int colIndex = ((AstrosoftTableModel) getModel()).getColumnIndex(col);
-        	getColumnModel().getColumn(colIndex).setPreferredWidth(wd);
+    		if (colIndex >= 0 && colIndex < getColumnModel().getColumnCount()) {
+    			getColumnModel().getColumn(colIndex).setPreferredWidth(wd);
+    		}
     	}
     	setHeaderProperties();
     }
