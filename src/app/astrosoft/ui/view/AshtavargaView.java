@@ -164,15 +164,6 @@ public class AshtavargaView extends AstrosoftView {
 			charts[i].setTitleBadge(badgeBg, badgeBorder, badgeText);
 		}
 
-		final JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-		headerPanel.setOpaque(false);
-
-		JLabel label = new JLabel("Ashtavarga");
-		label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-		label.setForeground(UIConsts.TEXT_DARK_NAVY);
-		headerPanel.add(label);
-		headerPanel.add(createAshtavargaInfoButton(headerPanel));
-
 		final int cardWidth = gridPanelSize.width;
 		final int cardHeight = gridPanelSize.height;
 		final Dimension panelSize = gridPanelSize;
@@ -236,23 +227,30 @@ public class AshtavargaView extends AstrosoftView {
 		});
 		pillBar.setName("AshtavargaPillTabBar");
 
+		final JComponent infoButton = createAshtavargaInfoButton(pillBar);
+
 		final JPanel mainPanel = new JPanel(null) {
 			@Override
 			public void doLayout() {
 				int w = getWidth();
 				int h = getHeight();
-				Dimension hd = headerPanel.getPreferredSize();
-				headerPanel.setBounds(18, 2, hd.width, 24);
 
 				Dimension pd = pillBar.getPreferredSize();
 				int pillW = pd.width;
 				int pillH = pd.height;
-				pillBar.setBounds(w - pillW - 18, 2, pillW, pillH);
+				int pillX = w - pillW - 18;
+				pillBar.setBounds(pillX, 2, pillW, pillH);
 
-				int contentX = 6;
-				int contentY = 26;
-				int contentW = Math.max(1, w - 12);
-				int contentH = Math.max(1, h - 32);
+				int infoSize = 18;
+				int infoGap = 8;
+				int infoX = pillX - infoSize - infoGap;
+				int infoY = 2 + Math.max(0, (pillH - infoSize) / 2);
+				infoButton.setBounds(infoX, infoY, infoSize, infoSize);
+
+				int contentX = 8;
+				int contentY = 28;
+				int contentW = Math.max(1, w - 16);
+				int contentH = Math.max(1, h - 36);
 				contentCards.setBounds(contentX, contentY, contentW, contentH);
 				contentCards.doLayout();
 				chartsCard.doLayout();
@@ -278,9 +276,6 @@ public class AshtavargaView extends AstrosoftView {
 				// Clean white card background
 				g2.setColor(Color.WHITE);
 				g2.fillRoundRect(boxLeft, boxTop, boxRight - boxLeft, boxBottom - boxTop, arc, arc);
-
-				int headerX = headerPanel.getX();
-				int headerW = headerPanel.getWidth();
 
 				if (showingCharts[0]) {
 					int curGridX = contentCards.getX() + gridContainer.getX();
@@ -309,22 +304,16 @@ public class AshtavargaView extends AstrosoftView {
 					g2.drawLine(x3, boxTop, x3, boxBottom);
 				}
 
-				int pillX = pillBar.getX();
-				int pillW = pillBar.getWidth();
+				int controlsStart = infoButton.getX();
+				int controlsEnd = pillBar.getX() + pillBar.getWidth();
 
 				Path2D p = new Path2D.Double();
-				// Top-left line running snug to header
+				// Smooth continuous top border from top-left corner all the way to controls!
 				p.moveTo(boxLeft + arc, boxTop);
-				p.lineTo(Math.max(boxLeft + arc, headerX - gap), boxTop);
+				p.lineTo(Math.max(boxLeft + arc, controlsStart - gap), boxTop);
 
-				// Top-middle line from header end to pillBar start
-				int midStart = Math.min(boxRight - arc, headerX + headerW + gap);
-				int midEnd = Math.max(midStart, pillX - gap);
-				p.moveTo(midStart, boxTop);
-				p.lineTo(midEnd, boxTop);
-
-				// Top-right line from pillBar end to right corner
-				int rightStart = Math.min(boxRight - arc, pillX + pillW + gap);
+				// Top-right line from controlsEnd to right corner
+				int rightStart = Math.min(boxRight - arc, controlsEnd + gap);
 				p.moveTo(rightStart, boxTop);
 				p.lineTo(boxRight - arc, boxTop);
 
@@ -360,15 +349,21 @@ public class AshtavargaView extends AstrosoftView {
 		mainPanel.setPreferredSize(panelSize);
 		mainPanel.setMinimumSize(panelSize);
 
-		Dimension hd = headerPanel.getPreferredSize();
-		headerPanel.setBounds(18, 2, hd.width, 24);
-
 		Dimension pd = pillBar.getPreferredSize();
-		pillBar.setBounds(cardWidth - pd.width - 18, 2, pd.width, pd.height);
+		int pillW = pd.width;
+		int pillH = pd.height;
+		int pillX = cardWidth - pillW - 18;
+		pillBar.setBounds(pillX, 2, pillW, pillH);
+
+		int infoSize = 18;
+		int infoGap = 8;
+		int infoX = pillX - infoSize - infoGap;
+		int infoY = 2 + Math.max(0, (pillH - infoSize) / 2);
+		infoButton.setBounds(infoX, infoY, infoSize, infoSize);
 
 		contentCards.setBounds(6, 26, cardWidth - 12, cardHeight - 32);
 
-		mainPanel.add(headerPanel);
+		mainPanel.add(infoButton);
 		mainPanel.add(pillBar);
 		mainPanel.add(contentCards);
 
@@ -969,7 +964,7 @@ public class AshtavargaView extends AstrosoftView {
 		final JComponent btn = new JComponent() {
 			private boolean hovered = false;
 			{
-				setToolTipText("Ashtakavarga Strength Guide");
+				setToolTipText("Ashtavarga Strength Guide");
 				setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				Dimension d = new Dimension(18, 18);
 				setPreferredSize(d);

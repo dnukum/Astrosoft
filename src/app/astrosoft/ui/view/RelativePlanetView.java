@@ -470,17 +470,16 @@ public class RelativePlanetView extends JPanel {
 
 			double offset = (planetPos != null && planetPos.containsKey(p)) ? (planetPos.get(p) % 30.0) : 0.0;
 			int[] dmsArr = AstroUtil.int_dms(offset);
-			String dms = AstroUtil.twoDigit(dmsArr[0]) + ":" + AstroUtil.twoDigit(dmsArr[1]);
 			Rasi r = (planetRasi != null) ? planetRasi.get(p) : null;
-			if (r != null) {
-				dms += " (" + r.toString() + ")";
-			}
+			String sign = (r != null) ? r.twoLetterCode() : "";
+			String posStr = AstroUtil.twoDigit(dmsArr[0]) + " " + sign + " " + AstroUtil.twoDigit(dmsArr[1]);
+			row.addColumn(AstrosoftTableColumn.Longitude, posStr);
+
 			Karaka k = (planetKaraka != null) ? planetKaraka.get(p) : null;
 			String kAbbr = getKarakaAbbr(k);
-			if (kAbbr != null && !kAbbr.isEmpty() && !"—".equals(kAbbr)) {
-				dms += "  " + kAbbr;
-			}
-			row.addColumn(AstrosoftTableColumn.Longitude, dms);
+			String karakaStr = (kAbbr != null && !kAbbr.isEmpty() && !"—".equals(kAbbr)) ? "(" + kAbbr + ")" : "";
+			row.addColumn(AstrosoftTableColumn.JaiminiKaraka, karakaStr);
+
 			rows.add(row);
 
 			// Build rich HTML tooltip for Positions
@@ -546,7 +545,7 @@ public class RelativePlanetView extends JPanel {
 			copyTexts.put(name, pt.toString().trim());
 		}
 
-		splitTablePanel = buildSplitTablePanel(rows, AstrosoftTableColumn.Longitude, 105, 132, tooltips, copyTexts);
+		splitTablePanel = buildSplitTablePanel(rows, 120, 64, 45, tooltips, copyTexts);
 
 		positionsInnerPanel = new JPanel(new BorderLayout(0, 2));
 		positionsInnerPanel.setOpaque(false);
@@ -971,15 +970,28 @@ public class RelativePlanetView extends JPanel {
 	}
 
 	// -------------------------------------------------------------------------
-	// Split 2-Column Table Panel Helper
+	// Split 3-Column Table Panel Helper (Planet & Status | Longitude | Karaka)
 	// -------------------------------------------------------------------------
-	private JPanel buildSplitTablePanel(List<MapTableRow> rows, AstrosoftTableColumn valueColumn,
-			int col0Width, int col1Width, final Map<String, String> tooltips, final Map<String, String> copyTexts) {
-		JPanel panel = new JPanel(new GridLayout(1, 2, 16, 0));
+	private JPanel buildSplitTablePanel(List<MapTableRow> rows,
+			int col0Width, int col1Width, int col2Width, final Map<String, String> tooltips, final Map<String, String> copyTexts) {
+		JPanel panel = new JPanel(new GridLayout(1, 2, 16, 0)) {
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.setColor(new Color(216, 210, 194));
+				int midX = getWidth() / 2;
+				g2.drawLine(midX, 2, midX, getHeight() - 2);
+				g2.dispose();
+			}
+		};
 		panel.setOpaque(false);
 
 		ListTableData<MapTableRow> tableData = new ListTableData<MapTableRow>(rows);
-		DefaultColumnMetaData colMetaData = new DefaultColumnMetaData(AstrosoftTableColumn.Planet, valueColumn);
+		DefaultColumnMetaData colMetaData = new DefaultColumnMetaData(
+				AstrosoftTableColumn.Planet,
+				AstrosoftTableColumn.Longitude,
+				AstrosoftTableColumn.JaiminiKaraka);
 		List<ListTableData<MapTableRow>> splitData = TableDataFactory.splitTableData(tableData, 5);
 
 		for (ListTableData<MapTableRow> data : splitData) {
@@ -1046,10 +1058,16 @@ public class RelativePlanetView extends JPanel {
 			}
 
 			javax.swing.table.TableColumn pCol = table.getColumnModel().getColumn(0);
-			javax.swing.table.TableColumn vCol = table.getColumnModel().getColumn(1);
+			javax.swing.table.TableColumn lCol = table.getColumnModel().getColumn(1);
+			javax.swing.table.TableColumn kCol = table.getColumnModel().getColumn(2);
 			pCol.setPreferredWidth(col0Width);
-			pCol.setMaxWidth(col0Width + 30);
-			vCol.setPreferredWidth(col1Width);
+			pCol.setMinWidth(95);
+			lCol.setPreferredWidth(col1Width);
+			lCol.setMinWidth(58);
+			lCol.setMaxWidth(75);
+			kCol.setPreferredWidth(col2Width);
+			kCol.setMinWidth(35);
+			kCol.setMaxWidth(55);
 
 			pCol.setCellRenderer(new DefaultTableCellRenderer() {
 				@Override
@@ -1069,12 +1087,23 @@ public class RelativePlanetView extends JPanel {
 				}
 			});
 
-			vCol.setCellRenderer(new DefaultTableCellRenderer() {
+			lCol.setCellRenderer(new DefaultTableCellRenderer() {
 				@Override
 				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
 					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
 					comp.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
 					comp.setForeground(UIConsts.TEXT_DARK_NAVY);
+					setOpaque(false);
+					return comp;
+				}
+			});
+
+			kCol.setCellRenderer(new DefaultTableCellRenderer() {
+				@Override
+				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+					comp.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+					comp.setForeground(new Color(74, 85, 104));
 					setOpaque(false);
 					return comp;
 				}

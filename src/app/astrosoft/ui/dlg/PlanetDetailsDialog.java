@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.Rasi;
@@ -24,8 +25,8 @@ import app.astrosoft.ui.view.RelativePlanetView;
 
 public class PlanetDetailsDialog extends JDialog {
 
-	private static Dimension DEFAULT_SIZE = new Dimension(636, 268);
-	private static final Dimension MIN_SIZE = new Dimension(500, 236);
+	private static Dimension DEFAULT_SIZE = new Dimension(668, 296);
+	private static final Dimension MIN_SIZE = new Dimension(530, 260);
 
 	private static PlanetDetailsDialog activeDialog;
 	private static java.awt.Point lastLocation;
@@ -78,11 +79,12 @@ public class PlanetDetailsDialog extends JDialog {
 
 		planetView = new RelativePlanetView(planetaryInfo, ascendant, shadBala);
 		planetView.setFloatingMode(true);
-		planetView.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
-		getContentPane().setLayout(new BorderLayout());
-		getContentPane().setBackground(UIConsts.CANVAS_BACKGROUND);
-		getContentPane().add(planetView, BorderLayout.CENTER);
+		JPanel content = (JPanel) getContentPane();
+		content.setLayout(new BorderLayout());
+		content.setBackground(UIConsts.CANVAS_BACKGROUND);
+		content.setBorder(BorderFactory.createEmptyBorder(10, 14, 14, 14));
+		content.add(planetView, BorderLayout.CENTER);
 
 		setPreferredSize(DEFAULT_SIZE);
 		setMinimumSize(MIN_SIZE);

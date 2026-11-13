@@ -825,14 +825,14 @@ public class Chart extends JPanel{
 		headerLabel.setToolTipText("Right-click anywhere on a chart to zoom text size");
 		headerLabel.setInheritsPopupMenu(true);
 
-		final JPanel chartsRow = new JPanel(new GridLayout(1, 2, 10, 0));
+		final JPanel chartsRow = new JPanel(new GridLayout(1, 2, 22, 0));
 		chartsRow.setOpaque(false);
 		chartsRow.setInheritsPopupMenu(true);
 		chartsRow.add(rasi);
 		chartsRow.add(navamsa);
 
 		final int cardW = 858;
-		final int cardH = 385;
+		final int cardH = 402;
 
 		final JPanel card = new JPanel(null) {
 			@Override
@@ -842,7 +842,7 @@ public class Chart extends JPanel{
 				FontMetrics fm = headerLabel.getFontMetrics(headerLabel.getFont());
 				int labelW = fm.stringWidth(headerLabel.getText()) + 4;
 				headerLabel.setBounds(18, 2, labelW, 20);
-				chartsRow.setBounds(6, 20, w - 12, h - 26);
+				chartsRow.setBounds(10, 20, w - 20, h - 36);
 				chartsRow.doLayout();
 			}
 
@@ -885,11 +885,6 @@ public class Chart extends JPanel{
 				g2.setColor(UIConsts.getChartBorderColor());
 				g2.setStroke(new BasicStroke(1.5f));
 				g2.draw(p);
-
-				// Subtle vertical divider between Rasi and Navamsha
-				int midX = w / 2;
-				g2.setStroke(new BasicStroke(1.0f));
-				g2.drawLine(midX, boxTop + 10, midX, boxBottom - 8);
 
 				g2.dispose();
 			}

@@ -26,8 +26,8 @@ import app.astrosoft.ui.view.AshtavargaView;
 
 public class AshtavargaDialog extends JDialog {
 
-	private static final Dimension DEFAULT_SIZE = new Dimension(890, 440);
-	private static final Dimension MIN_SIZE = new Dimension(870, 420);
+	private static final Dimension DEFAULT_SIZE = new Dimension(924, 468);
+	private static final Dimension MIN_SIZE = new Dimension(900, 448);
 
 	private static AshtavargaDialog activeDialog;
 	private static java.awt.Point lastLocation;
@@ -69,7 +69,7 @@ public class AshtavargaDialog extends JDialog {
 
 	public AshtavargaDialog(Window owner, Ashtavarga ashtavarga, Rasi ascendant, Rasi moonRasi,
 			EnumMap<Planet, Rasi> planetRasis, Runnable onClose) {
-		super(owner != null ? owner : AstroSoft.getInstance(), "Ashtavarga - Charts & Prasthara Chakra", ModalityType.MODELESS);
+		super(owner != null ? owner : AstroSoft.getInstance(), "Ashtavarga", ModalityType.MODELESS);
 		this.onCloseCallback = onClose;
 
 		if (activeDialog != null && activeDialog != this) {
@@ -81,11 +81,12 @@ public class AshtavargaDialog extends JDialog {
 		setResizable(true);
 
 		ashtavargaPanel = AshtavargaView.createAshtavargaGridPanel(ashtavarga, ascendant, moonRasi, planetRasis);
-		ashtavargaPanel.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
-		getContentPane().setLayout(new BorderLayout());
-		getContentPane().setBackground(UIConsts.CANVAS_BACKGROUND);
-		getContentPane().add(ashtavargaPanel, BorderLayout.CENTER);
+		JPanel content = (JPanel) getContentPane();
+		content.setLayout(new BorderLayout());
+		content.setBackground(UIConsts.CANVAS_BACKGROUND);
+		content.setBorder(BorderFactory.createEmptyBorder(10, 14, 14, 14));
+		content.add(ashtavargaPanel, BorderLayout.CENTER);
 
 		setPreferredSize(DEFAULT_SIZE);
 		setMinimumSize(MIN_SIZE);

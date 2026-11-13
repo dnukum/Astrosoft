@@ -168,6 +168,25 @@ public enum Rasi {
 		return sym;
 	}
 
+	/** Returns the 2-letter English zodiac abbreviation (Ar, Ta, Ge, Cn, Le, Vi, Li, Sc, Sg, Cp, Aq, Pi). */
+	public String twoLetterCode() {
+		switch (this) {
+			case Mesha: return "Ar";
+			case Vrishabha: return "Ta";
+			case Mithuna: return "Ge";
+			case Kataka: return "Cn";
+			case Simha: return "Le";
+			case Kanya: return "Vi";
+			case Thula: return "Li";
+			case Vrichika: return "Sc";
+			case Dhanus: return "Sg";
+			case Makara: return "Cp";
+			case Kumbha: return "Aq";
+			case Meena: return "Pi";
+			default: return sym;
+		}
+	}
+
 	public String englishName() {
 		return englishName;
 	}
