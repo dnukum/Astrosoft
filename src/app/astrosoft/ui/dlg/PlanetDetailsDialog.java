@@ -26,7 +26,7 @@ import app.astrosoft.ui.view.RelativePlanetView;
 
 public class PlanetDetailsDialog extends JDialog {
 
-	private static Dimension DEFAULT_SIZE = new Dimension(668, 296);
+	private static Dimension DEFAULT_SIZE = new Dimension(720, 390);
 	private static final Dimension MIN_SIZE = new Dimension(530, 260);
 
 	private static PlanetDetailsDialog activeDialog;

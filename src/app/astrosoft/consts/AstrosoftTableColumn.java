@@ -19,6 +19,16 @@ public enum AstrosoftTableColumn {
 			return DisplayStrings.LONGITUDE_STR.toString();
 		}
 	},
+	TotalLongitude {
+		public String toString() {
+			boolean isTamil = app.astrosoft.ui.AstroSoft.getPreferences() != null &&
+					app.astrosoft.ui.AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+			return isTamil ? "முழு பாகை (360°)" : "Absolute (360°)";
+		}
+		public String toString(Language lang) {
+			return lang == Language.TAMIL ? "முழு பாகை (360°)" : "Absolute (360°)";
+		}
+	},
 	Nakshathra {
 		public String toString() {
 			return DisplayStrings.NAK_STR.toString();

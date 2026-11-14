@@ -115,7 +115,7 @@ public class RelativePlanetView extends JPanel {
 
 	private final List<AstrosoftTable> overviewTables = new ArrayList<AstrosoftTable>();
 	private final List<JLabel> natureLabels = new ArrayList<JLabel>();
-	private JPanel splitTablePanel;
+	private JPanel unifiedTableContainer;
 	private JPanel positionsInnerPanel;
 	private JPanel natureColsPanel;
 	private JPanel leftNatureLines;
@@ -160,28 +160,38 @@ public class RelativePlanetView extends JPanel {
 		Rasi ascRasi = ascendant != null ? ascendant : (planetRasi != null ? planetRasi.get(Planet.Ascendant) : Rasi.Mesha);
 		int ascIndex = ascRasi.ordinal();
 
-		// Sort planets in zodiacal order starting from Ascendant
+		// Sort planets based on active chart style:
+		// South Indian: arrange from ASC going clockwise through the zodiac
+		// North Indian: standard order (Sun, Moon, Mars, ..., ending with Ascendant)
 		List<Planet> sortedPlanets = new ArrayList<Planet>();
-		for (int i = 0; i < 12; i++) {
-			int rasiIndex = (ascIndex + i) % 12;
-			Rasi currentRasi = Rasi.values()[rasiIndex];
+		UIConsts.ChartStyle style = UIConsts.getChartStyle();
 
-			List<Planet> planetsInSign = new ArrayList<Planet>();
-			for (Planet p : Planet.values()) {
-				if (planetRasi != null && planetRasi.get(p) == currentRasi) {
-					planetsInSign.add(p);
+		if (style == UIConsts.ChartStyle.NORTH_INDIAN) {
+			sortedPlanets.addAll(Planet.planetsAsc());
+		} else {
+			for (int i = 0; i < 12; i++) {
+				int rasiIndex = (ascIndex + i) % 12;
+				Rasi currentRasi = Rasi.values()[rasiIndex];
+
+				List<Planet> planetsInSign = new ArrayList<Planet>();
+				for (Planet p : Planet.values()) {
+					if (planetRasi != null && planetRasi.get(p) == currentRasi) {
+						planetsInSign.add(p);
+					}
 				}
+
+				Collections.sort(planetsInSign, new Comparator<Planet>() {
+					public int compare(Planet p1, Planet p2) {
+						if (p1.isAsc()) return -1;
+						if (p2.isAsc()) return 1;
+						Double pos1 = (planetPos != null && planetPos.containsKey(p1)) ? (planetPos.get(p1) % 30.0) : 0.0;
+						Double pos2 = (planetPos != null && planetPos.containsKey(p2)) ? (planetPos.get(p2) % 30.0) : 0.0;
+						return pos1.compareTo(pos2);
+					}
+				});
+
+				sortedPlanets.addAll(planetsInSign);
 			}
-
-			Collections.sort(planetsInSign, new Comparator<Planet>() {
-				public int compare(Planet p1, Planet p2) {
-					Double pos1 = (planetPos != null && planetPos.containsKey(p1)) ? (planetPos.get(p1) % 30.0) : 0.0;
-					Double pos2 = (planetPos != null && planetPos.containsKey(p2)) ? (planetPos.get(p2) % 30.0) : 0.0;
-					return pos1.compareTo(pos2);
-				}
-			});
-
-			sortedPlanets.addAll(planetsInSign);
 		}
 
 		// Header title
@@ -475,22 +485,32 @@ public class RelativePlanetView extends JPanel {
 			int[] dmsArr = AstroUtil.int_dms(offset);
 			Rasi r = (planetRasi != null) ? planetRasi.get(p) : null;
 			String sign = (r != null) ? r.twoLetterCode() : "";
-			String posStr = AstroUtil.twoDigit(dmsArr[0]) + " " + sign + " " + AstroUtil.twoDigit(dmsArr[1]);
+			String posStr = AstroUtil.twoDigit(dmsArr[0]) + "° " + sign + " " + AstroUtil.twoDigit(dmsArr[1]) + "' " + AstroUtil.twoDigit(dmsArr[2]) + "\"";
 			row.addColumn(AstrosoftTableColumn.Longitude, posStr);
 
-			Karaka k = (planetKaraka != null) ? planetKaraka.get(p) : null;
-			String kAbbr = getKarakaAbbr(k);
-			String karakaStr = (kAbbr != null && !kAbbr.isEmpty() && !"—".equals(kAbbr)) ? "(" + kAbbr + ")" : "";
-			row.addColumn(AstrosoftTableColumn.JaiminiKaraka, karakaStr);
+			double abs = (planetPos != null && planetPos.containsKey(p)) ? planetPos.get(p) : 0.0;
+			String absStr = AstroUtil.dms(abs).replace(" : ", ":");
+			row.addColumn(AstrosoftTableColumn.TotalLongitude, absStr);
 
-			rows.add(row);
-
-			// Build rich HTML tooltip for Positions
 			NakshathraPada np = (nakMap != null) ? nakMap.get(p) : null;
 			if (np == null && planetPos != null && planetPos.containsKey(p)) {
 				np = new NakshathraPada(planetPos.get(p));
 			}
+			String nakPadaStr = (np != null) ? (np.getNak().toString() + " ~ " + np.getPada()) : "—";
+			row.addColumn(AstrosoftTableColumn.NakshathraPada, nakPadaStr);
 
+			Karaka k = (planetKaraka != null) ? planetKaraka.get(p) : null;
+			if (p.isAsc() || p == Planet.Rahu || p == Planet.Ketu || k == null || k == Karaka.NoKaraka) {
+				row.addColumn(AstrosoftTableColumn.JaiminiKaraka, "──");
+			} else {
+				String kAbbr = getKarakaAbbr(k);
+				String karakaStr = k.toString() + " (" + kAbbr + ")";
+				row.addColumn(AstrosoftTableColumn.JaiminiKaraka, karakaStr);
+			}
+
+			rows.add(row);
+
+			// Build rich HTML tooltip for Positions
 			StringBuilder tt = new StringBuilder("<html><div style='padding: 2px 4px;'>");
 			tt.append("<b style='color: #1a365d;'>").append(p.name()).append("</b>");
 			if (r != null) {
@@ -548,11 +568,11 @@ public class RelativePlanetView extends JPanel {
 			copyTexts.put(name, pt.toString().trim());
 		}
 
-		splitTablePanel = buildSplitTablePanel(rows, 120, 64, 45, tooltips, copyTexts);
+		unifiedTableContainer = buildUnifiedTablePanel(rows, tooltips, copyTexts);
 
-		positionsInnerPanel = new JPanel(new BorderLayout(0, 2));
+		positionsInnerPanel = new JPanel(new BorderLayout(0, 4));
 		positionsInnerPanel.setOpaque(false);
-		positionsInnerPanel.add(splitTablePanel, BorderLayout.NORTH);
+		positionsInnerPanel.add(unifiedTableContainer, BorderLayout.NORTH);
 		positionsInnerPanel.add(createFunctionalNaturePanel(ascRasi), BorderLayout.CENTER);
 
 		// Wrap inner content in NORTH of a scrollable container so Functional Nature stays
@@ -981,150 +1001,235 @@ public class RelativePlanetView extends JPanel {
 	}
 
 	// -------------------------------------------------------------------------
-	// Split 3-Column Table Panel Helper (Planet & Status | Longitude | Karaka)
+	// Unified 5-Column Table Panel Helper (Planet | Sign & Degree | Absolute | Nakshatra | Karaka)
 	// -------------------------------------------------------------------------
-	private JPanel buildSplitTablePanel(List<MapTableRow> rows,
-			int col0Width, int col1Width, int col2Width, final Map<String, String> tooltips, final Map<String, String> copyTexts) {
-		JPanel panel = new JPanel(new GridLayout(1, 2, 16, 0)) {
-			@Override
-			protected void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				Graphics2D g2 = (Graphics2D) g.create();
-				g2.setColor(new Color(216, 210, 194));
-				int midX = getWidth() / 2;
-				g2.drawLine(midX, 2, midX, getHeight() - 2);
-				g2.dispose();
-			}
-		};
-		panel.setOpaque(false);
-
+	private JPanel buildUnifiedTablePanel(List<MapTableRow> rows,
+			final Map<String, String> tooltips, final Map<String, String> copyTexts) {
 		ListTableData<MapTableRow> tableData = new ListTableData<MapTableRow>(rows);
 		DefaultColumnMetaData colMetaData = new DefaultColumnMetaData(
 				AstrosoftTableColumn.Planet,
 				AstrosoftTableColumn.Longitude,
+				AstrosoftTableColumn.TotalLongitude,
+				AstrosoftTableColumn.NakshathraPada,
 				AstrosoftTableColumn.JaiminiKaraka);
-		List<ListTableData<MapTableRow>> splitData = TableDataFactory.splitTableData(tableData, 5);
 
-		for (ListTableData<MapTableRow> data : splitData) {
-			AstrosoftTable table = new AstrosoftTable(new AstrosoftTableModel(data, colMetaData), TableStyle.NONE) {
+		AstrosoftTableModel tableModel = new AstrosoftTableModel(tableData, colMetaData) {
+			@Override
+			public String getColumnName(int col) {
+				boolean isTamil = AstroSoft.getPreferences() != null && AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
+				switch (col) {
+					case 0: return isTamil ? "கிரகம்" : "Planet";
+					case 1: return isTamil ? "ராசி & பாகை" : "Sign & Degree";
+					case 2: return isTamil ? "முழு பாகை (360°)" : "Absolute (360°)";
+					case 3: return isTamil ? "நட்சத்திர பாதம்" : "Nakshatra & Pada";
+					case 4: return isTamil ? "ஜைமினி காரகர்" : "Jaimini Karaka";
+					default: return super.getColumnName(col);
+				}
+			}
+		};
+
+		AstrosoftTable table = new AstrosoftTable(tableModel, TableStyle.NONE) {
+			@Override
+			public String getToolTipText(MouseEvent event) {
+				if (tooltips != null) {
+					int row = rowAtPoint(event.getPoint());
+					if (row >= 0 && row < tableData.getRowCount()) {
+						MapTableRow r = tableData.getRow(row);
+						Object pObj = r.getColumnData(AstrosoftTableColumn.Planet);
+						if (pObj != null) {
+							String tt = tooltips.get(pObj.toString());
+							if (tt != null) return tt;
+						}
+					}
+				}
+				return super.getToolTipText(event);
+			}
+		};
+		table.setOpaque(false);
+		table.setRowHeight(21);
+		table.setShowGrid(false);
+		table.setShowHorizontalLines(true);
+		table.setGridColor(new Color(243, 238, 226));
+		ToolTipManager.sharedInstance().registerComponent(table);
+
+		if (copyTexts != null) {
+			MouseAdapter popupListener = new MouseAdapter() {
 				@Override
-				public String getToolTipText(MouseEvent event) {
-					if (tooltips != null) {
-						int row = rowAtPoint(event.getPoint());
-						if (row >= 0 && row < data.getRowCount()) {
-							MapTableRow r = data.getRow(row);
-							Object pObj = r.getColumnData(AstrosoftTableColumn.Planet);
-							if (pObj != null) {
-								String tt = tooltips.get(pObj.toString());
-								if (tt != null) return tt;
+				public void mousePressed(MouseEvent e) {
+					if (e.isPopupTrigger()) {
+						showPopup(e);
+					}
+				}
+
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					if (e.isPopupTrigger()) {
+						showPopup(e);
+					}
+				}
+
+				private void showPopup(MouseEvent e) {
+					int row = table.rowAtPoint(e.getPoint());
+					if (row >= 0 && row < tableData.getRowCount()) {
+						table.setRowSelectionInterval(row, row);
+						MapTableRow r = tableData.getRow(row);
+						Object pObj = r.getColumnData(AstrosoftTableColumn.Planet);
+						if (pObj != null) {
+							final String textToCopy = copyTexts.get(pObj.toString());
+							if (textToCopy != null) {
+								JPopupMenu popup = new JPopupMenu();
+								JMenuItem copyItem = new JMenuItem("Copy Planet Summary");
+								copyItem.addActionListener(evt -> {
+									StringSelection sel = new StringSelection(textToCopy);
+									Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, sel);
+								});
+								popup.add(copyItem);
+								popup.show(e.getComponent(), e.getX(), e.getY());
 							}
 						}
 					}
-					return super.getToolTipText(event);
 				}
 			};
-			table.setOpaque(false);
-			table.setRowHeight(22);
-			ToolTipManager.sharedInstance().registerComponent(table);
-
-			if (copyTexts != null) {
-				MouseAdapter popupListener = new MouseAdapter() {
-					@Override
-					public void mousePressed(MouseEvent e) {
-						if (e.isPopupTrigger()) {
-							showPopup(e);
-						}
-					}
-
-					@Override
-					public void mouseReleased(MouseEvent e) {
-						if (e.isPopupTrigger()) {
-							showPopup(e);
-						}
-					}
-
-					private void showPopup(MouseEvent e) {
-						int row = table.rowAtPoint(e.getPoint());
-						if (row >= 0 && row < data.getRowCount()) {
-							table.setRowSelectionInterval(row, row);
-							MapTableRow r = data.getRow(row);
-							Object pObj = r.getColumnData(AstrosoftTableColumn.Planet);
-							if (pObj != null) {
-								final String textToCopy = copyTexts.get(pObj.toString());
-								if (textToCopy != null) {
-									JPopupMenu popup = new JPopupMenu();
-									JMenuItem copyItem = new JMenuItem("Copy Planet Summary");
-									copyItem.addActionListener(evt -> {
-										StringSelection sel = new StringSelection(textToCopy);
-										Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, sel);
-									});
-									popup.add(copyItem);
-									popup.show(e.getComponent(), e.getX(), e.getY());
-								}
-							}
-						}
-					}
-				};
-				table.addMouseListener(popupListener);
-			}
-
-			javax.swing.table.TableColumn pCol = table.getColumnModel().getColumn(0);
-			javax.swing.table.TableColumn lCol = table.getColumnModel().getColumn(1);
-			javax.swing.table.TableColumn kCol = table.getColumnModel().getColumn(2);
-			pCol.setPreferredWidth(col0Width);
-			pCol.setMinWidth(95);
-			lCol.setPreferredWidth(col1Width);
-			lCol.setMinWidth(58);
-			lCol.setMaxWidth(75);
-			kCol.setPreferredWidth(col2Width);
-			kCol.setMinWidth(35);
-			kCol.setMaxWidth(55);
-
-			pCol.setCellRenderer(new DefaultTableCellRenderer() {
-				@Override
-				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
-					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
-					comp.setFont(UIUtil.getFont(Font.BOLD, 11));
-					String text = (val != null) ? val.toString() : "";
-					if (text.startsWith("Ascendant")) {
-						comp.setForeground(UIConsts.getChartAscendantColor());
-					} else if (text.startsWith("Moon")) {
-						comp.setForeground(UIConsts.getChartMoonColor());
-					} else {
-						comp.setForeground(UIConsts.getChartPlanetForeground());
-					}
-					setOpaque(false);
-					return comp;
-				}
-			});
-
-			lCol.setCellRenderer(new DefaultTableCellRenderer() {
-				@Override
-				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
-					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
-					comp.setFont(UIUtil.getFont(Font.PLAIN, 11));
-					comp.setForeground(UIConsts.TEXT_DARK_NAVY);
-					setOpaque(false);
-					return comp;
-				}
-			});
-
-			kCol.setCellRenderer(new DefaultTableCellRenderer() {
-				@Override
-				public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
-					Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
-					comp.setFont(UIUtil.getFont(Font.PLAIN, 11));
-					comp.setForeground(new Color(74, 85, 104));
-					setOpaque(false);
-					return comp;
-				}
-			});
-
-			overviewTables.add(table);
-			panel.add(table);
+			table.addMouseListener(popupListener);
 		}
 
-		return panel;
+		// Table Header Styling
+		javax.swing.table.JTableHeader header = table.getTableHeader();
+		header.setReorderingAllowed(false);
+		header.setResizingAllowed(true);
+		header.setPreferredSize(new Dimension(header.getPreferredSize().width, 24));
+		header.setDefaultRenderer(new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+				JLabel l = (JLabel) super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+				l.setFont(UIUtil.getFont(Font.BOLD, 11));
+				l.setForeground(new Color(120, 53, 15)); // Warm amber-brown
+				l.setBackground(new Color(250, 245, 235)); // Light cream
+				l.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+						javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(225, 218, 202)),
+						javax.swing.BorderFactory.createEmptyBorder(2, 6, 2, 6)
+				));
+				l.setOpaque(true);
+				return l;
+			}
+		});
+
+		// Column Widths
+		javax.swing.table.TableColumn pCol = table.getColumnModel().getColumn(0); // Planet
+		javax.swing.table.TableColumn lCol = table.getColumnModel().getColumn(1); // Sign & Degree
+		javax.swing.table.TableColumn aCol = table.getColumnModel().getColumn(2); // Absolute (360°)
+		javax.swing.table.TableColumn nCol = table.getColumnModel().getColumn(3); // Nakshatra & Pada
+		javax.swing.table.TableColumn kCol = table.getColumnModel().getColumn(4); // Jaimini Karaka
+
+		pCol.setPreferredWidth(115);
+		pCol.setMinWidth(95);
+		pCol.setMaxWidth(140);
+
+		lCol.setPreferredWidth(125);
+		lCol.setMinWidth(110);
+		lCol.setMaxWidth(155);
+
+		aCol.setPreferredWidth(110);
+		aCol.setMinWidth(90);
+		aCol.setMaxWidth(135);
+
+		nCol.setPreferredWidth(145);
+		nCol.setMinWidth(120);
+		nCol.setMaxWidth(185);
+
+		kCol.setPreferredWidth(140);
+		kCol.setMinWidth(115);
+		kCol.setMaxWidth(185);
+
+		// Col 0: Planet Renderer
+		pCol.setCellRenderer(new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+				Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+				comp.setFont(UIUtil.getFont(Font.BOLD, 11));
+				String text = (val != null) ? val.toString() : "";
+				if (text.startsWith("Ascendant") || text.equals("As") || text.startsWith("லக்னம்")) {
+					comp.setForeground(UIConsts.getChartAscendantColor());
+				} else if (text.startsWith("Moon") || text.startsWith("சந்")) {
+					comp.setForeground(UIConsts.getChartMoonColor());
+				} else {
+					comp.setForeground(UIConsts.getChartPlanetForeground());
+				}
+				setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 4));
+				setOpaque(false);
+				return comp;
+			}
+		});
+
+		// Col 1: Sign & Degree Renderer
+		lCol.setCellRenderer(new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+				Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+				comp.setFont(UIUtil.getFont(Font.BOLD, 11));
+				comp.setForeground(UIConsts.TEXT_DARK_NAVY);
+				setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 4));
+				setOpaque(false);
+				return comp;
+			}
+		});
+
+		// Col 2: Absolute (360°) Renderer
+		aCol.setCellRenderer(new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+				Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+				comp.setFont(UIUtil.getFont(Font.PLAIN, 11));
+				comp.setForeground(new Color(95, 105, 120));
+				setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 4));
+				setOpaque(false);
+				return comp;
+			}
+		});
+
+		// Col 3: Nakshatra & Pada Renderer
+		nCol.setCellRenderer(new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+				Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+				comp.setFont(UIUtil.getFont(Font.PLAIN, 11));
+				comp.setForeground(new Color(55, 65, 81));
+				setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 4));
+				setOpaque(false);
+				return comp;
+			}
+		});
+
+		// Col 4: Jaimini Karaka Renderer
+		kCol.setCellRenderer(new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable t, Object val, boolean isSel, boolean hasFoc, int r, int c) {
+				Component comp = super.getTableCellRendererComponent(t, val, isSel, hasFoc, r, c);
+				comp.setFont(UIUtil.getFont(Font.PLAIN, 11));
+				String text = (val != null) ? val.toString() : "";
+				if ("──".equals(text) || "—".equals(text) || text.isEmpty()) {
+					comp.setForeground(new Color(165, 175, 185));
+				} else {
+					comp.setForeground(new Color(146, 64, 14));
+				}
+				setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 4));
+				setOpaque(false);
+				return comp;
+			}
+		});
+
+		overviewTables.add(table);
+
+		JPanel container = new JPanel(new BorderLayout());
+		container.setOpaque(false);
+		container.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+				javax.swing.BorderFactory.createLineBorder(new Color(225, 218, 202), 1),
+				javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0)
+		));
+		container.add(header, BorderLayout.NORTH);
+		container.add(table, BorderLayout.CENTER);
+
+		return container;
 	}
 
 	// -------------------------------------------------------------------------
