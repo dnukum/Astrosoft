@@ -100,6 +100,11 @@ public class CompatibilityInputDialog extends AstrosoftDialog {
 	private void initComponents() {
 
 		tabbedPane = new JTabbedPane();
+		tabbedPane.setFont(UIUtil.getFont(Font.BOLD, 11));
+		horOkButton.setFont(UIUtil.getFont(Font.BOLD, 11));
+		starOkButton.setFont(UIUtil.getFont(Font.BOLD, 11));
+		boyName.setFont(UIUtil.getFont(Font.PLAIN, 11));
+		girlName.setFont(UIUtil.getFont(Font.PLAIN, 11));
 
 
 		horOkButton.addActionListener(new ActionListener(){

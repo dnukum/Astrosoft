@@ -126,7 +126,7 @@ public class ModernBirthDataPanel extends JPanel {
     private void initComponents() {
         setLayout(new GridBagLayout());
         Font labelFont = UIUtil.getFont();
-        if (labelFont == null) labelFont = new Font("SansSerif", Font.PLAIN, 12);
+        if (labelFont == null) labelFont = UIUtil.getFont(Font.PLAIN, 12);
         Font boldLabelFont = labelFont.deriveFont(Font.BOLD);
 
         UIConsts.ChartTheme theme = UIConsts.getChartTheme();
@@ -275,6 +275,7 @@ public class ModernBirthDataPanel extends JPanel {
         }
         searchButton.setPreferredSize(new Dimension(FIELD_HEIGHT, FIELD_HEIGHT));
         searchButton.setToolTipText(isTamil ? "ஊரைத் தேடுக" : "Search Place");
+        searchButton.setFont(UIUtil.getFont(Font.PLAIN, 12));
         searchButton.setFocusPainted(false);
         searchButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         searchButton.addActionListener(e -> performPlaceSearch());

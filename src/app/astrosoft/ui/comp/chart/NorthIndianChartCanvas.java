@@ -399,7 +399,7 @@ public class NorthIndianChartCanvas extends JComponent {
 
 	private static Font createSignFont(double side) {
 		int signFontSize = Math.max(8, Math.min(11, (int) Math.round(side * 0.032)));
-		return new Font(Font.SANS_SERIF, Font.PLAIN, signFontSize);
+		return app.astrosoft.ui.util.UIUtil.getFont(Font.SANS_SERIF, Font.PLAIN, signFontSize);
 	}
 
 	private void paintPlanetHouse(Graphics2D g2, HouseLayout hl) {
@@ -473,7 +473,7 @@ public class NorthIndianChartCanvas extends JComponent {
 		if (entry.isNatalHighlight() && entry.getBinduScore() != null) {
 			return new Rectangle2D.Double(anchor.x - diameter * 0.5, anchor.y - diameter * 0.5, diameter, diameter);
 		}
-		Font scoreFont = new Font(Font.SANS_SERIF, Font.BOLD, ashtavargaScoreFontSize(s, compact));
+		Font scoreFont = app.astrosoft.ui.util.UIUtil.getFont(Font.SANS_SERIF, Font.BOLD, ashtavargaScoreFontSize(s, compact));
 		FontMetrics sfm = getFontMetrics(scoreFont);
 		String valStr = (entry.getBinduScore() != null) ? entry.getBinduScore().toString() : "";
 		double w = Math.max(8.0, sfm.stringWidth(valStr) + 2.0);
@@ -494,7 +494,7 @@ public class NorthIndianChartCanvas extends JComponent {
 		String valStr = (score != null) ? score.toString() : "";
 
 		int scoreSize = ashtavargaScoreFontSize(s, compact);
-		Font scoreFont = new Font(Font.SANS_SERIF, Font.BOLD, scoreSize);
+		Font scoreFont = app.astrosoft.ui.util.UIUtil.getFont(Font.SANS_SERIF, Font.BOLD, scoreSize);
 		g2.setFont(scoreFont);
 		FontMetrics sfm = g2.getFontMetrics();
 		int sw = sfm.stringWidth(valStr);
@@ -775,7 +775,7 @@ public class NorthIndianChartCanvas extends JComponent {
 	private HouseLayout fitPlanetHouse(int house, Rasi rasi, List<PlanetItem> planets,
 			Rectangle2D.Double signBounds, double signBaselineX, double signBaselineY, int baseFontSize) {
 		if (planets == null || planets.isEmpty()) {
-			Font f = new Font(Font.SANS_SERIF, Font.BOLD, baseFontSize);
+			Font f = app.astrosoft.ui.util.UIUtil.getFont(Font.SANS_SERIF, Font.BOLD, baseFontSize);
 			return new HouseLayout(house, rasi, signBounds, signBaselineX, signBaselineY,
 					f, Collections.<PlacedItem>emptyList(), true);
 		}

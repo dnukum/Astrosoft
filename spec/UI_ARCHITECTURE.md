@@ -187,24 +187,33 @@ font-family: Arial, 'Nirmala UI', 'Noto Sans Tamil', 'Tamil Sangam MN', Helvetic
 ```
 This guarantees that pasting or typing Tamil text into consultation notes renders without glyph tofu or font substitution errors on all supported OSes.
 
+### 5.4 Swing HTML & Plain Multi-Line Text Policy
+Swing's `BasicHTML` / `HTMLEditorKit` defaults to `Dialog` / `SansSerif` and ignores `JComponent.getFont()` inside `<table>`, `<td>`, or styled blocks unless explicitly configured. On Windows 11, `SansSerif` and `Verdana` lack Tamil glyph fallback, producing tofu boxes (`□□□`).
+
+1. **No HTML for Plain Multi-Line Text**: Never use `<html>...<br>...</html>` or `<html><table>...` solely for line wrapping, centering, or line breaks on `JLabel` or `JTable` cell renderers. Use `UIUtil.createWrappingTextArea(font, fg)` (`JTextArea` with `setLineWrap(true)` / `setWrapStyleWord(true)`), `TitleLabel` (supports `\n`), or stacked `JLabel`s so text renders directly via `UIUtil.getFont(...)`.
+2. **HTML Reserved for Rich Formatting**: Only use `<html>` when rich styling is genuinely required (mixed colors, bold/italic spans, structured cards, or rich notes).
+3. **Mandatory Font Binding on Rich HTML**: Prefer `UIUtil.createHtmlLabel(html, font)` and `UIUtil.createHtmlPane(html, font)`, which automatically enable `UIUtil.enableHtmlDisplayProperties(comp)`. Any manual `<html>` component (`JLabel`, `JEditorPane`, `JTextPane`, tooltips) must call `UIUtil.enableHtmlDisplayProperties(comp)` and inject `UIUtil.getHtmlFontFamily()` into its CSS/style (never hardcode `sans-serif` or `Verdana`). `UIUtil.syncHtmlDefaultStyleSheet()` keeps `HTMLEditorKit`'s shared default stylesheet aligned with the active language.
+
 ---
 
-## 6. Testing & Invariant Verification Plan
+## 6. 13 Legacy Screens Preservation Invariant
 
-Whenever touching UI components, layouts, dialogs, or themes, the following verification gates must pass:
+- **Zero Replacement Policy**: Modern UI enhancements must **never** replace, alias, hijack, or alter the 13 original full-screen legacy views. Modern features (`PlanetDetailsDialog`, `HouseDetailsDialog`, `AshtavargaDialog`, `TransitChartDialog`, `ChartNotesPanel`) are strictly modeless auxiliary inspection palettes (HUDs). They exist *in addition to*, never *in place of*, the legacy screens.
+- **Explicit 13-Screen Enumeration & Routing**: Menu items and toolbar buttons for the 13 screens must always instantiate and mount the original full-screen legacy component into the main container (`home`):
+  1. **Chart View** (`View.CHART_VIEW` &rarr; `HoroscopeDashboard`): `View -> Chart` / Toolbar `Chart`
+  2. **Vimshottari Dasa** (`View.DASAS_VIEW` &rarr; `VimDasaView`): `View -> Dasa` / Toolbar `Dasa`
+  3. **Planetary Position** (`View.PLANET_POS_VIEW` &rarr; `PlanetView`): `View -> Planetary Position` / Toolbar `Planet`
+  4. **House Position** (`View.BHAVA_POS_VIEW` &rarr; `BhavaView`): `View -> House Position` / Toolbar `House`
+  5. **Divisional Charts** (`View.DIV_CHART_VIEW` &rarr; `VargaChartView`): `View -> Divisional Charts` / Toolbar `Div Charts`
+  6. **Ashtakavarga** (`View.ASHTAVARGA_VIEW` &rarr; `AshtavargaView` with 8 tabs & 24 charts): `View -> Ashtavarga` / Toolbar `Ashtavarga`
+  7. **Shadbala** (`View.SHADBALA_VIEW` &rarr; `ShadBalaView` with 4 tabs): `View -> Shadbala` / Toolbar `Shadbala`
+  8. **Yoga Combinations** (`View.YOGA_COMBINATIONS_VIEW` &rarr; `YogaCombinationsView`): `View -> Yoga Combinations`
+  9. **Daily Ephemeris** (`View.EPHEMERIS_VIEW` &rarr; `EphemerisView`): `View -> Ephemeris` / Toolbar `Ephemeris`
+  10. **Panchang** (`View.PANCHANG_VIEW` &rarr; `PanchangView`): `View -> Panchang` / Toolbar `Panchang`
+  11. **Marriage Compatibility / Match** (`View.COMPATIBILITY_VIEW` / `View.MARRIAGE_MATCH_VIEW` &rarr; `CompatibilityView` / `MarriageMatchView`): `Compute -> Marriage Compatibility` / `Marriage Match`
+  12. **Muhurtha** (`View.MUHURTHA_VIEW` &rarr; `MuhurtaPanel`): `Compute -> Muhurtha`
+  13. **Find Name / Numerology** (`View.FIND_NAME_VIEW` &rarr; `FindNameView`): `Numerology -> Find Name`
 
-1. **Floating Lifecycle & Preferences Suite**:
-   ```bash
-   ant test -Dtestcase=app.astrosoft.ui.test.FloatingDialogsLifecycleTest
-   ```
-   Validates single-instance tracking, scope disposal, z-order modality, and dynamic refresh on Language and Lunar Node switches.
-2. **13 Legacy Screens Contract**:
-   ```bash
-   ./.agents/skills/astrosoft-regression-guardian/scripts/run_legacy_regression.sh
-   ```
-   Validates offscreen layout and rendering across all 13 original screens without `NullPointerException` or `HeadlessException`.
-3. **Full UI Smoke Suite**:
-   ```bash
-   ./.agents/skills/astrosoft-regression-guardian/scripts/run_ui_smoke.sh
-   ```
-   Must produce `SUCCESS: All UI smoke tests passed without regressions!` across all 7 test classes.
+## 7. Verification
+
+Whenever touching UI components, layouts, dialogs, fonts, or themes, run the verification runbooks defined in [astrosoft-regression-guardian/SKILL.md](file:///Users/mukunds100/Dev/Astrosoft2/.agents/skills/astrosoft-regression-guardian/SKILL.md).

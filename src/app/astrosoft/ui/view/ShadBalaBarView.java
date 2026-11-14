@@ -213,7 +213,7 @@ public class ShadBalaBarView extends JPanel {
 			String statusColor = item.balaPercent >= 100.0 ? "#006400" : "#B22222";
 
 			StringBuilder sb = new StringBuilder();
-			sb.append("<html><div style='padding:4px; font-family:Verdana,sans-serif; font-size:11px;'>");
+			sb.append("<html><div style='padding:4px; font-family:" + app.astrosoft.ui.util.UIUtil.getHtmlFontFamily() + "; font-size:11px;'>");
 			sb.append("<b style='color:#00008C; font-size:12px;'>").append(item.planet.name()).append("</b>");
 			sb.append("&nbsp;<span style='color:#800000;'>(").append(rankStr).append(")</span>");
 			sb.append("<hr style='border:0; border-top:1px solid #CCC; margin:4px 0;'>");
@@ -274,15 +274,15 @@ public class ShadBalaBarView extends JPanel {
 		g2.setStroke(origStroke);
 
 		// 100% marker label
-		g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 9));
+		g2.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 9));
 		g2.setColor(new Color(140, 120, 100));
 		String markStr = "100% Min";
 		FontMetrics fmMark = g2.getFontMetrics();
 		g2.drawString(markStr, x100 - fmMark.stringWidth(markStr) / 2, lineTop - 3);
 
 		// Fonts
-		Font labelFont = new Font(Font.SANS_SERIF, Font.BOLD, 11);
-		Font pctFont = new Font(Font.SANS_SERIF, Font.BOLD, 10);
+		Font labelFont = app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11);
+		Font pctFont = app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 10);
 		FontMetrics fmLabel = g2.getFontMetrics(labelFont);
 		FontMetrics fmPct = g2.getFontMetrics(pctFont);
 

@@ -26,7 +26,9 @@ public class ComputeNumberDialog extends AstrosoftDialog {
 	public ComputeNumberDialog(AstroSoft parent){
 		super(parent,DisplayStrings.COMPUTE_NUMBER_STR.toString(),dlgSize);
 		addComponents();
-		setVisible(true);
+		if (!java.awt.GraphicsEnvironment.isHeadless() && !Boolean.getBoolean("astrosoft.test.unattended")) {
+			setVisible(true);
+		}
 	}
 
 	private void addComponents() {
@@ -35,6 +37,7 @@ public class ComputeNumberDialog extends AstrosoftDialog {
 		dlgPanel.add(new ComputeNumberPanel(panelSize));
 		
 		JButton close = new JButton("Close");
+		close.setFont(app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.BOLD, 11));
 		close.addActionListener(closeListener);
 		
 		dlgPanel.add(close);

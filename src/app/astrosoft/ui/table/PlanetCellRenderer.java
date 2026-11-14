@@ -116,7 +116,10 @@ public class PlanetCellRenderer implements TableCellRenderer {
 				} else {
 					String text = p.toString(planetFormat);
 					if (text.length() > 0) {
-						l.setText("<html><u><b>" + text + "</b></u></html>");
+						l.setText(text);
+						java.util.Map<java.awt.font.TextAttribute, Object> attrs = new java.util.HashMap<>(l.getFont().getAttributes());
+						attrs.put(java.awt.font.TextAttribute.UNDERLINE, java.awt.font.TextAttribute.UNDERLINE_ON);
+						l.setFont(l.getFont().deriveFont(attrs));
 					}
 				}
 			} else {

@@ -38,9 +38,23 @@ public class LocalizedCellRenderer implements TableCellRenderer {
 		if (! (value instanceof Number || value instanceof Roman) ){
 			Font tblFont = (table != null) ? table.getFont() : null;
 			int targetSize = (tblFont != null) ? tblFont.getSize() : font.getSize();
-			Font resolved = UIUtil.getFont(font.getFontName(), font.getStyle(), targetSize, 14);
-			if (value != null && resolved.canDisplayUpTo(value.toString()) != -1) {
-				resolved = new Font(Font.SANS_SERIF, resolved.getStyle(), resolved.getSize());
+			Font resolved = UIUtil.getFont(font.getFontName(), font.getStyle(), targetSize, Math.max(targetSize, 12));
+			if (value != null) {
+				String str = (c instanceof javax.swing.JLabel && ((javax.swing.JLabel) c).getText() != null
+						&& !((javax.swing.JLabel) c).getText().isEmpty())
+						? ((javax.swing.JLabel) c).getText()
+						: value.toString();
+				boolean hasTamil = false;
+				for (int i = 0; i < str.length(); i++) {
+					char ch = str.charAt(i);
+					if (ch >= '\u0B80' && ch <= '\u0BFF') {
+						hasTamil = true;
+						break;
+					}
+				}
+				if (!hasTamil && resolved.canDisplayUpTo(str) != -1) {
+					resolved = new Font(Font.SANS_SERIF, resolved.getStyle(), resolved.getSize());
+				}
 			}
 			c.setFont(resolved);
 		}

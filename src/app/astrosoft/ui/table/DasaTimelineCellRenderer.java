@@ -42,8 +42,8 @@ public class DasaTimelineCellRenderer extends DefaultTableCellRenderer {
 	private final Font boldFont;
 
 	public DasaTimelineCellRenderer() {
-		this.regularFont = new Font("Verdana", Font.PLAIN, 11);
-		this.boldFont = new Font("Verdana", Font.BOLD, 11);
+		this.regularFont = app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11);
+		this.boldFont = app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.BOLD, 11);
 	}
 
 	@Override

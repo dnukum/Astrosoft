@@ -113,7 +113,7 @@ public class BirthDataPanel extends JPanel {
 		SpringUtilities.makeCompactGrid(namePanel, 1, 2, 0, 0, 1, 1);
 
 		Font labelFont = UIUtil.getFont();
-		if (labelFont == null) labelFont = new Font("SansSerif", Font.PLAIN, 12);
+		if (labelFont == null) labelFont = app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12);
 		Color textColor = UIConsts.getChartTheme().getPlanetForeground();
 		Border fieldBorder = BorderFactory.createCompoundBorder(
 			BorderFactory.createLineBorder(new Color(190, 195, 200), 1),

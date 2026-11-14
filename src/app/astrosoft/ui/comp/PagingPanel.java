@@ -57,6 +57,11 @@ public class PagingPanel<E extends TableRowData> extends JPanel {
 	private void addComponents() {
 		
 		setBackground(UIConsts.THEME_CLR);
+		java.awt.Font f = UIUtil.getFont(java.awt.Font.PLAIN, 11);
+		pageLabel.setFont(f);
+		showLabel.setFont(f);
+		pageCombo.setFont(f);
+		showCombo.setFont(f);
 		
 		for(int page:pages){
 			showCombo.addItem(page);

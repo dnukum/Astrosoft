@@ -43,6 +43,17 @@ This validates:
 6. `ModernBirthDataPanelTest` (Modern inputs and validation)
 7. `FloatingDialogsLifecycleTest` (Window z-order, dialog modality, and floating palette scopes)
 
+### 3. Run Localization & Rich-HTML Font Audit
+
+Whenever modifying Tamil/localized text, fonts, or rich-HTML components (`JLabel` / `JEditorPane` with `<html>`):
+
+```bash
+ant test -Dtestcase=app.astrosoft.ui.test.TamilFontSupportTest
+ant test -Dtestcase=app.astrosoft.ui.test.LocalizationAuditTest
+```
+
+Verifies resolved dual-script fonts, `UIUtil.getHtmlFontFamily()`, and ensures no localized `<html>` component omits `HONOR_DISPLAY_PROPERTIES` or explicit Tamil font binding.
+
 ---
 
 ## Detailed References
@@ -53,17 +64,14 @@ This validates:
 
 ---
 
-## Invariant Checklist
+## Verification Checklist
+
+> Architectural, modality, 13-screen, and HTML/font rules are owned by [spec/UI_ARCHITECTURE.md](../../../../spec/UI_ARCHITECTURE.md); global git, RCA-first, and `tests/` fixture rules are owned by [AGENTS.md](../../../../AGENTS.md).
 
 Before finalizing any UI changes, verify:
-- [ ] **Bug Investigation First**: Never start coding fixes immediately when an issue is reported; provide thorough RCA and obtain explicit user approval first.
+- [ ] Both `run_legacy_regression.sh` and `run_ui_smoke.sh` pass completely (`BUILD SUCCESSFUL`, zero failures).
+- [ ] If localized text, fonts, or rich-HTML components were touched, `TamilFontSupportTest` and `LocalizationAuditTest` pass with zero `HTML_FONT_BINDING_MISSING` issues.
 - [ ] No changes to the 8-tab structure or 3-chart layout of legacy `AshtavargaView`.
 - [ ] Shared cell renderers (`PlanetCellRenderer`, `AstrosoftTableCellRenderer`) do not force modern status badges into legacy views unless explicitly enabled.
 - [ ] Font size changes auto-scale or respect cell boundaries without clipping text into ellipses (`...`).
-- [ ] All modal dialogs inherit `AstrosoftDialog` (`ModalityType.APPLICATION_MODAL`, `alwaysOnTop=true`, `windowOpened` toFront/requestFocus hooks).
-- [ ] Confirmation and warning prompts route through `OptionDialog` (never raw `JOptionPane.show...`).
-- [ ] All file pickers use `FileOps.openFileDialog()` (guaranteeing `createDialog` sets `alwaysOnTop=true`).
-- [ ] Modeless inspection palettes (`PlanetDetails`, `HouseDetails`, `Ashtavarga`, `Chart Notes`) keep `alwaysOnTop=false` to avoid occluding modal popups.
-- [ ] All test input files (`.ash`, `.xml`, etc.) are anonymized (no personal names) and live inside `tests/` (never `samples/` or external user directories).
-- [ ] Any blocking modal `setVisible(true)` exercised by tests is guarded for `GraphicsEnvironment.isHeadless()` and `Boolean.getBoolean("astrosoft.test.unattended")` so `ant test` runs completely unattended.
-- [ ] Unattended/headless tests pass completely with `BUILD SUCCESSFUL` and zero failures.
+- [ ] `AstroSoft.viewChanged(view)` routing mounts the exact expected legacy class in `home` for all 13 legacy views.

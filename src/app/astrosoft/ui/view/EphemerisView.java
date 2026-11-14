@@ -44,9 +44,9 @@ import app.astrosoft.util.Internalization;
 
 public class EphemerisView extends AstrosoftView {
 
-	private static final Dimension viewSize = new Dimension(780, 480);
+	private static final Dimension viewSize = new Dimension(860, 500);
 	private static final Dimension dailyTableSize = new Dimension(viewSize.width, viewSize.height);
-	private static final Dimension monthyTableSize = new Dimension(viewSize.width, 310);
+	private static final Dimension monthyTableSize = new Dimension(viewSize.width, 330);
 	
 	private AstrosoftTable ephTable;
 	private AstrosoftTableModel tableModel;
@@ -90,13 +90,13 @@ public class EphemerisView extends AstrosoftView {
 	}
 	
 	private void setEphemerisColumnWidths() {
-		ephTable.setRowHeight(24);
+		ephTable.setRowHeight(26);
 		if (ephMode != null && ephMode.isMonthly()) {
-			ephTable.setColumnWidth(55, AstrosoftTableColumn.Month);
+			ephTable.setColumnWidth(60, AstrosoftTableColumn.Month);
 		} else {
-			ephTable.setColumnWidth(45, AstrosoftTableColumn.Date);
+			ephTable.setColumnWidth(50, AstrosoftTableColumn.Date);
 		}
-		ephTable.setColumnWidth(72,
+		ephTable.setColumnWidth(80,
 				AstrosoftTableColumn.Sun, AstrosoftTableColumn.Moon, AstrosoftTableColumn.Mars,
 				AstrosoftTableColumn.Mercury, AstrosoftTableColumn.Jupiter, AstrosoftTableColumn.Venus,
 				AstrosoftTableColumn.Saturn, AstrosoftTableColumn.Rahu, AstrosoftTableColumn.Ketu);

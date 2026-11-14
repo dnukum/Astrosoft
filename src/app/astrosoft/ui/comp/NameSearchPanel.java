@@ -25,7 +25,7 @@ import app.astrosoft.ui.util.UIConsts;
 
 public class NameSearchPanel extends NumeroNamePanel {
 
-	private static final Dimension comboSize = new Dimension(1,17);
+	private static final Dimension comboSize = new Dimension(1,22);
 	
 	private JComboBox op1 = new JComboBox(Operator.logical().toArray());
 	private JComboBox op2 = new JComboBox(Operator.logical().toArray());
@@ -36,6 +36,8 @@ public class NameSearchPanel extends NumeroNamePanel {
 		l_blank.setPreferredSize(comboSize);
 		op1.setPreferredSize(comboSize);
 		op2.setPreferredSize(comboSize);
+		op1.setFont(app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.PLAIN, 11));
+		op2.setFont(app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.PLAIN, 11));
 		addComponents();
 	}
 

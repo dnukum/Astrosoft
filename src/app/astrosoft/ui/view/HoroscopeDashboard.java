@@ -452,7 +452,7 @@ public class HoroscopeDashboard extends JPanel {
 		c.setSelected(selected);
 		c.setOpaque(false);
 		c.setFocusable(false);
-		c.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+		c.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
 		c.setForeground(UIConsts.getChartPlanetForeground());
 		return c;
 	}

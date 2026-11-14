@@ -108,11 +108,11 @@ public class PlaceSearchPanel extends JPanel {
 
         JLabel titleLabel = new JLabel("Place Search");
         titleLabel.setForeground(new Color(255, 255, 255, 215));
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        titleLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 13));
 
         JLabel subtitleLabel = new JLabel("Search by city, town or state");
         subtitleLabel.setForeground(Color.WHITE);
-        subtitleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+        subtitleLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 18));
 
         headerPanel.add(titleLabel);
         headerPanel.add(Box.createVerticalStrut(4));
@@ -129,7 +129,7 @@ public class PlaceSearchPanel extends JPanel {
         searchBar.setBackground(Color.WHITE);
 
         searchField = new JTextField();
-        searchField.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        searchField.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 14));
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200)),
                 BorderFactory.createEmptyBorder(6, 8, 6, 8)));
@@ -162,8 +162,8 @@ public class PlaceSearchPanel extends JPanel {
         resultsTable = new JTable(tableModel);
         resultsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         resultsTable.setRowHeight(24);
-        resultsTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-        resultsTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        resultsTable.getTableHeader().setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
+        resultsTable.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
         resultsTable.setSelectionBackground(primaryAccent);
         resultsTable.setSelectionForeground(Color.WHITE);
 
@@ -198,7 +198,7 @@ public class PlaceSearchPanel extends JPanel {
 
         // Status Label
         statusLabel = new JLabel("Enter a city name and click Search");
-        statusLabel.setFont(new Font("SansSerif", Font.ITALIC, 11));
+        statusLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.ITALIC, 11));
         statusLabel.setForeground(Color.GRAY);
         centerPanel.add(statusLabel, BorderLayout.SOUTH);
 

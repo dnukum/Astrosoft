@@ -457,7 +457,7 @@ public class AshtavargaView extends AstrosoftView {
 				};
 
 				btn.setName("PillTab_" + tabs[i]);
-				btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+				btn.setFont(UIUtil.getFont(Font.BOLD, 10));
 				btn.setMargin(new java.awt.Insets(0, 0, 0, 0));
 				btn.setFocusPainted(false);
 				btn.setBorderPainted(false);
@@ -604,7 +604,7 @@ public class AshtavargaView extends AstrosoftView {
 				};
 
 				btn.setName("PrastharaTarget_" + TARGET_CODES[i]);
-				btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+				btn.setFont(UIUtil.getFont(Font.BOLD, 11));
 				btn.setFocusPainted(false);
 				btn.setBorderPainted(false);
 				btn.setContentAreaFilled(false);
@@ -619,7 +619,7 @@ public class AshtavargaView extends AstrosoftView {
 
 			summaryBadgeLabel = new JLabel();
 			summaryBadgeLabel.setName("PrastharaSummaryBadge");
-			summaryBadgeLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+			summaryBadgeLabel.setFont(UIUtil.getFont(Font.BOLD, 11));
 			summaryBadgeLabel.setForeground(UIConsts.TEXT_DARK_NAVY);
 
 			topBar.add(stripPanel, BorderLayout.WEST);
@@ -1080,7 +1080,8 @@ public class AshtavargaView extends AstrosoftView {
 		
 		AstrosoftTabbedPane tabbedPane = new AstrosoftTabbedPane(tabbedPaneSize);
 		Font font = UIUtil.getFont(Font.BOLD, 12, Font.BOLD, 10);
-		tabbedPane.setFont(font);
+		Font tabFont = UIUtil.getFont(Font.BOLD, 12, Font.BOLD, 9);
+		tabbedPane.setFont(tabFont);
 		
 		for (AshtavargaName name : AshtavargaName.ashtavargas()) {
 		

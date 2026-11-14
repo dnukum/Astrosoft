@@ -106,7 +106,7 @@ public class MuhurtaConfigDialog extends AstrosoftDialog {
         inputPanel.setBackground(UIConsts.THEME_CLR);
         
         Font labelFont = UIUtil.getFont();
-        if (labelFont == null) labelFont = new Font("SansSerif", Font.PLAIN, 12);
+        if (labelFont == null) labelFont = app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12);
         Font boldFont = labelFont.deriveFont(Font.BOLD);
         Color textColor = UIConsts.getChartTheme().getPlanetForeground();
         Border fieldBorder = BorderFactory.createCompoundBorder(

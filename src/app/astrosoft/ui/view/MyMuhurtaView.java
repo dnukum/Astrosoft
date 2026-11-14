@@ -415,43 +415,40 @@ public class MyMuhurtaView extends AstrosoftView {
         }
 
         if (key != null && key.equals("Time")) {
-            s = s.replace(",", "<br>");
+            s = s.replace(",", "\n");
         } else if (key != null && (key.contains(DisplayStrings.AUS_TIME_STR.toString())
                 || key.contains("Auspicious Time") || key.contains("Subha Hora"))) {
-            s = s.replace(", ", "<br>").replace(",", "<br>");
+            s = s.replace(", ", "\n").replace(",", "\n");
         } else {
             if (s.contains(" → ")) {
-                s = s.replace(" → ", " →<br>");
+                s = s.replace(" → ", " →\n");
             } else if (s.contains(" -> ")) {
-                s = s.replace(" -> ", " →<br>");
+                s = s.replace(" -> ", " →\n");
             }
 
             if (s.contains(" – ")) {
-                s = s.replace(" – ", " –<br>");
+                s = s.replace(" – ", " –\n");
             } else if (s.contains(" - ") && key != null && (key.contains("Muhurta") || key.contains("Brahma") || key.contains("Abhijit"))) {
-                s = s.replace(" - ", " –<br>");
+                s = s.replace(" - ", " –\n");
             }
 
             if (key != null && key.equals("Location")) {
                 if (s.length() > 25 && s.contains(",")) {
                     String[] parts = s.split(",\\s*");
                     if (parts.length == 2) {
-                        s = parts[0] + ",<br>" + parts[1];
+                        s = parts[0] + ",\n" + parts[1];
                     } else if (parts.length >= 3) {
                         if ((parts[1] + ", " + parts[2]).length() <= 28) {
-                            s = parts[0] + ",<br>" + parts[1] + ", " + parts[2];
+                            s = parts[0] + ",\n" + parts[1] + ", " + parts[2];
                         } else {
-                            s = parts[0] + ",<br>" + parts[1] + ",<br>" + parts[2];
+                            s = parts[0] + ",\n" + parts[1] + ",\n" + parts[2];
                         }
                     }
                 }
             }
         }
 
-        if (s.contains("<br>") || s.length() > 28) {
-            return "<html><table cellpadding=\"0\" cellspacing=\"0\" width=\"" + width + "\"><tr><td>" + s + "</td></tr></table></html>";
-        }
-        return value;
+        return s;
     }
 
     private Dimension computeEffectiveChartSize(int splitDividerLoc) {
@@ -493,7 +490,7 @@ public class MyMuhurtaView extends AstrosoftView {
             muhurta.getEventHoroscope().getPlanetaryInfo()) {
             public String getChartName() {
                 boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
-                return isTamil ? "<html><center>முகூர்த்த<br>ராசி</center></html>" : "<html><center>Muhurta<br>Rasi</center></html>";
+                return isTamil ? "முகூர்த்த\nராசி" : "Muhurta\nRasi";
             }
         }, currentChartDim);
         chartsPanel.add(muhurtaRasiChart);
@@ -540,7 +537,7 @@ public class MyMuhurtaView extends AstrosoftView {
         if (person == null) return;
         chartsPanel.add(new Chart(new PlanetChartData(Varga.Rasi, person.getPlanetaryInfo()) {
             public String getChartName() {
-                return "<html><center>" + role + "<br>Rasi</center></html>";
+                return role + "\nRasi";
             }
         }, currentChartDim));
     }
@@ -578,7 +575,7 @@ public class MyMuhurtaView extends AstrosoftView {
             ? "Change Horoscope File (.ash)..."
             : "Browse Horoscope File (.ash)...";
         JMenuItem browseItem = new JMenuItem(browseText);
-        browseItem.setFont(new Font("Verdana", Font.PLAIN, 12));
+        browseItem.setFont(UIUtil.getFont("Verdana", Font.PLAIN, 12));
         browseItem.addActionListener(e -> browsePersonHoroscope(person1));
         menu.add(browseItem);
 
@@ -587,7 +584,7 @@ public class MyMuhurtaView extends AstrosoftView {
             ? "Edit Star Details..."
             : "Quick Star Entry (Rasi & Nakshatra)...";
         JMenuItem starItem = new JMenuItem(starText);
-        starItem.setFont(new Font("Verdana", Font.PLAIN, 12));
+        starItem.setFont(UIUtil.getFont("Verdana", Font.PLAIN, 12));
         starItem.addActionListener(e -> openStarEntryDialog(person1));
         menu.add(starItem);
 
@@ -598,7 +595,7 @@ public class MyMuhurtaView extends AstrosoftView {
                 ? current.getName()
                 : role;
             JMenuItem clearItem = new JMenuItem("Clear Profile (" + profileName + ")");
-            clearItem.setFont(new Font("Verdana", Font.PLAIN, 12));
+            clearItem.setFont(UIUtil.getFont("Verdana", Font.PLAIN, 12));
             clearItem.setForeground(new Color(180, 40, 40));
             clearItem.addActionListener(e -> applyPersonProfile(person1, null));
             menu.add(clearItem);
@@ -708,21 +705,35 @@ public class MyMuhurtaView extends AstrosoftView {
         final java.awt.Font valFont = UIUtil.getFont(java.awt.Font.PLAIN, 11);
 
         table = new AstrosoftTable(tableModel, TableStyle.GRID) {
-            TableCellRenderer multiLineRenderer = new DefaultTableCellRenderer() {
+            final javax.swing.JTextArea multiLineArea = UIUtil.createWrappingTextArea(valFont, null);
+            {
+                multiLineArea.setOpaque(true);
+                multiLineArea.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
+            }
+            TableCellRenderer multiLineRenderer = new TableCellRenderer() {
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value,
                         boolean isSelected, boolean hasFocus, int row, int column) {
-                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                    setFont(valFont);
+                    multiLineArea.setFont(valFont);
+                    if (isSelected) {
+                        multiLineArea.setBackground(table.getSelectionBackground());
+                        multiLineArea.setForeground(table.getSelectionForeground());
+                    } else {
+                        multiLineArea.setBackground(table.getBackground());
+                        multiLineArea.setForeground(table.getForeground());
+                    }
                     Object keyVal = table.getValueAt(row, 0);
                     String key = keyVal != null ? keyVal.toString() : "";
                     String valStr = value != null ? value.toString() : "";
-                    String formatted = formatMultiLineValue(key, valStr, ValueColWidth - 18);
+                    int colW = table.getColumnModel().getColumn(column).getWidth();
+                    if (colW <= 0) colW = ValueColWidth;
+                    String formatted = formatMultiLineValue(key, valStr, Math.max(80, colW - 18));
                     if (!valFont.canDisplay('\u2192') && formatted.indexOf('\u2192') >= 0) {
                         formatted = formatted.replace("\u2192", "->");
                     }
-                    setText(formatted);
-                    return this;
+                    multiLineArea.setText(formatted);
+                    multiLineArea.setSize(colW, Short.MAX_VALUE);
+                    return multiLineArea;
                 }
             };
 

@@ -35,6 +35,7 @@ public class PlaceOptionDialog extends AstrosoftDialog {
 	     
 	     initComponents();
 	     //t.printAndReset();
+	     okButton.setFont(UIUtil.getFont(java.awt.Font.BOLD, 11));
 	     okButton.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
@@ -42,7 +43,9 @@ public class PlaceOptionDialog extends AstrosoftDialog {
 			}
 	     });
 	     //t.printAndReset();
-	     setVisible(true);
+	     if (!java.awt.GraphicsEnvironment.isHeadless() && !Boolean.getBoolean("astrosoft.test.unattended")) {
+	         setVisible(true);
+	     }
 	     //t.printAndReset();
 	}
 

@@ -52,13 +52,13 @@ public class DiagnosticsDialog extends AstrosoftDialog {
         headerPanel.setOpaque(false);
 
         JLabel titleLabel = new JLabel("System Diagnostics & Troubleshooting");
-        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+        titleLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 15));
         titleLabel.setForeground(UIConsts.DARK_BLUE);
         titleLabel.setAlignmentX(0.0f);
 
         File logFile = SystemDiagnostics.getLogFile();
         JLabel subLabel = new JLabel("Log File: " + logFile.getAbsolutePath());
-        subLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        subLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 11));
         subLabel.setForeground(new Color(90, 90, 90));
         subLabel.setAlignmentX(0.0f);
 
@@ -90,7 +90,7 @@ public class DiagnosticsDialog extends AstrosoftDialog {
         bottomBar.setOpaque(false);
 
         statusLabel = new JLabel(" ");
-        statusLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        statusLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
         statusLabel.setForeground(new Color(34, 139, 34)); // Forest green
         bottomBar.add(statusLabel, BorderLayout.WEST);
 

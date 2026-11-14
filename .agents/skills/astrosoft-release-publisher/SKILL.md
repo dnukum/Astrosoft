@@ -57,11 +57,12 @@ This triggers the GitHub Actions pipeline ([.github/workflows/release.yml](../..
 
 ---
 
-## Mandatory Release Invariant Checklist
+## Release Verification Checklist
+
+> Git commit/push approval rules are owned by [AGENTS.md](../../../../AGENTS.md).
 
 Before pushing any commits or tags to `origin/master`, verify:
 - [ ] **Pre-Flight Verified**: `./.agents/skills/astrosoft-release-publisher/scripts/verify_and_package.sh` passes completely with zero errors.
-- [ ] **Bytecode Freshness**: `bin/AstroSoft.jar` is rebuilt from current `src/` and committed to git.
+- [ ] **Bytecode Freshness**: `bin/AstroSoft.jar` is rebuilt from current `src/` and included in the approved commit.
 - [ ] **Version Parity**: `unzip -p bin/AstroSoft.jar resources/version.properties` matches `resources/version.properties`.
-- [ ] **Prior User Approval**: Explicit approval has been granted by the user before running any remote `git push`.
-- [ ] **Release Retention**: When tagging releases, only the last 2 versions exist on GitHub (enforced by release CI).
+- [ ] **Release Retention**: When tagging releases, only the last 2 versions exist on GitHub (enforced by `.github/workflows/release.yml`).

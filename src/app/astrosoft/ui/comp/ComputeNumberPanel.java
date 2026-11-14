@@ -16,7 +16,7 @@ import app.astrosoft.ui.util.SpringUtilities;
 
 public class ComputeNumberPanel extends NumeroNamePanel{
 	
-	private static final Dimension labelSize = new Dimension(110,15);
+	private static final Dimension labelSize = new Dimension(130,22);
 
 	public ComputeNumberPanel(Dimension size){
 		super(null);

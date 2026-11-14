@@ -18,7 +18,7 @@ public class DegreeCellRenderer extends DefaultTableCellRenderer {
 	public DegreeCellRenderer() {
 		super();
 		setHorizontalAlignment(JLabel.CENTER);
-		setFont(new Font("Verdana", Font.PLAIN, 10));
+		setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 10));
 	}
 
 	@Override

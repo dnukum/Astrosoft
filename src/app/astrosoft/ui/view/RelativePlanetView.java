@@ -224,7 +224,7 @@ public class RelativePlanetView extends JPanel {
 				g2.dispose();
 			}
 		};
-		resizeBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+		resizeBtn.setFont(UIUtil.getFont(Font.BOLD, 10));
 		resizeBtn.setFocusPainted(false);
 		resizeBtn.setBorderPainted(false);
 		resizeBtn.setContentAreaFilled(false);
@@ -258,7 +258,7 @@ public class RelativePlanetView extends JPanel {
 				g2.dispose();
 			}
 		};
-		popoutBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+		popoutBtn.setFont(UIUtil.getFont(Font.BOLD, 10));
 		popoutBtn.setFocusPainted(false);
 		popoutBtn.setBorderPainted(false);
 		popoutBtn.setContentAreaFilled(false);
@@ -708,6 +708,11 @@ public class RelativePlanetView extends JPanel {
 		natureLabels.add(nLabel);
 		natureLabels.add(mLabel);
 
+		for (JLabel lbl : natureLabels) {
+			UIUtil.enableHtmlDisplayProperties(lbl);
+			lbl.setFont(lineFont);
+		}
+
 		rightNatureLines = new JPanel(new GridLayout(3, 1, 0, 2));
 		rightNatureLines.setOpaque(false);
 		rightNatureLines.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 2, 2));
@@ -891,7 +896,7 @@ public class RelativePlanetView extends JPanel {
 				String statusColor = item.balaPercent >= 100.0 ? "#006400" : "#B22222";
 
 				StringBuilder sb = new StringBuilder();
-				sb.append("<html><div style='padding:4px; font-family:Verdana,sans-serif; font-size:11px;'>");
+				sb.append("<html><div style='padding:4px; font-family:" + UIUtil.getHtmlFontFamily() + "; font-size:11px;'>");
 				sb.append("<b style='color:#00008C; font-size:12px;'>").append(item.planet.name()).append("</b>");
 				sb.append("&nbsp;<span style='color:#800000;'>(").append(rankStr).append(")</span>");
 				sb.append("<hr style='border:0; border-top:1px solid #CCC; margin:4px 0;'>");
@@ -913,7 +918,7 @@ public class RelativePlanetView extends JPanel {
 			super.paintComponent(g);
 			if (items.isEmpty()) {
 				g.setColor(Color.GRAY);
-				g.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 11));
+				g.setFont(UIUtil.getFont(Font.ITALIC, 11));
 				g.drawString("Shadbala data calculated when chart is loaded", 130, 70);
 				return;
 			}
@@ -940,14 +945,14 @@ public class RelativePlanetView extends JPanel {
 			g2.setStroke(origStroke);
 
 			// 100% Min marker label
-			g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 9));
+			g2.setFont(UIUtil.getFont(Font.PLAIN, 9));
 			g2.setColor(new Color(140, 120, 100));
 			String markStr = "100% Min";
 			FontMetrics fmMark = g2.getFontMetrics();
 			g2.drawString(markStr, x100 - fmMark.stringWidth(markStr) / 2, lineTop - 2);
 
-			Font labelFont = new Font(Font.SANS_SERIF, Font.BOLD, 10);
-			Font pctFont = new Font(Font.SANS_SERIF, Font.BOLD, 10);
+			Font labelFont = UIUtil.getFont(Font.BOLD, 10);
+			Font pctFont = UIUtil.getFont(Font.BOLD, 10);
 			FontMetrics fmLabel = g2.getFontMetrics(labelFont);
 
 			for (int i = 0; i < items.size(); i++) {
@@ -1295,7 +1300,7 @@ public class RelativePlanetView extends JPanel {
 					}
 				};
 
-				btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+				btn.setFont(UIUtil.getFont(Font.BOLD, 10));
 				btn.setMargin(new java.awt.Insets(0, 0, 0, 0));
 				btn.setFocusPainted(false);
 				btn.setBorderPainted(false);

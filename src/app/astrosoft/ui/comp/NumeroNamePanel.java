@@ -32,8 +32,8 @@ public abstract class NumeroNamePanel extends JPanel {
 
 	private static final Color numColor = Color.RED;
 	
-	protected static final Dimension textSize = new Dimension(50,17);
-	protected static final Dimension numSize = new Dimension(20,17);
+	protected static final Dimension textSize = new Dimension(50,22);
+	protected static final Dimension numSize = new Dimension(20,22);
 	
 	protected JLabel l_blank = new JLabel(" ");
 	protected JLabel l_name = new JLabel(DisplayStrings.NAME_STR.toString());// + "                        ");
@@ -63,6 +63,14 @@ public abstract class NumeroNamePanel extends JPanel {
 	public NumeroNamePanel(final ActionListener l){
 	
 		setSizes();
+		java.awt.Font font = app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.PLAIN, 11);
+		l_blank.setFont(font);
+		l_name.setFont(font);
+		l_numeroVal.setFont(font);
+		l_numeroNum.setFont(font);
+		name.setFont(font);
+		numeroVal.setFont(font);
+		numeroNum.setFont(font);
 		numeroNum.setForeground(numColor);
 		numeroVal.setForeground(numColor);
 		
@@ -71,6 +79,7 @@ public abstract class NumeroNamePanel extends JPanel {
 		if(title != null){
 			
 			button = new JButton(title);
+			button.setFont(app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.BOLD, 11));
 			
 			if (l != null) {
 				button.addActionListener(new ActionListener(){

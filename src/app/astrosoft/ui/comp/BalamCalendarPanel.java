@@ -160,7 +160,7 @@ public class BalamCalendarPanel extends JPanel {
         btn.setForeground(NAVY_TEXT);
         btn.setFocusPainted(false);
         btn.setMargin(new Insets(2, 6, 2, 6));
-        btn.setFont(new Font("SansSerif", Font.BOLD, 11));
+        btn.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
         btn.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(BTN_BORDER, 1),
             BorderFactory.createEmptyBorder(3, 8, 3, 8)
@@ -182,7 +182,7 @@ public class BalamCalendarPanel extends JPanel {
         styleActionBtn(prevBtn);
         styleActionBtn(nextBtn);
         monthLabel = new JLabel("");
-        monthLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        monthLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 16));
         monthLabel.setForeground(NAVY_TEXT);
         monthLabel.setPreferredSize(new Dimension(150, 30));
         monthLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -239,7 +239,7 @@ public class BalamCalendarPanel extends JPanel {
         scrollPane.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, SUB_BORDER_CLR));
         scrollPane.getViewport().setBackground(Color.WHITE);
 
-        Font detailFont = new Font("SansSerif", Font.PLAIN, 11);
+        Font detailFont = app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 11);
 
         leftDetailsPane = new JEditorPane("text/html", EMPTY_DETAILS) {
             @Override
@@ -263,7 +263,7 @@ public class BalamCalendarPanel extends JPanel {
         ));
 
         JLabel horaLabel = new JLabel("Subha Hora:");
-        horaLabel.setFont(new Font("SansSerif", Font.BOLD, 11));
+        horaLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
         horaLabel.setForeground(NAVY_TEXT);
 
         horaCombo = new JComboBox<HoraItem>();
@@ -478,7 +478,7 @@ public class BalamCalendarPanel extends JPanel {
         if (table.getTableHeader() != null) {
             table.getTableHeader().setBackground(TBL_HEADER_BG);
             table.getTableHeader().setForeground(NAVY_TEXT);
-            table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 11));
+            table.getTableHeader().setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
         }
 
         // GRID style disables selection rendering; re-enable it so the clicked row is highlighted.
@@ -677,7 +677,7 @@ public class BalamCalendarPanel extends JPanel {
     /** Presentation only: formats a completed immutable Core result. */
     private static String buildDetailsHtml(app.astrosoft.beans.BalamWindowDetails details,
             app.astrosoft.consts.Nakshathra nak, app.astrosoft.consts.Rasi rasi) {
-        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; padding:8px;'><table width='100%' cellpadding='8'><tr><td width='57%' valign='top'>");
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:" + app.astrosoft.ui.util.UIUtil.getHtmlFontFamily() + "; padding:8px;'><table width='100%' cellpadding='8'><tr><td width='57%' valign='top'>");
         java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a z", java.util.Locale.ENGLISH);
         dateFormat.setTimeZone(details.getTimeZone());
         sb.append("<div style='margin:0 0 6px 0;'><b>Start:</b> ")
@@ -784,7 +784,7 @@ public class BalamCalendarPanel extends JPanel {
 
     private static String buildLeftDetailsHtml(app.astrosoft.beans.BalamWindowDetails details,
             app.astrosoft.consts.Nakshathra nak, app.astrosoft.consts.Rasi rasi) {
-        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; color:#1f2933; padding:2px 6px;'>");
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:" + app.astrosoft.ui.util.UIUtil.getHtmlFontFamily() + "; color:#1f2933; padding:2px 6px;'>");
         java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a z", java.util.Locale.ENGLISH);
         dateFormat.setTimeZone(details.getTimeZone());
         sb.append("<div style='margin-bottom:3px;'><b style='color:#0a3d62;'>Start:</b> ")
@@ -882,7 +882,7 @@ public class BalamCalendarPanel extends JPanel {
     }
 
     private static String buildRightDetailsHtml(app.astrosoft.beans.BalamWindowDetails details) {
-        StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; color:#1f2933; padding:2px 6px;'>");
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:" + app.astrosoft.ui.util.UIUtil.getHtmlFontFamily() + "; color:#1f2933; padding:2px 6px;'>");
         java.util.List<app.astrosoft.core.MuhurtaWindowsCalculator.Window> subhaHoras = new java.util.ArrayList<>();
         for (app.astrosoft.core.MuhurtaWindowsCalculator.Window window : details.getTimingWindows()) {
             if ("Subha Hora".equals(window.kind)) subhaHoras.add(window);

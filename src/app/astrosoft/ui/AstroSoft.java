@@ -612,6 +612,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		for(Object key : defaults.keySet()){
 			UIManager.put(key, defaults.get(key));
 		}
+		UIUtil.syncHtmlDefaultStyleSheet();
 	}
 
 	private app.astrosoft.ui.view.HoroscopeDashboard currentDashboard;
@@ -1598,6 +1599,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	private void optionLangChanged(String lang) {
+		UIUtil.syncHtmlDefaultStyleSheet();
 
 		if (pan != null) {
 			pan = new Panchang(pan.getDate());

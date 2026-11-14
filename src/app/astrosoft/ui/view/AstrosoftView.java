@@ -21,7 +21,6 @@ public abstract class AstrosoftView extends JPanel {
 	protected Dimension viewSize;
 	private int headerHeight = 50;
 	private static Point defaultLoc =  new Point(100, 20);
-	private static Font titleFont =  new Font("Verdana", Font.BOLD, 16);
 	
 	public AstrosoftView(String title, Dimension viewSize) {
 		this(title, viewSize, defaultLoc);
@@ -31,7 +30,7 @@ public abstract class AstrosoftView extends JPanel {
 		this(viewSize, loc);
 		JPanel header = new JPanel();
 		JLabel label = new TitleLabel(title);
-		label.setFont(titleFont);
+		label.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.BOLD, 16));
 		header.add(label);
 		header.setPreferredSize(new Dimension(viewSize.width, headerHeight));
 		add(header, BorderLayout.PAGE_START);

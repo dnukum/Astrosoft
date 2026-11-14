@@ -58,6 +58,10 @@ public class MuhurthaInput extends AstrosoftDialog {
         chandraFilter = new JCheckBox(DisplayStrings.FILTER_BY_CHANDRA_STR.toString(), true);
         nakFilter = new JCheckBox(DisplayStrings.FILTER_BY_MUHURTHA_STR.toString());
         okButton = new JButton("Ok");
+        java.awt.Font f = app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.PLAIN, 11);
+        chandraFilter.setFont(f);
+        nakFilter.setFont(f);
+        okButton.setFont(app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.BOLD, 11));
         filterPanel.setBorder(UIConsts.getTitleBorder(DisplayStrings.FILTER_STR.toString()));
         okButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){

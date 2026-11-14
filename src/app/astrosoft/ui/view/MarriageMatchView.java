@@ -90,11 +90,8 @@ public class MarriageMatchView extends AstrosoftView {
 
 	private static final Dimension VIEW_SIZE = new Dimension(1450, 850);
 
-	private static final Font TITLE_FONT = new Font("Verdana", Font.BOLD, 13);
-	private static final Font LABEL_FONT = new Font("Verdana", Font.BOLD, 11);
-	private static final Font VALUE_FONT = new Font("Verdana", Font.PLAIN, 11);
-	private static final Font BADGE_FONT = new Font("Verdana", Font.BOLD, 12);
-	private static final Font SECTION_FONT = new Font("Verdana", Font.BOLD, 12);
+	private static Font titleFont() { return UIUtil.getFont("Verdana", Font.BOLD, 13); }
+	private static Font labelFont() { return UIUtil.getFont("Verdana", Font.BOLD, 11); }
 
 	private static final Color CARD_BORDER_COLOR = new Color(210, 180, 120);
 	private static final Color CARD_BG = new Color(253, 251, 247);
@@ -199,14 +196,14 @@ public class MarriageMatchView extends AstrosoftView {
 			shadbalaRadio.setSelected(false);
 			shadbalaRadio.setOpaque(false);
 			shadbalaRadio.setFocusable(false);
-			shadbalaRadio.setFont(new Font("Verdana", Font.PLAIN, 11));
+			shadbalaRadio.setFont(UIUtil.getFont("Verdana", Font.PLAIN, 11));
 			shadbalaRadio.setForeground(UIConsts.DARK_BLUE);
 
 			timelineRadio = new JRadioButton("Dasa Timeline");
 			timelineRadio.setSelected(false);
 			timelineRadio.setOpaque(false);
 			timelineRadio.setFocusable(false);
-			timelineRadio.setFont(new Font("Verdana", Font.PLAIN, 11));
+			timelineRadio.setFont(UIUtil.getFont("Verdana", Font.PLAIN, 11));
 			timelineRadio.setForeground(UIConsts.DARK_BLUE);
 
 			shadbalaCheck = new JCheckBox("Shadbala");
@@ -361,20 +358,20 @@ public class MarriageMatchView extends AstrosoftView {
 		gbc.fill = GridBagConstraints.NONE;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		JLabel lbl = new JLabel(label);
-		lbl.setFont(LABEL_FONT);
+		lbl.setFont(labelFont());
 		lbl.setForeground(new Color(80, 70, 60));
 		panel.add(lbl, gbc);
 
-		// Value (Column 1): anchor NORTHWEST, fills horizontally, wraps with HTML div width
+		// Value (Column 1): anchor NORTHWEST, fills horizontally, wraps natively via JTextArea
 		gbc.gridx = 1;
 		gbc.weightx = 1.0;
 		gbc.weighty = 0.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		String valText = (value != null && !value.trim().isEmpty()) ? value : "-";
-		JLabel val = new JLabel("<html><div width=\"115\">" + valText + "</div></html>");
-		val.setFont(VALUE_FONT);
-		val.setForeground(UIConsts.DARK_BLUE);
+		javax.swing.JTextArea val = UIUtil.createWrappingTextArea(
+				UIUtil.getFont("Verdana", Font.PLAIN, 11), UIConsts.DARK_BLUE);
+		val.setText(valText);
 		panel.add(val, gbc);
 	}
 
@@ -411,7 +408,7 @@ public class MarriageMatchView extends AstrosoftView {
 
 		String bannerText = "Total Points: " + totalGained + " / " + maxTotal + " (" + PCT_FMT.format(pct) + ")";
 		JLabel scoreLbl = new JLabel(bannerText, SwingConstants.CENTER);
-		scoreLbl.setFont(new Font("Verdana", Font.BOLD, 13));
+		scoreLbl.setFont(UIUtil.getFont("Verdana", Font.BOLD, 13));
 		scoreLbl.setForeground(UIConsts.DARK_BLUE);
 		banner.add(scoreLbl, BorderLayout.CENTER);
 		banner.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
@@ -489,8 +486,8 @@ public class MarriageMatchView extends AstrosoftView {
 		footer.setOpaque(false);
 		footer.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 2));
 
-		JLabel noteLbl = new JLabel("<html><center>" + comparison + "</center></html>", SwingConstants.CENTER);
-		noteLbl.setFont(new Font("Verdana", Font.BOLD, 10));
+		JLabel noteLbl = new JLabel(comparison, SwingConstants.CENTER);
+		noteLbl.setFont(UIUtil.getFont("Verdana", Font.BOLD, 10));
 		noteLbl.setForeground(UIConsts.DARK_BLUE);
 		footer.add(noteLbl, BorderLayout.CENTER);
 		footer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 26));
@@ -605,22 +602,22 @@ public class MarriageMatchView extends AstrosoftView {
 
 		JLabel msg1 = new JLabel("Quick Star / Rasi Entry Mode", SwingConstants.CENTER);
 		msg1.setAlignmentX(Component.CENTER_ALIGNMENT);
-		msg1.setFont(new Font("Verdana", Font.BOLD, 14));
+		msg1.setFont(UIUtil.getFont("Verdana", Font.BOLD, 14));
 		msg1.setForeground(UIConsts.DARK_BLUE);
 
 		JLabel msg2 = new JLabel("Divisional Charts, Shadbala Strength, and Papa Samya Dosha", SwingConstants.CENTER);
 		msg2.setAlignmentX(Component.CENTER_ALIGNMENT);
-		msg2.setFont(LABEL_FONT);
+		msg2.setFont(labelFont());
 		msg2.setForeground(new Color(90, 80, 70));
 
 		JLabel msg3 = new JLabel("require exact birth date, time, and geographical coordinates.", SwingConstants.CENTER);
 		msg3.setAlignmentX(Component.CENTER_ALIGNMENT);
-		msg3.setFont(LABEL_FONT);
+		msg3.setFont(labelFont());
 		msg3.setForeground(new Color(90, 80, 70));
 
 		JLabel msg4 = new JLabel("To view full charts and strength bars, compute using 'Horoscope' tab.", SwingConstants.CENTER);
 		msg4.setAlignmentX(Component.CENTER_ALIGNMENT);
-		msg4.setFont(new Font("Verdana", Font.ITALIC, 11));
+		msg4.setFont(UIUtil.getFont("Verdana", Font.ITALIC, 11));
 		msg4.setForeground(new Color(130, 110, 80));
 
 		msgPanel.add(msg1);
@@ -774,7 +771,7 @@ public class MarriageMatchView extends AstrosoftView {
 
 	private Border createCardBorder(String title) {
 		Border line = BorderFactory.createLineBorder(CARD_BORDER_COLOR, 1);
-		Border titled = BorderFactory.createTitledBorder(line, " " + title + " ", TitledBorder.LEFT, TitledBorder.TOP, TITLE_FONT, UIConsts.DARK_BLUE);
+		Border titled = BorderFactory.createTitledBorder(line, " " + title + " ", TitledBorder.LEFT, TitledBorder.TOP, titleFont(), UIConsts.DARK_BLUE);
 		Border padding = BorderFactory.createEmptyBorder(6, 6, 6, 6);
 		return BorderFactory.createCompoundBorder(titled, padding);
 	}

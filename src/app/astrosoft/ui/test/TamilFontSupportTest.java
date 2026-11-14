@@ -328,4 +328,30 @@ public class TamilFontSupportTest {
         java.io.File logFile = new java.io.File("logs/missing_translations.log");
         assertTrue("missing_translations.log must exist after missing key lookup", logFile.exists());
     }
+
+    @Test
+    public void testHtmlFontFamilyAndMyMuhurtaMultiLineTamilFormatting() {
+        try {
+            AstroSoft.getPreferences().setLanguage(Language.TAMIL);
+            String tamilFont = UIUtil.getTamilFontName();
+            String htmlFontFamily = UIUtil.getHtmlFontFamily();
+            assertNotNull(htmlFontFamily);
+            assertTrue("HTML font-family must include resolved Tamil font '" + tamilFont + "', got: " + htmlFontFamily,
+                    htmlFontFamily.contains(tamilFont));
+
+            String multiLineInput = "திருவாதிரை until 08:24 PM -> புனர்பூசம்";
+            String formatted = app.astrosoft.ui.view.MyMuhurtaView.formatMultiLineValue("Nakshatra", multiLineInput, 220);
+            assertFalse("Plain multi-line value must not wrap in <html>", formatted.contains("<html>"));
+            assertTrue("Formatted value must preserve newline break",
+                    formatted.contains("திருவாதிரை until 08:24 PM →\nபுனர்பூசம்"));
+
+            AstroSoft.getPreferences().setLanguage(Language.ENGLISH);
+            String enFontFamily = UIUtil.getHtmlFontFamily();
+            assertNotNull(enFontFamily);
+            assertTrue("English HTML font-family must include Verdana or sans-serif",
+                    enFontFamily.contains("sans-serif"));
+        } finally {
+            AstroSoft.getPreferences().setLanguage(originalLanguage);
+        }
+    }
 }

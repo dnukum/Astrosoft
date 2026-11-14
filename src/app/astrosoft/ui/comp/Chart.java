@@ -404,7 +404,7 @@ public class Chart extends JPanel{
 				int markerPt = isCompact
 						? (isAsc && isMoon ? 8 : 9)
 						: Math.max(11, Math.min(16, (int) Math.round(avHouseSize.height * 0.21)));
-				Font markerFont = new Font(Font.SANS_SERIF, Font.BOLD, markerPt);
+				Font markerFont = UIUtil.getFont(Font.BOLD, markerPt);
 
 				if (isAsc && isMoon) {
 					JLabel ascLbl = new JLabel("Asc");
@@ -438,7 +438,7 @@ public class Chart extends JPanel{
 				int scorePt = isCompact
 						? 12
 						: Math.max(14, Math.min(24, (int) Math.round(avHouseSize.height * 0.30)));
-				Font scoreFont = new Font(Font.SANS_SERIF, Font.BOLD, scorePt);
+				Font scoreFont = UIUtil.getFont(Font.BOLD, scorePt);
 				if (isNatal) {
 					final Color ringColor = UIConsts.getChartNatalHighlightColor();
 					numLbl = new JLabel(valStr, javax.swing.SwingConstants.CENTER) {

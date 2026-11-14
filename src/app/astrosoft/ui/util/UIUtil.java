@@ -29,9 +29,14 @@ import app.astrosoft.ui.table.Cell;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 
 public class UIUtil {
 
@@ -79,6 +84,7 @@ public class UIUtil {
 
 	private static boolean customFontsRegistered = false;
 	private static String resolvedTamilFontName = null;
+	private static Language lastSyncedLanguage = null;
 
 	public static synchronized void registerCustomFonts() {
 		if (customFontsRegistered) {
@@ -128,6 +134,7 @@ public class UIUtil {
 				log.log(java.util.logging.Level.WARNING, "Failed to register custom font " + fontFile, e);
 			}
 		}
+		syncHtmlDefaultStyleSheet();
 	}
 
 	public static synchronized String getTamilFontName() {
@@ -179,7 +186,7 @@ public class UIUtil {
 				Font f = new Font(candidate, Font.PLAIN, 12);
 				if (f.canDisplayUpTo(testWord) == -1) {
 					resolvedTamilFontName = candidate;
-					log.info("Resolved Tamil font: " + resolvedTamilFontName + " on " + System.getProperty("os.name"));
+					log.fine("Resolved Tamil font: " + resolvedTamilFontName + " on " + System.getProperty("os.name"));
 					return resolvedTamilFontName;
 				}
 			}
@@ -190,7 +197,7 @@ public class UIUtil {
 			Font f = new Font(family, Font.PLAIN, 12);
 			if (f.canDisplayUpTo(testWord) == -1) {
 				resolvedTamilFontName = family;
-				log.info("Resolved fallback Tamil font: " + resolvedTamilFontName + " on " + System.getProperty("os.name"));
+				log.fine("Resolved fallback Tamil font: " + resolvedTamilFontName + " on " + System.getProperty("os.name"));
 				return resolvedTamilFontName;
 			}
 		}
@@ -203,6 +210,7 @@ public class UIUtil {
 	/** Returns font depending on prefered language option. * */
 	public static Font getFont(int style, int size) {
 		Language language = AstroSoft.getPreferences().getLanguage();
+		ensureLookAndFeelSynced(language);
 		if (language == Language.TAMIL) {
 			return new Font(getTamilFontName(), style, size);
 		}
@@ -215,6 +223,7 @@ public class UIUtil {
 
 	public static Font getFont(String name, int style, int size) {
 		Language language = AstroSoft.getPreferences().getLanguage();
+		ensureLookAndFeelSynced(language);
 		if (language == Language.TAMIL) {
 			return new Font(getTamilFontName(), style, size);
 		}
@@ -223,6 +232,7 @@ public class UIUtil {
 
 	public static Font getFont(String name, int style, int en_size, int ta_size) {
 		Language language = AstroSoft.getPreferences().getLanguage();
+		ensureLookAndFeelSynced(language);
 		if (language == Language.TAMIL) {
 			return new Font(getTamilFontName(), style, ta_size);
 		}
@@ -232,6 +242,7 @@ public class UIUtil {
 	public static Font getFont(int en_style, int en_size, int ta_style,
 			int ta_size) {
 		Language language = AstroSoft.getPreferences().getLanguage();
+		ensureLookAndFeelSynced(language);
 		if (language == Language.TAMIL) {
 			return new Font(getTamilFontName(), ta_style, ta_size);
 		}
@@ -243,6 +254,179 @@ public class UIUtil {
 			return new Font(getTamilFontName(), style, size);
 		}
 		return new Font(lang.font(), style, size);
+	}
+
+	/**
+	 * Returns a CSS-quoted font-family list suitable for Swing BasicHTML / HTMLEditorKit
+	 * so Tamil fonts with spaces (e.g. 'Nirmala UI', 'Noto Sans Tamil') are not dropped.
+	 */
+	public static String getHtmlFontFamily() {
+		Language language = (AstroSoft.getPreferences() != null)
+				? AstroSoft.getPreferences().getLanguage()
+				: Language.ENGLISH;
+		String family = (language == Language.TAMIL) ? getTamilFontName() : language.font();
+		if (family == null || family.trim().isEmpty()) {
+			return "sans-serif";
+		}
+		String safeFamily = family.replace("'", "").trim();
+		return "'" + safeFamily + "', sans-serif";
+	}
+
+	/**
+	 * Ensures Swing HTML components honor their assigned Font instead of falling back
+	 * to Look & Feel default logical fonts that may lack Tamil glyphs on Windows.
+	 */
+	public static void enableHtmlDisplayProperties(JComponent comp) {
+		if (comp != null) {
+			comp.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+		}
+	}
+
+	private static void ensureLookAndFeelSynced(Language language) {
+		if (language == null) {
+			return;
+		}
+		String expectedFamily = (language == Language.TAMIL) ? getTamilFontName() : language.font();
+		Font currentTipFont = javax.swing.UIManager.getFont("ToolTip.font");
+		boolean tipMatches = currentTipFont != null
+				&& (expectedFamily.equalsIgnoreCase(currentTipFont.getFamily())
+						|| expectedFamily.equalsIgnoreCase(currentTipFont.getName()));
+		if (language != lastSyncedLanguage || !tipMatches) {
+			syncLookAndFeelFonts(language);
+		}
+	}
+
+	/**
+	 * Synchronizes Swing's UIManager component font keys (including TonicLookAndFeel's
+	 * TabbedPane.selectedFont and ToolTip.font) with the active language's font.
+	 */
+	public static void syncLookAndFeelFonts() {
+		Language language = (AstroSoft.getPreferences() != null)
+				? AstroSoft.getPreferences().getLanguage()
+				: Language.ENGLISH;
+		syncLookAndFeelFonts(language);
+	}
+
+	public static void syncLookAndFeelFonts(Language language) {
+		if (language == null) {
+			language = Language.ENGLISH;
+		}
+		lastSyncedLanguage = language;
+		String family = (language == Language.TAMIL) ? getTamilFontName() : language.font();
+		int plainSize = (language == Language.TAMIL) ? 11 : 11;
+		int tabSize = (language == Language.TAMIL) ? 9 : 11;
+		javax.swing.plaf.FontUIResource plainFont = new javax.swing.plaf.FontUIResource(family, Font.PLAIN, plainSize);
+		javax.swing.plaf.FontUIResource boldFont = new javax.swing.plaf.FontUIResource(family, Font.BOLD, plainSize);
+		javax.swing.plaf.FontUIResource tabFont = new javax.swing.plaf.FontUIResource(family, Font.BOLD, tabSize);
+		javax.swing.plaf.FontUIResource menuFont = new javax.swing.plaf.FontUIResource(Language.ENGLISH.font(), Font.BOLD, 12);
+
+		String[] plainKeys = {
+			"ToolTip.font",
+			"ComboBox.font",
+			"List.font",
+			"Label.font",
+			"Table.font",
+			"Tree.font",
+			"TextField.font",
+			"TextArea.font",
+			"FormattedTextField.font",
+			"CheckBox.font",
+			"RadioButton.font",
+			"OptionPane.font",
+			"OptionPane.messageFont"
+		};
+		for (String key : plainKeys) {
+			javax.swing.UIManager.put(key, plainFont);
+		}
+
+		String[] boldKeys = {
+			"Button.font",
+			"TableHeader.font",
+			"TitledBorder.font",
+			"OptionPane.buttonFont"
+		};
+		for (String key : boldKeys) {
+			javax.swing.UIManager.put(key, boldFont);
+		}
+
+		String[] menuKeys = {
+			"Menu.font",
+			"MenuBar.font",
+			"MenuItem.font",
+			"RadioButtonMenuItem.font",
+			"CheckBoxMenuItem.font",
+			"PopupMenu.font"
+		};
+		for (String key : menuKeys) {
+			javax.swing.UIManager.put(key, menuFont);
+		}
+
+		javax.swing.UIManager.put("TabbedPane.font", tabFont);
+		javax.swing.UIManager.put("TabbedPane.selectedFont", tabFont);
+		javax.swing.UIManager.put("TabbedPane.tabInsets", new java.awt.Insets(1, 6, 1, 6));
+	}
+
+	/**
+	 * Synchronizes Swing's shared HTMLEditorKit default StyleSheet and UIManager
+	 * default fonts with the active language's resolved font-family.
+	 */
+	public static void syncHtmlDefaultStyleSheet() {
+		syncLookAndFeelFonts();
+		try {
+			StyleSheet ss = new HTMLEditorKit().getStyleSheet();
+			if (ss != null) {
+				ss.addRule("body, p, div, span, table, td, th, li, font { font-family: " + getHtmlFontFamily() + "; }");
+			}
+		} catch (Exception e) {
+			log.fine("Could not update HTMLEditorKit default StyleSheet: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Creates a rich-HTML JLabel with HONOR_DISPLAY_PROPERTIES enabled and the given Font.
+	 */
+	public static JLabel createHtmlLabel(String html, Font font) {
+		JLabel label = new JLabel(html);
+		enableHtmlDisplayProperties(label);
+		if (font != null) {
+			label.setFont(font);
+		}
+		return label;
+	}
+
+	/**
+	 * Creates a read-only rich-HTML JEditorPane with HONOR_DISPLAY_PROPERTIES enabled and the given Font.
+	 */
+	public static JEditorPane createHtmlPane(String html, Font font) {
+		JEditorPane pane = new JEditorPane("text/html", html);
+		pane.setEditable(false);
+		pane.setOpaque(false);
+		enableHtmlDisplayProperties(pane);
+		if (font != null) {
+			pane.setFont(font);
+		}
+		return pane;
+	}
+
+	/**
+	 * Creates a non-editable, word-wrapping JTextArea configured with the given Font and
+	 * foreground color for plain multi-line display without Swing HTML rendering overhead.
+	 */
+	public static JTextArea createWrappingTextArea(Font font, Color fg) {
+		JTextArea area = new JTextArea();
+		area.setLineWrap(true);
+		area.setWrapStyleWord(true);
+		area.setEditable(false);
+		area.setFocusable(false);
+		area.setOpaque(false);
+		area.setBorder(null);
+		if (font != null) {
+			area.setFont(font);
+		}
+		if (fg != null) {
+			area.setForeground(fg);
+		}
+		return area;
 	}
 
 	public static void setPanelBackground(JComponent panel, Color color) {

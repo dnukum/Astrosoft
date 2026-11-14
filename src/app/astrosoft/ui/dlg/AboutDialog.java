@@ -70,12 +70,12 @@ public class AboutDialog extends AstrosoftDialog {
         contentPanel.setOpaque(false);
 
         JLabel titleLabel = new JLabel("Astrosoft 2.0");
-        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 17));
+        titleLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 17));
         titleLabel.setForeground(UIConsts.DARK_BLUE);
         titleLabel.setAlignmentX(0.0f);
 
         JLabel descLabel = new JLabel("Vedic Astrology Software");
-        descLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        descLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
         descLabel.setForeground(new Color(60, 60, 60));
         descLabel.setAlignmentX(0.0f);
 
@@ -99,7 +99,7 @@ public class AboutDialog extends AstrosoftDialog {
         }
 
         JLabel javaLabel = new JLabel("Java: " + System.getProperty("java.version"));
-        javaLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        javaLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 11));
         javaLabel.setForeground(Color.GRAY);
         javaLabel.setAlignmentX(0.0f);
 

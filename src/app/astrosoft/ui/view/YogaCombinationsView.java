@@ -124,10 +124,8 @@ public class YogaCombinationsView extends AstrosoftView{
 		
 		//JPanel yogaDetail= new JPanel();
 		
-		editorPane = new JEditorPane();
-		
-		editorPane.setContentType("text/html");
-		editorPane.setEditable(false);
+		editorPane = UIUtil.createHtmlPane("", UIUtil.getFont(Font.PLAIN, 12));
+		editorPane.setOpaque(true);
 				
 		yogaChanged((YogaResults.Result)yogaList.getSelectedValue()); 
 		

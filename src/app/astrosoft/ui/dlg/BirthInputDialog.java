@@ -30,8 +30,11 @@ public class BirthInputDialog extends AstrosoftDialog {
 	public BirthInputDialog(AstroSoft parent, BirthData birthData){
 		super( parent, "Enter Birth Details", dlgSize );
 		this.isEdit = (birthData != null);
+		okButton.setFont(app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.BOLD, 11));
 		initComponents(birthData);
-		setVisible(true);
+		if (!java.awt.GraphicsEnvironment.isHeadless() && !Boolean.getBoolean("astrosoft.test.unattended")) {
+			setVisible(true);
+		}
 	}
 	
 	public BirthInputDialog(AstroSoft parent){

@@ -79,12 +79,12 @@ public class AshtavargaGuideDialog extends JDialog {
         headerPanel.setOpaque(false);
 
         JLabel titleLbl = new JLabel("Ashtakavarga Strength & Color Guide");
-        titleLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        titleLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 16));
         titleLbl.setForeground(UIConsts.TEXT_DARK_NAVY);
         titleLbl.setAlignmentX(0.0f);
 
         JLabel subLbl = new JLabel("Classical bindu score thresholds and chart cell color indicators");
-        subLbl.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        subLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
         subLbl.setForeground(new Color(80, 85, 95));
         subLbl.setAlignmentX(0.0f);
 
@@ -133,7 +133,7 @@ public class AshtavargaGuideDialog extends JDialog {
         buttonPanel.setOpaque(false);
 
         JButton closeBtn = new JButton("Close");
-        closeBtn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        closeBtn.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
         closeBtn.setPreferredSize(new Dimension(85, 28));
         closeBtn.addActionListener(new ActionListener() {
             @Override
@@ -167,12 +167,12 @@ public class AshtavargaGuideDialog extends JDialog {
         p.setAlignmentX(0.0f);
 
         JLabel titleLbl = new JLabel(title);
-        titleLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        titleLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 13));
         titleLbl.setForeground(UIConsts.TEXT_DARK_NAVY);
         titleLbl.setAlignmentX(0.0f);
 
         JLabel descLbl = new JLabel(desc);
-        descLbl.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        descLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 11));
         descLbl.setForeground(new Color(100, 105, 115));
         descLbl.setAlignmentX(0.0f);
 
@@ -226,17 +226,17 @@ public class AshtavargaGuideDialog extends JDialog {
         textPanel.setOpaque(false);
 
         JLabel levelLbl = new JLabel(level);
-        levelLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        levelLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
         levelLbl.setForeground(UIConsts.TEXT_DARK_NAVY);
         levelLbl.setPreferredSize(new Dimension(65, 20));
 
         JLabel pointsLbl = new JLabel(points);
-        pointsLbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        pointsLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
         pointsLbl.setForeground(new Color(40, 70, 120));
         pointsLbl.setPreferredSize(new Dimension(135, 20));
 
         JLabel descLbl = new JLabel(description);
-        descLbl.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        descLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 11));
         descLbl.setForeground(new Color(70, 75, 85));
 
         textPanel.add(levelLbl);

@@ -28,6 +28,8 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import app.astrosoft.ui.util.UIUtil;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -156,7 +158,7 @@ public class HousePACView extends JPanel {
 				}
 			};
 
-			btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 10));
+			btn.setFont(UIUtil.getFont(Font.BOLD, 10));
 			btn.setFocusPainted(false);
 			btn.setBorderPainted(false);
 			btn.setContentAreaFilled(false);
@@ -175,16 +177,19 @@ public class HousePACView extends JPanel {
 		// ---------------------------------------------------------------------
 		// 2. Center Section: PAC Details Card in ScrollPane
 		// ---------------------------------------------------------------------
-		pacCardPane = new JEditorPane();
-		pacCardPane.setContentType("text/html");
-		pacCardPane.setEditable(false);
+		pacCardPane = UIUtil.createHtmlPane("", UIUtil.getFont(Font.PLAIN, 11));
 		pacCardPane.setOpaque(true);
 		pacCardPane.setBackground(Color.WHITE);
 		pacCardPane.setBorder(new EmptyBorder(4, 6, 4, 6));
+		if (pacCardPane.getEditorKit() instanceof javax.swing.text.html.HTMLEditorKit) {
+			((javax.swing.text.html.HTMLEditorKit) pacCardPane.getEditorKit()).getStyleSheet()
+					.addRule("body, p, div, span, table, td, th, font { font-family: " + UIUtil.getHtmlFontFamily() + "; }");
+		}
 
 		// Attach Right-Click Context Menu for Copy
 		JPopupMenu contextMenu = new JPopupMenu();
 		JMenuItem copyItem = new JMenuItem(isTamil ? "பாவ சுருக்கத்தை நகலெடு" : "Copy House Summary");
+		copyItem.setFont(UIUtil.getFont(Font.PLAIN, 11));
 		copyItem.addActionListener(e -> copyCurrentHouseSummary());
 		contextMenu.add(copyItem);
 
@@ -242,13 +247,13 @@ public class HousePACView extends JPanel {
 		HousePACData data = getHouseData(selectedHouse);
 		boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
 		if (data == null) {
-			pacCardPane.setText("<html><body style='font-family: sans-serif; font-size: 10px; color: #718096; padding: 10px;'>"
+			pacCardPane.setText("<html><body style='font-family: " + UIUtil.getHtmlFontFamily() + "; font-size: 10px; color: #718096; padding: 10px;'>"
 					+ (isTamil ? "ஜாதகத் தரவு கிடைக்கவில்லை." : "No chart data available.") + "</body></html>");
 			return;
 		}
 
 		StringBuilder html = new StringBuilder();
-		html.append("<html><body style='font-family: sans-serif; font-size: 11px; color: #2d3748; margin: 4px 6px;'>");
+		html.append("<html><body style='font-family: " + UIUtil.getHtmlFontFamily() + "; font-size: 11px; color: #2d3748; margin: 4px 6px;'>");
 
 		// Header Banner
 		html.append("<div style='background-color: #ebf8ff; border: 1px solid #bee3f8; border-radius: 6px; padding: 6px 12px; margin-bottom: 8px;'>");
@@ -475,7 +480,7 @@ public class HousePACView extends JPanel {
 				g2.dispose();
 			}
 		};
-		btn.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 9));
+		btn.setFont(UIUtil.getFont(Font.BOLD, 9));
 		btn.setFocusPainted(false);
 		btn.setBorderPainted(false);
 		btn.setContentAreaFilled(false);

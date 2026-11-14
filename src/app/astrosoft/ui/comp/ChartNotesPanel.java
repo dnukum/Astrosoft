@@ -365,7 +365,7 @@ public class ChartNotesPanel extends JPanel {
         tabBtn.addActionListener(tabAction);
 
         btnFontDec = new JButton("A-");
-        btnFontDec.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        btnFontDec.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
         btnFontDec.setToolTipText("Decrease Notes Font Size (Ctrl+- / Cmd+-)");
         btnFontDec.setFocusable(false);
         btnFontDec.setMargin(new Insets(1, 3, 1, 3));
@@ -374,7 +374,7 @@ public class ChartNotesPanel extends JPanel {
         btnFontDec.addActionListener(e -> adjustFontSize(-1));
 
         btnFontInc = new JButton("A+");
-        btnFontInc.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        btnFontInc.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
         btnFontInc.setToolTipText("Increase Notes Font Size (Ctrl++ / Cmd++)");
         btnFontInc.setFocusable(false);
         btnFontInc.setMargin(new Insets(1, 3, 1, 3));
@@ -384,7 +384,7 @@ public class ChartNotesPanel extends JPanel {
 
         int percent = (int) Math.round(((double) getCurrentFontSize() / BASE_FONT_SIZE) * 100);
         btnFontReset = new JButton(percent + "%");
-        btnFontReset.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+        btnFontReset.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 10));
         btnFontReset.setToolTipText("Reset Notes Font Size to 100% (Ctrl+0 / Cmd+0)");
         btnFontReset.setFocusable(false);
         btnFontReset.setMargin(new Insets(1, 2, 1, 2));

@@ -44,10 +44,10 @@ public class ModernButton extends JButton {
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         if (style == Style.PRIMARY) {
-            setFont(new Font("SansSerif", Font.BOLD, 12));
+            setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
             setForeground(Color.WHITE);
         } else {
-            setFont(new Font("SansSerif", Font.PLAIN, 12));
+            setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
             setForeground(new Color(51, 65, 85));
         }
 

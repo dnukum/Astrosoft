@@ -189,12 +189,12 @@ public class DasaTimelinePanel extends JPanel {
 		table.setDefaultRenderer(Object.class, new DasaTimelineCellRenderer());
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		table.setRowHeight(22);
-		table.setFont(new Font("Verdana", Font.PLAIN, 11));
+		table.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setSelectionBackground(new Color(25, 95, 210));
 		table.setSelectionForeground(Color.WHITE);
 		table.getTableHeader().setReorderingAllowed(false);
-		table.getTableHeader().setFont(new Font("Verdana", Font.BOLD, 11));
+		table.getTableHeader().setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.BOLD, 11));
 
 		// Set default column widths fitting neatly within standard 640px card
 		int[] widths = { 88, 65, 102, 65, 102, 218 };
@@ -209,7 +209,7 @@ public class DasaTimelinePanel extends JPanel {
 		toolbar.setOpaque(false);
 
 		JLabel scopeLbl = new JLabel("Show:");
-		scopeLbl.setFont(new Font("Verdana", Font.PLAIN, 11));
+		scopeLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
 		toolbar.add(scopeLbl);
 
 		scopeCombo = new JComboBox<String>(new String[] {
@@ -217,7 +217,7 @@ public class DasaTimelinePanel extends JPanel {
 				"All Milestones (MD + Bukti)",
 				"Major Dasa Only"
 		});
-		scopeCombo.setFont(new Font("Verdana", Font.PLAIN, 11));
+		scopeCombo.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
 		scopeCombo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = scopeCombo.getSelectedIndex();
@@ -236,7 +236,7 @@ public class DasaTimelinePanel extends JPanel {
 		toolbar.add(Box.createHorizontalStrut(6));
 
 		JLabel windowLbl = new JLabel("Window:");
-		windowLbl.setFont(new Font("Verdana", Font.PLAIN, 11));
+		windowLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
 		toolbar.add(windowLbl);
 
 		windowCombo = new JComboBox<String>(new String[] {
@@ -244,7 +244,7 @@ public class DasaTimelinePanel extends JPanel {
 				"Full 120 Years",
 				"Custom Range..."
 		});
-		windowCombo.setFont(new Font("Verdana", Font.PLAIN, 11));
+		windowCombo.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
 		windowCombo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = windowCombo.getSelectedIndex();
@@ -264,7 +264,7 @@ public class DasaTimelinePanel extends JPanel {
 		toolbar.add(Box.createHorizontalStrut(6));
 
 		jumpTodayBtn = new JButton("Current Period");
-		jumpTodayBtn.setFont(new Font("Verdana", Font.BOLD, 10));
+		jumpTodayBtn.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.BOLD, 10));
 		jumpTodayBtn.setFocusable(false);
 		jumpTodayBtn.setToolTipText("Scroll to current running Dasa & Bhukti period");
 		jumpTodayBtn.addActionListener(new ActionListener() {
@@ -345,12 +345,12 @@ public class DasaTimelinePanel extends JPanel {
 		footer.setBorder(BorderFactory.createEmptyBorder(3, 4, 3, 4));
 
 		statusLabel = new JLabel("0 intervals");
-		statusLabel.setFont(new Font("Verdana", Font.PLAIN, 10));
+		statusLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 10));
 		statusLabel.setForeground(Color.DARK_GRAY);
 		footer.add(statusLabel, BorderLayout.WEST);
 
 		JLabel legend = new JLabel("🟣 Same Dasa  ⚡ MD Change  ⚠️ Dasa Chidra");
-		legend.setFont(new Font("Verdana", Font.PLAIN, 10));
+		legend.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 10));
 		legend.setForeground(Color.GRAY);
 		footer.add(legend, BorderLayout.EAST);
 

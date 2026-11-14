@@ -120,7 +120,7 @@ public class MuhurtaProfileDialog extends JDialog {
         JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         cancelBtn = new JButton("Cancel");
         applyBtn = new JButton("Apply");
-        applyBtn.setFont(new Font("Verdana", Font.BOLD, 11));
+        applyBtn.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.BOLD, 11));
 
         rightButtons.add(cancelBtn);
         rightButtons.add(applyBtn);
@@ -173,7 +173,7 @@ public class MuhurtaProfileDialog extends JDialog {
 
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         browseBtn = new JButton("Browse Horoscope File (.ash)...");
-        browseBtn.setFont(new Font("Verdana", Font.PLAIN, 11));
+        browseBtn.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
         browseBtn.setFocusPainted(false);
         topBar.add(browseBtn);
         panel.add(topBar, BorderLayout.NORTH);
@@ -186,11 +186,11 @@ public class MuhurtaProfileDialog extends JDialog {
         fileCardPanel.setBackground(new Color(248, 250, 252));
 
         fileStatusLabel = new JLabel("No horoscope file selected");
-        fileStatusLabel.setFont(new Font("Verdana", Font.BOLD, 12));
+        fileStatusLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.BOLD, 12));
         fileStatusLabel.setForeground(UIConsts.DARK_BLUE);
 
         fileDetailsLabel = new JLabel("<html><font color='#666666'>Select an Astrosoft horoscope file (.ash) to load full chart data and birth coordinates.</font></html>");
-        fileDetailsLabel.setFont(new Font("Verdana", Font.PLAIN, 11));
+        fileDetailsLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
 
         fileCardPanel.add(fileStatusLabel, BorderLayout.NORTH);
         fileCardPanel.add(fileDetailsLabel, BorderLayout.CENTER);
@@ -198,7 +198,7 @@ public class MuhurtaProfileDialog extends JDialog {
         panel.add(fileCardPanel, BorderLayout.CENTER);
 
         JLabel guide = new JLabel("<html><font color='#777777'><i>Full horoscope provides complete planetary positions and birth coordinates.</i></font></html>");
-        guide.setFont(new Font("Verdana", Font.PLAIN, 10));
+        guide.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 10));
         panel.add(guide, BorderLayout.SOUTH);
 
         return panel;
@@ -212,8 +212,11 @@ public class MuhurtaProfileDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
 
         nameField = new JTextField(15);
+        nameField.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
         rasiCombo = new JComboBox<Rasi>(Rasi.values());
+        rasiCombo.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
         nakCombo = new JComboBox<Nakshathra>();
+        nakCombo.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
         updateNakshatraCombo(null);
 
         rasiCombo.addActionListener(new ActionListener() {
@@ -226,7 +229,7 @@ public class MuhurtaProfileDialog extends JDialog {
 
         gbc.gridx = 0; gbc.gridy = 0;
         JLabel nameLbl = new JLabel("Name / Label:");
-        nameLbl.setFont(new Font("Verdana", Font.PLAIN, 11));
+        nameLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
         panel.add(nameLbl, gbc);
 
         gbc.gridx = 1;
@@ -236,7 +239,7 @@ public class MuhurtaProfileDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 1;
         gbc.fill = GridBagConstraints.NONE;
         JLabel rasiLbl = new JLabel("Janma Rasi:");
-        rasiLbl.setFont(new Font("Verdana", Font.PLAIN, 11));
+        rasiLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
         panel.add(rasiLbl, gbc);
 
         gbc.gridx = 1;
@@ -246,7 +249,7 @@ public class MuhurtaProfileDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 2;
         gbc.fill = GridBagConstraints.NONE;
         JLabel nakLbl = new JLabel("Janma Nakshatra:");
-        nakLbl.setFont(new Font("Verdana", Font.PLAIN, 11));
+        nakLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 11));
         panel.add(nakLbl, gbc);
 
         gbc.gridx = 1;
@@ -257,7 +260,7 @@ public class MuhurtaProfileDialog extends JDialog {
         gbc.gridwidth = 2;
         gbc.insets = new Insets(8, 6, 2, 6);
         JLabel noteLbl = new JLabel("<html><font color='#777777'><i>Quick entry of Moon sign and star is sufficient for Tara Balam and Chandra Balam.</i></font></html>");
-        noteLbl.setFont(new Font("Verdana", Font.PLAIN, 10));
+        noteLbl.setFont(app.astrosoft.ui.util.UIUtil.getFont("Verdana", Font.PLAIN, 10));
         panel.add(noteLbl, gbc);
 
         return panel;
@@ -288,9 +291,11 @@ public class MuhurtaProfileDialog extends JDialog {
             String placeStr = (loadedHoroscope.getBirthData() != null && loadedHoroscope.getBirthData().place() != null)
                 ? loadedHoroscope.getBirthData().place() : "";
 
-            fileDetailsLabel.setText("<html>Rasi: <b>" + loadedHoroscope.getRasi() + "</b> &nbsp;|&nbsp; Nakshatra: <b>"
+            app.astrosoft.ui.util.UIUtil.enableHtmlDisplayProperties(fileDetailsLabel);
+            fileDetailsLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
+            fileDetailsLabel.setText("<html><div style=\"font-family: " + app.astrosoft.ui.util.UIUtil.getHtmlFontFamily() + ";\">Rasi: <b>" + loadedHoroscope.getRasi() + "</b> &nbsp;|&nbsp; Nakshatra: <b>"
                 + (nak != null ? nak.toString() : "-") + "</b><br><font color='#555555'>"
-                + bdStr + (placeStr.isEmpty() ? "" : " · " + placeStr) + "</font></html>");
+                + bdStr + (placeStr.isEmpty() ? "" : " · " + placeStr) + "</font></div></html>");
 
             // Synchronize with Star tab fields for seamless transition
             nameField.setText(loadedHoroscope.getPersonName());

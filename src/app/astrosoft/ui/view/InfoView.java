@@ -47,7 +47,6 @@ public class InfoView extends AstrosoftView {
 	public static String formatInfoValue(String key, String value) {
 		if (value == null || value.trim().isEmpty()) return "";
 		String s = value.trim();
-		if (s.startsWith("<html>")) return s;
 
 		String lk = key.toLowerCase();
 
@@ -57,16 +56,16 @@ public class InfoView extends AstrosoftView {
 				if (s.contains("_")) {
 					int lastUs = s.lastIndexOf('_', 14);
 					if (lastUs > 3) {
-						return "<html>" + s.substring(0, lastUs + 1) + "<br>" + s.substring(lastUs + 1) + "</html>";
+						return s.substring(0, lastUs + 1) + "\n" + s.substring(lastUs + 1);
 					}
 					int firstUs = s.indexOf('_');
 					if (firstUs > 0) {
-						return "<html>" + s.substring(0, firstUs + 1) + "<br>" + s.substring(firstUs + 1) + "</html>";
+						return s.substring(0, firstUs + 1) + "\n" + s.substring(firstUs + 1);
 					}
 				} else if (s.contains(" ")) {
 					int sp = s.lastIndexOf(' ', 14);
 					if (sp > 3) {
-						return "<html>" + s.substring(0, sp) + "<br>" + s.substring(sp + 1) + "</html>";
+						return s.substring(0, sp) + "\n" + s.substring(sp + 1);
 					}
 				}
 			}
@@ -77,14 +76,14 @@ public class InfoView extends AstrosoftView {
 			if (s.contains(",")) {
 				String[] parts = s.split(",");
 				if (parts.length == 2) {
-					return "<html>" + parts[0].trim() + ",<br>" + parts[1].trim() + "</html>";
+					return parts[0].trim() + ",\n" + parts[1].trim();
 				} else if (parts.length > 2) {
-					return "<html>" + parts[0].trim() + ",<br>" + parts[1].trim() + ",<br>" + parts[2].trim() + "</html>";
+					return parts[0].trim() + ",\n" + parts[1].trim() + ",\n" + parts[2].trim();
 				}
 			} else if (s.length() > 14 && s.contains(" ")) {
 				int sp = s.lastIndexOf(' ', 14);
 				if (sp > 3) {
-					return "<html>" + s.substring(0, sp) + "<br>" + s.substring(sp + 1) + "</html>";
+					return s.substring(0, sp) + "\n" + s.substring(sp + 1);
 				}
 			}
 		}
@@ -95,7 +94,7 @@ public class InfoView extends AstrosoftView {
 			if (slash > 0 && slash < s.length() - 1) {
 				String p1 = s.substring(0, slash).trim();
 				String p2 = s.substring(slash + 1).trim();
-				return "<html>" + p1 + " /<br>" + p2 + "</html>";
+				return p1 + " /\n" + p2;
 			}
 		}
 
@@ -105,11 +104,11 @@ public class InfoView extends AstrosoftView {
 			if (gmt > 0) {
 				String coords = s.substring(0, gmt).replaceAll("\\s+", " ").trim();
 				String tz = s.substring(gmt).trim();
-				return "<html>" + coords + "<br>" + tz + "</html>";
+				return coords + "\n" + tz;
 			}
 			int doubleSpace = s.indexOf("  ");
 			if (doubleSpace > 0) {
-				return "<html>" + s.substring(0, doubleSpace).trim() + "<br>" + s.substring(doubleSpace).trim() + "</html>";
+				return s.substring(0, doubleSpace).trim() + "\n" + s.substring(doubleSpace).trim();
 			}
 		}
 
@@ -118,11 +117,11 @@ public class InfoView extends AstrosoftView {
 			if (s.length() > 16) {
 				int dIdx = s.indexOf("Dasa ");
 				if (dIdx > 0) {
-					return "<html>" + s.substring(0, dIdx + 4).trim() + "<br>" + s.substring(dIdx + 5).trim() + "</html>";
+					return s.substring(0, dIdx + 4).trim() + "\n" + s.substring(dIdx + 5).trim();
 				}
 				int dIdx2 = s.indexOf("Dasa");
 				if (dIdx2 > 0) {
-					return "<html>" + s.substring(0, dIdx2 + 4).trim() + "<br>" + s.substring(dIdx2 + 4).trim() + "</html>";
+					return s.substring(0, dIdx2 + 4).trim() + "\n" + s.substring(dIdx2 + 4).trim();
 				}
 			}
 		}
@@ -131,7 +130,7 @@ public class InfoView extends AstrosoftView {
 		if (lk.contains("nak") || lk.contains("star")) {
 			if (s.length() > 15 && s.contains("~")) {
 				int tilde = s.indexOf('~');
-				return "<html>" + s.substring(0, tilde).trim() + "<br>" + s.substring(tilde).trim() + "</html>";
+				return s.substring(0, tilde).trim() + "\n" + s.substring(tilde).trim();
 			}
 		}
 
@@ -139,7 +138,7 @@ public class InfoView extends AstrosoftView {
 		if (s.length() > 18 && s.contains(" ")) {
 			int mid = s.lastIndexOf(' ', 16);
 			if (mid > 4) {
-				return "<html>" + s.substring(0, mid) + "<br>" + s.substring(mid + 1).trim() + "</html>";
+				return s.substring(0, mid) + "\n" + s.substring(mid + 1).trim();
 			}
 		}
 		return s;
@@ -192,31 +191,32 @@ public class InfoView extends AstrosoftView {
     			}
     		});
 
-    		valCol.setCellRenderer(new DefaultTableCellRenderer() {
+    		valCol.setCellRenderer(new javax.swing.table.TableCellRenderer() {
+    			final javax.swing.JTextArea valArea = UIUtil.createWrappingTextArea(
+    					UIUtil.getFont(Font.BOLD, 11), UIConsts.getChartPlanetForeground());
+    			{
+    				valArea.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
+    			}
+
     			@Override
     			public Component getTableCellRendererComponent(JTable table, Object value,
     					boolean isSelected, boolean hasFocus, int row, int column) {
-    				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-    				c.setFont(UIUtil.getFont(Font.BOLD, 11));
-    				java.awt.Color fg = UIConsts.getChartPlanetForeground();
-    				c.setForeground(fg);
-    				if (c instanceof JLabel) {
-    					((JLabel) c).setVerticalAlignment(SwingConstants.TOP);
-    				}
-    				setOpaque(false);
+    				valArea.setFont(UIUtil.getFont(Font.BOLD, 11));
+    				valArea.setForeground(UIConsts.getChartPlanetForeground());
     				if (value != null) {
     					Object keyVal = table.getValueAt(row, 0);
     					String key = (keyVal != null) ? keyVal.toString() : "";
-    					String formatted = formatInfoValue(key, value.toString());
-    					if (formatted.startsWith("<html>")) {
-    						String hexColor = String.format("#%02x%02x%02x", fg.getRed(), fg.getGreen(), fg.getBlue());
-    						setText("<html><span style='color:" + hexColor + ";'>" + formatted.substring(6, formatted.length() - 7) + "</span></html>");
-    					} else {
-    						setText(formatted);
-    					}
-    					setToolTipText(value.toString());
+    					valArea.setText(formatInfoValue(key, value.toString()));
+    					valArea.setToolTipText(value.toString());
+    				} else {
+    					valArea.setText("");
+    					valArea.setToolTipText(null);
     				}
-    				return c;
+    				int colW = table.getColumnModel().getColumn(column).getWidth();
+    				if (colW > 0) {
+    					valArea.setSize(colW, Short.MAX_VALUE);
+    				}
+    				return valArea;
     			}
     		});
 
@@ -226,8 +226,8 @@ public class InfoView extends AstrosoftView {
     			String key = (keyVal != null) ? keyVal.toString() : "";
     			String val = (valVal != null) ? valVal.toString() : "";
     			String formatted = formatInfoValue(key, val);
-    			if (formatted.contains("<br>")) {
-    				int brCount = (formatted.length() - formatted.replace("<br>", "").length()) / 4;
+    			if (formatted.indexOf('\n') >= 0) {
+    				int brCount = formatted.length() - formatted.replace("\n", "").length();
     				if (brCount >= 2) {
     					infoTable.setRowHeight(r, 46);
     				} else {
@@ -245,7 +245,7 @@ public class InfoView extends AstrosoftView {
     	setOpaque(false);
 
     	titleLabel = new JLabel("Profile", SwingConstants.CENTER);
-    	titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+    	titleLabel.setFont(UIUtil.getFont(Font.BOLD, 12));
     	titleLabel.setForeground(UIConsts.getChartPlanetForeground());
     	titleLabel.setBounds(0, 0, 530, 20);
     	add(titleLabel);

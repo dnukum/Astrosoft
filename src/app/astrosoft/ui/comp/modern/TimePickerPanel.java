@@ -108,11 +108,11 @@ public class TimePickerPanel extends JPanel {
 
         headerTitleLabel = new JLabel("Time");
         headerTitleLabel.setForeground(new Color(255, 255, 255, 215));
-        headerTitleLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        headerTitleLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 13));
 
         headerTimePreviewLabel = new JLabel(formatTime(selectedTime));
         headerTimePreviewLabel.setForeground(Color.WHITE);
-        headerTimePreviewLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
+        headerTimePreviewLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 22));
 
         headerPanel.add(headerTitleLabel);
         headerPanel.add(Box.createVerticalStrut(3));
@@ -201,7 +201,7 @@ public class TimePickerPanel extends JPanel {
         JList<String> list = new JList<>(model);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setVisibleRowCount(6);
-        list.setFont(new Font("SansSerif", Font.BOLD, 15));
+        list.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 15));
         list.setBackground(cellBg);
         list.setForeground(cellText);
         list.setSelectionBackground(primaryAccent);
@@ -212,7 +212,7 @@ public class TimePickerPanel extends JPanel {
             public Component getListCellRendererComponent(JList<?> l, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel lbl = (JLabel) super.getListCellRendererComponent(l, value, index, isSelected, cellHasFocus);
                 lbl.setHorizontalAlignment(SwingConstants.CENTER);
-                lbl.setFont(new Font("SansSerif", Font.BOLD, 15));
+                lbl.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 15));
                 lbl.setBorder(BorderFactory.createEmptyBorder(5, 4, 5, 4));
                 if (isSelected) {
                     lbl.setBackground(primaryAccent);
@@ -233,7 +233,7 @@ public class TimePickerPanel extends JPanel {
         card.setBackground(Color.WHITE);
 
         JLabel label = new JLabel(title, SwingConstants.CENTER);
-        label.setFont(new Font("SansSerif", Font.BOLD, 11));
+        label.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
         label.setForeground(labelColor);
         card.add(label, BorderLayout.NORTH);
 

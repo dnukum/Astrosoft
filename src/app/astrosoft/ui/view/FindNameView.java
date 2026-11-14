@@ -99,6 +99,7 @@ public class FindNameView extends AstrosoftView {
 	private void constructTabbedPane() {
 		
 		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.setFont(app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.BOLD, 11));
 		
 		tabbedPane.addTab(DisplayStrings.SEARCH_STR.toString() , searchPanel);
 		tabbedPane.addTab(DisplayStrings.ADD_STR.toString() , addPanel);
@@ -134,6 +135,7 @@ public class FindNameView extends AstrosoftView {
 		
 		
 		deleteButton = new JButton(DisplayStrings.DELETE_STR.toString());
+		deleteButton.setFont(app.astrosoft.ui.util.UIUtil.getFont(java.awt.Font.BOLD, 11));
 		
 		JPanel footer = new JPanel(new BorderLayout());
 		

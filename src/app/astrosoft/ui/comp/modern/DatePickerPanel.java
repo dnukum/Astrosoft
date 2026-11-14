@@ -123,11 +123,11 @@ public class DatePickerPanel extends JPanel {
 
         headerYearLabel = new JLabel(String.valueOf(selectedDate.getYear()));
         headerYearLabel.setForeground(new Color(255, 255, 255, 210));
-        headerYearLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        headerYearLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 13));
 
         headerDateLabel = new JLabel(selectedDate.format(DateTimeFormatter.ofPattern("EEE, MMM d")));
         headerDateLabel.setForeground(Color.WHITE);
-        headerDateLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
+        headerDateLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 20));
 
         headerPanel.add(headerYearLabel);
         headerPanel.add(Box.createVerticalStrut(2));
@@ -147,7 +147,7 @@ public class DatePickerPanel extends JPanel {
         prevBtn.addActionListener(e -> navigateMonth(-1));
 
         monthCombo = new JComboBox<>(Month.values());
-        monthCombo.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        monthCombo.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
         monthCombo.setBackground(Color.WHITE);
         monthCombo.setForeground(cellText);
         monthCombo.setSelectedItem(viewYearMonth.getMonth());
@@ -156,7 +156,7 @@ public class DatePickerPanel extends JPanel {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel l = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 l.setHorizontalAlignment(SwingConstants.CENTER);
-                l.setFont(new Font("SansSerif", Font.PLAIN, 12));
+                l.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
                 if (isSelected) {
                     l.setBackground(primaryColor);
                     l.setForeground(Color.WHITE);
@@ -180,7 +180,7 @@ public class DatePickerPanel extends JPanel {
             years[y - MIN_YEAR] = y;
         }
         yearCombo = new JComboBox<>(years);
-        yearCombo.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        yearCombo.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
         yearCombo.setBackground(Color.WHITE);
         yearCombo.setForeground(cellText);
         yearCombo.setSelectedItem(viewYearMonth.getYear());
@@ -189,7 +189,7 @@ public class DatePickerPanel extends JPanel {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel l = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 l.setHorizontalAlignment(SwingConstants.CENTER);
-                l.setFont(new Font("SansSerif", Font.PLAIN, 12));
+                l.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
                 if (isSelected) {
                     l.setBackground(primaryColor);
                     l.setForeground(Color.WHITE);
@@ -228,7 +228,7 @@ public class DatePickerPanel extends JPanel {
                 DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY};
         for (DayOfWeek dow : daysOfWeek) {
             JLabel dowLabel = new JLabel(dow.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).substring(0, 2), SwingConstants.CENTER);
-            dowLabel.setFont(new Font("SansSerif", Font.BOLD, 11));
+            dowLabel.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 11));
             dowLabel.setForeground(dowColor);
             dowPanel.add(dowLabel);
         }
@@ -325,7 +325,7 @@ public class DatePickerPanel extends JPanel {
                 g2.dispose();
             }
         };
-        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btn.setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.BOLD, 12));
         btn.setContentAreaFilled(false);
         btn.setBorderPainted(false);
         btn.setFocusPainted(false);
@@ -417,7 +417,7 @@ public class DatePickerPanel extends JPanel {
             setFocusPainted(false);
             setFocusable(false);
             setOpaque(false);
-            setFont(new Font("SansSerif", Font.PLAIN, 12));
+            setFont(app.astrosoft.ui.util.UIUtil.getFont(Font.PLAIN, 12));
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             addMouseListener(new MouseAdapter() {
@@ -441,7 +441,7 @@ public class DatePickerPanel extends JPanel {
         public void setSelectedState(boolean sel, boolean today) {
             this.isSelectedDay = sel;
             this.isToday = today;
-            setFont(new Font("SansSerif", (sel || today) ? Font.BOLD : Font.PLAIN, 12));
+            setFont(app.astrosoft.ui.util.UIUtil.getFont((sel || today) ? Font.BOLD : Font.PLAIN, 12));
             repaint();
         }
 

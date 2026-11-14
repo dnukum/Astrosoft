@@ -44,7 +44,8 @@ public class LocalizationAuditor {
         UNLOCALIZED_ENUM_NAME,
         GLYPH_OMISSION_TAMIL,
         GLYPH_OMISSION_LATIN,
-        RAW_S振りSERIF_ON_WINDOWS
+        HTML_FONT_BINDING_MISSING,
+        RAW_SANS_SERIF_ON_TAMIL
     }
 
     public static class Issue {
@@ -233,25 +234,77 @@ public class LocalizationAuditor {
 
         if (comp instanceof JLabel) {
             String text = ((JLabel) comp).getText();
+            checkHtmlFontBinding(report, context + " > JLabel", (JComponent) comp, text, font);
             checkComponentText(report, context + " > JLabel", text, font);
+        } else if (comp instanceof javax.swing.text.JTextComponent) {
+            String text = ((javax.swing.text.JTextComponent) comp).getText();
+            if (comp instanceof JComponent) {
+                checkHtmlFontBinding(report, context + " > " + comp.getClass().getSimpleName(), (JComponent) comp, text, font);
+            }
+            checkComponentText(report, context + " > " + comp.getClass().getSimpleName(), text, font);
         } else if (comp instanceof AbstractButton) {
             String text = ((AbstractButton) comp).getText();
+            checkHtmlFontBinding(report, context + " > " + comp.getClass().getSimpleName(), (JComponent) comp, text, font);
             checkComponentText(report, context + " > " + comp.getClass().getSimpleName(), text, font);
-            String tip = ((AbstractButton) comp).getToolTipText();
-            if (tip != null && !tip.isEmpty()) {
-                checkComponentText(report, context + " > ToolTip", tip, font);
-            }
         } else if (comp instanceof JTable) {
             auditTable(report, context + " > JTable", (JTable) comp);
+        } else if (comp instanceof javax.swing.JTabbedPane) {
+            javax.swing.JTabbedPane tabs = (javax.swing.JTabbedPane) comp;
+            Font selFont = javax.swing.UIManager.getFont("TabbedPane.selectedFont");
+            if (selFont == null) selFont = font;
+            for (int i = 0; i < tabs.getTabCount(); i++) {
+                String title = tabs.getTitleAt(i);
+                checkComponentText(report, context + " > JTabbedPane(tab=" + i + " unselected)", title, font);
+                checkComponentText(report, context + " > JTabbedPane(tab=" + i + " selected)", title, selFont);
+            }
+        } else if (comp instanceof javax.swing.JComboBox) {
+            javax.swing.JComboBox<?> combo = (javax.swing.JComboBox<?>) comp;
+            javax.swing.ComboBoxModel<?> model = combo.getModel();
+            if (model != null) {
+                for (int i = 0; i < model.getSize(); i++) {
+                    Object item = model.getElementAt(i);
+                    if (item != null) {
+                        checkComponentText(report, context + " > JComboBox(item=" + i + ")", item.toString(), font);
+                    }
+                }
+            }
+        } else if (comp instanceof javax.swing.JTree) {
+            javax.swing.JTree tree = (javax.swing.JTree) comp;
+            javax.swing.tree.TreeModel model = tree.getModel();
+            if (model != null && model.getRoot() != null) {
+                Object root = model.getRoot();
+                checkComponentText(report, context + " > JTree(root)", root.toString(), font);
+                int childCount = model.getChildCount(root);
+                for (int i = 0; i < childCount; i++) {
+                    Object child = model.getChild(root, i);
+                    if (child != null) {
+                        checkComponentText(report, context + " > JTree(child=" + i + ")", child.toString(), font);
+                    }
+                }
+            }
         }
 
         if (comp instanceof JComponent) {
-            Border b = ((JComponent) comp).getBorder();
+            JComponent jc = (JComponent) comp;
+            String tip = jc.getToolTipText();
+            if (tip != null && !tip.isEmpty()) {
+                Font tipFont = javax.swing.UIManager.getFont("ToolTip.font");
+                if (tipFont == null) tipFont = font;
+                checkComponentText(report, context + " > ToolTip", tip, tipFont);
+            }
+            Border b = jc.getBorder();
             if (b instanceof TitledBorder) {
                 TitledBorder tb = (TitledBorder) b;
                 String title = tb.getTitle();
-                Font tbFont = tb.getTitleFont() != null ? tb.getTitleFont() : font;
+                Font tbFont = tb.getTitleFont() != null
+                        ? tb.getTitleFont()
+                        : javax.swing.UIManager.getFont("TitledBorder.font");
+                if (tbFont == null) tbFont = font;
                 checkComponentText(report, context + " > TitledBorder", title, tbFont);
+            }
+            javax.swing.JPopupMenu popup = jc.getComponentPopupMenu();
+            if (popup != null) {
+                auditComponentTree(popup, context + " > JPopupMenu", report);
             }
         }
 
@@ -278,9 +331,53 @@ public class LocalizationAuditor {
                         ? renderer.getTableCellRendererComponent(table, val, false, false, r, c)
                         : null;
                     Font cellFont = (renComp != null && renComp.getFont() != null) ? renComp.getFont() : tableFont;
-                    checkComponentText(report, context + "(row=" + r + ", col=" + c + ")", str, cellFont);
+                    String renderedStr = str;
+                    if (renComp instanceof JLabel && ((JLabel) renComp).getText() != null) {
+                        renderedStr = ((JLabel) renComp).getText();
+                    } else if (renComp instanceof javax.swing.text.JTextComponent
+                            && ((javax.swing.text.JTextComponent) renComp).getText() != null) {
+                        renderedStr = ((javax.swing.text.JTextComponent) renComp).getText();
+                    }
+                    if (renComp instanceof JComponent) {
+                        checkHtmlFontBinding(report, context + "(row=" + r + ", col=" + c + ")", (JComponent) renComp, renderedStr, cellFont);
+                    }
+                    checkComponentText(report, context + "(row=" + r + ", col=" + c + ")", renderedStr, cellFont);
                 }
             }
+        }
+    }
+
+    private static void checkHtmlFontBinding(AuditReport report, String context, JComponent comp, String text, Font font) {
+        if (text == null) return;
+        String trimmed = text.trim();
+        if (!trimmed.regionMatches(true, 0, "<html>", 0, 6)) return;
+
+        String cleanText = stripHtml(trimmed);
+        boolean hasTamil = false;
+        for (int i = 0; i < cleanText.length(); i++) {
+            char ch = cleanText.charAt(i);
+            if (ch >= '\u0B80' && ch <= '\u0BFF') {
+                hasTamil = true;
+                break;
+            }
+        }
+        if (!hasTamil) return;
+
+        boolean honorsDisplayProps = comp != null
+                && Boolean.TRUE.equals(comp.getClientProperty(javax.swing.JEditorPane.HONOR_DISPLAY_PROPERTIES));
+        String htmlFont = UIUtil.getHtmlFontFamily();
+        boolean hasExplicitHtmlFont = trimmed.contains(htmlFont)
+                || trimmed.contains(UIUtil.getTamilFontName());
+
+        if (!honorsDisplayProps && !hasExplicitHtmlFont) {
+            report.addIssue(new Issue(
+                IssueType.HTML_FONT_BINDING_MISSING,
+                context + " (missing HONOR_DISPLAY_PROPERTIES or UIUtil.getHtmlFontFamily())",
+                cleanText,
+                font,
+                -1,
+                null
+            ));
         }
     }
 
@@ -290,7 +387,35 @@ public class LocalizationAuditor {
         String cleanText = stripHtml(text);
         if (cleanText.trim().isEmpty()) return;
 
+        if (font != null && containsTamil(cleanText)) {
+            String resolvedTamil = UIUtil.getTamilFontName();
+            String fam = font.getFamily();
+            String name = font.getName();
+            if (!"SansSerif".equalsIgnoreCase(resolvedTamil)
+                    && !resolvedTamil.equalsIgnoreCase(fam)
+                    && !resolvedTamil.equalsIgnoreCase(name)) {
+                report.addIssue(new Issue(
+                    IssueType.RAW_SANS_SERIF_ON_TAMIL,
+                    context + " (expected Tamil font '" + resolvedTamil + "', got '" + fam + "')",
+                    cleanText,
+                    font,
+                    -1,
+                    null
+                ));
+            }
+        }
+
         checkGlyphs(report, context, cleanText, font);
+    }
+
+    private static boolean containsTamil(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (ch >= '\u0B80' && ch <= '\u0BFF') {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void checkGlyphs(AuditReport report, String context, String text, Font font) {
