@@ -1442,6 +1442,11 @@ public class AstroSoft extends javax.swing.JFrame implements
 				}
 			} else if (currentView == View.MARRIAGE_MATCH_VIEW || currentView == View.COMPATIBILITY_VIEW) {
 				if (compatibility != null) {
+					if (currentView == View.MARRIAGE_MATCH_VIEW) {
+						updateMarriageMatchTitle();
+					} else {
+						updateCompatibilityTitle();
+					}
 					viewManager.showView(currentView);
 				}
 			} else if (currentView == View.MUHURTHA_VIEW) {
@@ -1466,6 +1471,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 			h.setAyanamsa(ayanamsa);
 		}
 
+		if (compatibility != null) {
+			compatibility.setAyanamsa(ayanamsa);
+		}
+
 		refreshActiveView();
 		refreshAllChartsAndCachedViews();
 		refreshChartFloatingDialogs();
@@ -1485,6 +1494,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 			h.setRahuNode(rahuNode);
 		}
 
+		if (compatibility != null) {
+			compatibility.setRahuNode(rahuNode);
+		}
+
 		refreshActiveView();
 		refreshAllChartsAndCachedViews();
 		refreshChartFloatingDialogs();
@@ -1495,7 +1508,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	 * recalculated Horoscope or updated settings while preserving their screen bounds.
 	 */
 	private void refreshChartFloatingDialogs() {
-		if (h != null) {
+		if (h != null && isHoroscopeView(currentView)) {
 			app.astrosoft.ui.dlg.PlanetDetailsDialog pd = app.astrosoft.ui.dlg.PlanetDetailsDialog.getActiveDialog();
 			java.awt.Rectangle pdBounds = (pd != null && pd.isDisplayable() && pd.isVisible()) ? pd.getBounds() : null;
 			int pdTab = (pd != null && pd.isDisplayable()) ? pd.getSelectedTab() : 0;
@@ -1557,6 +1570,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 			if (currentView != null) {
 				restoreChartFloatingDialogs(currentView);
 			}
+		} else if (!isHoroscopeView(currentView)) {
+			hideChartFloatingDialogs();
 		}
 
 		if (transitChartDialog != null && transitChartDialog.isDisplayable() && transitChartDialog.isVisible()) {
@@ -1590,6 +1605,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 
 		if (h != null) {
 			h.languageChanged();
+		}
+
+		if (compatibility != null) {
+			compatibility.languageChanged();
 		}
 
 		refreshActiveView();

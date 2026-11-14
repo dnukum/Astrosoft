@@ -22,11 +22,13 @@ import app.astrosoft.beans.BirthData;
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.AstroConsts;
 import app.astrosoft.consts.AstrosoftTableColumn;
+import app.astrosoft.consts.Ayanamsa;
 import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.consts.Kuta;
 import app.astrosoft.consts.Nadi;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Planet;
+import app.astrosoft.consts.RahuNode;
 import app.astrosoft.consts.Rasi;
 import app.astrosoft.consts.XmlConsts;
 import app.astrosoft.export.Exportable;
@@ -1744,6 +1746,63 @@ public class Compatibility implements Exportable, NotesOwner {
 
 	public void doExport(Exporter e) {
 		e.export(this);
+	}
+
+	public void languageChanged() {
+		kutaTableData = null;
+		boyInfo = null;
+		girlInfo = null;
+		doshaTableData = null;
+		if (boyHoroscope != null) {
+			boyHoroscope.languageChanged();
+			this.bCurPeriod = boyHoroscope.getCurrentDasa();
+		}
+		if (girlHoroscope != null) {
+			girlHoroscope.languageChanged();
+			this.gCurPeriod = girlHoroscope.getCurrentDasa();
+		}
+	}
+
+	public void setAyanamsa(Ayanamsa ayanamsa) {
+		if (boyHoroscope != null) {
+			boyHoroscope.setAyanamsa(ayanamsa);
+		}
+		if (girlHoroscope != null) {
+			girlHoroscope.setAyanamsa(ayanamsa);
+		}
+		if (hasHoroscope) {
+			if (boyHoroscope != null) {
+				this.bCurPeriod = boyHoroscope.getCurrentDasa();
+				this.boyPlanetaryInfo = boyHoroscope.getPlanetaryInfo();
+			}
+			if (girlHoroscope != null) {
+				this.gCurPeriod = girlHoroscope.getCurrentDasa();
+				this.girlPlanetaryInfo = girlHoroscope.getPlanetaryInfo();
+			}
+			calcDoshas();
+		}
+		languageChanged();
+	}
+
+	public void setRahuNode(RahuNode rahuNode) {
+		if (boyHoroscope != null) {
+			boyHoroscope.setRahuNode(rahuNode);
+		}
+		if (girlHoroscope != null) {
+			girlHoroscope.setRahuNode(rahuNode);
+		}
+		if (hasHoroscope) {
+			if (boyHoroscope != null) {
+				this.bCurPeriod = boyHoroscope.getCurrentDasa();
+				this.boyPlanetaryInfo = boyHoroscope.getPlanetaryInfo();
+			}
+			if (girlHoroscope != null) {
+				this.gCurPeriod = girlHoroscope.getCurrentDasa();
+				this.girlPlanetaryInfo = girlHoroscope.getPlanetaryInfo();
+			}
+			calcDoshas();
+		}
+		languageChanged();
 	}
 
 	public String getTitle(){
