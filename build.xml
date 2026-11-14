@@ -102,12 +102,6 @@ build.date=${tstamp.default}
 				<attribute name="Built-By" value="${user.name}" />
 			</manifest>
 		</jar>
-
-		<!-- Automatically sync to installed macOS application if present and touch bundle -->
-		<available file="/Applications/Astrosoft20.app" type="dir" property="system.app.exists" />
-		<antcall target="sync-system-app" />
-		<available file="${user.home}/Applications/Astrosoft20.app" type="dir" property="user.app.exists" />
-		<antcall target="sync-user-app" />
 	</target>
 
 	<target name="sync-system-app" if="system.app.exists">
@@ -201,6 +195,8 @@ build.date=${tstamp.default}
 			<jvmarg value="--add-exports=java.desktop/sun.awt=ALL-UNNAMED" />
 			<jvmarg value="--add-opens=java.desktop/sun.awt=ALL-UNNAMED" />
 			<jvmarg value="--add-exports=java.desktop/sun.awt.shell=ALL-UNNAMED" />
+			<jvmarg value="-Djava.util.logging.config.file=${log_prop}" />
+			<jvmarg value="-Djava.util.prefs.PreferencesFactory=app.astrosoft.pref.UserPreferencesFactory" />
 			<arg value="${testcase}" />
 		</java>
 	</target>
