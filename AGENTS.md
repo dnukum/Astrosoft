@@ -4,6 +4,7 @@
 
 - **Local Commits**: You are encouraged to create local git commits for clean, incremental milestones, tests, bug fixes, and refactors. Follow the repository's conventional commit style (e.g., `feat:`, `fix:`, `test:`, `refactor:`, `build:`).
 - **Remote Push Restriction**: **NEVER** run `git push`, publish branches, or perform any remote modifications without explicit, prior user approval in the chat.
+- **Pre-Push Jar Synchronization Invariant**: Before pushing commits or publishing release tags to remote, `ant deploy` (or `./.agents/skills/astrosoft-release-publisher/scripts/verify_and_package.sh`) must always be executed to ensure `bin/AstroSoft.jar` and `resources/version.properties` are freshly compiled and synchronized with source. Windows and Mac standalone launchers (`RunAstroSoft20.bat`) execute directly from `bin/AstroSoft.jar`, so stale binaries must never be pushed.
 - **Release Retention Policy (Keep Last 2 Versions)**: When publishing releases or tagging distributions, Astrosoft strictly enforces retaining only the **last 2 versions**. Older release distributions and their associated release tags must be pruned (matching the 2-distribution retention policy in `.github/workflows/release.yml`), ensuring at any time only the current and previous release exist.
 
 ## Architecture & Domain Guidelines
