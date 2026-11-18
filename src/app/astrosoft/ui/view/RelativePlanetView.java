@@ -643,8 +643,8 @@ public class RelativePlanetView extends JPanel {
 		naturePanel.add(Box.createVerticalStrut(4));
 
 		// Left Column: Kendra & Trikona Lords + Yogakaraka
-		List<Planet> kendraLords = getKendraLords(ascRasi);
-		List<Planet> trikonaLords = getTrikonaLords(ascRasi);
+		List<Planet> kendraLords = PlanetCharacter.getKendraLords(ascRasi);
+		List<Planet> trikonaLords = PlanetCharacter.getTrikonaLords(ascRasi);
 		Planet yogakaraka = PlanetCharacter.getYogakaraka(ascRasi);
 
 		boolean isTamil = AstroSoft.getPreferences().getLanguage() == Language.TAMIL;
@@ -740,34 +740,6 @@ public class RelativePlanetView extends JPanel {
 		naturePanel.add(natureColsPanel);
 
 		return naturePanel;
-	}
-
-	private static List<Planet> getKendraLords(Rasi ascRasi) {
-		if (ascRasi == null) {
-			return Collections.emptyList();
-		}
-		Set<Planet> lords = new LinkedHashSet<Planet>();
-		int[] kendras = {1, 4, 7, 10};
-		for (int h : kendras) {
-			lords.add(Rasi.values()[(ascRasi.ordinal() + h - 1) % 12].lord());
-		}
-		List<Planet> list = new ArrayList<Planet>(lords);
-		Collections.sort(list);
-		return list;
-	}
-
-	private static List<Planet> getTrikonaLords(Rasi ascRasi) {
-		if (ascRasi == null) {
-			return Collections.emptyList();
-		}
-		Set<Planet> lords = new LinkedHashSet<Planet>();
-		int[] trikonas = {1, 5, 9};
-		for (int h : trikonas) {
-			lords.add(Rasi.values()[(ascRasi.ordinal() + h - 1) % 12].lord());
-		}
-		List<Planet> list = new ArrayList<Planet>(lords);
-		Collections.sort(list);
-		return list;
 	}
 
 	private static String formatPlanetListNames(Collection<Planet> planets) {

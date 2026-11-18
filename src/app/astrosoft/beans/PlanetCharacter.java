@@ -6,9 +6,12 @@
 
 package app.astrosoft.beans;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -303,6 +306,33 @@ public class PlanetCharacter {
 		if (lagna == null) return Collections.emptySet();
 		FunctionalData data = FUNCTIONAL_TABLE.get(lagna);
 		return data != null ? data.marakas : Collections.<Planet>emptySet();
+	}
+
+	/**
+	 * Returns sorted unique lords of the Kendra houses (1, 4, 7, 10) for the given lagna.
+	 */
+	public static List<Planet> getKendraLords(Rasi lagna) {
+		return getHouseLords(lagna, new int[] {1, 4, 7, 10});
+	}
+
+	/**
+	 * Returns sorted unique lords of the Trikona houses (1, 5, 9) for the given lagna.
+	 */
+	public static List<Planet> getTrikonaLords(Rasi lagna) {
+		return getHouseLords(lagna, new int[] {1, 5, 9});
+	}
+
+	private static List<Planet> getHouseLords(Rasi lagna, int[] houses) {
+		if (lagna == null) {
+			return Collections.emptyList();
+		}
+		Set<Planet> lords = new LinkedHashSet<Planet>();
+		for (int h : houses) {
+			lords.add(Rasi.values()[(lagna.ordinal() + h - 1) % 12].lord());
+		}
+		List<Planet> list = new ArrayList<Planet>(lords);
+		Collections.sort(list);
+		return list;
 	}
 
 	public static FunctionalRole getFunctionalRole(Rasi lagna, Planet planet) {

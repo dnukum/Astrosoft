@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -30,8 +31,8 @@ public class AstroUtil {
 
 	private static final Logger log = Logger.getLogger(AstroUtil.class.getName());
 	
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d yyyy");
-	private static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MMM d yyyy, hh:mm:ss a");
+	private static final String DATE_PATTERN = "MMM d yyyy";
+	private static final String DATE_TIME_PATTERN = "MMM d yyyy, hh:mm:ss a";
 	
     public static String dms( double val ) {
 
@@ -382,7 +383,7 @@ public class AstroUtil {
     }
     
     public static String formatDate(Date date){
-    	return dateFormat.format(date);
+    	return new SimpleDateFormat(DATE_PATTERN, Locale.US).format(date);
     }
     
     public static String formatDate(int year, int month, int date){
@@ -391,7 +392,7 @@ public class AstroUtil {
     }
     
     public static String formatDateTime(Date date){
-    	return dateTimeFormat.format(date);
+    	return new SimpleDateFormat(DATE_TIME_PATTERN, Locale.US).format(date);
     }
     
     public static String formatDateTime(int year, int month, int date, int hr, int min, int sec) {
@@ -401,11 +402,18 @@ public class AstroUtil {
     }
     
     public static Date parseDateTime(String dateStr){
+    	if (dateStr == null) {
+    		return null;
+    	}
     	try {
-			return dateTimeFormat.parse(dateStr);
+			return new SimpleDateFormat(DATE_TIME_PATTERN, Locale.US).parse(dateStr);
 		} catch (ParseException e) {
-			e.printStackTrace();
-			return null;
+			try {
+				return new SimpleDateFormat(DATE_TIME_PATTERN, Locale.getDefault()).parse(dateStr);
+			} catch (ParseException fallbackEx) {
+				log.warning("Failed to parse DateTime: " + dateStr);
+				return null;
+			}
 		}
     }
     

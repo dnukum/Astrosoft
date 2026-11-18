@@ -94,12 +94,14 @@ public class AstrosoftMarkdownExporter {
         }
         w.write("# " + title.trim() + "\n\n");
 
+        int sectionNum = 1;
+
         // 1. Horoscope Information
         Element infoContainer = findElement(horoscope, "Horoscope-Information");
         if (infoContainer != null) {
             List<Element> infos = getDirectChildren(infoContainer, "Information");
             if (!infos.isEmpty()) {
-                w.write("## 1. Horoscope Information\n\n");
+                w.write("## " + (sectionNum++) + ". Horoscope Information\n\n");
                 w.write("| Property | Value |\n|---|---|\n");
                 for (Element info : infos) {
                     String name = info.getAttribute("Name").trim();
@@ -115,26 +117,58 @@ public class AstrosoftMarkdownExporter {
         if (planetContainer != null) {
             List<Element> planets = getDirectChildren(planetContainer, "Planet-Position");
             if (!planets.isEmpty()) {
-                w.write("## 2. Planetary Positions\n\n");
-                w.write("| Planet | Longitude | Rasi | NakshathraPada | JaiminiKaraka |\n|---|---|---|---|---|\n");
+                w.write("## " + (sectionNum++) + ". Planetary Positions\n\n");
+                boolean hasExtendedProps = findElement(planets.get(0), "Dignity") != null;
+                if (hasExtendedProps) {
+                    w.write("| Planet | Longitude | Rasi | NakshathraPada | JaiminiKaraka | Retrograde | Combust | Dignity | Functional Status | Aspects |\n");
+                    w.write("|---|---|---|---|---|---|---|---|---|---|\n");
+                } else {
+                    w.write("| Planet | Longitude | Rasi | NakshathraPada | JaiminiKaraka |\n|---|---|---|---|---|\n");
+                }
                 for (Element p : planets) {
                     String planet = getTextChild(p, "Planet");
                     String longitude = getTextChild(p, "Longitude");
                     String rasi = getTextChild(p, "Rasi");
                     String nak = getTextChild(p, "NakshathraPada");
                     String jaimini = getTextChild(p, "JaiminiKaraka");
-                    w.write("| " + planet + " | " + longitude + " | " + rasi + " | " + nak + " | " + jaimini + " |\n");
+                    if (hasExtendedProps) {
+                        String retro = getTextChild(p, "Retrograde");
+                        String combust = getTextChild(p, "Combust");
+                        String dignity = getTextChild(p, "Dignity");
+                        String funcStatus = getTextChild(p, "Functional-Status");
+                        String aspects = getTextChild(p, "Aspects");
+                        w.write("| " + planet + " | " + longitude + " | " + rasi + " | " + nak + " | " + jaimini
+                                + " | " + retro + " | " + combust + " | " + dignity + " | " + funcStatus + " | " + aspects + " |\n");
+                    } else {
+                        w.write("| " + planet + " | " + longitude + " | " + rasi + " | " + nak + " | " + jaimini + " |\n");
+                    }
                 }
                 w.write("\n");
             }
         }
 
-        // 3. Bhava Positions
+        // 3. Chart Properties (Lagna Functional Nature)
+        Element chartPropsContainer = findElement(horoscope, "Chart-Properties");
+        if (chartPropsContainer != null) {
+            List<Element> props = getDirectChildren(chartPropsContainer, "Property");
+            if (!props.isEmpty()) {
+                w.write("## " + (sectionNum++) + ". Chart Properties\n\n");
+                w.write("| Property | Value |\n|---|---|\n");
+                for (Element prop : props) {
+                    String name = prop.getAttribute("Name").trim();
+                    String val = getText(prop);
+                    w.write("| " + name + " | " + val + " |\n");
+                }
+                w.write("\n");
+            }
+        }
+
+        // Legacy Bhava Positions (only rendered if present in older XML files)
         Element bhavaContainer = findElement(horoscope, "Bhava-Positions");
         if (bhavaContainer != null) {
             List<Element> bhavas = getDirectChildren(bhavaContainer, "Bhava-Position");
             if (!bhavas.isEmpty()) {
-                w.write("## 3. Bhava Positions\n\n");
+                w.write("## " + (sectionNum++) + ". Bhava Positions\n\n");
                 w.write("| House | Bhava | Start | Mid | End | Length |\n|---|---|---|---|---|---|\n");
                 for (Element b : bhavas) {
                     String house = getTextChild(b, "House");
@@ -154,7 +188,7 @@ public class AstrosoftMarkdownExporter {
         if (vargaContainer != null) {
             List<Element> charts = getDirectChildren(vargaContainer, "Chart");
             if (!charts.isEmpty()) {
-                w.write("## 4. Varga Charts\n\n");
+                w.write("## " + (sectionNum++) + ". Varga Charts\n\n");
                 for (Element chart : charts) {
                     String name = chart.getAttribute("Name");
                     w.write("### " + name + " Chart\n\n");
@@ -168,7 +202,7 @@ public class AstrosoftMarkdownExporter {
         if (avContainer != null) {
             List<Element> avs = getDirectChildren(avContainer, "Ashtavarga");
             if (!avs.isEmpty()) {
-                w.write("## 5. Ashtavargas\n\n");
+                w.write("## " + (sectionNum++) + ". Ashtavargas\n\n");
                 for (Element av : avs) {
                     String avName = av.getAttribute("Name");
                     w.write("### " + avName + " Ashtavarga\n\n");
@@ -204,7 +238,7 @@ public class AstrosoftMarkdownExporter {
         // 6. Shadbalas & Strengths
         Element shadbalas = findElement(horoscope, "Shadbalas");
         if (shadbalas != null) {
-            w.write("## 6. Shadbalas & Strengths\n\n");
+            w.write("## " + (sectionNum++) + ". Shadbalas & Strengths\n\n");
             writeBalaSection(shadbalas, "Shadbala", w);
             writeBalaSection(shadbalas, "Sthanabala", w);
             writeBalaSection(shadbalas, "Kalabala", w);
@@ -216,7 +250,7 @@ public class AstrosoftMarkdownExporter {
         if (dasaContainer != null) {
             List<Element> majorDasas = getDirectChildren(dasaContainer, "Major-Dasa");
             if (!majorDasas.isEmpty()) {
-                w.write("## 7. Vimshottari Dasas\n\n");
+                w.write("## " + (sectionNum++) + ". Vimshottari Dasas\n\n");
                 for (Element major : majorDasas) {
                     String mDasa = major.getAttribute("Dasa").trim();
                     String mPeriod = major.getAttribute("Period").trim();

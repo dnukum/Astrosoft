@@ -60,6 +60,13 @@ public interface XmlConsts {
 	public static final QName INFO_TAG = new QName(XML_NS, "Information");
 	public static final QName PLANETARY_POS_TAG = new QName(XML_NS, "Planetary-Position");
 	public static final QName PLANET_POS_TAG = new QName(XML_NS, "Planet-Position");
+	public static final QName RETROGRADE_TAG = new QName(XML_NS, "Retrograde");
+	public static final QName COMBUST_TAG = new QName(XML_NS, "Combust");
+	public static final QName DIGNITY_TAG = new QName(XML_NS, "Dignity");
+	public static final QName FUNCTIONAL_STATUS_TAG = new QName(XML_NS, "Functional-Status");
+	public static final QName ASPECTS_TAG = new QName(XML_NS, "Aspects");
+	public static final QName CHART_PROPERTIES_TAG = new QName(XML_NS, "Chart-Properties");
+	public static final QName PROPERTY_TAG = new QName(XML_NS, "Property");
 	public static final QName BHAVA_POSITIONS_TAG = new QName(XML_NS, "Bhava-Positions");
 	public static final QName BHAVA_POS_TAG = new QName(XML_NS, "Bhava-Position");
 	public static final QName ASHTAVARGAS_TAG = new QName(XML_NS, "Ashtavargas");

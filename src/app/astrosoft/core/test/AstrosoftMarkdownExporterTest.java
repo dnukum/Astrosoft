@@ -74,7 +74,24 @@ public class AstrosoftMarkdownExporterTest extends TestCase {
                 AstrosoftMarkdownExporter.exportToMarkdown(xml.getAbsolutePath(), md.getAbsolutePath());
                 assertTrue("Generated MD must exist and not be empty for " + ash.getName(), md.exists() && md.length() > 0);
 
+                String xmlContent = readEntireFile(xml);
+                assertFalse("Newly exported XML must not contain Bhava-Positions", xmlContent.contains("<Bhava-Positions>"));
+                assertTrue("Newly exported XML must contain Chart-Properties", xmlContent.contains("<Chart-Properties>"));
+                assertTrue("Newly exported XML must contain Dignity", xmlContent.contains("<Dignity>"));
+                assertTrue("Newly exported XML must contain Functional-Status", xmlContent.contains("<Functional-Status>"));
+                assertTrue("Newly exported XML must contain Aspects", xmlContent.contains("<Aspects>"));
+                assertTrue("Newly exported XML must contain Retrograde", xmlContent.contains("<Retrograde>"));
+                assertTrue("Newly exported XML must contain Combust", xmlContent.contains("<Combust>"));
+
                 String mdContent = readEntireFile(md);
+                assertFalse("Newly exported MD must not contain Bhava Positions", mdContent.contains("Bhava Positions"));
+                assertTrue("Newly exported MD must contain Chart Properties", mdContent.contains("## 3. Chart Properties"));
+                assertTrue("Newly exported MD must contain Kendra (1,4,7,10)", mdContent.contains("Kendra (1,4,7,10)"));
+                assertTrue("Newly exported MD must contain Trikona (1,5,9)", mdContent.contains("Trikona (1,5,9)"));
+                assertTrue("Newly exported MD must contain Yogakaraka", mdContent.contains("Yogakaraka"));
+                assertTrue("Newly exported MD must contain Functional Benefics", mdContent.contains("Functional Benefics"));
+                assertTrue("Newly exported MD must contain Functional Neutrals", mdContent.contains("Functional Neutrals"));
+                assertTrue("Newly exported MD must contain Functional Malefics", mdContent.contains("Functional Malefics"));
                 verifyXmlEquivalence(xml, mdContent);
             } catch (Exception e) {
                 fail("Failed to export and verify " + ash.getName() + ": " + e.getMessage());

@@ -10,8 +10,12 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.text.Format;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,20 +30,27 @@ import javax.xml.stream.events.Attribute;
 import app.astrosoft.beans.AshtaVargaChartData;
 import app.astrosoft.beans.Degree;
 import app.astrosoft.beans.HousePosition;
+import app.astrosoft.beans.PlanetCharacter;
 import app.astrosoft.beans.PlanetChartData;
+import app.astrosoft.beans.PlanetStatus;
 import app.astrosoft.beans.PlanetaryInfo;
 import app.astrosoft.consts.AshtavargaName;
+import app.astrosoft.consts.AstroConsts;
 import app.astrosoft.consts.AstrosoftTableColumn;
 import app.astrosoft.consts.Ayanamsa;
+import app.astrosoft.consts.Dignity;
 import app.astrosoft.consts.DisplayStrings;
+import app.astrosoft.consts.FunctionalRole;
 import app.astrosoft.consts.Language;
 import app.astrosoft.consts.Planet;
 import app.astrosoft.consts.Rasi;
+import app.astrosoft.consts.SignRelationship;
 import app.astrosoft.consts.Varga;
 import app.astrosoft.consts.XmlConsts;
 import app.astrosoft.core.Ashtavarga;
 import app.astrosoft.core.Dasa;
 import app.astrosoft.core.Horoscope;
+import app.astrosoft.core.PlanetStatusCalculator;
 import app.astrosoft.core.ShadBala;
 import app.astrosoft.core.Vimshottari;
 import app.astrosoft.pref.AstrosoftPref;
@@ -106,6 +117,158 @@ public class HoroscopeExporter extends AbstractExporter {
 	public void export(PlanetaryInfo planetaryInfo) {
 		
 		exportTableData(planetaryInfo.getPlanateryInfoTableData(), planetaryInfo.getPlanateryInfoColumnMetaData(), XmlConsts.PLANETARY_POS_TAG, XmlConsts.PLANET_POS_TAG);
+	}
+
+	private void exportPlanetaryInfoWithProperties(PlanetaryInfo planetaryInfo, Rasi ascRasi) {
+		try {
+			TableData<? extends TableRowData> data = planetaryInfo.getPlanateryInfoTableData();
+			ColumnMetaData colMetaData = planetaryInfo.getPlanateryInfoColumnMetaData();
+			EnumMap<Planet, Rasi> planetRasi = planetaryInfo.getPlanetRasi();
+			EnumMap<Planet, Boolean> planetDir = planetaryInfo.getPlanetDirection();
+			EnumMap<Planet, Boolean> planetCombust = planetaryInfo.getPlanetCombustion();
+
+			xmlWriter.add(xmlef.createStartElement(XmlConsts.PLANETARY_POS_TAG, null, null));
+
+			for (int i = 0; i < data.getRowCount(); i++) {
+				TableRowData row = data.getRow(i);
+				xmlWriter.add(xmlef.createStartElement(XmlConsts.PLANET_POS_TAG, null, null));
+
+				for (AstrosoftTableColumn col : colMetaData.getVisibleColumns()) {
+					QName colTag = new QName(XmlConsts.XML_NS, col.name());
+					Object value = row.getColumnData(col);
+					writeElement(colTag, value != null ? value.toString() : null);
+				}
+
+				Object planetObj = row.getColumnData(AstrosoftTableColumn.Planet);
+				Planet p = (planetObj instanceof Planet) ? (Planet) planetObj : null;
+				Rasi rasi = (p != null && planetRasi != null) ? planetRasi.get(p) : null;
+
+				writeElement(XmlConsts.RETROGRADE_TAG, formatRetrograde(p, planetDir));
+				writeElement(XmlConsts.COMBUST_TAG, formatCombust(p, planetCombust));
+				writeElement(XmlConsts.DIGNITY_TAG, formatDignity(p, rasi));
+				writeElement(XmlConsts.FUNCTIONAL_STATUS_TAG, formatFunctionalStatus(p, ascRasi));
+				writeElement(XmlConsts.ASPECTS_TAG, formatAspects(p, rasi, ascRasi));
+
+				xmlWriter.add(xmlef.createEndElement(XmlConsts.PLANET_POS_TAG, null));
+			}
+
+			xmlWriter.add(xmlef.createEndElement(XmlConsts.PLANETARY_POS_TAG, null));
+		} catch (Exception e) {
+			log.log(Level.SEVERE, "Exception in writing planetary position xml", e);
+		}
+	}
+
+	private void exportChartProperties(Rasi ascRasi) {
+		try {
+			xmlWriter.add(xmlef.createStartElement(XmlConsts.CHART_PROPERTIES_TAG, null, null));
+
+			writeNamedProperty("Kendra (1,4,7,10)", formatPlanetList(PlanetCharacter.getKendraLords(ascRasi)));
+			writeNamedProperty("Trikona (1,5,9)", formatPlanetList(PlanetCharacter.getTrikonaLords(ascRasi)));
+
+			Planet yogakaraka = PlanetCharacter.getYogakaraka(ascRasi);
+			writeNamedProperty("Yogakaraka", yogakaraka != null ? yogakaraka.toString() : "None");
+
+			writeNamedProperty("Functional Benefics", formatPlanetList(PlanetCharacter.getFunctionalBenefics(ascRasi)));
+			writeNamedProperty("Functional Neutrals", formatPlanetList(PlanetCharacter.getFunctionalNeutrals(ascRasi)));
+			writeNamedProperty("Functional Malefics", formatPlanetList(PlanetCharacter.getFunctionalMalefics(ascRasi)));
+
+			xmlWriter.add(xmlef.createEndElement(XmlConsts.CHART_PROPERTIES_TAG, null));
+		} catch (Exception e) {
+			log.log(Level.SEVERE, "Exception in writing chart properties xml", e);
+		}
+	}
+
+	private void writeElement(QName tag, String text) throws XMLStreamException {
+		xmlWriter.add(xmlef.createStartElement(tag, null, null));
+		if (text != null) {
+			xmlWriter.add(xmlef.createCharacters(text));
+		}
+		xmlWriter.add(xmlef.createEndElement(tag, null));
+	}
+
+	private void writeNamedProperty(String name, String value) throws XMLStreamException {
+		xmlWriter.add(xmlef.createStartElement(XmlConsts.PROPERTY_TAG, null, null));
+		xmlWriter.add(xmlef.createAttribute(XmlConsts.Name, name));
+		xmlWriter.add(xmlef.createCharacters(value != null ? value : "None"));
+		xmlWriter.add(xmlef.createEndElement(XmlConsts.PROPERTY_TAG, null));
+	}
+
+	private static String formatRetrograde(Planet p, EnumMap<Planet, Boolean> planetDir) {
+		if (p == null || p.isAsc()) {
+			return "—";
+		}
+		return (planetDir != null && Boolean.TRUE.equals(planetDir.get(p))) ? "Yes" : "No";
+	}
+
+	private static String formatCombust(Planet p, EnumMap<Planet, Boolean> planetCombust) {
+		if (p == null || p.isAsc() || p == Planet.Sun || p.isNode()) {
+			return "—";
+		}
+		return (planetCombust != null && Boolean.TRUE.equals(planetCombust.get(p))) ? "Yes" : "No";
+	}
+
+	private static String formatDignity(Planet p, Rasi rasi) {
+		if (p == null || p.isAsc() || p.isNode() || rasi == null) {
+			return "—";
+		}
+		if (PlanetStatusCalculator.dignity(p, rasi) == Dignity.MOOLATRIKONA) {
+			return "Moolatrikona";
+		}
+		SignRelationship rel = PlanetStatusCalculator.signRelationship(p, rasi);
+		return rel != null ? rel.label() : "—";
+	}
+
+	private static String formatFunctionalStatus(Planet p, Rasi ascRasi) {
+		if (p == null || p.isAsc() || p.isNode() || ascRasi == null) {
+			return "—";
+		}
+		FunctionalRole role = PlanetCharacter.getFunctionalRole(ascRasi, p);
+		StringBuilder sb = new StringBuilder();
+		if (role.isBenefic()) {
+			sb.append("Benefic");
+		} else if (role.isMalefic()) {
+			sb.append("Malefic");
+		} else {
+			sb.append("Neutral");
+		}
+		if (PlanetCharacter.isYogakaraka(ascRasi, p)) {
+			sb.append(", Yogakaraka");
+		}
+		if (PlanetCharacter.isMaraka(ascRasi, p)) {
+			sb.append(", Maraka");
+		}
+		return sb.toString();
+	}
+
+	private static String formatAspects(Planet p, Rasi rasi, Rasi ascRasi) {
+		if (p == null || p.isAsc() || p.ordinal() >= 9 || rasi == null || ascRasi == null) {
+			return "—";
+		}
+		int fromHouse = rasi.bhava(ascRasi);
+		int[] targets = AstroConsts.PLANET_ASPECT_TARGETS[p.ordinal()][fromHouse];
+		if (targets == null || targets.length == 0) {
+			return "—";
+		}
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < targets.length; i++) {
+			if (i > 0) sb.append(", ");
+			sb.append("H").append(targets[i]);
+		}
+		return sb.toString();
+	}
+
+	private static String formatPlanetList(Collection<Planet> planets) {
+		if (planets == null || planets.isEmpty()) {
+			return "None";
+		}
+		List<Planet> list = new ArrayList<Planet>(planets);
+		Collections.sort(list);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < list.size(); i++) {
+			if (i > 0) sb.append(", ");
+			sb.append(list.get(i).toString());
+		}
+		return sb.toString();
 	}
 	
 	public void export(HousePosition housePosition) {
@@ -250,9 +413,9 @@ public class HoroscopeExporter extends AbstractExporter {
 			
 			
 			exportTableData(horoscope.getInfoTableData(), XmlConsts.HOROSCOPE_INFO_TAG, XmlConsts.INFO_TAG);
-			horoscope.getPlanetaryInfo().doExport(this);
-			horoscope.getHousePosition().doExport(this);
-			
+			exportPlanetaryInfoWithProperties(horoscope.getPlanetaryInfo(), horoscope.getAscendant());
+			exportChartProperties(horoscope.getAscendant());
+
 			exportVargaCharts(horoscope.getPlanetaryInfo());
 			
 			horoscope.getAshtaVarga().doExport(this);
