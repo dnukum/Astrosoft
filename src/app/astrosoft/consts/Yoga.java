@@ -49,6 +49,23 @@ public enum Yoga {
 		return ofIndex((int) ((sun + moon) / nakLength));
 	}
 
+	private static final Planet[] YOGA_LORDS = {
+		Planet.Saturn,
+		Planet.Mercury,
+		Planet.Ketu,
+		Planet.Venus,
+		Planet.Sun,
+		Planet.Moon,
+		Planet.Mars,
+		Planet.Rahu,
+		Planet.Jupiter
+	};
+
+	/** Planetary lord of this Nitya Yoga. */
+	public Planet getLord() {
+		return YOGA_LORDS[ordinal() % YOGA_LORDS.length];
+	}
+
 	@Override
 	public String toString() {
 		return Internalization.getString(this.name());

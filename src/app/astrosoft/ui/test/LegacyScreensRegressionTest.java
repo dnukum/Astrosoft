@@ -36,7 +36,6 @@ import app.astrosoft.core.Compatibility;
 import app.astrosoft.core.Ephemeris;
 import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.Muhurtha;
-import app.astrosoft.core.Panchang;
 import app.astrosoft.test.SampleHoroscopes;
 import app.astrosoft.util.AstroUtil;
 import app.astrosoft.ui.AstroSoft;
@@ -50,7 +49,6 @@ import app.astrosoft.ui.view.CompatibilityView;
 import app.astrosoft.ui.view.EphemerisView;
 import app.astrosoft.ui.view.FindNameView;
 import app.astrosoft.ui.view.MuhurthaPanel;
-import app.astrosoft.ui.view.PanchangView;
 import app.astrosoft.ui.view.PlanetView;
 import app.astrosoft.ui.view.ShadBalaBarView;
 import app.astrosoft.ui.view.ShadBalaView;
@@ -66,7 +64,6 @@ import app.astrosoft.ui.view.YogaCombinationsView;
 public class LegacyScreensRegressionTest {
 
     private static Horoscope h;
-    private static Panchang pan;
     private static Ephemeris eph;
     private static Compatibility compatibility;
     private static Muhurtha muhurtha;
@@ -80,7 +77,6 @@ public class LegacyScreensRegressionTest {
         assertNotNull("Sample horoscope must load", h);
 
         Calendar today = new GregorianCalendar();
-        pan = new Panchang(today);
         eph = new Ephemeris(AstroUtil.getCalendar(), Ephemeris.Mode.Daily);
         compatibility = new Compatibility(h, h);
         muhurtha = new Muhurtha(today, h.getRasi(), h.getNakshathra().getNak());
@@ -281,20 +277,6 @@ public class LegacyScreensRegressionTest {
     }
 
     @Test
-    public void testLegacyPanchangView() {
-        PanchangView view = new PanchangView(pan, new Point(30, 20));
-        assertNotNull("PanchangView created", view);
-
-        List<AstrosoftTable> tables = findComponents(view, AstrosoftTable.class);
-        assertTrue("Must contain Panchang table", !tables.isEmpty());
-
-        List<Chart> charts = findComponents(view, Chart.class);
-        assertEquals("Must contain Panchang planetary chart", 1, charts.size());
-
-        renderOffscreen(view, 750, 450);
-    }
-
-    @Test
     public void testLegacyEphemerisView() {
         EphemerisView view = new EphemerisView(eph, new Point(10, 2));
         assertNotNull("EphemerisView created", view);
@@ -434,12 +416,7 @@ public class LegacyScreensRegressionTest {
             assertEquals("Current view must be EPHEMERIS_VIEW", View.EPHEMERIS_VIEW, frame.getCurrentView());
             assertTrue("Mounted view must be EphemerisView", frame.getHome().getComponent(0) instanceof EphemerisView);
 
-            // 10. View -> Panchang
-            frame.viewChanged(View.PANCHANG_VIEW);
-            assertEquals("Current view must be PANCHANG_VIEW", View.PANCHANG_VIEW, frame.getCurrentView());
-            assertTrue("Mounted view must be PanchangView", frame.getHome().getComponent(0) instanceof PanchangView);
-
-            // 11. Numerology -> Find Name
+            // 10. Numerology -> Find Name
             frame.viewChanged(View.FIND_NAME_VIEW);
             assertEquals("Current view must be FIND_NAME_VIEW", View.FIND_NAME_VIEW, frame.getCurrentView());
             assertTrue("Mounted view must be FindNameView", frame.getHome().getComponent(0) instanceof FindNameView);

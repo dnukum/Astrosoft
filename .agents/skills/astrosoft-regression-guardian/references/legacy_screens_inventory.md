@@ -17,12 +17,13 @@ Any change to shared components (`AstrosoftTable`, `Chart`, `AstrosoftTabbedPane
 | 5 | **Divisional Charts** | `app.astrosoft.ui.view.VargaChartView` | Pagination support (`AbstractPagination`) traversing 16 classical Varga division charts (`D1` through `D60`). Renderable offscreen. |
 | 6 | **Shadbala Summary & Bar** | `app.astrosoft.ui.view.ShadBalaView` / `ShadBalaBarView` | Multi-category strength tables (Sthana, Dik, Kaala, Chesta, Naisargika, Drik) and relative graphical bar chart with requirement thresholds. |
 | 7 | **Yoga Combinations** | `app.astrosoft.ui.view.YogaCombinationsView` | Master combination list (`JList`) on left; definition and results HTML render view (`JEditorPane`) on right. Must not throw reflection or module errors on Java 21. |
-| 8 | **Panchang View** | `app.astrosoft.ui.view.PanchangView` | Calendar-based five limbs of time: Tithi, Vara, Nakshatra, Yoga, Karana, plus Rahu Kalam and Yamagandam. |
-| 9 | **Ephemeris View** | `app.astrosoft.ui.view.EphemerisView` | Daily/Monthly planetary longitude table with pagination and date stepping controls. |
-| 10 | **Marriage Compatibility** | `app.astrosoft.ui.view.CompatibilityView` | Porutham / Kuta evaluation table (10 or 12 kutas) with individual scores, maximum points, and final recommendation. Dual-read compatibility for legacy tags. |
-| 11 | **Muhurtha Panel** | `app.astrosoft.ui.view.MuhurthaPanel` | Candidate electional timings table with Gowri Panchangam and Subha Hora indicators. |
-| 12 | **Find Name View** | `app.astrosoft.ui.view.FindNameView` | Numerology and alphabet sound table based on Nakshatra pada sounds. |
-| 13 | **Horoscope Dashboard** | `Horoscope` / `MainFrame` Legacy Layout | Classic South Indian natal chart layout (Rasi and Navamsa side-by-side with basic details table). |
+| 8 | **Ephemeris View** | `app.astrosoft.ui.view.EphemerisView` | Daily/Monthly planetary longitude table with pagination and date stepping controls. |
+| 9 | **Marriage Compatibility** | `app.astrosoft.ui.view.CompatibilityView` | Porutham / Kuta evaluation table (10 or 12 kutas) with individual scores, maximum points, and final recommendation. Dual-read compatibility for legacy tags. |
+| 10 | **Muhurtha Panel** | `app.astrosoft.ui.view.MuhurthaPanel` | Candidate electional timings table with Gowri Panchangam and Subha Hora indicators. |
+| 11 | **Find Name View** | `app.astrosoft.ui.view.FindNameView` | Numerology and alphabet sound table based on Nakshatra pada sounds. |
+| 12 | **Horoscope Dashboard** | `Horoscope` / `MainFrame` Legacy Layout | Classic South Indian natal chart layout (Rasi and Navamsa side-by-side with basic details table). |
+
+*(Note: `PanchangView` graduated from this legacy inventory to a modern dashboard view covered by `PanchangChartAndTodayTest`.)*
 
 ---
 

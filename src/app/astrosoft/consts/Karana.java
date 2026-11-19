@@ -61,6 +61,25 @@ public enum Karana {
 		return new Karana[] {ofDeg(deg), ofDeg(mod.add(deg,6))};
 	}
 	
+	private static final Planet[] LORDS = {
+		Planet.Sun,     // Bava
+		Planet.Moon,    // Balava
+		Planet.Mars,    // Kaulava
+		Planet.Mercury, // Taitula
+		Planet.Jupiter, // Garija
+		Planet.Venus,   // Vanija
+		Planet.Saturn,  // Visti
+		Planet.Mars,    // Sakuna
+		Planet.Sun,     // Chatushpada
+		Planet.Moon,    // Naga
+		Planet.Moon     // Kimstughna
+	};
+
+	/** Planetary lord of this Karana. */
+	public Planet getLord() {
+		return LORDS[ordinal()];
+	}
+
 	public String toString() {
 
 		return Internalization.getString(this.name());

@@ -9,37 +9,31 @@
 */
 package app.astrosoft.core;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 
 import app.astrosoft.beans.ChartData;
 import app.astrosoft.beans.Place;
 import app.astrosoft.beans.PlanetChartData;
 import app.astrosoft.beans.PlanetaryInfo;
+import app.astrosoft.consts.AmirthathiYoga;
 import app.astrosoft.consts.AstroConsts;
 import app.astrosoft.consts.AstrosoftTableColumn;
-import app.astrosoft.consts.Ayanamsa;
-import app.astrosoft.consts.DisplayConsts;
 import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.consts.Karana;
 import app.astrosoft.consts.Nakshathra;
 import app.astrosoft.consts.Paksha;
 import app.astrosoft.consts.Planet;
-import app.astrosoft.consts.Rasi;
 import app.astrosoft.consts.Thithi;
 import app.astrosoft.consts.Varga;
 import app.astrosoft.consts.WeekDay;
 import app.astrosoft.consts.Yoga;
-import app.astrosoft.export.Exportable;
-import app.astrosoft.export.Exporter;
 import app.astrosoft.pref.AstrosoftPref;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.table.DefaultColumnMetaData;
@@ -50,7 +44,6 @@ import app.astrosoft.ui.table.Table;
 import app.astrosoft.ui.table.TableData;
 import app.astrosoft.ui.table.TableDataFactory;
 import app.astrosoft.util.AstroUtil;
-import app.astrosoft.util.Mod;
 import app.astrosoft.util.SwissHelper;
 import app.astrosoft.util.TransitHelper;
 
@@ -74,51 +67,55 @@ public class Panchang {
 	private double sunset;
 	private double panTime;
 	private double timeZone;
+	private boolean exactInstant;
+	private double localTimeHours;
     private PanEvent nakshathra;
     private PanEvent thithi;
     private PanEvent yoga;
     private KaranaEvent karana;
     private Paksha pak;
+    private Thithi thithiEnum;
+    private Yoga yogaEnum;
+    private Karana firstKarana;
     
     private EnumMap<Planet, Integer> rasi;
     private EnumMap<Planet, Boolean> dir;
     
     private static DefaultColumnMetaData panchangColumnMetaData;
-	
-	public static final int AUS_TIME_ROW = 9;
 
     /** Creates a new instance of Panchang */
     public Panchang(Calendar cal ) {
-
-        this.cal = AstroUtil.getCalendar(cal.getTime());
+        this.place = preferences.getPlace();
+        this.cal = java.util.Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+        this.cal.setTime(cal.getTime());
         calcPanchang();
     }
     
     public Panchang(Date date) {
-    	cal = AstroUtil.getCalendar(date); 
-    	calcPanchang();
+    	this(date, preferences.getPlace(), false);
 	}
 
     public Panchang(Date date, Place place) {
-    	this.place = place;
-    	cal = java.util.Calendar.getInstance(place.astrosoftTimeZone().getTimeZone());
+    	this(date, place, false);
+	}
+
+    /**
+     * Creates a Panchang for the given date and place. When {@code useExactInstant} is true,
+     * calculations use the exact wall-clock time of {@code date} in {@code place}'s time zone
+     * instead of {@code preferences.getPanCalcTime()}.
+     */
+    public Panchang(Date date, Place place, boolean useExactInstant) {
+    	this.place = (place != null) ? place : preferences.getPlace();
+    	this.exactInstant = useExactInstant;
+    	cal = java.util.Calendar.getInstance(this.place.astrosoftTimeZone().getTimeZone());
     	cal.setTime(date);
     	calcPanchang();
 	}
 
-    /*public void setAyanamsa( Ayanamsa ayanamsa ) {
-
-    	sw.swe_set_sid_mode( ayanamsa.ayaValue(), 0.0, 0.0 );      
-        calcPanchang(  );
-
-    }
-    
-    private void setPanCalcTime(double time) {
-		
-    	refTime = time;
-    	panTime = refTime - this.timeZone; //  For 12.00 A.M
+    /** Recomputes all Panchang values using the current preferences (Ayanamsa, RahuNode, Language, etc.). */
+    public void recalculate() {
     	calcPanchang();
-	}*/
+    }
 
     private final EnumMap<Planet, app.astrosoft.consts.Nakshathra> planetNakshathra =
         new EnumMap<Planet, app.astrosoft.consts.Nakshathra>(Planet.class);
@@ -140,7 +137,10 @@ public class Panchang {
     	
     	timeZone = ((double)cal.getTimeZone().getRawOffset() / AstroConsts.MILLIS_IN_HR) + (cal.get(Calendar.DST_OFFSET) / AstroConsts.MILLIS_IN_HR) ;
     	place.setTimeZone(timeZone);
-    	panTime = preferences.getPanCalcTime() - timeZone;
+    	localTimeHours = exactInstant
+    		? AstroUtil.decimal(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND))
+    		: preferences.getPanCalcTime();
+    	panTime = localTimeHours - timeZone;
     	
     	//System.out.println("TZ " + timeZone);
     	    	
@@ -179,17 +179,30 @@ public class Panchang {
     	
     	Date nakEndDate = transitHelper.getTransitDate(AstroUtil.nakEndPosition(moon), swissHelper.getSweDate().getJulDay());
     	
-    	double nakEndTime = AstroUtil.dateToTimeDouble(nakEndDate, place.astrosoftTimeZone().getTimeZone());
+    	java.util.TimeZone placeTz = place.astrosoftTimeZone().getTimeZone();
+    	double nakEndTime = AstroUtil.dateToTimeDouble(nakEndDate, placeTz);
     	
-    	if (((nakEndDate.getTime() - cal.getTimeInMillis()) / AstroConsts.MILLIS_IN_DAY) > 1){
-    		nakEndTime = nakEndTime + 24.00;
+    	Calendar nakEndCal = Calendar.getInstance(placeTz);
+    	nakEndCal.setTime(nakEndDate);
+    	long dayDiff = LocalDate.of(
+    			nakEndCal.get(Calendar.YEAR),
+    			nakEndCal.get(Calendar.MONTH) + 1,
+    			nakEndCal.get(Calendar.DAY_OF_MONTH)).toEpochDay()
+    		- LocalDate.of(
+    			cal.get(Calendar.YEAR),
+    			cal.get(Calendar.MONTH) + 1,
+    			cal.get(Calendar.DAY_OF_MONTH)).toEpochDay();
+    	if (dayDiff > 0) {
+    		nakEndTime = nakEndTime + 24.0 * dayDiff;
     	}
 
     	nakshathra = new PanEvent(Nakshathra.ofDeg(moon).toString(), nakEndTime);
     	
-    	thithi = new PanEvent(Thithi.ofDeg( sun, moon ).toString(), findThithiEnd( sun, moon, diffSpeed ));
+    	thithiEnum = Thithi.ofDeg( sun, moon );
+    	thithi = new PanEvent(thithiEnum.toString(), findThithiEnd( sun, moon, diffSpeed ));
     	
-        yoga = new PanEvent(Yoga.ofDeg( sun , moon ).toString(), findYogaEnd( ( sun + moon ) % 360, totalSpeed ));
+    	yogaEnum = Yoga.ofDeg( sun , moon );
+        yoga = new PanEvent(yogaEnum.toString(), findYogaEnd( ( sun + moon ) % 360, totalSpeed ));
         
         karana = calcKarana();
 
@@ -204,6 +217,7 @@ public class Panchang {
     	KaranaEvent karanaEvent;
     	
     	Karana[] karanas = Karana.ofDeg(sun, moon);
+    	firstKarana = karanas[0];
 		
 		double position = getMoonSunDiff(sun, moon);
 		double time = 0;
@@ -212,9 +226,6 @@ public class Panchang {
 		
 		double firstBal = AstroConsts.karanaLength - ( position % AstroConsts.karanaLength );
 		double expected = (position + firstBal) % 180;
-		
-		//System.out.println("Firstbal " + firstBal  );
-		//System.out.println("expected " + expected  );
 		
 		if (expected % AstroConsts.thithiLength == 0){
 			
@@ -258,21 +269,12 @@ public class Panchang {
  	    double newsun = planetPosition.get(Planet.Sun);
  	    
  	    double newposition = (newsun + newmoon) % 360;
- 	    
- 	    /*if (newposition > 360.00){
- 	    	newposition = 360.00 - newposition;
- 	    }*/
     	
  	    double bal = expected - newposition;
  	    
  	    if (bal > AstroConsts.yogaLength){
  	    	bal = 360 - bal;
  	    }
- 	    
- 	    /*System.out.println("Old Pos" + position);
-	    System.out.println("Exp Pos" + expected);
-	    System.out.println("Bal " + bal);
-	    System.out.println("New Pos" + newposition + "\n");*/
  	   
  	    correction = AstroUtil.endTime(totalSpeed, bal);
  	    
@@ -290,7 +292,6 @@ public class Panchang {
 
         double bal = AstroConsts.thithiLength - ( diff % AstroConsts.thithiLength );
         double time = AstroUtil.endTime( diffSpeed, bal );
-        //System.out.println(sun + " - " + moon + " - " + time + " - " + speed);
         return (timeZone + time + computeCorrection(getMoonSunDiff(sun, moon), diff + bal, time, AstroConsts.thithiLength));
     }
     
@@ -311,24 +312,14 @@ public class Panchang {
 	    
 	    double newdiff = getMoonSunDiff(newsun, newmoon);
 	
-	    /*System.out.println( 
-	        "Old Pos " + position + "New Diff " + newdiff
-	        + AstroUtil.dms( newsun ) + " - " + AstroUtil.dms( newmoon ) );*/
-	        
-	
 	    double newbal = expected - newdiff;
-	    //System.out.println("pos " + position + " newdiff " + newdiff + " new bal " + newbal);
 	
 	    if ( (expected % 180) == 0 && newbal > length  ) {
 	
 	        newbal = newbal - 180;
-	        //System.out.println("new bal > " + newbal);
 	    }
 	
 	    correction = AstroUtil.endTime( diffSpeed, newbal );
-	    /*System.out.println( 
-	        "Correction : " + correction + " Bal: " + newbal + " Expected : "
-	        + expected );*/
 	
 	    if (Math.abs(newbal) > PAN_APPROXIMATION){
 	    	
@@ -337,16 +328,6 @@ public class Panchang {
 	    return correction;
 	
 	}
-
-    
-	/*public void preferenceChange(PreferenceChangeEvent evt) {
-
-		if(evt.getKey().equals(AstrosoftPref.Preference.Ayanamsa.name())){
-			setAyanamsa(Enum.valueOf(Ayanamsa.class, evt.getNewValue()));
-		}else if (evt.getKey().equals(AstrosoftPref.Preference.PanCalcTime.name())){
-			setPanCalcTime(Double.parseDouble(evt.getNewValue()));
-		}
-	}*/
 
 
     public String rahuKala(){
@@ -458,21 +439,115 @@ public class Panchang {
 		return weekday;
 	}
 
+	/** Vedic solar weekday (sunrise-to-sunrise). */
+	public WeekDay getVedicVara() {
+		return (localTimeHours < sunrise) ? weekday.prev() : weekday;
+	}
+
+	public Place getPlace() {
+		return place;
+	}
+
+	public double getTimeZoneOffset() {
+		return timeZone;
+	}
+
+	public double getLocalTimeHours() {
+		return localTimeHours;
+	}
+
+	public boolean isExactInstant() {
+		return exactInstant;
+	}
+
 	public double getSunrise() {
 		return sunrise;
 	}
-	
-    public static void main( String[] args ) {
-    	
-    	for(int i = 1; i <= 30 ; i++){
-	        Panchang pan = new Panchang( new GregorianCalendar(2006, 9, i, 0, 0));
-	
-	        System.out.println(pan);
-    	}
-         // FIXME ArrayOutOfBounds Exception if uncomment
-         // System.out.println(DisplayConsts.weekDays[0][pan.weekday] + " Paksha " + DisplayConsts.pakshaNames[0][pan.pak] + " Thithi no "  + (pan.thithi+1) + " " + DisplayConsts.thithiNames[pan.thithi] + " Ends " + AstroUtil.panFormat(pan.thithiEnd, refTime, AstroSoft.ENGLISH) + "  " + pan.thithiEnd + " SunRise/Set" + AstroUtil.timeFormat(pan.sunrise)+"/"+AstroUtil.timeFormat(pan.sunset) );
-         // System.out.println(DisplayConsts.yogaNames[pan.yoga] + " Yoga Ends " + AstroUtil.panFormat(pan.yogaEnd, refTime, AstroSoft.ENGLISH) );
-    }
+
+	public double getSunset() {
+		return sunset;
+	}
+
+	public Paksha getPaksha() {
+		return pak;
+	}
+
+	public Thithi getThithiEnum() {
+		return thithiEnum;
+	}
+
+	public Yoga getYogaEnum() {
+		return yogaEnum;
+	}
+
+	public Karana getFirstKarana() {
+		return firstKarana;
+	}
+
+	public double getNakshathraEnd() {
+		return nakshathra.getEnding();
+	}
+
+	public double getThithiEnd() {
+		return thithi.getEnding();
+	}
+
+	public double getYogaEnd() {
+		return yoga.getEnding();
+	}
+
+	public double getFirstKaranaEnd() {
+		return karana.first.getEnding();
+	}
+
+	private static double percentRemaining(double pos, double span) {
+		double mod = ((pos % span) + span) % span;
+		return ((span - mod) / span) * 100.0;
+	}
+
+	public double getNakshathraPercentLeft() {
+		return percentRemaining(moon, AstroConsts.nakLength);
+	}
+
+	public double getThithiPercentLeft() {
+		double diff = ((moon - sun) % 360.0 + 360.0) % 360.0;
+		return percentRemaining(diff, AstroConsts.thithiLength);
+	}
+
+	public double getYogaPercentLeft() {
+		double sum = ((sun + moon) % 360.0 + 360.0) % 360.0;
+		return percentRemaining(sum, AstroConsts.yogaLength);
+	}
+
+	public double getKaranaPercentLeft() {
+		double diff = ((moon - sun) % 360.0 + 360.0) % 360.0;
+		return percentRemaining(diff, AstroConsts.karanaLength);
+	}
+
+	public AmirthathiYoga getAmirthathiYoga() {
+		return AmirthathiYoga.ofWeekdayAndNakshatra(getVedicVara(), getNakshathra(), false).getFirst();
+	}
+
+	public String getAbhijitMuhurta() {
+		double dayLen = sunset - sunrise;
+		if (dayLen < 0) dayLen += 24.0;
+		double start = (sunrise + (7.0 / 15.0) * dayLen) % 24.0;
+		double end = (sunrise + (8.0 / 15.0) * dayLen) % 24.0;
+		return AstroUtil.timeFormat(start) + " - " + AstroUtil.timeFormat(end);
+	}
+
+	public String getBrahmaMuhurta() {
+		Calendar prevCal = (Calendar) cal.clone();
+		prevCal.add(Calendar.DATE, -1);
+		double prevSunset = AstroUtil.getSunSet(prevCal, place);
+		double nightLen = (24.0 - prevSunset) + sunrise;
+		if (nightLen <= 0 || nightLen > 24.0) nightLen = 12.0;
+		double start = sunrise - (2.0 / 15.0) * nightLen;
+		double end = sunrise - (1.0 / 15.0) * nightLen;
+		if (start < 0) start += 24.0;
+		if (end < 0) end += 24.0;
+		return AstroUtil.timeFormat(start) + " - " + AstroUtil.timeFormat(end);
+	}
 
     @Override
     public String toString() {

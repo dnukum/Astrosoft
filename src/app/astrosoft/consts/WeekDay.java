@@ -90,6 +90,19 @@ public enum WeekDay {
 		return list.toArray(new String[0]);
 	}
 	
+	public Planet getLord() {
+		switch (this) {
+			case Sunday: return Planet.Sun;
+			case Monday: return Planet.Moon;
+			case Tuesday: return Planet.Mars;
+			case Wednesday: return Planet.Mercury;
+			case Thursday: return Planet.Jupiter;
+			case Friday: return Planet.Venus;
+			case Saturday: return Planet.Saturn;
+			default: return Planet.Sun;
+		}
+	}
+
 	public String sym(){
 		return this.name().substring(0,3);
 	}

@@ -209,10 +209,12 @@ Swing's `BasicHTML` / `HTMLEditorKit` defaults to `Dialog` / `SansSerif` and ign
   7. **Shadbala** (`View.SHADBALA_VIEW` &rarr; `ShadBalaView` with 4 tabs): `View -> Shadbala` / Toolbar `Shadbala`
   8. **Yoga Combinations** (`View.YOGA_COMBINATIONS_VIEW` &rarr; `YogaCombinationsView`): `View -> Yoga Combinations`
   9. **Daily Ephemeris** (`View.EPHEMERIS_VIEW` &rarr; `EphemerisView`): `View -> Ephemeris` / Toolbar `Ephemeris`
-  10. **Panchang** (`View.PANCHANG_VIEW` &rarr; `PanchangView`): `View -> Panchang` / Toolbar `Panchang`
-  11. **Marriage Compatibility / Match** (`View.COMPATIBILITY_VIEW` / `View.MARRIAGE_MATCH_VIEW` &rarr; `CompatibilityView` / `MarriageMatchView`): `Compute -> Marriage Compatibility` / `Marriage Match`
-  12. **Muhurtha** (`View.MUHURTHA_VIEW` &rarr; `MuhurtaPanel`): `Compute -> Muhurtha`
-  13. **Find Name / Numerology** (`View.FIND_NAME_VIEW` &rarr; `FindNameView`): `Numerology -> Find Name`
+  10. **Marriage Compatibility / Match** (`View.COMPATIBILITY_VIEW` / `View.MARRIAGE_MATCH_VIEW` &rarr; `CompatibilityView` / `MarriageMatchView`): `Compute -> Marriage Compatibility` / `Marriage Match`
+  11. **Muhurtha** (`View.MUHURTHA_VIEW` &rarr; `MuhurtaPanel`): `Compute -> Muhurtha`
+  12. **Find Name / Numerology** (`View.FIND_NAME_VIEW` &rarr; `FindNameView`): `Numerology -> Find Name`
+
+- **Graduated / Modernized Views** (covered by dedicated feature tests rather than `LegacyScreensRegressionTest`):
+  - **Panchang** (`View.PANCHANG_VIEW` &rarr; `PanchangView`): `View -> Panchang` / Toolbar `Panchang` (modernized card dashboard with live Today mode, `.ash` birth-chart instant Panchang, and theme-aware cards; covered by `PanchangChartAndTodayTest`)
 
 ## 7. Verification
 

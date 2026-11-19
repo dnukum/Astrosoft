@@ -6,7 +6,7 @@ Never duplicate rules across `AGENTS.md`, `spec/*.md`, and `.agents/skills/*/SKI
 
 | File | Owns (Scope) |
 |---|---|
-| `AGENTS.md` | Global LLM guardrails (git/approval, RCA-first, logging, test fixtures), domain/runtime baselines, and pointers below. |
+| `AGENTS.md` | Global LLM guardrails (git/approval, RCA-first, iterative hygiene, logging, test fixtures), domain/runtime baselines, and pointers below. |
 | [spec/ARCHITECTURE.md](file:///Users/mukunds100/Dev/Astrosoft2/spec/ARCHITECTURE.md) | 3-layer architecture (`Core`, `Beans`, `Presentation/UI`) and module boundaries. |
 | [spec/UI_ARCHITECTURE.md](file:///Users/mukunds100/Dev/Astrosoft2/spec/UI_ARCHITECTURE.md) | All Swing UI rules: 13 legacy screens preservation, window tiers/modality, floating palettes, preference propagation, Tamil fonts, and Swing HTML/multiline policy. |
 | [.agents/skills/astrosoft-regression-guardian/SKILL.md](file:///Users/mukunds100/Dev/Astrosoft2/.agents/skills/astrosoft-regression-guardian/SKILL.md) | UI verification & test-runner playbook (`run_legacy_regression.sh`, `run_ui_smoke.sh`, headless test gates). |
@@ -38,6 +38,12 @@ Never duplicate rules across `AGENTS.md`, `spec/*.md`, and `.agents/skills/*/SKI
   2. Explain the root cause clearly to the user.
   3. Outline the proposed fix strategy and verification plan.
   4. Wait for explicit user approval before touching code, running file edits, or deploying fixes.
+
+## Iterative Hygiene & Refactoring Policy
+
+- **Clean As You Iterate (Zero Leftover Scaffolding)**: Whenever an iterative change replaces or simplifies a previous approach (e.g., swapping a UI control, dropping a table column/field, or changing a calculation), immediately remove any superseded fields, getters, helper methods, and unused imports in the same turn.
+- **No Copy-Paste UI/Logic Duplication**: When adding a second similar panel, card, grid, or calculation, generalize the existing helper (e.g., widen `JLabel[]` to `JComponent[]`, extract a shared factory method, or promote formatters to `static final` constants) rather than duplicating layout or domain code.
+- **Leave Touched Files Cleaner**: When modernizing or modifying a legacy class, remove dead commented-out code blocks, debug `System.out.println` statements, and orphaned constants in the touched file before completing the turn.
 
 ## Logging & Console Policy
 

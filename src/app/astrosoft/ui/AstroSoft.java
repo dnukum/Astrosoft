@@ -844,10 +844,11 @@ public class AstroSoft extends javax.swing.JFrame implements
 	}
 
 	public void showPanchang(Calendar date) {
-
+		onSwitchToUtilityView();
+		setTitle("Astrosoft 2.0 - Panchang");
+		currentView = View.PANCHANG_VIEW;
 		pan = new Panchang(date);
 		viewManager.showView(View.PANCHANG_VIEW);
-
 	}
 
 	public void onSwitchToMarriageMatchView() {
@@ -1433,7 +1434,18 @@ public class AstroSoft extends javax.swing.JFrame implements
 				}
 			} else if (currentView == View.PANCHANG_VIEW) {
 				if (pan != null) {
+					Panchang activePan = pan;
+					BirthData activeChart = null;
+					if (home.getComponentCount() > 0 && home.getComponent(0) instanceof PanchangView) {
+						PanchangView pv = (PanchangView) home.getComponent(0);
+						activePan = pv.getPanchang();
+						activeChart = pv.getLoadedBirthData();
+					}
+					pan = activePan;
 					viewManager.showView(currentView);
+					if (activeChart != null && home.getComponentCount() > 0 && home.getComponent(0) instanceof PanchangView) {
+						((PanchangView) home.getComponent(0)).restoreLoadedBirthData(activeChart);
+					}
 				}
 			} else if (currentView == View.FIND_NAME_VIEW) {
 				viewManager.showView(currentView);
@@ -1458,15 +1470,31 @@ public class AstroSoft extends javax.swing.JFrame implements
 		}
 	}
 
+	private void recalculateActivePanchang() {
+		if (home != null && home.getComponentCount() > 0 && home.getComponent(0) instanceof PanchangView) {
+			pan = ((PanchangView) home.getComponent(0)).getPanchang();
+		}
+		if (pan != null) {
+			pan.recalculate();
+		}
+	}
+
+	public void onDefaultPlaceOrPanTimeChanged() {
+		if (currentView == View.PANCHANG_VIEW && home != null && home.getComponentCount() > 0
+				&& home.getComponent(0) instanceof PanchangView) {
+			PanchangView pv = (PanchangView) home.getComponent(0);
+			pv.reloadDefaultPlace();
+			pan = pv.getPanchang();
+		}
+	}
+
 	private void optionAyanamsaChanged(Ayanamsa ayanamsa) {
 
 		if (eph != null) {
 			eph.setAyanamsa(ayanamsa);
 		}
 
-		if (pan != null) {
-			pan = new Panchang(pan.getDate());
-		}
+		recalculateActivePanchang();
 
 		if (h != null) {
 			h.setAyanamsa(ayanamsa);
@@ -1487,9 +1515,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			eph.setRahuNode(rahuNode);
 		}
 
-		if (pan != null) {
-			pan = new Panchang(pan.getDate());
-		}
+		recalculateActivePanchang();
 
 		if (h != null) {
 			h.setRahuNode(rahuNode);
@@ -1601,9 +1627,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	private void optionLangChanged(String lang) {
 		UIUtil.syncHtmlDefaultStyleSheet();
 
-		if (pan != null) {
-			pan = new Panchang(pan.getDate());
-		}
+		recalculateActivePanchang();
 
 		if (h != null) {
 			h.languageChanged();
@@ -1624,6 +1648,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 		DateListener listener = new DateListener(){
 			public void dateChanged(Date date) {
 				preferences.preferenceChanged(preference, date);
+				if (preference == Preference.PanCalcTime) {
+					onDefaultPlaceOrPanTimeChanged();
+				}
 			}
 		};
 
@@ -1765,7 +1792,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 			case PANCHANG_VIEW:
 				onSwitchToUtilityView();
 				setTitle("Astrosoft 2.0 - Panchang");
-				pan = new Panchang(today);
+				pan = new Panchang(new Date(), preferences.getPlace(), true);
 				viewManager.showView(view);
 				break;
 			case MY_MUHURTA_VIEW:
@@ -1843,6 +1870,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 	private void optionThemeChanged(app.astrosoft.ui.util.UIConsts.ChartTheme theme) {
 		log.fine("Chart Theme changed to: " + theme);
 		UIConsts.setChartTheme(theme);
+		if (currentView == View.PANCHANG_VIEW) {
+			refreshActiveView();
+		}
 		refreshAllChartsAndCachedViews();
 		refreshChartFloatingDialogs();
 	}
@@ -1923,7 +1953,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 		String name = view.getClass().getName();
 		return isChartView(view)
 				|| name.contains("MarriageMatchView")
-				|| name.contains("MyMuhurtaView");
+				|| name.contains("MyMuhurtaView")
+				|| name.contains("PanchangView");
 	}
 
 	private class AstrosoftViewContainer implements ViewContainer{

@@ -59,6 +59,54 @@ public enum Thithi {
         return thithi;
     }
 
+	private static final Planet[] LORDS = {
+		Planet.Sun,     // Prathamai
+		Planet.Moon,    // Dvithiyai
+		Planet.Mars,    // Thrithiyai
+		Planet.Mercury, // Chathruthi
+		Planet.Jupiter, // Panchami
+		Planet.Venus,   // Sashti
+		Planet.Saturn,  // Sapthami
+		Planet.Rahu,    // Ashtami
+		Planet.Sun,     // Navami
+		Planet.Moon,    // Dasami
+		Planet.Mars,    // Ekaadasi
+		Planet.Mercury, // Dvaadasi
+		Planet.Jupiter, // Thrayodasi
+		Planet.Venus,   // Chathurdasi
+		Planet.Saturn,  // Pournami
+		Planet.Rahu     // Amavasya
+	};
+
+	private static final String[] NITYA_DEVIS = {
+		"Kameswari",      // Prathamai
+		"Bhaga Maalini",  // Dvithiyai
+		"Nityaklinna",    // Thrithiyai
+		"Bherunda",       // Chathruthi
+		"Vahnivasini",    // Panchami
+		"Mahavajreswari", // Sashti
+		"Sivaduti",       // Sapthami
+		"Tvarita",        // Ashtami
+		"Kulasundari",    // Navami
+		"Nitya",          // Dasami
+		"Nilapataka",     // Ekaadasi
+		"Vijaya",         // Dvaadasi
+		"Sarvamangala",   // Thrayodasi
+		"Jwalamalini",    // Chathurdasi
+		"Chitra",         // Pournami
+		"Lalita"          // Amavasya
+	};
+
+	/** Planetary lord of this Tithi. */
+	public Planet getLord() {
+		return LORDS[ordinal()];
+	}
+
+	/** Nitya Devi associated with this Tithi. */
+	public String getNityaDevi() {
+		return NITYA_DEVIS[ordinal()];
+	}
+
 	@Override
 	public String toString() {
 		return Internalization.getString(this.name());

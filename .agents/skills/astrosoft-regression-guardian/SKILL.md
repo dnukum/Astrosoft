@@ -42,6 +42,7 @@ This validates:
 5. `TransitChartDialogTest` (Transit calculations and sign-change steppers)
 6. `ModernBirthDataPanelTest` (Modern inputs and validation)
 7. `FloatingDialogsLifecycleTest` (Window z-order, dialog modality, and floating palette scopes)
+8. `PanchangChartAndTodayTest` (Modern PanchangView dashboard, `.ash` chart loading, date/time pickers, and Today button)
 
 ### 3. Run Localization & Rich-HTML Font Audit
 

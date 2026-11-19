@@ -74,6 +74,9 @@ public class PlaceOptionDialog extends AstrosoftDialog {
 		
 		try{
 		AstroSoft.getPreferences().setPlace(placeChooser.getSelectedPlace());
+		if (parent != null) {
+			parent.onDefaultPlaceOrPanTimeChanged();
+		}
 		closeDialog();
 		}catch(Exception e){
 			OptionDialog.showDialog("Place Enter Valid Latitude/Longitude ", JOptionPane.ERROR_MESSAGE);
