@@ -1,17 +1,18 @@
 package app.astrosoft.ui.util;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * MarkdownParser: Converts Markdown content (from ChatGPT, Claude, Obsidian, etc.)
+ * MarkdownParser: Converts Markdown content (from ChatGPT, Gemini, NotebookLM, Claude, Obsidian, etc.)
  * into clean, styled HTML suitable for Swing's HTMLEditorKit.
  */
 public class MarkdownParser {
 
-    private static final Pattern TABLE_PATTERN = Pattern.compile("(?m)^\\s*\\|.+?\\|\\s*$\\n^\\s*\\|[-: ]+\\|\\s*$");
     private static final Pattern HEADING_PATTERN = Pattern.compile("(?m)^#{1,6}\\s+.+$");
     private static final Pattern UNORDERED_LIST_PATTERN = Pattern.compile("(?m)^\\s*[-*+]\\s+.+$");
     private static final Pattern ORDERED_LIST_PATTERN = Pattern.compile("(?m)^\\s*\\d+\\.\\s+.+$");
@@ -19,6 +20,7 @@ public class MarkdownParser {
     private static final Pattern BLOCKQUOTE_PATTERN = Pattern.compile("(?m)^\\s*>\\s+.+$");
     private static final Pattern HR_PATTERN = Pattern.compile("(?m)^\\s*(-{3,}|\\*{3,}|_{3,})\\s*$");
     private static final Pattern CODE_SPAN_PATTERN = Pattern.compile("`[^`]+`");
+    private static final Pattern LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\((https?://[^)\\s]+)\\)");
 
     /**
      * Determines whether the given text contains characteristic Markdown markup.
@@ -70,6 +72,24 @@ public class MarkdownParser {
     }
 
     /**
+     * Returns true when the text contains explicit Markdown syntax tokens
+     * (headings, fenced/inline code, bold/italic markers, markdown tables, or unordered bullets)
+     * rather than only plain numbered lines like "1. ...".
+     */
+    public static boolean hasExplicitMarkdownSyntax(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return false;
+        }
+        return containsMarkdownTable(text)
+                || HEADING_PATTERN.matcher(text).find()
+                || UNORDERED_LIST_PATTERN.matcher(text).find()
+                || BOLD_PATTERN.matcher(text).find()
+                || BLOCKQUOTE_PATTERN.matcher(text).find()
+                || HR_PATTERN.matcher(text).find()
+                || CODE_SPAN_PATTERN.matcher(text).find();
+    }
+
+    /**
      * Converts Markdown string to clean HTML formatted for Notes.
      */
     public static String toHtml(String markdown) {
@@ -117,7 +137,7 @@ public class MarkdownParser {
 
             // 3. Horizontal Rule
             if (HR_PATTERN.matcher(trimmed).matches()) {
-                sb.append("<hr />");
+                sb.append("<hr>");
                 i++;
                 continue;
             }
@@ -135,35 +155,13 @@ public class MarkdownParser {
                 continue;
             }
 
-            // 5. Unordered List
-            if (isUnorderedListItem(trimmed)) {
-                sb.append("<ul>");
-                while (i < lines.length && isUnorderedListItem(lines[i].trim())) {
-                    String item = lines[i].trim();
-                    int spaceIdx = item.indexOf(' ');
-                    String itemText = (spaceIdx != -1) ? item.substring(spaceIdx + 1).trim() : item.substring(1).trim();
-                    sb.append("<li>").append(parseInline(itemText)).append("</li>");
-                    i++;
-                }
-                sb.append("</ul>");
+            // 5. Lists (Unordered & Ordered, with nesting and indented continuation lines)
+            if (isUnorderedListItem(trimmed) || isOrderedListItem(trimmed)) {
+                i = parseListBlock(lines, i, sb);
                 continue;
             }
 
-            // 6. Ordered List
-            if (isOrderedListItem(trimmed)) {
-                sb.append("<ol>");
-                while (i < lines.length && isOrderedListItem(lines[i].trim())) {
-                    String item = lines[i].trim();
-                    int dotIdx = item.indexOf('.');
-                    String itemText = (dotIdx != -1) ? item.substring(dotIdx + 1).trim() : item;
-                    sb.append("<li>").append(parseInline(itemText)).append("</li>");
-                    i++;
-                }
-                sb.append("</ol>");
-                continue;
-            }
-
-            // 7. Regular paragraph
+            // 6. Regular paragraph
             StringBuilder pText = new StringBuilder();
             while (i < lines.length && !lines[i].trim().isEmpty() 
                     && !lines[i].trim().startsWith("#")
@@ -182,6 +180,147 @@ public class MarkdownParser {
         }
 
         return sb.toString();
+    }
+
+    private static final class ListLevel {
+        final int indent;
+        final String tag;
+        boolean hasOpenItem;
+
+        ListLevel(int indent, String tag) {
+            this.indent = indent;
+            this.tag = tag;
+            this.hasOpenItem = false;
+        }
+    }
+
+    /**
+     * Parses a contiguous Markdown list block, supporting nested ul/ol levels,
+     * blank lines between items, and indented continuation lines.
+     */
+    private static int parseListBlock(String[] lines, int startIdx, StringBuilder sb) {
+        Deque<ListLevel> stack = new ArrayDeque<ListLevel>();
+        int i = startIdx;
+        boolean sawBlank = false;
+
+        while (i < lines.length) {
+            String rawLine = lines[i];
+            String trimmed = rawLine.trim();
+
+            if (trimmed.isEmpty()) {
+                int nextIdx = i + 1;
+                while (nextIdx < lines.length && lines[nextIdx].trim().isEmpty()) {
+                    nextIdx++;
+                }
+                if (nextIdx >= lines.length) {
+                    i = nextIdx;
+                    break;
+                }
+                String nextTrimmed = lines[nextIdx].trim();
+                int nextIndent = leadingIndent(lines[nextIdx]);
+                boolean nextIsList = isUnorderedListItem(nextTrimmed) || isOrderedListItem(nextTrimmed);
+                boolean nextIsContinuation = !stack.isEmpty() && nextIndent > stack.peek().indent && !isBlockBoundary(nextTrimmed);
+                if (!nextIsList && !nextIsContinuation) {
+                    break;
+                }
+                sawBlank = true;
+                i++;
+                continue;
+            }
+
+            boolean isUl = isUnorderedListItem(trimmed);
+            boolean isOl = !isUl && isOrderedListItem(trimmed);
+            int indent = leadingIndent(rawLine);
+
+            if (isUl || isOl) {
+                String tag = isUl ? "ul" : "ol";
+                String itemText = extractListItemText(trimmed, isUl);
+
+                if (stack.isEmpty()) {
+                    ListLevel level = new ListLevel(indent, tag);
+                    stack.push(level);
+                    sb.append("<").append(tag).append(">");
+                } else if (indent > stack.peek().indent) {
+                    // Open nested list inside current <li> (keep parent <li> open until nested list closes)
+                    ListLevel level = new ListLevel(indent, tag);
+                    stack.push(level);
+                    sb.append("<").append(tag).append(">");
+                } else {
+                    while (!stack.isEmpty() && indent < stack.peek().indent) {
+                        closeListLevel(stack.pop(), sb);
+                    }
+                    if (stack.isEmpty()) {
+                        ListLevel level = new ListLevel(indent, tag);
+                        stack.push(level);
+                        sb.append("<").append(tag).append(">");
+                    } else if (!stack.peek().tag.equals(tag)) {
+                        closeListLevel(stack.pop(), sb);
+                        ListLevel level = new ListLevel(indent, tag);
+                        stack.push(level);
+                        sb.append("<").append(tag).append(">");
+                    } else if (stack.peek().hasOpenItem) {
+                        sb.append("</li>");
+                        stack.peek().hasOpenItem = false;
+                    }
+                }
+
+                sb.append("<li>").append(parseInline(itemText));
+                stack.peek().hasOpenItem = true;
+                sawBlank = false;
+                i++;
+                continue;
+            }
+
+            // Indented continuation line inside the current list item
+            if (!stack.isEmpty() && indent > stack.peek().indent && !isBlockBoundary(trimmed)) {
+                sb.append(sawBlank ? "<br><br>" : "<br>").append(parseInline(trimmed));
+                sawBlank = false;
+                i++;
+                continue;
+            }
+
+            break;
+        }
+
+        while (!stack.isEmpty()) {
+            closeListLevel(stack.pop(), sb);
+        }
+        return i;
+    }
+
+    private static void closeListLevel(ListLevel level, StringBuilder sb) {
+        if (level.hasOpenItem) {
+            sb.append("</li>");
+            level.hasOpenItem = false;
+        }
+        sb.append("</").append(level.tag).append(">");
+    }
+
+    private static boolean isBlockBoundary(String trimmed) {
+        return trimmed.startsWith("#")
+                || trimmed.startsWith(">")
+                || HR_PATTERN.matcher(trimmed).matches()
+                || (trimmed.startsWith("|") && trimmed.endsWith("|"));
+    }
+
+    private static int leadingIndent(String line) {
+        int count = 0;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == ' ') count++;
+            else if (c == '\t') count += 4;
+            else break;
+        }
+        return count;
+    }
+
+    private static String extractListItemText(String trimmed, boolean isUl) {
+        if (isUl) {
+            int spaceIdx = trimmed.indexOf(' ');
+            return (spaceIdx != -1) ? trimmed.substring(spaceIdx + 1).trim() : trimmed.substring(1).trim();
+        }
+        int dotIdx = trimmed.indexOf('.');
+        return (dotIdx != -1) ? trimmed.substring(dotIdx + 1).trim() : trimmed;
     }
 
     private static boolean isUnorderedListItem(String line) {
@@ -249,11 +388,19 @@ public class MarkdownParser {
         if (text == null) return "";
         String s = text;
 
-        // Escape any raw HTML angle brackets to prevent injection/broken markup
-        s = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        // Unescape Markdown backslash escapes (e.g. "1\." -> "1.", "2027\." -> "2027.")
+        s = s.replaceAll("\\\\([\\\\`*_{}\\[\\]()#+\\-.!&])", "$1");
+
+        // Escape raw HTML angle brackets and unescaped ampersands
+        s = s.replaceAll("&(?!(?:amp|lt|gt|quot|#\\d+|#x[0-9a-fA-F]+);)", "&amp;")
+             .replace("<", "&lt;")
+             .replace(">", "&gt;");
 
         // Code spans: `code`
         s = s.replaceAll("`([^`]+)`", "<code>$1</code>");
+
+        // Markdown links: [label](https://...)
+        s = LINK_PATTERN.matcher(s).replaceAll("<a href=\"$2\">$1</a>");
 
         // Bold + Italic: ***text***
         s = s.replaceAll("\\*\\*\\*([^*]+)\\*\\*\\*", "<b><i>$1</i></b>");

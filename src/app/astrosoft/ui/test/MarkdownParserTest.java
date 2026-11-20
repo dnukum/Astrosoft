@@ -106,4 +106,55 @@ public class MarkdownParserTest {
         assertTrue("Notes should contain bold status", notes.contains("<b>Status</b>") || notes.contains("<strong>Status</strong>"));
         assertFalse("Notes should NOT contain raw markdown pipes table syntax", notes.contains("| --- |"));
     }
+
+    @Test
+    public void testNestedListsAndContinuationParagraphs() {
+        String geminiMd =
+                "### **1\\. Career &amp; Professional Growth**\n\n" +
+                "*   **Prediction:**\n" +
+                "    Career dissatisfaction and feelings of stagnation will persist through early 2027\\.\n\n" +
+                "*   **Astrological Reasoning:**\n" +
+                "    *   **Current Restlessness:** Running **Moon/Rahu Dasa** with Rahu in Lagna.\n" +
+                "    *   **Financial Fortification:** 11th Bhava holds 37 bindus in SAV.\n\n" +
+                "---\n\n" +
+                "### 2. Marital & Relationship Life\n\n" +
+                "1. **Primary Factor:** Venus in 6th house.\n" +
+                "   * **Mitigation:** Jupiter aspect stabilizes the bond.";
+
+        assertTrue("Gemini markdown must be detected", MarkdownParser.isMarkdown(geminiMd));
+        assertTrue("Gemini markdown must have explicit syntax", MarkdownParser.hasExplicitMarkdownSyntax(geminiMd));
+
+        String html = MarkdownParser.toHtml(geminiMd);
+        assertTrue("Must unescape 1\\. and avoid double-escaping &amp;", html.contains("<h3><b>1. Career &amp; Professional Growth</b></h3>"));
+        assertFalse("Must not contain literal backslash-dot", html.contains("\\."));
+        assertFalse("Must not double-escape &amp;", html.contains("&amp;amp;"));
+        assertTrue("Must contain nested ul inside li", html.contains("<ul><li><b>Prediction:</b><br>Career dissatisfaction"));
+        assertTrue("Must nest sub-bullets inside Astrological Reasoning li",
+                html.contains("<li><b>Astrological Reasoning:</b><ul><li><b>Current Restlessness:</b>"));
+        assertTrue("Must contain hr divider", html.contains("<hr>"));
+        assertTrue("Must support ol with nested ul", html.contains("<ol><li><b>Primary Factor:</b> Venus in 6th house.<ul><li><b>Mitigation:</b>"));
+    }
+
+    @Test
+    public void testInsertMultiBlockHtmlIntoExistingNotes() throws Exception {
+        Horoscope h = SampleHoroscopes.getHoroscope("tests/charts/sample_chart_1.ash");
+        h.setNotes("<html><body><p>Existing consultation question.</p></body></html>");
+        ChartNotesPanel panel = new ChartNotesPanel();
+        panel.setHoroscope(h);
+
+        String geminiMd = "### 1. Career Outlook\n\n* **Prediction:** Steady progress.\n  * **Trigger:** Jupiter transit.\n\n---\n\n### 2. Remedies\n\n* Chant daily.";
+        panel.insertHtmlAtCaret(MarkdownParser.toHtml(geminiMd));
+
+        String notes = h.getNotes();
+        assertNotNull(notes);
+        assertTrue("Existing note must remain", notes.contains("Existing consultation question."));
+        assertTrue("Heading must be inserted as HTML", notes.contains("<h3>") && notes.contains("1. Career Outlook"));
+        assertTrue("Nested list must be preserved", notes.contains("<ul>") && notes.contains("<li>"));
+        assertTrue("Horizontal rule must be preserved", notes.contains("<hr"));
+        assertFalse("Raw HTML tags must not be escaped as literal text", notes.contains("&lt;h3&gt;"));
+
+        org.jsoup.nodes.Document doc = org.jsoup.Jsoup.parse(notes);
+        assertTrue("h3 must be direct child of body (not nested inside p or li)",
+                doc.select("p h3, li h3, h3 ul, li hr").isEmpty());
+    }
 }

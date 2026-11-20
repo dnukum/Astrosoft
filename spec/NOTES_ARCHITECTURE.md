@@ -268,6 +268,15 @@ Before replacing or closing an active document with unsaved changes, `promptSave
   - `testGoogleSheetsHtmlTablePasteAndXmlRoundTrip()`
   - `testTabDelimitedPlainTextSpreadsheetTableConversion()`
   - `testMixedNotesWithParagraphsAndSpreadsheetTables()`
+  - `testCopyFromGeminiAndNotebookLm()`
+
+### 9.3 Markdown & AI Notebook Paste (Gemini, NotebookLM, ChatGPT, Claude)
+`ChartNotesPanel.pasteClipboardContent(htmlData, rawText)` routes clipboard payloads in priority order:
+1. **HTML Tables & TSV**: Preserved via `sanitizeHtmlContentWithTables()` or `convertTabDelimitedToHtmlTable()`.
+2. **Explicit Markdown (`MarkdownParser`)**: When `MarkdownParser.isMarkdown(rawText)` is true and either no rich HTML is present or `MarkdownParser.hasExplicitMarkdownSyntax(rawText)` is true, converts headings (`h1`–`h6`), tables, blockquotes, horizontal rules (`<hr>`), nested `<ul>`/`<ol>` lists with indented continuation paragraphs, inline bold/italic/code/links, and unescapes Markdown backslash escapes (`1\.` → `1.`) without double-escaping existing entities.
+3. **Rich Web / Notebook HTML (`sanitizeRichHtmlForNotes`)**: When `hasRichSemanticHtml(htmlData)` is true (e.g., browser selection copy from dark-mode Gemini or NotebookLM), strips `<style>`, `<script>`, `<svg>`, `<button>`, dark-mode inline `color`/`background-color`/`class`/`id` attributes, and zero-width characters while normalizing semantic `h1`–`h4`, `b`/`i`, nested `ul`/`ol`/`li`, `<hr>`, and `<blockquote>` elements.
+4. **Top-Level DOM Splicing (`insertHtmlAtCaret`)**: Multi-block HTML snippets are spliced into `<body>` via Jsoup as direct top-level siblings (never nested inside `<p>`, `<h3>`, or `<li>`), preventing Swing `HTMLEditorKit` layout corruption when pasting into existing notes.
+5. **Plain-Text Fallback**: Falls back to `cleanAndSanitizeText()` and `insertFormattedTextAtCaret()` when no rich structure is present.
 
 ---
 

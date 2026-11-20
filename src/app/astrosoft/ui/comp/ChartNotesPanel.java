@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -435,8 +436,15 @@ public class ChartNotesPanel extends JPanel {
         styleSheet.addRule("b, strong { font-weight: bold; }");
         styleSheet.addRule("i, em { font-style: italic; }");
         styleSheet.addRule("u { text-decoration: underline; }");
-        styleSheet.addRule("ul, ol { margin-top: 2px; margin-bottom: 8px; padding-left: 20px; }");
+        styleSheet.addRule("ul, ol { margin-top: 2px; margin-bottom: 8px; margin-left: 18px; }");
+        styleSheet.addRule("ul ul, ol ul, ul ol, ol ol { margin-top: 2px; margin-bottom: 2px; margin-left: 18px; }");
         styleSheet.addRule("li { margin-bottom: 4px; }");
+        styleSheet.addRule("h1 { font-size: 16pt; font-weight: bold; margin-top: 10px; margin-bottom: 4px; color: #111111; }");
+        styleSheet.addRule("h2 { font-size: 15pt; font-weight: bold; margin-top: 8px; margin-bottom: 4px; color: #111111; }");
+        styleSheet.addRule("h3, h4 { font-size: 14pt; font-weight: bold; margin-top: 6px; margin-bottom: 3px; color: #1a1a1a; }");
+        styleSheet.addRule("hr { margin-top: 8px; margin-bottom: 8px; color: #cccccc; }");
+        styleSheet.addRule("blockquote { margin-left: 14px; padding-left: 8px; border-left: 3px solid #cbd5e1; color: #374151; }");
+        styleSheet.addRule("code { font-family: monospace; background-color: #f3f4f6; }");
         styleSheet.addRule("table { border-collapse: collapse; margin-top: 4px; margin-bottom: 8px; }");
         styleSheet.addRule("th { background-color: #f0f4f8; font-weight: bold; padding: 4px 8px; text-align: left; }");
         styleSheet.addRule("td { padding: 4px 8px; vertical-align: top; }");
@@ -744,6 +752,87 @@ public class ChartNotesPanel extends JPanel {
         }
     }
 
+    /**
+     * Checks whether an HTML clipboard payload carries semantic rich-text structure
+     * (headings, lists, bold/italic, dividers, or blockquotes) worth preserving.
+     */
+    public static boolean hasRichSemanticHtml(String html) {
+        if (html == null || html.trim().isEmpty()) return false;
+        String lower = html.toLowerCase();
+        return lower.contains("<ul") || lower.contains("<ol") || lower.contains("<li")
+                || lower.contains("<h1") || lower.contains("<h2") || lower.contains("<h3") || lower.contains("<h4")
+                || lower.contains("<b") || lower.contains("<strong")
+                || lower.contains("<i") || lower.contains("<em")
+                || lower.contains("<hr") || lower.contains("<blockquote");
+    }
+
+    /**
+     * Sanitizes rich HTML copied from web notebooks (Gemini, NotebookLM, ChatGPT, Claude, browsers)
+     * into clean, light-mode-safe semantic HTML for Swing's HTMLEditorKit.
+     */
+    public static String sanitizeRichHtmlForNotes(String html) {
+        if (html == null || html.trim().isEmpty()) return null;
+        try {
+            org.jsoup.nodes.Document doc = Jsoup.parse(html);
+            doc.outputSettings().prettyPrint(false);
+            doc.select("style, script, xml, meta, link, o\\:p, svg, button, input").remove();
+
+            // Remove zero-width / BOM characters from text nodes
+            for (TextNode tn : doc.body().select("*").textNodes()) {
+                String cleaned = tn.getWholeText().replaceAll("[\u200B\u200C\u200D\uFEFF\u00AD]", "");
+                if (!cleaned.equals(tn.getWholeText())) {
+                    tn.text(cleaned);
+                }
+            }
+
+            // Normalize semantic tags and strip web/dark-mode attributes
+            for (Element el : doc.body().select("*")) {
+                String tag = el.tagName().toLowerCase();
+                if (tag.equals("strong")) el.tagName("b");
+                else if (tag.equals("em")) el.tagName("i");
+                else if (tag.equals("h5") || tag.equals("h6")) el.tagName("h4");
+
+                for (org.jsoup.nodes.Attribute attr : new ArrayList<org.jsoup.nodes.Attribute>(el.attributes().asList())) {
+                    String key = attr.getKey().toLowerCase();
+                    if (tag.equals("a") && key.equals("href")) continue;
+                    if ((tag.equals("table") || tag.equals("th") || tag.equals("td"))
+                            && (key.equals("border") || key.equals("cellpadding") || key.equals("cellspacing") || key.equals("bgcolor"))) {
+                        continue;
+                    }
+                    el.removeAttr(attr.getKey());
+                }
+            }
+
+            // Unwrap purely presentational wrappers
+            for (Element el : doc.body().select("span, font, section, article, header, footer, main")) {
+                el.unwrap();
+            }
+
+            // Convert leaf divs to <p> (or unwrap inside lists/tables) and unwrap container divs
+            for (Element div : doc.body().select("div")) {
+                boolean hasBlocks = !div.select("> p, > div, > ul, > ol, > h1, > h2, > h3, > h4, > table, > blockquote, > hr, > pre").isEmpty();
+                boolean insideListOrCell = div.closest("li, td, th, p") != null;
+                if (!hasBlocks && !insideListOrCell && !div.text().trim().isEmpty()) {
+                    div.tagName("p");
+                } else {
+                    div.unwrap();
+                }
+            }
+
+            // Remove empty paragraphs/list items that only had whitespace
+            for (Element emptyP : doc.body().select("p")) {
+                if (emptyP.children().isEmpty() && emptyP.text().trim().isEmpty()) {
+                    emptyP.remove();
+                }
+            }
+
+            String result = doc.body().html().trim();
+            return result.isEmpty() ? null : result;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public void insertHtmlTableAtCaret(String tableHtml) {
         if (!editor.isEnabled() || !editor.isEditable()) return;
         try {
@@ -769,23 +858,58 @@ public class ChartNotesPanel extends JPanel {
     public void insertHtmlAtCaret(String htmlSnippet) {
         if (!editor.isEnabled() || !editor.isEditable() || htmlSnippet == null || htmlSnippet.trim().isEmpty()) return;
         try {
-            int pos = editor.getCaretPosition();
             editor.replaceSelection("");
-            pos = editor.getCaretPosition();
-            HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
             HTMLDocument doc = (HTMLDocument) editor.getDocument();
             if (doc.getLength() == 0 || editor.getText().replaceAll("<[^>]*>", "").trim().isEmpty()) {
                 editor.setText("<html><head></head><body>" + htmlSnippet + "<p><br></p></body></html>");
+                applyNotesFontSize();
             } else {
-                try {
-                    kit.insertHTML(doc, pos, htmlSnippet, 0, 0, HTML.Tag.BODY);
-                } catch (Exception ex) {
-                    kit.insertHTML(doc, doc.getLength(), "<p><br></p>" + htmlSnippet + "<p><br></p>", 0, 0, HTML.Tag.BODY);
+                final String marker = "__ASTROSOFT_PASTE_MARKER_" + System.nanoTime() + "__";
+                editor.replaceSelection(marker);
+                org.jsoup.nodes.Document fullDoc = Jsoup.parse(editor.getText());
+                fullDoc.outputSettings().prettyPrint(false);
+
+                Element body = fullDoc.body();
+                Element anchorBlock = null;
+                for (TextNode tn : body.select("*").textNodes()) {
+                    String text = tn.getWholeText();
+                    int idx = text.indexOf(marker);
+                    if (idx != -1) {
+                        tn.text(text.substring(0, idx) + text.substring(idx + marker.length()));
+                        Element cur = (tn.parent() instanceof Element) ? (Element) tn.parent() : null;
+                        while (cur != null && cur.parent() != body) {
+                            cur = cur.parent();
+                        }
+                        anchorBlock = cur;
+                        break;
+                    }
                 }
+
+                org.jsoup.nodes.Document frag = Jsoup.parseBodyFragment(htmlSnippet);
+                frag.outputSettings().prettyPrint(false);
+                List<Node> toInsert = new ArrayList<Node>(frag.body().childNodes());
+
+                if (anchorBlock != null && anchorBlock.parent() == body) {
+                    boolean anchorEmpty = anchorBlock.text().trim().isEmpty() && anchorBlock.select("img, table, hr").isEmpty();
+                    for (int i = toInsert.size() - 1; i >= 0; i--) {
+                        anchorBlock.after(toInsert.get(i));
+                    }
+                    if (anchorEmpty) {
+                        anchorBlock.remove();
+                    }
+                } else {
+                    for (Node n : toInsert) {
+                        body.appendChild(n);
+                    }
+                }
+
+                editor.setText(fullDoc.outerHtml());
+                applyNotesFontSize();
+                editor.setCaretPosition(editor.getDocument().getLength());
             }
             syncToHoroscope();
         } catch (Exception ex) {
-            editor.replaceSelection("\n" + htmlSnippet + "\n");
+            editor.replaceSelection("\n" + cleanAndSanitizeText(htmlSnippet) + "\n");
         }
     }
 
@@ -1022,58 +1146,9 @@ public class ChartNotesPanel extends JPanel {
                         } catch (Throwable ignored) {}
                     }
 
-                    // 3. If HTML contains a table, sanitize and insert it
-                    if (htmlData != null && htmlData.toLowerCase().contains("<table")) {
-                        String sanitizedTable = sanitizeHtmlContentWithTables(htmlData);
-                        if (sanitizedTable != null && !sanitizedTable.trim().isEmpty()) {
-                            insertHtmlTableAtCaret(sanitizedTable);
-                            return;
-                        }
-                    }
-
-                    // 4. If plain text is tab-delimited tabular data (e.g. copied from Excel/Sheets as TSV)
-                    if (rawText != null && isTabDelimitedTable(rawText)) {
-                        String tableHtml = convertTabDelimitedToHtmlTable(rawText);
-                        if (tableHtml != null && !tableHtml.trim().isEmpty()) {
-                            insertHtmlTableAtCaret(tableHtml);
-                            return;
-                        }
-                    }
-
-                    // 4b. If plain text contains Markdown formatting (headings, markdown tables, bold/italic, lists)
-                    if (rawText != null && app.astrosoft.ui.util.MarkdownParser.isMarkdown(rawText)) {
-                        String mdHtml = app.astrosoft.ui.util.MarkdownParser.toHtml(rawText);
-                        if (mdHtml != null && !mdHtml.trim().isEmpty()) {
-                            insertHtmlAtCaret(mdHtml);
-                            return;
-                        }
-                    }
-
-                    // 5. Standard plain text / rich text paste
-                    if (rawText != null && !rawText.isEmpty()) {
-                        String cleaned = cleanAndSanitizeText(rawText);
-                        if (!cleaned.isEmpty()) {
-                            if (!cleaned.contains("\n")) {
-                                editor.replaceSelection(cleaned);
-                            } else {
-                                insertFormattedTextAtCaret(cleaned);
-                            }
-                            return;
-                        }
-                    }
-
-                    // 6. If plain text was empty but HTML is available (without table)
-                    if (htmlData != null && !htmlData.trim().isEmpty()) {
-                        String extracted = extractTextFromHtml(htmlData);
-                        String cleaned = cleanAndSanitizeText(extracted);
-                        if (!cleaned.isEmpty()) {
-                            if (!cleaned.contains("\n")) {
-                                editor.replaceSelection(cleaned);
-                            } else {
-                                insertFormattedTextAtCaret(cleaned);
-                            }
-                            return;
-                        }
+                    // 3-6. Route clipboard HTML / Markdown / plain text through smart paste handler
+                    if (pasteClipboardContent(htmlData, rawText)) {
+                        return;
                     }
                 } catch (Exception ex) {
                     // Fall back to editor.paste()
@@ -1082,6 +1157,81 @@ public class ChartNotesPanel extends JPanel {
                 editor.paste();
             }
         };
+    }
+
+    /**
+     * Routes clipboard HTML and plain-text payloads through smart paste formatting
+     * (tables, Markdown, rich web/notebook HTML, or sanitized plain text).
+     */
+    public boolean pasteClipboardContent(String htmlData, String rawText) {
+        if (!editor.isEnabled() || !editor.isEditable()) return false;
+
+        // 3. If HTML contains a table, sanitize and insert it
+        if (htmlData != null && htmlData.toLowerCase().contains("<table")) {
+            String sanitizedTable = sanitizeHtmlContentWithTables(htmlData);
+            if (sanitizedTable != null && !sanitizedTable.trim().isEmpty()) {
+                insertHtmlTableAtCaret(sanitizedTable);
+                return true;
+            }
+        }
+
+        // 4. If plain text is tab-delimited tabular data (e.g. copied from Excel/Sheets as TSV)
+        if (rawText != null && isTabDelimitedTable(rawText)) {
+            String tableHtml = convertTabDelimitedToHtmlTable(rawText);
+            if (tableHtml != null && !tableHtml.trim().isEmpty()) {
+                insertHtmlTableAtCaret(tableHtml);
+                return true;
+            }
+        }
+
+        // 4b. If plain text contains explicit Markdown (or no rich HTML is present and text looks like Markdown)
+        boolean hasRichHtml = hasRichSemanticHtml(htmlData);
+        if (rawText != null && app.astrosoft.ui.util.MarkdownParser.isMarkdown(rawText)
+                && (!hasRichHtml || app.astrosoft.ui.util.MarkdownParser.hasExplicitMarkdownSyntax(rawText))) {
+            String mdHtml = app.astrosoft.ui.util.MarkdownParser.toHtml(rawText);
+            if (mdHtml != null && !mdHtml.trim().isEmpty()) {
+                insertHtmlAtCaret(mdHtml);
+                return true;
+            }
+        }
+
+        // 4c. If clipboard has rich semantic HTML (e.g. Gemini, NotebookLM, ChatGPT, Claude, web pages)
+        if (hasRichHtml) {
+            String sanitizedRich = sanitizeRichHtmlForNotes(htmlData);
+            if (sanitizedRich != null && !sanitizedRich.trim().isEmpty()) {
+                insertHtmlAtCaret(sanitizedRich);
+                return true;
+            }
+        }
+
+        // 5. Standard plain text / rich text paste
+        if (rawText != null && !rawText.isEmpty()) {
+            String cleaned = cleanAndSanitizeText(rawText);
+            if (!cleaned.isEmpty()) {
+                if (!cleaned.contains("\n")) {
+                    editor.replaceSelection(cleaned);
+                } else {
+                    insertFormattedTextAtCaret(cleaned);
+                }
+                return true;
+            }
+        }
+
+        // 6. If plain text was empty but HTML is available (without rich semantic tags or table)
+        if (htmlData != null && !htmlData.trim().isEmpty()) {
+            String extracted = extractTextFromHtml(htmlData);
+            String cleaned = cleanAndSanitizeText(extracted);
+            if (!cleaned.isEmpty()) {
+                if (!cleaned.contains("\n")) {
+                    editor.replaceSelection(cleaned);
+                } else {
+                    insertFormattedTextAtCaret(cleaned);
+                }
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void setupKeyBindings(Action boldAction, Action italicAction, Action underlineAction, Action bulletAction, Action numListAction, Action tabAction, Action deTabAction, Action smartPasteAction, Action undoAction, Action redoAction) {
@@ -1258,10 +1408,18 @@ public class ChartNotesPanel extends JPanel {
         editor.setFont(new Font("Arial", Font.PLAIN, currentSize));
         if (editor.getEditorKit() instanceof HTMLEditorKit) {
             HTMLEditorKit kit = (HTMLEditorKit) editor.getEditorKit();
-            String rule = "body, p, td, th, li { font-family: " + NOTES_FONT_FAMILY + "; font-size: " + currentSize + "pt; }";
-            kit.getStyleSheet().addRule(rule);
-            if (editor.getDocument() instanceof HTMLDocument) {
-                ((HTMLDocument) editor.getDocument()).getStyleSheet().addRule(rule);
+            String[] rules = new String[] {
+                "body, p, td, th, li, blockquote { font-family: " + NOTES_FONT_FAMILY + "; font-size: " + currentSize + "pt; }",
+                "h1 { font-family: " + NOTES_FONT_FAMILY + "; font-size: " + (currentSize + 3) + "pt; }",
+                "h2 { font-family: " + NOTES_FONT_FAMILY + "; font-size: " + (currentSize + 2) + "pt; }",
+                "h3, h4 { font-family: " + NOTES_FONT_FAMILY + "; font-size: " + (currentSize + 1) + "pt; }",
+                "code { font-size: " + Math.max(9, currentSize - 1) + "pt; }"
+            };
+            for (String rule : rules) {
+                kit.getStyleSheet().addRule(rule);
+                if (editor.getDocument() instanceof HTMLDocument) {
+                    ((HTMLDocument) editor.getDocument()).getStyleSheet().addRule(rule);
+                }
             }
         }
         int percent = (int) Math.round(((double) currentSize / BASE_FONT_SIZE) * 100);

@@ -774,6 +774,61 @@ public class ChartNotesXmlTest {
         Assert.assertTrue("Reloaded mixed notes must preserve paragraph 2", reloadedText.contains("Remedial recommendation"));
     }
 
+    @Test
+    public void testCopyFromGeminiAndNotebookLm() throws Exception {
+        // Dark-mode NotebookLM / Gemini HTML copied from browser selection
+        String notebookHtml =
+                "<div class=\"response-container\" style=\"background-color: rgb(19, 19, 20); color: rgb(227, 227, 227);\">" +
+                "  <p style=\"color: #e3e3e3;\">1. Career &amp; Professional Growth</p>" +
+                "  <ul>" +
+                "    <li><strong>Prediction:</strong><p>Career dissatisfaction will persist through early 2027.</p></li>" +
+                "    <li><strong>Astrological Reasoning:</strong>" +
+                "      <ul>" +
+                "        <li><strong>Current Restlessness:</strong> Running <strong>Moon/Rahu Dasa</strong>.</li>" +
+                "        <li><strong>Turnaround Trigger:</strong> Jupiter transit in mid-2027.</li>" +
+                "      </ul>" +
+                "    </li>" +
+                "  </ul>" +
+                "  <hr>" +
+                "  <p style=\"color: #e3e3e3;\">2. Marital &amp; Relationship Life</p>" +
+                "  <ul><li><strong>Prediction:</strong> Dialogue improves by mid-2027.</li></ul>" +
+                "</div>";
+
+        // Plain-text clipboard flavor from browser selection lacks markdown ** or * markers
+        String browserPlainText =
+                "1. Career & Professional Growth\n" +
+                "Prediction:\nCareer dissatisfaction will persist through early 2027.\n" +
+                "Astrological Reasoning:\n" +
+                "Current Restlessness: Running Moon/Rahu Dasa.\n" +
+                "Turnaround Trigger: Jupiter transit in mid-2027.\n" +
+                "2. Marital & Relationship Life\n" +
+                "Prediction: Dialogue improves by mid-2027.";
+
+        BirthData bd = new BirthData("Sample Native", Sex.Male, 5, 6, 1993, 18, 55, 0, new Place("Gurugram", 28.45, 77.02, 5.5));
+        Horoscope h = new Horoscope(bd);
+        app.astrosoft.ui.comp.ChartNotesPanel panel = new app.astrosoft.ui.comp.ChartNotesPanel(null);
+        panel.setHoroscope(h);
+
+        boolean handled = panel.pasteClipboardContent(notebookHtml, browserPlainText);
+        Assert.assertTrue("Smart paste must handle Gemini/NotebookLM HTML payload", handled);
+
+        String notes = h.getNotes();
+        Assert.assertNotNull("Notes must be populated", notes);
+        Assert.assertFalse("Dark-mode background/color styles must be stripped", notes.contains("rgb(19, 19, 20)") || notes.contains("#e3e3e3"));
+        Assert.assertTrue("Bold labels must be preserved", notes.contains("<b>Prediction:</b>") && notes.contains("<b>Moon/Rahu Dasa</b>"));
+        Assert.assertTrue("Nested bullet lists must be preserved", notes.contains("<ul>") && notes.contains("<li>"));
+        Assert.assertTrue("Horizontal divider must be preserved", notes.contains("<hr"));
+
+        // Save to XML and reload
+        File tempFile = File.createTempFile("test_gemini_notes_", ".ash");
+        tempFile.deleteOnExit();
+        h.saveToFile(tempFile.getAbsolutePath());
+
+        Horoscope reloaded = Horoscope.createFromFile(tempFile.getAbsolutePath());
+        Assert.assertTrue("Reloaded XML notes must preserve bold formatting", reloaded.getNotes().contains("<b>Moon/Rahu Dasa</b>"));
+        Assert.assertTrue("Reloaded XML notes must preserve nested list items", reloaded.getNotes().contains("Turnaround Trigger:"));
+    }
+
     private javax.swing.JTextPane getEditor(app.astrosoft.ui.comp.ChartNotesPanel panel) {
         for (java.awt.Component c : panel.getComponents()) {
             if (c instanceof javax.swing.JScrollPane) {
