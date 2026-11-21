@@ -5,9 +5,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.GraphicsEnvironment;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import org.junit.Test;
 
 import app.astrosoft.beans.Place;
@@ -50,6 +58,82 @@ public class ModernPickersTest {
         // Confirmation flag
         panel.setConfirmed(true);
         assertTrue(panel.isConfirmed());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testDatePickerYearMonthAndNavSyncSelectedDate() {
+        DatePickerPanel panel = new DatePickerPanel(LocalDate.of(2026, 11, 4));
+        List<JComboBox> combos = findComponents(panel, JComboBox.class);
+        assertEquals(2, combos.size());
+        JComboBox<Month> monthCombo = combos.get(0);
+        JComboBox<Integer> yearCombo = combos.get(1);
+
+        // 1. Changing year alone updates selectedDate and header
+        yearCombo.setSelectedItem(1998);
+        assertEquals(LocalDate.of(1998, 11, 4), panel.getSelectedDate());
+        assertTrue(hasLabelText(panel, "1998"));
+
+        // 2. Changing day first, then changing year preserves new day with new year
+        JButton day15 = findButtonByText(panel, "15");
+        assertNotNull(day15);
+        day15.doClick();
+        assertEquals(LocalDate.of(1998, 11, 15), panel.getSelectedDate());
+
+        yearCombo.setSelectedItem(2005);
+        assertEquals(LocalDate.of(2005, 11, 15), panel.getSelectedDate());
+        assertTrue(hasLabelText(panel, "2005"));
+
+        // 3. Changing month to shorter month clamps day-of-month (Jan 31 -> Feb 28)
+        panel.setSelectedDate(LocalDate.of(2026, 1, 31));
+        monthCombo.setSelectedItem(Month.FEBRUARY);
+        assertEquals(LocalDate.of(2026, 2, 28), panel.getSelectedDate());
+
+        // 4. Changing year from leap day clamps Feb 29 -> Feb 28
+        panel.setSelectedDate(LocalDate.of(2024, 2, 29));
+        yearCombo.setSelectedItem(1998);
+        assertEquals(LocalDate.of(1998, 2, 28), panel.getSelectedDate());
+
+        // 5. Prev / Next month arrows update selectedDate
+        JButton nextBtn = findButtonByText(panel, ">");
+        JButton prevBtn = findButtonByText(panel, "<");
+        assertNotNull(nextBtn);
+        assertNotNull(prevBtn);
+        nextBtn.doClick();
+        assertEquals(LocalDate.of(1998, 3, 28), panel.getSelectedDate());
+        prevBtn.doClick();
+        assertEquals(LocalDate.of(1998, 2, 28), panel.getSelectedDate());
+    }
+
+    private static <T extends Component> List<T> findComponents(Container root, Class<T> type) {
+        List<T> result = new ArrayList<>();
+        for (Component c : root.getComponents()) {
+            if (type.isInstance(c)) {
+                result.add(type.cast(c));
+            }
+            if (c instanceof Container) {
+                result.addAll(findComponents((Container) c, type));
+            }
+        }
+        return result;
+    }
+
+    private static JButton findButtonByText(Container root, String text) {
+        for (JButton btn : findComponents(root, JButton.class)) {
+            if (text.equals(btn.getText())) {
+                return btn;
+            }
+        }
+        return null;
+    }
+
+    private static boolean hasLabelText(Container root, String text) {
+        for (JLabel label : findComponents(root, JLabel.class)) {
+            if (text.equals(label.getText())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Test

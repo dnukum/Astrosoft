@@ -170,8 +170,7 @@ public class DatePickerPanel extends JPanel {
         monthCombo.addActionListener(e -> {
             Month m = (Month) monthCombo.getSelectedItem();
             if (m != null && m != viewYearMonth.getMonth()) {
-                viewYearMonth = YearMonth.of(viewYearMonth.getYear(), m);
-                updateDaysGrid();
+                syncViewAndSelection(YearMonth.of(viewYearMonth.getYear(), m));
             }
         });
 
@@ -203,8 +202,7 @@ public class DatePickerPanel extends JPanel {
         yearCombo.addActionListener(e -> {
             Integer y = (Integer) yearCombo.getSelectedItem();
             if (y != null && y != viewYearMonth.getYear()) {
-                viewYearMonth = YearMonth.of(y, viewYearMonth.getMonth());
-                updateDaysGrid();
+                syncViewAndSelection(YearMonth.of(y, viewYearMonth.getMonth()));
             }
         });
 
@@ -339,9 +337,19 @@ public class DatePickerPanel extends JPanel {
     private void navigateMonth(int delta) {
         YearMonth next = viewYearMonth.plusMonths(delta);
         if (next.getYear() >= MIN_YEAR && next.getYear() <= MAX_YEAR) {
-            viewYearMonth = next;
-            updateDaysGrid();
+            syncViewAndSelection(next);
         }
+    }
+
+    /**
+     * Keeps selectedDate and the header banner in sync whenever the viewed
+     * month or year changes, clamping the day of month to the target month's length.
+     */
+    private void syncViewAndSelection(YearMonth target) {
+        viewYearMonth = target;
+        int clampedDay = Math.min(selectedDate.getDayOfMonth(), target.lengthOfMonth());
+        selectedDate = target.atDay(clampedDay);
+        updateHeaderAndGrid();
     }
 
     private void onDayClicked(int slot) {
