@@ -112,6 +112,7 @@ public class MarriageMatchView extends AstrosoftView {
 	private JCheckBox shadbalaCheck; // Compatibility proxy
 
 	private JPanel dashboardContainer;
+	private JPanel leftColPanel;
 	private JPanel rightColPanel;
 	private JScrollPane dashboardScroll;
 
@@ -154,25 +155,24 @@ public class MarriageMatchView extends AstrosoftView {
 		gbc.weighty = 1.0;
 		gbc.weightx = 0.0; // Fixed column widths - NEVER dynamically squashed or scaled!
 
-		// --- Left Column (500px FIXED) ---
+		// --- Left Column (500px FIXED width, dynamic height to avoid clipping) ---
 		gbc.gridx = 0;
 		gbc.insets = new Insets(0, 0, 0, 23); // 23px horizontal separation to Right Column (+5px)
-		JPanel leftCol = new JPanel();
-		leftCol.setLayout(new BoxLayout(leftCol, BoxLayout.Y_AXIS));
-		leftCol.setOpaque(false);
-		leftCol.setPreferredSize(new Dimension(500, 810));
-		leftCol.setMinimumSize(new Dimension(500, 810));
-		leftCol.setMaximumSize(new Dimension(500, 810));
+		this.leftColPanel = new JPanel();
+		leftColPanel.setLayout(new BoxLayout(leftColPanel, BoxLayout.Y_AXIS));
+		leftColPanel.setOpaque(false);
 
-		leftCol.add(createCombinedProfileCard());
-		leftCol.add(Box.createVerticalStrut(10));
-		leftCol.add(createKutaScoreCard());
-		leftCol.add(Box.createVerticalStrut(10));
+		leftColPanel.add(createCombinedProfileCard());
+		leftColPanel.add(Box.createVerticalStrut(10));
+		leftColPanel.add(createKutaScoreCard());
+		leftColPanel.add(Box.createVerticalStrut(10));
 		if (c.hasHoroscope()) {
-			leftCol.add(createDoshaCard());
+			leftColPanel.add(createDoshaCard());
 		}
-		leftCol.add(Box.createVerticalGlue());
-		dashboardContainer.add(leftCol, gbc);
+		leftColPanel.add(Box.createVerticalGlue());
+		int leftH = Math.max(810, leftColPanel.getPreferredSize().height);
+		setFixedSize(leftColPanel, 500, leftH);
+		dashboardContainer.add(leftColPanel, gbc);
 
 		// --- Right Column (660px Default with 4 Charts + Shadbala / Timeline) ---
 		gbc.gridx = 1;
@@ -259,8 +259,9 @@ public class MarriageMatchView extends AstrosoftView {
 		rightColPanel.add(Box.createVerticalGlue());
 		dashboardContainer.add(rightColPanel, gbc);
 
-		dashboardContainer.setPreferredSize(new Dimension(1211, 845));
-		dashboardContainer.setMinimumSize(new Dimension(1211, 845));
+		int dashH = Math.max(845, leftH + 35);
+		dashboardContainer.setPreferredSize(new Dimension(1211, dashH));
+		dashboardContainer.setMinimumSize(new Dimension(1211, dashH));
 		dashboardContainer.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
 
 		return dashboardContainer;
@@ -276,10 +277,15 @@ public class MarriageMatchView extends AstrosoftView {
 
 		card.add(createProfileContent(true));
 		card.add(createProfileContent(false));
-		card.setPreferredSize(new Dimension(500, 250));
-		card.setMinimumSize(new Dimension(500, 250));
-		card.setMaximumSize(new Dimension(500, 250));
+		setFixedSize(card, 500, Math.max(250, card.getPreferredSize().height));
 		return card;
+	}
+
+	private static void setFixedSize(javax.swing.JComponent comp, int width, int height) {
+		Dimension size = new Dimension(width, height);
+		comp.setPreferredSize(size);
+		comp.setMinimumSize(size);
+		comp.setMaximumSize(size);
 	}
 
 	/**
@@ -370,7 +376,7 @@ public class MarriageMatchView extends AstrosoftView {
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		String valText = (value != null && !value.trim().isEmpty()) ? value : "-";
 		javax.swing.JTextArea val = UIUtil.createWrappingTextArea(
-				UIUtil.getFont("Verdana", Font.PLAIN, 11), UIConsts.DARK_BLUE);
+				UIUtil.getFont("Verdana", Font.PLAIN, 11), UIConsts.DARK_BLUE, 115);
 		val.setText(valText);
 		panel.add(val, gbc);
 	}
@@ -757,7 +763,8 @@ public class MarriageMatchView extends AstrosoftView {
 		}
 		if (dashboardContainer != null) {
 			int totalW = 500 + 23 + clampedW + 35;
-			int totalH = Math.max(845, 425 + clampedH + 50);
+			int minLeftH = (leftColPanel != null) ? leftColPanel.getPreferredSize().height + 35 : 845;
+			int totalH = Math.max(Math.max(845, minLeftH), 425 + clampedH + 50);
 			dashboardContainer.setPreferredSize(new Dimension(totalW, totalH));
 			dashboardContainer.setMinimumSize(new Dimension(totalW, totalH));
 			dashboardContainer.revalidate();

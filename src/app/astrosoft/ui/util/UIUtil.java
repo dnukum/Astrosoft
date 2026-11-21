@@ -413,7 +413,24 @@ public class UIUtil {
 	 * foreground color for plain multi-line display without Swing HTML rendering overhead.
 	 */
 	public static JTextArea createWrappingTextArea(Font font, Color fg) {
-		JTextArea area = new JTextArea();
+		return createWrappingTextArea(font, fg, 0);
+	}
+
+	/**
+	 * Creates a read-only, transparent, word-wrapping JTextArea.
+	 * When fallbackWrapWidth > 0, constrains initial width during layout passes
+	 * before the component has a real width so wrapped lines report true height.
+	 */
+	public static JTextArea createWrappingTextArea(Font font, Color fg, int fallbackWrapWidth) {
+		JTextArea area = (fallbackWrapWidth > 0) ? new JTextArea() {
+			@Override
+			public Dimension getPreferredSize() {
+				if (getWidth() <= 0) {
+					setSize(fallbackWrapWidth, Short.MAX_VALUE);
+				}
+				return super.getPreferredSize();
+			}
+		} : new JTextArea();
 		area.setLineWrap(true);
 		area.setWrapStyleWord(true);
 		area.setEditable(false);
