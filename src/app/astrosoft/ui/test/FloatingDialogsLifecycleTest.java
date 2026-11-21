@@ -26,6 +26,7 @@ import app.astrosoft.pref.AstrosoftPref.Preference;
 import app.astrosoft.test.SampleHoroscopes;
 import app.astrosoft.ui.AstroSoft;
 import app.astrosoft.ui.dlg.AshtavargaDialog;
+import app.astrosoft.ui.dlg.DasaTimelineDialog;
 import app.astrosoft.ui.dlg.HouseDetailsDialog;
 import app.astrosoft.ui.dlg.PlanetDetailsDialog;
 import app.astrosoft.ui.dlg.TransitChartDialog;
@@ -42,6 +43,7 @@ public class FloatingDialogsLifecycleTest {
 		PlanetDetailsDialog.closeActiveDialog();
 		HouseDetailsDialog.closeActiveDialog();
 		AshtavargaDialog.closeActiveDialog();
+		DasaTimelineDialog.closeActiveDialog();
 	}
 
 	@After
@@ -49,6 +51,7 @@ public class FloatingDialogsLifecycleTest {
 		PlanetDetailsDialog.closeActiveDialog();
 		HouseDetailsDialog.closeActiveDialog();
 		AshtavargaDialog.closeActiveDialog();
+		DasaTimelineDialog.closeActiveDialog();
 	}
 
 	@Test
@@ -547,6 +550,50 @@ public class FloatingDialogsLifecycleTest {
 			if (frame != null) {
 				frame.dispose();
 			}
+		}
+	}
+
+	@Test
+	public void testDasaTimelineDialogLifecycleAndPreferences() {
+		AstroSoft frame = new AstroSoft();
+		AstrosoftPref pref = AstroSoft.getPreferences();
+		Language origLang = pref.getLanguage();
+		try {
+			frame.computeHoroscope(horoscope.getBirthData());
+			DasaTimelineDialog dlg = DasaTimelineDialog.showDialog(frame, horoscope, null);
+			assertNotNull("DasaTimelineDialog should be active", DasaTimelineDialog.getActiveDialog());
+			assertTrue("DasaTimelineDialog must be visible", dlg.isVisible());
+			assertFalse("Modeless palette must not be alwaysOnTop", dlg.isAlwaysOnTop());
+
+			dlg.setBounds(120, 140, 700, 440);
+			java.awt.Rectangle origBounds = dlg.getBounds();
+			dlg.setWindowFilter(app.astrosoft.core.DasaTimelineEngine.WindowFilter.FULL_120_YEARS);
+
+			// Utility view suppression
+			frame.viewChanged(View.EPHEMERIS_VIEW);
+			assertFalse("DasaTimelineDialog must hide on EPHEMERIS_VIEW", dlg.isVisible());
+			frame.viewChanged(View.CHART_VIEW);
+			assertTrue("DasaTimelineDialog must restore on CHART_VIEW", dlg.isVisible());
+
+			// Preference change rebuilds preserving bounds and window filter
+			Language nextLang = (origLang == Language.ENGLISH) ? Language.TAMIL : Language.ENGLISH;
+			frame.optionChanged(Preference.Language, nextLang);
+			DasaTimelineDialog reopened = DasaTimelineDialog.getActiveDialog();
+			assertNotNull("DasaTimelineDialog should be recreated", reopened);
+			assertTrue("Rebuilt DasaTimelineDialog should be different instance", reopened != dlg);
+			assertTrue("Rebuilt DasaTimelineDialog should be visible", reopened.isVisible());
+			assertEquals("Bounds must be preserved", origBounds, reopened.getBounds());
+			assertEquals("Window filter must be preserved",
+					app.astrosoft.core.DasaTimelineEngine.WindowType.FULL_120_YEARS,
+					reopened.getWindowFilter().getType());
+
+			// Cleanup on new chart
+			frame.cleanupChartFloatingDialogs();
+			assertNull("DasaTimelineDialog must be closed on cleanup", DasaTimelineDialog.getActiveDialog());
+		} finally {
+			pref.setLanguage(origLang);
+			DasaTimelineDialog.closeActiveDialog();
+			frame.dispose();
 		}
 	}
 }

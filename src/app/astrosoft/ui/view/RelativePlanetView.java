@@ -654,8 +654,8 @@ public class RelativePlanetView extends JPanel {
 
 		Font lineFont = UIUtil.getFont(Font.PLAIN, 11);
 
-		String kendraTitle = isTamil ? "கேந்திரம் (1,4,7,10):" : "Kendra (1,4,7,10):";
-		String trikonaTitle = isTamil ? "திரிகோணம் (1,5,9):" : "Trikona (1,5,9):";
+		String kendraTitle = isTamil ? "கேந்திர அதிபதிகள் (1,4,7,10):" : "Kendra Lords (1,4,7,10):";
+		String trikonaTitle = isTamil ? "திரிகோண அதிபதிகள் (1,5,9):" : "Trikona Lords (1,5,9):";
 		String yogaTitle = isTamil ? "யோககாரகன்:" : "Yogakaraka:";
 		String bTitle = isTamil ? "சுப கிரகங்கள்:" : "Functional Benefics:";
 		String nTitle = isTamil ? "சம கிரகங்கள்:" : "Functional Neutrals:";

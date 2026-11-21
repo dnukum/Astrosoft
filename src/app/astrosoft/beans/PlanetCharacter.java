@@ -309,14 +309,14 @@ public class PlanetCharacter {
 	}
 
 	/**
-	 * Returns sorted unique lords of the Kendra houses (1, 4, 7, 10) for the given lagna.
+	 * Returns unique lords of the Kendra houses (1, 4, 7, 10) in house order for the given lagna.
 	 */
 	public static List<Planet> getKendraLords(Rasi lagna) {
 		return getHouseLords(lagna, new int[] {1, 4, 7, 10});
 	}
 
 	/**
-	 * Returns sorted unique lords of the Trikona houses (1, 5, 9) for the given lagna.
+	 * Returns unique lords of the Trikona houses (1, 5, 9) in house order for the given lagna.
 	 */
 	public static List<Planet> getTrikonaLords(Rasi lagna) {
 		return getHouseLords(lagna, new int[] {1, 5, 9});
@@ -330,9 +330,7 @@ public class PlanetCharacter {
 		for (int h : houses) {
 			lords.add(Rasi.values()[(lagna.ordinal() + h - 1) % 12].lord());
 		}
-		List<Planet> list = new ArrayList<Planet>(lords);
-		Collections.sort(list);
-		return list;
+		return new ArrayList<Planet>(lords);
 	}
 
 	public static FunctionalRole getFunctionalRole(Rasi lagna, Planet planet) {

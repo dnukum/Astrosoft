@@ -651,6 +651,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 		if (ad != null && ad.isDisplayable()) {
 			ad.setVisible(false);
 		}
+		app.astrosoft.ui.dlg.DasaTimelineDialog dd = app.astrosoft.ui.dlg.DasaTimelineDialog.getActiveDialog();
+		if (dd != null && dd.isDisplayable()) {
+			dd.setVisible(false);
+		}
 	}
 
 	public void restoreChartFloatingDialogs(View targetHoroscopeView) {
@@ -667,6 +671,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 			// Smart duplicate suppression on ASHTAVARGA_VIEW
 			ad.setVisible(targetHoroscopeView != View.ASHTAVARGA_VIEW);
 		}
+		app.astrosoft.ui.dlg.DasaTimelineDialog dd = app.astrosoft.ui.dlg.DasaTimelineDialog.getActiveDialog();
+		if (dd != null && dd.isDisplayable()) {
+			dd.setVisible(true);
+		}
 		if (currentDashboard != null) {
 			if (pd != null && pd.isDisplayable()) {
 				currentDashboard.getPositionsCheck().setSelected(pd.isVisible());
@@ -676,6 +684,9 @@ public class AstroSoft extends javax.swing.JFrame implements
 			}
 			if (ad != null && ad.isDisplayable()) {
 				currentDashboard.getAshtavargaCheck().setSelected(ad.isVisible());
+			}
+			if (dd != null && dd.isDisplayable()) {
+				currentDashboard.getDasaCheck().setSelected(dd.isVisible());
 			}
 		}
 	}
@@ -688,6 +699,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 		app.astrosoft.ui.dlg.PlanetDetailsDialog.closeActiveDialog();
 		app.astrosoft.ui.dlg.HouseDetailsDialog.closeActiveDialog();
 		app.astrosoft.ui.dlg.AshtavargaDialog.closeActiveDialog();
+		app.astrosoft.ui.dlg.DasaTimelineDialog.closeActiveDialog();
 	}
 
 	public void computeHoroscope(BirthData birthData){
@@ -1549,6 +1561,10 @@ public class AstroSoft extends javax.swing.JFrame implements
 			int adTab = (ad != null && ad.isDisplayable()) ? ad.getSelectedTab() : 0;
 			AshtavargaName adTarget = (ad != null && ad.isDisplayable()) ? ad.getSelectedTarget() : null;
 
+			app.astrosoft.ui.dlg.DasaTimelineDialog dd = app.astrosoft.ui.dlg.DasaTimelineDialog.getActiveDialog();
+			java.awt.Rectangle ddBounds = (dd != null && dd.isDisplayable() && dd.isVisible()) ? dd.getBounds() : null;
+			app.astrosoft.core.DasaTimelineEngine.WindowFilter ddWindow = (dd != null && dd.isDisplayable()) ? dd.getWindowFilter() : null;
+
 			if (pdBounds != null) {
 				app.astrosoft.ui.dlg.PlanetDetailsDialog.closeActiveDialog();
 				Runnable onClose = () -> {
@@ -1592,6 +1608,22 @@ public class AstroSoft extends javax.swing.JFrame implements
 				}
 				if (currentDashboard != null) {
 					currentDashboard.getAshtavargaCheck().setSelected(true);
+				}
+			}
+			if (ddBounds != null) {
+				app.astrosoft.ui.dlg.DasaTimelineDialog.closeActiveDialog();
+				Runnable onClose = () -> {
+					if (currentDashboard != null) {
+						currentDashboard.getDasaCheck().setSelected(false);
+					}
+				};
+				app.astrosoft.ui.dlg.DasaTimelineDialog reopened = app.astrosoft.ui.dlg.DasaTimelineDialog.showDialog(this, h, onClose);
+				if (ddWindow != null) {
+					reopened.setWindowFilter(ddWindow);
+				}
+				reopened.setBounds(ddBounds);
+				if (currentDashboard != null) {
+					currentDashboard.getDasaCheck().setSelected(true);
 				}
 			}
 			if (currentView != null) {

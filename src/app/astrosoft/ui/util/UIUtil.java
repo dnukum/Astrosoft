@@ -519,4 +519,15 @@ public class UIUtil {
                 comboLocation.y + size.height );
         }
 	}
+
+	/** Blends {@code c1} into {@code c2} by {@code ratio} in [0, 1]. */
+	public static Color blendColors(Color c1, Color c2, float ratio) {
+		float inv = 1.0f - ratio;
+		int r = Math.round(c1.getRed() * ratio + c2.getRed() * inv);
+		int g = Math.round(c1.getGreen() * ratio + c2.getGreen() * inv);
+		int b = Math.round(c1.getBlue() * ratio + c2.getBlue() * inv);
+		return new Color(Math.min(255, Math.max(0, r)),
+				Math.min(255, Math.max(0, g)),
+				Math.min(255, Math.max(0, b)));
+	}
 }

@@ -162,8 +162,8 @@ public class HoroscopeExporter extends AbstractExporter {
 		try {
 			xmlWriter.add(xmlef.createStartElement(XmlConsts.CHART_PROPERTIES_TAG, null, null));
 
-			writeNamedProperty("Kendra (1,4,7,10)", formatPlanetList(PlanetCharacter.getKendraLords(ascRasi)));
-			writeNamedProperty("Trikona (1,5,9)", formatPlanetList(PlanetCharacter.getTrikonaLords(ascRasi)));
+			writeNamedProperty("Kendra Lords (1,4,7,10)", formatPlanetList(PlanetCharacter.getKendraLords(ascRasi)));
+			writeNamedProperty("Trikona Lords (1,5,9)", formatPlanetList(PlanetCharacter.getTrikonaLords(ascRasi)));
 
 			Planet yogakaraka = PlanetCharacter.getYogakaraka(ascRasi);
 			writeNamedProperty("Yogakaraka", yogakaraka != null ? yogakaraka.toString() : "None");

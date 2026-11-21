@@ -234,7 +234,7 @@ public class SurfaceZoomControlsTest {
 
     private static JLabel findKendraLabel(Container root) {
         for (JLabel l : findComponents(root, JLabel.class)) {
-            if (l.getText() != null && l.getText().contains("Kendra (1,4,7,10):")) {
+            if (l.getText() != null && l.getText().contains("Kendra Lords (1,4,7,10):")) {
                 return l;
             }
         }

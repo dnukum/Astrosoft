@@ -184,8 +184,8 @@ public class HousePACViewTest {
 		for (JLabel l : labels) {
 			String text = l.getText();
 			if (text != null) {
-				if (text.contains("Kendra (1,4,7,10):")) foundKendra = true;
-				if (text.contains("Trikona (1,5,9):")) foundTrikona = true;
+				if (text.contains("Kendra Lords (1,4,7,10):")) foundKendra = true;
+				if (text.contains("Trikona Lords (1,5,9):")) foundTrikona = true;
 				if (text.contains("Yogakaraka:")) foundYogakaraka = true;
 				if (text.contains("Functional Benefics:")) foundBenefics = true;
 				if (text.contains("Functional Neutrals:")) foundNeutrals = true;

@@ -86,8 +86,8 @@ public class AstrosoftMarkdownExporterTest extends TestCase {
                 String mdContent = readEntireFile(md);
                 assertFalse("Newly exported MD must not contain Bhava Positions", mdContent.contains("Bhava Positions"));
                 assertTrue("Newly exported MD must contain Chart Properties", mdContent.contains("## 3. Chart Properties"));
-                assertTrue("Newly exported MD must contain Kendra (1,4,7,10)", mdContent.contains("Kendra (1,4,7,10)"));
-                assertTrue("Newly exported MD must contain Trikona (1,5,9)", mdContent.contains("Trikona (1,5,9)"));
+                assertTrue("Newly exported MD must contain Kendra Lords (1,4,7,10)", mdContent.contains("Kendra Lords (1,4,7,10)"));
+                assertTrue("Newly exported MD must contain Trikona Lords (1,5,9)", mdContent.contains("Trikona Lords (1,5,9)"));
                 assertTrue("Newly exported MD must contain Yogakaraka", mdContent.contains("Yogakaraka"));
                 assertTrue("Newly exported MD must contain Functional Benefics", mdContent.contains("Functional Benefics"));
                 assertTrue("Newly exported MD must contain Functional Neutrals", mdContent.contains("Functional Neutrals"));

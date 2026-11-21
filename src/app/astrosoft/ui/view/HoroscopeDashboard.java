@@ -25,6 +25,7 @@ import app.astrosoft.core.Horoscope;
 import app.astrosoft.core.ShadBala;
 import app.astrosoft.ui.comp.ChevronToggleButton;
 import app.astrosoft.ui.dlg.AshtavargaDialog;
+import app.astrosoft.ui.dlg.DasaTimelineDialog;
 import app.astrosoft.ui.dlg.HouseDetailsDialog;
 import app.astrosoft.ui.dlg.PlanetDetailsDialog;
 import app.astrosoft.ui.util.UIConsts;
@@ -59,16 +60,18 @@ public class HoroscopeDashboard extends JPanel {
 	};
 	private final JPanel rightContainer = new JPanel();
 	private final JPanel rightWrapper = new JPanel(new BorderLayout());
-	private final JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+	private final JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
 	private final ChevronToggleButton toggleButton = new ChevronToggleButton();
 	private final JCheckBox positionsCheck = checkBox("Planet Details", false);
 	private final JCheckBox shadbalaCheck = checkBox("Shadbala", false);
 	private final JCheckBox ashtavargaCheck = checkBox("AshtaVarga", false);
 	private final JCheckBox houseDetailsCheck = checkBox("House Details", false);
+	private final JCheckBox dasaCheck = checkBox("Vimshottari Dasa", false);
 
 	private HouseDetailsDialog houseDetailsDialog;
 	private PlanetDetailsDialog planetDetailsDialog;
 	private AshtavargaDialog ashtavargaDialog;
+	private DasaTimelineDialog dasaTimelineDialog;
 	private PlanetaryInfo planetaryInfo;
 	private Rasi ascendant;
 	private ShadBala shadBala;
@@ -156,11 +159,13 @@ public class HoroscopeDashboard extends JPanel {
 		// Shadbala option consolidated into multi-tab "Planet Details" card; shadbalaCheck retained for backward compatibility
 		controlsPanel.add(ashtavargaCheck);
 		controlsPanel.add(houseDetailsCheck);
+		controlsPanel.add(dasaCheck);
 
 		positionsCheck.addActionListener(e -> togglePlanetDetailsDialog());
 		shadbalaCheck.addActionListener(e -> relayout());
 		ashtavargaCheck.addActionListener(e -> toggleAshtavargaDialog());
 		houseDetailsCheck.addActionListener(e -> toggleHouseDetailsDialog());
+		dasaCheck.addActionListener(e -> toggleDasaTimelineDialog());
 
 		PlanetDetailsDialog activePlanet = PlanetDetailsDialog.getActiveDialog();
 		if (activePlanet != null && activePlanet.isDisplayable()) {
@@ -179,6 +184,12 @@ public class HoroscopeDashboard extends JPanel {
 			this.ashtavargaDialog = activeAsh;
 			this.ashtavargaCheck.setSelected(activeAsh.isVisible());
 			activeAsh.setOnCloseCallback(() -> ashtavargaCheck.setSelected(false));
+		}
+		DasaTimelineDialog activeDasa = DasaTimelineDialog.getActiveDialog();
+		if (activeDasa != null && activeDasa.isDisplayable()) {
+			this.dasaTimelineDialog = activeDasa;
+			this.dasaCheck.setSelected(activeDasa.isVisible());
+			activeDasa.setOnCloseCallback(() -> dasaCheck.setSelected(false));
 		}
 
 		relayout();
@@ -228,6 +239,14 @@ public class HoroscopeDashboard extends JPanel {
 
 	public AshtavargaDialog getAshtavargaDialog() {
 		return ashtavargaDialog;
+	}
+
+	public JCheckBox getDasaCheck() {
+		return dasaCheck;
+	}
+
+	public DasaTimelineDialog getDasaTimelineDialog() {
+		return dasaTimelineDialog;
 	}
 
 	private void togglePlanetDetailsDialog() {
@@ -310,6 +329,28 @@ public class HoroscopeDashboard extends JPanel {
 		}
 	}
 
+	private void toggleDasaTimelineDialog() {
+		if (horoscope != null) {
+			if (dasaCheck.isSelected()) {
+				if (dasaTimelineDialog == null || !dasaTimelineDialog.isDisplayable()) {
+					Window owner = SwingUtilities.getWindowAncestor(this);
+					dasaTimelineDialog = new DasaTimelineDialog(owner, horoscope, () -> {
+						dasaCheck.setSelected(false);
+					});
+				}
+				dasaTimelineDialog.setVisible(true);
+				dasaTimelineDialog.toFront();
+			} else {
+				if (dasaTimelineDialog != null) {
+					dasaTimelineDialog.dispose();
+					dasaTimelineDialog = null;
+				}
+			}
+		} else {
+			dasaCheck.setSelected(false);
+		}
+	}
+
 	public void disposeFloatingDialogs() {
 		if (planetDetailsDialog != null) {
 			planetDetailsDialog.dispose();
@@ -323,9 +364,14 @@ public class HoroscopeDashboard extends JPanel {
 			ashtavargaDialog.dispose();
 			ashtavargaDialog = null;
 		}
+		if (dasaTimelineDialog != null) {
+			dasaTimelineDialog.dispose();
+			dasaTimelineDialog = null;
+		}
 		positionsCheck.setSelected(false);
 		houseDetailsCheck.setSelected(false);
 		ashtavargaCheck.setSelected(false);
+		dasaCheck.setSelected(false);
 	}
 
 	public void setHouseDetailsData(PlanetaryInfo planetaryInfo, Rasi ascendant) {
