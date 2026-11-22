@@ -1442,7 +1442,24 @@ public class AstroSoft extends javax.swing.JFrame implements
 				}
 			} else if (currentView == View.EPHEMERIS_VIEW) {
 				if (eph != null) {
+					EphemerisView.UiMode savedUiMode = null;
+					Calendar savedDateTime = null;
+					Place savedPlace = null;
+					Mode savedEphMode = null;
+					int savedMonthRow = 0;
+					if (home.getComponentCount() > 0 && home.getComponent(0) instanceof EphemerisView) {
+						EphemerisView ev = (EphemerisView) home.getComponent(0);
+						savedUiMode = ev.getUiMode();
+						savedDateTime = ev.getActiveDateTime();
+						savedPlace = ev.getSessionPlace();
+						savedEphMode = ev.getEphMode();
+						savedMonthRow = ev.getSelectedMonthRow();
+					}
 					viewManager.showView(currentView);
+					if (savedUiMode != null && home.getComponentCount() > 0 && home.getComponent(0) instanceof EphemerisView) {
+						((EphemerisView) home.getComponent(0)).restoreSessionState(
+								savedUiMode, savedDateTime, savedPlace, savedEphMode, savedMonthRow);
+					}
 				}
 			} else if (currentView == View.PANCHANG_VIEW) {
 				if (pan != null) {
@@ -1902,7 +1919,7 @@ public class AstroSoft extends javax.swing.JFrame implements
 	private void optionThemeChanged(app.astrosoft.ui.util.UIConsts.ChartTheme theme) {
 		log.fine("Chart Theme changed to: " + theme);
 		UIConsts.setChartTheme(theme);
-		if (currentView == View.PANCHANG_VIEW) {
+		if (currentView == View.PANCHANG_VIEW || currentView == View.EPHEMERIS_VIEW) {
 			refreshActiveView();
 		}
 		refreshAllChartsAndCachedViews();
@@ -1986,7 +2003,8 @@ public class AstroSoft extends javax.swing.JFrame implements
 		return isChartView(view)
 				|| name.contains("MarriageMatchView")
 				|| name.contains("MyMuhurtaView")
-				|| name.contains("PanchangView");
+				|| name.contains("PanchangView")
+				|| name.contains("EphemerisView");
 	}
 
 	private class AstrosoftViewContainer implements ViewContainer{

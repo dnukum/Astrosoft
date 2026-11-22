@@ -98,6 +98,7 @@ public class Chart extends JPanel{
 	private Color badgeBgColor;
 	private Color badgeBorderColor;
 	private Color badgeTextColor;
+	private float gridLineThickness = 0f;
 
 	private final Dimension baseChartSize;
 	private Dimension lastSouthLayoutSize;
@@ -259,6 +260,9 @@ public class Chart extends JPanel{
 		add(header, BorderLayout.NORTH);
 
 		northIndianCanvas = new NorthIndianChartCanvas(HouseContentModel.from(chartData), showHouseNumber);
+		if (gridLineThickness > 0f) {
+			northIndianCanvas.setGridLineThickness(gridLineThickness);
+		}
 		createPopups();
 		add(northIndianCanvas, BorderLayout.CENTER);
 	}
@@ -388,7 +392,9 @@ public class Chart extends JPanel{
 				app.astrosoft.beans.AshtaVargaChartData avData = (app.astrosoft.beans.AshtaVargaChartData) chartData;
 				panel.setLayout(new BorderLayout());
 				panel.setPreferredSize(avHouseSize);
-				panel.setBorder(UIConsts.getChartBorder());
+				panel.setBorder(gridLineThickness > 0f
+					? BorderFactory.createLineBorder(UIConsts.getChartBorderColor(), Math.max(1, Math.round(gridLineThickness)))
+					: UIConsts.getChartBorder());
 
 				Rasi asc = avData.getAscendant();
 				Rasi moon = avData.getMoonRasi();
@@ -575,7 +581,9 @@ public class Chart extends JPanel{
 			panel.setMinimumSize(houseSize);
 			panel.setBackground(UIConsts.getChartBackground());
 			
-			panel.setBorder(UIConsts.getChartBorder());
+			panel.setBorder(gridLineThickness > 0f
+					? BorderFactory.createLineBorder(UIConsts.getChartBorderColor(), Math.max(1, Math.round(gridLineThickness)))
+					: UIConsts.getChartBorder());
 			add(panel, getConstrains(houseNo));
 			
 			if (isPlanetChart){
@@ -656,6 +664,16 @@ public class Chart extends JPanel{
 		repaint();
 	}
 
+	/** Sets a custom grid line thickness (in px) for both South and North Indian charts. */
+	public void setGridLineThickness(float thickness) {
+		this.gridLineThickness = thickness;
+		if (northIndianCanvas != null && thickness > 0f) {
+			northIndianCanvas.setGridLineThickness(thickness);
+		} else {
+			rebuild();
+		}
+	}
+
 	public void setHouseBackground(Rasi house, Color bg) {
 		if (northIndianCanvas != null) {
 			northIndianCanvas.setHouseBackground(house, bg);
@@ -707,9 +725,14 @@ public class Chart extends JPanel{
 		
 		boolean highlightRetrogrades = planetChartData.highlightRetrogrades();
 		EnumMap<Planet, Boolean> planetDir = planetChartData.getPlanetDir();
+		EnumMap<Planet, Boolean> planetCombustion = planetChartData.getPlanetCombustion();
 		
 		for(AstrosoftTableColumn col : table.getColumnMetaData().getVisibleColumns()){
-			houseTable.setCellRenderer(new PlanetCellRenderer(houseTable.getCellRenderer(col), highlightRetrogrades, false, planetDir ), col);
+			PlanetCellRenderer renderer = new PlanetCellRenderer(houseTable.getCellRenderer(col), highlightRetrogrades, false, planetDir);
+			if (planetCombustion != null && !planetCombustion.isEmpty()) {
+				renderer.setPlanetCombustion(planetCombustion);
+			}
+			houseTable.setCellRenderer(renderer, col);
 		}
 		
 		createPopups();

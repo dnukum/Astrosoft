@@ -123,27 +123,40 @@ public class PlanetaryInfo implements Exportable{
 	}
 
 	private void calcCombustion() {
-		planetCombustion = new EnumMap<Planet, Boolean>(Planet.class);
-		if (!planetPosition.containsKey(Planet.Sun)) return;
-		
+		planetCombustion = calcCombustion(planetPosition, planetDirection);
+	}
+
+	/**
+	 * Computes planetary combustion (Asta) using B.V. Raman's angular orbs from the Sun.
+	 */
+	public static EnumMap<Planet, Boolean> calcCombustion(
+			EnumMap<Planet, Double> planetPosition,
+			EnumMap<Planet, Boolean> planetDirection) {
+		EnumMap<Planet, Boolean> combustion = new EnumMap<Planet, Boolean>(Planet.class);
+		if (planetPosition == null || !planetPosition.containsKey(Planet.Sun)) {
+			return combustion;
+		}
+
 		double sunPos = planetPosition.get(Planet.Sun);
-		
+
 		for (Planet p : Planet.majorPlanets()) {
 			if (p == Planet.Sun || p == Planet.Ascendant || p.isNode()) {
-				planetCombustion.put(p, false);
+				combustion.put(p, false);
 				continue;
 			}
-			
-			if (!planetPosition.containsKey(p)) continue;
-			
+
+			if (!planetPosition.containsKey(p)) {
+				continue;
+			}
+
 			double pos = planetPosition.get(p);
 			double diff = Math.abs(pos - sunPos);
 			if (diff > 180) diff = 360 - diff;
-			
-			boolean isRetro = planetDirection != null && planetDirection.containsKey(p) && planetDirection.get(p);
+
+			boolean isRetro = planetDirection != null && Boolean.TRUE.equals(planetDirection.get(p));
 			double orb = 0;
-			
-			switch(p) {
+
+			switch (p) {
 				case Moon: orb = 12.0; break;
 				case Mars: orb = 17.0; break;
 				case Mercury: orb = isRetro ? 12.0 : 14.0; break;
@@ -152,13 +165,10 @@ public class PlanetaryInfo implements Exportable{
 				case Saturn: orb = 15.0; break;
 				default: orb = 0; break;
 			}
-			
-			if (diff <= orb) {
-				planetCombustion.put(p, true);
-			} else {
-				planetCombustion.put(p, false);
-			}
+
+			combustion.put(p, diff <= orb);
 		}
+		return combustion;
 	}
 
 	

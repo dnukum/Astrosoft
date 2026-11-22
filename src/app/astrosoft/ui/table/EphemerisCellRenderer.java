@@ -21,6 +21,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import app.astrosoft.consts.DisplayFormat;
 import app.astrosoft.consts.DisplayStrings;
 import app.astrosoft.core.Ephemeris.EphData;
+import app.astrosoft.ui.util.UIConsts;
 import app.astrosoft.util.AstroUtil;
 
 public class EphemerisCellRenderer extends DefaultTableCellRenderer {
@@ -28,15 +29,29 @@ public class EphemerisCellRenderer extends DefaultTableCellRenderer {
 	private static final Color HOUSE_COLOR = new Color(0x00, 0x46, 0x8C);
 	private static final Color RETRO_COLOR = new Color(0xC5, 0x30, 0x30);
 
+	private final boolean themed;
 	private boolean isEphData;
+	private boolean rowSelected;
 	private String degPart;
 	private String symPart;
 	private String minPart;
 	private String retroSym;
 
 	public EphemerisCellRenderer() {
+		this(false);
+	}
+
+	public EphemerisCellRenderer(boolean themed) {
 		super();
+		this.themed = themed;
 		setHorizontalAlignment(JLabel.CENTER);
+	}
+
+	@Override
+	public Component getTableCellRendererComponent(JTable table, Object value,
+			boolean isSelected, boolean hasFocus, int row, int column) {
+		this.rowSelected = isSelected;
+		return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 	}
 
 	@Override
@@ -155,7 +170,9 @@ public class EphemerisCellRenderer extends DefaultTableCellRenderer {
 			g2.drawString(degPart, x, y);
 			x += wDeg;
 
-			g2.setColor(HOUSE_COLOR);
+			Color symColor = rowSelected ? getForeground()
+					: (themed ? UIConsts.getChartTheme().getPrimaryAccentColor() : HOUSE_COLOR);
+			g2.setColor(symColor);
 			g2.setFont(fSym);
 			g2.drawString(symPart, x, y);
 			x += wSym;
@@ -166,7 +183,9 @@ public class EphemerisCellRenderer extends DefaultTableCellRenderer {
 			x += wMin;
 
 			if (retroSym != null) {
-				g2.setColor(RETRO_COLOR);
+				Color retroColor = rowSelected ? getForeground()
+						: (themed ? UIConsts.getChartTheme().getAscendantColor() : RETRO_COLOR);
+				g2.setColor(retroColor);
 				g2.setFont(fBrk);
 				g2.drawString(" [", x, y);
 				x += wBrkOpen;

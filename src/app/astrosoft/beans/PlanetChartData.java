@@ -53,6 +53,7 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
     private final EnumMap<Planet, Double> planetLongitudes = new EnumMap<Planet, Double>(Planet.class);
     private final EnumMap<Planet, Integer> planetTooltipHouse = new EnumMap<Planet, Integer>(Planet.class);
     private final EnumMap<Planet, Double> planetOrb = new EnumMap<Planet, Double>(Planet.class);
+    private final EnumMap<Planet, Boolean> planetCombustion = new EnumMap<Planet, Boolean>(Planet.class);
     public Double getPlanetLongitude(Planet planet) {
         return planet == null ? null : planetLongitudes.get(planet);
     }
@@ -267,6 +268,17 @@ public class PlanetChartData extends AbstractChartData implements Exportable {
 
 	public EnumMap<Planet, Boolean> getPlanetDir() {
 		return planetDir;
+	}
+
+	public EnumMap<Planet, Boolean> getPlanetCombustion() {
+		return planetCombustion;
+	}
+
+	public void setPlanetCombustion(EnumMap<Planet, Boolean> planetCombustion) {
+		this.planetCombustion.clear();
+		if (planetCombustion != null) {
+			this.planetCombustion.putAll(planetCombustion);
+		}
 	}
 
 	public Varga getVarga() {

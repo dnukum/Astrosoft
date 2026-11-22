@@ -260,6 +260,10 @@ public final class HouseContentModel {
 		if (p == Planet.Ascendant && "Asc".equals(sym)) {
 			sym = "As";
 		}
+		if (!p.isAsc() && pcd.getPlanetCombustion() != null
+				&& Boolean.TRUE.equals(pcd.getPlanetCombustion().get(p))) {
+			sym = sym + " (C)";
+		}
 		boolean retro = highlightRetro && planetDir != null && Boolean.TRUE.equals(planetDir.get(p));
 		Color color = UIConsts.getNorthIndianPlanetColor(p);
 		return new PlanetItem(p, sym, retro, color);

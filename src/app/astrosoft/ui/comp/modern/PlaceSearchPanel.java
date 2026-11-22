@@ -48,6 +48,7 @@ public class PlaceSearchPanel extends JPanel {
     private JTable resultsTable;
     private DefaultTableModel tableModel;
     private JButton selectButton;
+    private JPanel bottomBar;
 
     private List<Place> currentResults = new ArrayList<>();
     private SwingWorker<List<Place>, Void> searchWorker;
@@ -72,6 +73,13 @@ public class PlaceSearchPanel extends JPanel {
 
     public void setOnCancelListener(Runnable r) {
         this.onCancelListener = r;
+    }
+
+    /** Hides the inner Cancel/Select action bar when embedded inside a composite dialog. */
+    public void setEmbeddedMode(boolean embedded) {
+        if (bottomBar != null) {
+            bottomBar.setVisible(!embedded);
+        }
     }
 
     public boolean isConfirmed() {
@@ -205,7 +213,7 @@ public class PlaceSearchPanel extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
 
         // 3. Bottom Action Bar (Cancel, Select)
-        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 10));
+        bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 10));
         bottomBar.setBackground(Color.WHITE);
         bottomBar.setBorder(BorderFactory.createEmptyBorder(4, 12, 10, 12));
 

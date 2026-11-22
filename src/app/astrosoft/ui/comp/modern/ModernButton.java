@@ -25,7 +25,7 @@ public class ModernButton extends JButton {
         SECONDARY
     }
 
-    private final Style style;
+    private Style style;
     private Color primaryColor;
     private int cornerRadius = 10;
     private boolean isHovered = false;
@@ -87,6 +87,16 @@ public class ModernButton extends JButton {
 
     public static ModernButton createSecondary(String text) {
         return new ModernButton(text, Style.SECONDARY, null);
+    }
+
+    /** Switches between PRIMARY and SECONDARY visual styles (useful for segmented toggles). */
+    public void setButtonStyle(Style style) {
+        if (style == null || this.style == style) {
+            return;
+        }
+        this.style = style;
+        setForeground(style == Style.PRIMARY ? Color.WHITE : new Color(51, 65, 85));
+        repaint();
     }
 
     public void setPrimaryColor(Color c) {

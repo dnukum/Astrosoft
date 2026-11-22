@@ -70,6 +70,11 @@ public final class ChartTooltips {
 			if (text.length() > 0) text.append(", ");
 			text.append(nak.toString());
 		}
+		if (!planet.isAsc() && planetData.getPlanetCombustion() != null
+				&& Boolean.TRUE.equals(planetData.getPlanetCombustion().get(planet))) {
+			if (text.length() > 0) text.append(", ");
+			text.append("Combust (Asta)");
+		}
 		if (planetData.getVarga() == Varga.Rasi && chartData.getAscendant() != null && !planet.isAsc()) {
 			String roleTag = formatPlanetFunctionalRoleTag(chartData.getAscendant(), planet);
 			if (roleTag != null) {

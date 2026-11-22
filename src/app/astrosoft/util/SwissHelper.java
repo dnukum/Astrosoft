@@ -156,6 +156,19 @@ public class SwissHelper {
 		
 		return Rasi.ofDeg(positions[1]);
 	}
+
+	/**
+	 * Computes sidereal Ascendant position as {@link EphData} for the current sweDate.
+	 */
+	public EphData getAscendantEphData(double birthLong, double birthLat) {
+		double[] ac = new double[10];
+		double[] positions = new double[13];
+
+		sw.swe_houses(sweDate.getJulDay(), HOUSE_FLAG, birthLat, birthLong, HOUSE_SYSTEM,
+				positions, ac);
+
+		return new EphData(positions[1], false);
+	}
 	
 	public double getPlanetSpeed(Planet planet){
 	

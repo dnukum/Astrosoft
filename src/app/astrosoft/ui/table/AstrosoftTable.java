@@ -226,7 +226,7 @@ public class AstrosoftTable extends JTable {
     	addCellPopupWindow(new Cell(col), model);
     }
     
-    private void localizeColumns() {
+    public void localizeColumns() {
     	
     	AstrosoftTableModel model = (AstrosoftTableModel) getModel();
     	ColumnMetaData colMetaData = model.getColumnMetaData();

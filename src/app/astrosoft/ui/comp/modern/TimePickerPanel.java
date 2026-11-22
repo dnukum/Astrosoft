@@ -51,6 +51,7 @@ public class TimePickerPanel extends JPanel {
     private JList<String> minuteList;
     private JList<String> secondList;
     private JList<String> amPmList;
+    private JPanel actionsPanel;
 
     public TimePickerPanel(LocalTime initialTime) {
         this.theme = UIConsts.getChartTheme();
@@ -74,6 +75,13 @@ public class TimePickerPanel extends JPanel {
 
     public void setOnCancelListener(Runnable r) {
         this.onCancelListener = r;
+    }
+
+    /** Hides the inner Cancel/Ok action buttons when embedded inside a composite dialog. */
+    public void setEmbeddedMode(boolean embedded) {
+        if (actionsPanel != null) {
+            actionsPanel.setVisible(!embedded);
+        }
     }
 
     public boolean isConfirmed() {
@@ -173,7 +181,7 @@ public class TimePickerPanel extends JPanel {
         nowBtn.addActionListener(e -> setSelectedTime(LocalTime.now()));
         bottomBar.add(nowBtn, BorderLayout.WEST);
 
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actionsPanel.setBackground(Color.WHITE);
 
         ModernButton cancelBtn = ModernButton.createSecondary("Cancel");

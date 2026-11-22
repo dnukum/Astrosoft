@@ -75,61 +75,42 @@ public class PlanetCellRenderer implements TableCellRenderer {
 			
 			Font tblFont = (table != null) ? table.getFont() : null;
 			int targetSize = (tblFont != null) ? tblFont.getSize() : c.getFont().getSize();
-			l.setFont(UIUtil.getFont(Font.BOLD, targetSize));
-			l.setText(p.toString(planetFormat));
+			Font baseFont = UIUtil.getFont(Font.BOLD, targetSize);
+			l.setFont(baseFont);
 
 			int colW = (table != null && column >= 0 && column < table.getColumnCount())
 					? table.getColumnModel().getColumn(column).getWidth()
 					: 0;
 
-			// In narrow columns (< 26px, typical in 3-planet houses), zero out horizontal padding
-			// to avoid clipping wide planet abbreviations like "Mo" (Moon) or "Asc" (Ascendant).
-			int pad = (colW > 0 && colW < 26) ? 0 : ((colW > 0 && colW < 35) ? 1 : 2);
+			// In narrow columns (< 32px, e.g. 3-planet houses), zero out horizontal padding
+			// to avoid clipping wide planet labels like "Mo", "Asc", or "Me(C)".
+			int pad = (colW > 0 && colW < 32) ? 0 : ((colW > 0 && colW < 38) ? 1 : 2);
 			l.setBorder(BorderFactory.createEmptyBorder(0, pad, 0, pad));
 
 			if (colW >= 40 || column == 1) {
 				l.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 			}
 
-			if (colW > 10) {
-				int availW = colW - (pad * 2) - 1;
-				int textW = l.getFontMetrics(l.getFont()).stringWidth(l.getText());
-				int fitSize = targetSize;
-				while (textW > availW && fitSize > 8) {
-					fitSize--;
-					Font fitFont = UIUtil.getFont(Font.BOLD, fitSize);
-					textW = l.getFontMetrics(fitFont).stringWidth(l.getText());
-					l.setFont(fitFont);
+			String labelText = p.toString(planetFormat);
+			Color fgClr = UIConsts.getChartPlanetForeground();
+			boolean applyRetroUnderline = false;
+
+			if (p.isAsc()) {
+				fgClr = UIConsts.getChartAscendantColor();
+			} else if (p == Planet.Moon) {
+				fgClr = UIConsts.getChartMoonColor();
+			} else if (highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && Boolean.TRUE.equals(planetDir.get(p))) {
+				if (expandRetrogrades) {
+					labelText = labelText + " (" + DisplayStrings.RETRO_SYM + ")";
+				} else if (labelText.length() > 0) {
+					applyRetroUnderline = true;
 				}
 			}
 
-			Color fgClr = null;
-			
-			if (p.isAsc()){
-				fgClr = UIConsts.getChartAscendantColor();
-			} else if (p == Planet.Moon){
-				fgClr = UIConsts.getChartMoonColor();
-			} else if (highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && planetDir.get(p)){
-				fgClr = UIConsts.getChartPlanetForeground();
-				if(expandRetrogrades){
-					l.setText(p.toString(planetFormat) + " (" + DisplayStrings.RETRO_SYM + ")");
-				} else {
-					String text = p.toString(planetFormat);
-					if (text.length() > 0) {
-						l.setText(text);
-						java.util.Map<java.awt.font.TextAttribute, Object> attrs = new java.util.HashMap<>(l.getFont().getAttributes());
-						attrs.put(java.awt.font.TextAttribute.UNDERLINE, java.awt.font.TextAttribute.UNDERLINE_ON);
-						l.setFont(l.getFont().deriveFont(attrs));
-					}
-				}
-			} else {
-				fgClr = UIConsts.getChartPlanetForeground();
-			}
-			
-			if (planetStatus != null && !p.isAsc()) {
+			if (!p.isAsc() && (planetStatus != null || planetCombustion != null)) {
 				boolean retro = highlightRetrogrades && planetDir != null && planetDir.containsKey(p) && Boolean.TRUE.equals(planetDir.get(p)) && p != Planet.Moon;
 				boolean combust = planetCombustion != null && Boolean.TRUE.equals(planetCombustion.get(p));
-				if (expandRetrogrades || !retro) {
+				if (planetStatus != null && (expandRetrogrades || !retro)) {
 					String retroSym = (expandRetrogrades && retro) ? DisplayStrings.RETRO_SYM.toString() : null;
 					String lead = null;
 					if (retroSym != null && combust) {
@@ -139,8 +120,30 @@ public class PlanetCellRenderer implements TableCellRenderer {
 					} else if (combust) {
 						lead = "C";
 					}
-					l.setText(p.toString(planetFormat) + PlanetStatusCodes.suffixText(lead, planetStatus.get(p)));
+					labelText = p.toString(planetFormat) + PlanetStatusCodes.suffixText(lead, planetStatus.get(p));
+				} else if (planetStatus == null && combust) {
+					labelText = labelText + ((colW > 0 && colW < 36) ? "(C)" : " (C)");
 				}
+			}
+
+			l.setText(labelText);
+
+			if (colW > 10) {
+				int availW = colW - (pad * 2) - 1;
+				int textW = l.getFontMetrics(l.getFont()).stringWidth(labelText);
+				int fitSize = targetSize;
+				while (textW > availW && fitSize > 7) {
+					fitSize--;
+					Font fitFont = UIUtil.getFont(Font.BOLD, fitSize);
+					textW = l.getFontMetrics(fitFont).stringWidth(labelText);
+					l.setFont(fitFont);
+				}
+			}
+
+			if (applyRetroUnderline) {
+				java.util.Map<java.awt.font.TextAttribute, Object> attrs = new java.util.HashMap<>(l.getFont().getAttributes());
+				attrs.put(java.awt.font.TextAttribute.UNDERLINE, java.awt.font.TextAttribute.UNDERLINE_LOW_TWO_PIXEL);
+				l.setFont(l.getFont().deriveFont(attrs));
 			}
 
 			l.setForeground(fgClr);

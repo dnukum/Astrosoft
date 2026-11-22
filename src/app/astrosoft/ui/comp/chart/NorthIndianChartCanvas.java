@@ -356,6 +356,15 @@ public class NorthIndianChartCanvas extends JComponent {
 		}
 	}
 
+	private float gridLineThickness = 1.2f;
+
+	public void setGridLineThickness(float thickness) {
+		if (thickness > 0f) {
+			this.gridLineThickness = thickness;
+			repaint();
+		}
+	}
+
 	private void paintGridLines(Graphics2D g2) {
 		double ox = lastGeometry.getOriginX();
 		double oy = lastGeometry.getOriginY();
@@ -366,7 +375,7 @@ public class NorthIndianChartCanvas extends JComponent {
 
 		g2.setColor(UIConsts.getChartBorderColor());
 		Stroke oldStroke = g2.getStroke();
-		g2.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		g2.setStroke(new BasicStroke(gridLineThickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
 		g2.draw(new Rectangle2D.Double(ox, oy, w, h));
 		g2.draw(new Line2D.Double(ox, oy, ox + w, oy + h));
@@ -413,8 +422,8 @@ public class NorthIndianChartCanvas extends JComponent {
 
 			if (pi.item.isRetrograde()) {
 				Stroke prev = g2.getStroke();
-				g2.setStroke(new BasicStroke(Math.max(1.0f, hl.planetFont.getSize() / 11.0f)));
-				double ulY = pi.labelBaselineY + 1.5;
+				g2.setStroke(new BasicStroke(Math.max(2.0f, hl.planetFont.getSize() / 8.0f)));
+				double ulY = pi.labelBaselineY + 2.0;
 				g2.draw(new Line2D.Double(pi.labelX, ulY, pi.labelX + pi.labelWidth, ulY));
 				g2.setStroke(prev);
 			}
